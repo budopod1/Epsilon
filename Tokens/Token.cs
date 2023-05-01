@@ -1,3 +1,3 @@
 using System;
 
-public class Token {}
+public interface IToken {}
