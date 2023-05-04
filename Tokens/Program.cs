@@ -2,5 +2,18 @@ using System;
 using System.Collections.Generic;
 
 public class Program : TreeToken { 
-    public Program(List<IToken> tokens) : base(tokens) {}
+    Constants constants;
+    
+    public Program(List<IToken> tokens,
+                    Constants constants) : base(tokens) {
+        this.constants = constants;
+    }
+
+    public Constants GetConstants() {
+        return constants;
+    }
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new Program(tokens, constants);
+    }
 }

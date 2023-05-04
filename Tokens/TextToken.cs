@@ -1,13 +1,13 @@
 using System;
 
 public class TextToken : IToken {
-    public string text;
+    public string Text;
     
     public TextToken(string text) {
-        this.text = text;
+        this.Text = text;
     }
 
     public override string ToString() {
-        return this.text;
+        return this.Text;
     }
 }
