@@ -18,7 +18,8 @@ public class NameMatcher : IMatcher {
             }
             List<IToken> replaced = new List<IToken>();
             replaced.Add(stoken);
-            for (int j = i+1; j < tokens.Count; j++) {
+            int j;
+            for (j = i+1; j < tokens.Count; j++) {
                 IToken token = tokens[j];
                 if (token is TextToken) {
                     string text = ((TextToken)token).Text;
@@ -31,10 +32,11 @@ public class NameMatcher : IMatcher {
                         continue;
                     }
                 }
-                List<IToken> replacement = new List<IToken>();
-                replacement.Add(new Name(name));
-                return new Match(i, j-1, replacement, replaced);
+                break;
             }
+            List<IToken> replacement = new List<IToken>();
+            replacement.Add(new Name(name));
+            return new Match(i, j-1, replacement, replaced);
         }
         return null;
     }
