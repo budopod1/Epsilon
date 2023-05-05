@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 public class NameMatcher : IMatcher {
-    public Match match(IToken tokens_) {
+    public Match Match(IToken tokens_) {
         if (!(tokens_ is TreeToken)) return null;
         TreeToken tokens = (TreeToken)tokens_;
         int i = -1;

@@ -21,6 +21,14 @@ public class Compiler {
         // Console.WriteLine(program.ToString());
         Console.WriteLine("Tokenizing ints...");
         program = TokenizeInts(program);
+        // Console.WriteLine(program.ToString());
+        Console.WriteLine("Tokenizing symbols...");
+        program = TokenizeSymbols(
+            program,
+            new Dictionary<string, Type> {
+                {"=", typeof(Equal)}
+            }
+        );
         Console.WriteLine(program.ToString());
     }
 
@@ -28,7 +36,7 @@ public class Compiler {
         Program program = program_;
         StringMatcher matcher = new StringMatcher();
         while (true) {
-            Match match = matcher.match(program);
+            Match match = matcher.Match(program);
             if (match == null) break;
             string matchedString = String.Join("", match.GetMatched());
             int constant = program.GetConstants().AddConstant(
@@ -42,11 +50,22 @@ public class Compiler {
         return program;
     }
 
+    public Program TokenizeSymbols(Program program_, Dictionary<string, Type> symbols) {
+        Program program = program_;
+        SymbolMatcher matcher = new SymbolMatcher(symbols);
+        while (true) {
+            Match match = matcher.Match(program);
+            if (match == null) break;
+            program = (Program)match.Replace(program);
+        }
+        return program;
+    }
+    
     public Program TokenizeFloats(Program program_) {
         Program program = program_;
         FloatMatcher matcher = new FloatMatcher();
         while (true) {
-            Match match = matcher.match(program);
+            Match match = matcher.Match(program);
             if (match == null) break;
             string matchedString = String.Join("", match.GetMatched());
             int constant = program.GetConstants().AddConstant(
@@ -64,7 +83,7 @@ public class Compiler {
         Program program = program_;
         IntMatcher matcher = new IntMatcher();
         while (true) {
-            Match match = matcher.match(program);
+            Match match = matcher.Match(program);
             if (match == null) break;
             string matchedString = String.Join("", match.GetMatched());
             int constant = program.GetConstants().AddConstant(
@@ -82,7 +101,7 @@ public class Compiler {
         Program program = program_;
         NameMatcher matcher = new NameMatcher();
         while (true) {
-            Match match = matcher.match(program);
+            Match match = matcher.Match(program);
             if (match == null) break;
             program = (Program)match.Replace(program);
         }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 public class FloatMatcher : IMatcher {
-    public Match match(IToken tokens_) {
+    public Match Match(IToken tokens_) {
         if (!(tokens_ is TreeToken)) return null;
         TreeToken tokens = (TreeToken)tokens_;
         for (int i = 0; i < tokens.Count; i++) {
