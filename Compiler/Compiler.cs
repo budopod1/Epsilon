@@ -13,6 +13,9 @@ public class Compiler {
         Console.WriteLine("Tokenizing strings...");
         program = TokenizeStrings(program);
         // Console.WriteLine(program.ToString());
+        Console.WriteLine("Tokenizing function templates...");
+        program = TokenizeFuncTemplates(program);
+        // Console.WriteLine(program.ToString());
         Console.WriteLine("Tokenizing names...");
         program = TokenizeNames(program);
         // Console.WriteLine(program.ToString());
@@ -22,16 +25,59 @@ public class Compiler {
         Console.WriteLine("Tokenizing ints...");
         program = TokenizeInts(program);
         // Console.WriteLine(program.ToString());
+        
         Console.WriteLine("Tokenizing symbols...");
         program = TokenizeSymbols(
             program,
             new Dictionary<string, Type> {
-                {"=", typeof(Equal)}
+                {"=", typeof(Equal)},
+                {" ", null},
+                {"\n", null},
+                {"\t", null},
+                {"{", typeof(BracketOpen)},
+                {"}", typeof(BracketClose)},
+                {":", typeof(Colon)},
             }
         );
+        
+        Console.WriteLine("Tokenizing blocks...");
+        program = TokenizeBlocks(program);
+        
+        Console.WriteLine("Tokenizing functions...");
+        program = TokenizeFunctionHolders(program);
+        
+        Console.WriteLine("Tokenizing structs...");
+        program = TokenizeStructHolders(program);
+        
         Console.WriteLine(program.ToString());
     }
 
+    public Program TokenizeFunctionHolders(Program program_) {
+        Program program = program_;
+        FunctionHolderMatcher matcher = new FunctionHolderMatcher(
+            typeof(FuncTemplate), typeof(Block), typeof(FunctionHolder)
+        );
+        while (true) {
+            Match match = matcher.Match(program);
+            if (match == null) break;
+            program = (Program)match.Replace(program);
+        }
+        return program;
+    }
+
+    public Program TokenizeStructHolders(Program program_) {
+        Program program = program_;
+        StructHolderMatcher matcher = new StructHolderMatcher(
+            typeof(Name), typeof(Block), typeof(StructHolder)
+        );
+        while (true) {
+            Match match = matcher.Match(program);
+            if (match == null) break;
+            program = (Program)match.Replace(program);
+        }
+        return program;
+    }
+    
     public Program TokenizeStrings(Program program_) {
         Program program = program_;
         StringMatcher matcher = new StringMatcher();
@@ -45,6 +91,33 @@ public class Compiler {
             List<IToken> replacement = new List<IToken>();
             replacement.Add(new ConstantValue(constant));
             match.SetReplacement(replacement);
+            program = (Program)match.Replace(program);
+        }
+        return program;
+    }
+    
+    public Program TokenizeFuncTemplates(Program program_) {
+        Program program = program_;
+        FuncTemplateMatcher matcher = new FuncTemplateMatcher(
+            '#', '{', typeof(FuncTemplate)
+        );
+        while (true) {
+            Match match = matcher.Match(program);
+            if (match == null) break;
+            program = (Program)match.Replace(program);
+        }
+        return program;
+    }
+
+    public Program TokenizeBlocks(Program program_) {
+        Program program = program_;
+        BlockMatcher matcher = new BlockMatcher(
+            typeof(BracketOpen), typeof(BracketClose),
+            typeof(Block)
+        );
+        while (true) {
+            Match match = matcher.Match(program);
+            if (match == null) break;
             program = (Program)match.Replace(program);
         }
         return program;

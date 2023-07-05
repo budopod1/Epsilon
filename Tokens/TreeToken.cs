@@ -43,23 +43,19 @@ public class TreeToken : IToken, IEnumerable<IToken> {
         string result = "";
         bool whitespace = false;
         foreach (IToken token in this) {
+            bool whitespaceHere = false;
             if (token is TreeToken || 
                 (token is TextToken && 
-                ((TextToken)token).Text == "\n")) {
+                ((TextToken)token).Text == "\n")
+                || token is Unit) {
                 whitespace = true;
+                whitespaceHere = true;
             }
             result += token.ToString();
+            if (whitespaceHere) {
+                result += "\n";
+            }
         }
-        /*
-        string result = "";
-        foreach (IToken token in this) {
-            result += token.ToString();
-        }
-        result = "\n"+Utils.Tab+result.Replace("\n", "\n"+Utils.Tab);
-        if (result.EndsWith(Utils.Tab)) {
-            result = result.Substring(0, result.Length - Utils.Tab.Length);
-        }
-        */
         result = result.Trim();
         if (whitespace) {
             result = Utils.Indent(result);

@@ -1,7 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-public class NameMatcher : IMatcher {
+public class FuncTemplateMatcher : IMatcher {
+    char startChar;
+    char endMarkerChar;
+    Type holderType;
+    
+    public FuncTemplateMatcher(char start, char endMarker, Type holder) {
+        startChar = start;
+        endMarkerChar = endMarker;
+        holderType = holder;
+    }
+    
     public Match Match(IToken tokens_) {
         if (!(tokens_ is TreeToken)) return null;
         TreeToken tokens = (TreeToken)tokens_;
@@ -11,28 +21,28 @@ public class NameMatcher : IMatcher {
             if (!(stoken is TextToken)) {
                 continue;
             }
-            string name = ((TextToken)stoken).Text;
-            if (!Utils.NameStartChars.Contains(name)) {
+            if (((TextToken)stoken).Text != startChar.ToString()) {
                 continue;
             }
             List<IToken> replaced = new List<IToken>();
             replaced.Add(stoken);
             int j;
+            string template = "";
             for (j = i+1; j < tokens.Count; j++) {
                 IToken token = tokens[j];
                 if (token is TextToken) {
                     string text = ((TextToken)token).Text;
                     
-                    if (Utils.NameChars.Contains(text)) {
+                    if (text != endMarkerChar.ToString()) {
                         replaced.Add(token);
-                        name += text;
+                        template += text;
                         continue;
                     }
                 }
                 break;
             }
             List<IToken> replacement = new List<IToken>();
-            replacement.Add(new Name(name));
+            replacement.Add(new FuncTemplate(template.Trim()));
             return new Match(i, j-1, replacement, replaced);
         }
         return null;

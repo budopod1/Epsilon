@@ -32,10 +32,11 @@ public class SymbolMatcher : IMatcher {
                     }
                     if (k == symbol.Length-1) {
                         List<IToken> replacement = new List<IToken>();
-                        Object result = Activator.CreateInstance(
-                            this.symbols[symbol]
-                        );
-                        replacement.Add((IToken)result);
+                        Type type = this.symbols[symbol];
+                        if (type != null) {
+                            Object result = Activator.CreateInstance(this.symbols[symbol]);
+                            replacement.Add((IToken)result);
+                        }
                         return new Match(i, j, replacement, replaced);
                     }
                 }
