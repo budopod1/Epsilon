@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Collections.Generic;
 
@@ -10,3 +11,4 @@ public class Struct : IToken {
         this.props = props;
     }
 }
+*/

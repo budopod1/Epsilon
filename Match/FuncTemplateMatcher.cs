@@ -12,9 +12,7 @@ public class FuncTemplateMatcher : IMatcher {
         holderType = holder;
     }
     
-    public Match Match(IToken tokens_) {
-        if (!(tokens_ is TreeToken)) return null;
-        TreeToken tokens = (TreeToken)tokens_;
+    public Match Match(TreeToken tokens) {
         int i = -1;
         foreach (IToken stoken in tokens) {
             i += 1;

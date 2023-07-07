@@ -1,9 +1,7 @@
 #h {
-    {
-        test
-    }
+    f:v
 }
 
 f {
-    f:d
+    Array<Z>:d
 }

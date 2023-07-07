@@ -17,12 +17,18 @@ public class TreeToken : IToken, IEnumerable<IToken> {
         get {
             return this.tokens[i];
         }
-    }
 
-    // create copy method
+        set {
+            this.tokens[i] = value;
+        }
+    }
 
     public virtual TreeToken Copy(List<IToken> tokens) {
         return new TreeToken(tokens);
+    }
+
+    public TreeToken Copy() {
+        return Copy(new List<IToken>(this.tokens));
     }
 
     public int Count {
@@ -39,15 +45,40 @@ public class TreeToken : IToken, IEnumerable<IToken> {
         return this.GetEnumerator();
     }
 
+    public IEnumerable<IToken> Traverse() {
+        yield return this;
+        foreach (IToken token in this) {
+            if (token is TreeToken) {
+                foreach (IToken subToken in ((TreeToken)token).Traverse()) {
+                    yield return subToken;
+                }
+            } else {
+                yield return token;
+            }
+        }
+    }
+
+    public IEnumerable<(int, TreeToken)> IndexTraverse() {
+        for (int i = 0; i < this.Count; i++) {
+            yield return (i, this);
+            IToken token = this[i];
+            if (token is TreeToken) {
+                foreach ((int, TreeToken) sub in ((TreeToken)token).IndexTraverse()) {
+                    yield return sub;
+                }
+            }
+        }
+    }
+
     public override string ToString() {
         string result = "";
         bool whitespace = false;
         foreach (IToken token in this) {
             bool whitespaceHere = false;
-            if (token is TreeToken || 
-                (token is TextToken && 
+            if (token is TreeToken 
+                || (token is TextToken && 
                 ((TextToken)token).Text == "\n")
-                || token is Unit) {
+                || Utils.IsInstance(token, typeof(Unit<>))) {
                 whitespace = true;
                 whitespaceHere = true;
             }

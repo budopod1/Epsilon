@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Program : Block { 
+public class Program : TreeToken { 
     Constants constants;
     
     public Program(List<IToken> tokens,

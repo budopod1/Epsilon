@@ -36,6 +36,8 @@ public class Compiler {
                 {"\t", null},
                 {"{", typeof(BracketOpen)},
                 {"}", typeof(BracketClose)},
+                {"<", typeof(GenericsOpen)},
+                {">", typeof(GenericsClose)},
                 {":", typeof(Colon)},
             }
         );
@@ -48,6 +50,14 @@ public class Compiler {
         
         Console.WriteLine("Tokenizing structs...");
         program = TokenizeStructHolders(program);
+
+        List<string> baseTypes = ListBaseTypes_(program);
+        
+        Console.WriteLine("Tokenizing base types...");
+        program = TokenizeBaseTypes_(program, baseTypes);
+        
+        Console.WriteLine("Tokenizing generics...");
+        program = TokenizeGenerics(program);
         
         Console.WriteLine(program.ToString());
     }
@@ -179,5 +189,104 @@ public class Compiler {
             program = (Program)match.Replace(program);
         }
         return program;
+    }
+
+    public Program TokenizeGenerics(Program program) {
+        return (Program)PerformTreeMatching(program, new BlockMatcher(
+            typeof(GenericsOpen), typeof(GenericsClose), typeof(Generics)
+        ));
+    }
+
+    public Program TokenizeBaseTypes_(Program program, List<string> bases) {
+        program = (Program)program.Copy();
+        foreach (IToken token in program) {
+            if (token is Holder) {
+                Holder holder = ((Holder)token);
+                Block block = holder.GetBlock();
+                if (block == null) continue;
+                TreeToken result = PerformTreeMatching(block, 
+                    new UnitSwitcherMatcher<string>(
+                        typeof(Name), bases, typeof(BaseTokenType_)
+                    )
+                );
+                holder.SetBlock((Block)result);
+            }
+        }
+        return program;
+    }
+
+    /*
+    public Program TokenizeTypes_(Program program) {
+        program = (Program)program.Copy();
+        foreach (IToken token in program) {
+            if (token is Holder) {
+                Holder holder = ((Holder)token);
+                Block block = holder.GetBlock();
+                if (block == null) continue;
+                TreeToken result = PerformTreeMatching(block, 
+                    
+                );
+                holder.SetBlock((Block)result);
+            }
+        }
+        return program;
+    }
+    */
+
+    public List<string> ListBaseTypes_(Program program) {
+        List<string> types_ = new List<string>(Type_.BuiltInTypes_);
+        foreach (IToken token_ in program) {
+            if (token_ is StructHolder) {
+                StructHolder token = ((StructHolder)token_);
+                if (token.Count == 0) continue;
+                IToken name = token[0];
+                if (name is Name) {
+                    types_.Add(((Name)name).GetValue());
+                }
+            }
+        }
+        return types_;
+    }
+
+    public TreeToken PerformTreeMatching(TreeToken tree, IMatcher matcher) {
+        tree = tree.Copy();
+        tree = PerformMatching(tree, matcher);
+        bool changed = false;
+
+        do {
+            changed = false;
+            foreach ((int i, TreeToken subtree) in tree.IndexTraverse()) {
+                IToken subtoken = subtree[i];
+                if (subtoken is TreeToken) {
+                    (bool changedHere, TreeToken newToken) = PerformMatchingChanged(
+                        (TreeToken)subtoken, matcher
+                    );
+                    subtree[i] = newToken;
+                    if (changedHere) changed = true;
+                }
+            }
+        } while (changed);
+        
+        return tree;
+    }
+
+    public TreeToken PerformMatching(TreeToken tree, IMatcher matcher) {
+        while (true) {
+            Match match = matcher.Match(tree);
+            if (match == null) break;
+            tree = (TreeToken)match.Replace(tree);
+        }
+        return tree;
+    }
+
+    public (bool, TreeToken) PerformMatchingChanged(TreeToken tree, IMatcher matcher) {
+        bool changed = false;
+        while (true) {
+            Match match = matcher.Match(tree);
+            if (match == null) break;
+            changed = true;
+            tree = (TreeToken)match.Replace(tree);
+        }
+        return (changed, tree);
     }
 }

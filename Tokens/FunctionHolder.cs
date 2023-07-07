@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class FunctionHolder : Block {
+public class FunctionHolder : Holder {
     public FunctionHolder(List<IToken> tokens) : base(tokens) {}
     
     public override TreeToken Copy(List<IToken> tokens) {

@@ -13,9 +13,7 @@ public class BlockMatcher : IMatcher {
         this.holder = holder;
     }
     
-    public Match Match(IToken tokens_) {
-        if (!(tokens_ is TreeToken)) return null;
-        TreeToken tokens = (TreeToken)tokens_;
+    public Match Match(TreeToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             int indent = 0;
             bool any = false;

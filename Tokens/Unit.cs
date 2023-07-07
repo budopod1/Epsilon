@@ -1,10 +1,14 @@
 using System;
 
-public class Unit : IToken {
-    public Object value;
+public class Unit<T> : IToken {
+    T value;
     
-    public Unit(Object value) {
+    public Unit(T value) {
         this.value = value;
+    }
+
+    public T GetValue() {
+        return value;
     }
 
     public override string ToString() {

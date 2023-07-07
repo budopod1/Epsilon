@@ -8,8 +8,9 @@ public class Utils {
     public static string NameStartChars = Uppercase + Lowercase + "_";
     public static string NameChars = Uppercase + Lowercase + Numbers + "_";
     
-    public static string WrapName(string name, string content) {
-        return name + "(" + content + ")";
+    public static string WrapName(string name, string content, 
+                                  string wrapStart="(", string wrapEnd=")") {
+        return name + wrapStart + content + wrapEnd;
     }
 
     public static string WrapNewline(string text) {
@@ -21,6 +22,10 @@ public class Utils {
     }
 
     public static bool IsInstance(Type a, Type b) {
+        if (a.IsGenericType)
+            a = a.GetGenericTypeDefinition();
+        if (b.IsGenericType)
+            b = b.GetGenericTypeDefinition();
         if (a.IsSubclassOf(b)) return true;
         return a == b;
     }

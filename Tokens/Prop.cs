@@ -1,3 +1,4 @@
+/*
 using System;
 
 public class Prop : IToken {
@@ -9,3 +10,4 @@ public class Prop : IToken {
         this.type_ = type_;
     }
 }
+*/
