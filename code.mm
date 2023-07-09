@@ -1,7 +1,9 @@
 #h {
     f:v
+    Array<Array<W>>:n
 }
 
 f {
-    Array<Z>:d
+    Array<Z>:d,
+    Byte:b
 }

@@ -6,25 +6,26 @@ public class Compiler {
 
     public void Compile(string text) {
         Console.WriteLine("Compiling...");
+        
         Program program = new Program(new List<IToken>(), new Constants());
         foreach (char chr in text) {
             program.Add(new TextToken(chr.ToString()));
         }
+        
         Console.WriteLine("Tokenizing strings...");
         program = TokenizeStrings(program);
-        // Console.WriteLine(program.ToString());
+        
         Console.WriteLine("Tokenizing function templates...");
         program = TokenizeFuncTemplates(program);
-        // Console.WriteLine(program.ToString());
+        
         Console.WriteLine("Tokenizing names...");
         program = TokenizeNames(program);
-        // Console.WriteLine(program.ToString());
+        
         Console.WriteLine("Tokenizing floats...");
         program = TokenizeFloats(program);
-        // Console.WriteLine(program.ToString());
+        
         Console.WriteLine("Tokenizing ints...");
         program = TokenizeInts(program);
-        // Console.WriteLine(program.ToString());
         
         Console.WriteLine("Tokenizing symbols...");
         program = TokenizeSymbols(
@@ -39,6 +40,7 @@ public class Compiler {
                 {"<", typeof(GenericsOpen)},
                 {">", typeof(GenericsClose)},
                 {":", typeof(Colon)},
+                {",", typeof(Comma)},
             }
         );
         
@@ -58,6 +60,12 @@ public class Compiler {
         
         Console.WriteLine("Tokenizing generics...");
         program = TokenizeGenerics(program);
+        
+        Console.WriteLine("Tokenizing types_...");
+        program = TokenizeTypes_(program);
+        
+        Console.WriteLine("Tokenizing var declarations...");
+        program = TokenizeVarDeclarations(program);
         
         Console.WriteLine(program.ToString());
     }
@@ -214,8 +222,7 @@ public class Compiler {
         }
         return program;
     }
-
-    /*
+    
     public Program TokenizeTypes_(Program program) {
         program = (Program)program.Copy();
         foreach (IToken token in program) {
@@ -224,14 +231,38 @@ public class Compiler {
                 Block block = holder.GetBlock();
                 if (block == null) continue;
                 TreeToken result = PerformTreeMatching(block, 
-                    
+                    new Type_Matcher(
+                        typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
+                        new ListTokenParser<Type_>(
+                            typeof(Comma), typeof(Type_Token), 
+                            (IToken generic) => ((Type_Token)generic).GetValue()
+                        )
+                    )
                 );
                 holder.SetBlock((Block)result);
             }
         }
         return program;
     }
-    */
+
+    public Program TokenizeVarDeclarations(Program program) {
+        program = (Program)program.Copy();
+        foreach (IToken token in program) {
+            if (token is Holder) {
+                Holder holder = ((Holder)token);
+                Block block = holder.GetBlock();
+                if (block == null) continue;
+                TreeToken result = PerformTreeMatching(block, 
+                    new VarDeclareMatcher(
+                        typeof(Name), typeof(Colon), typeof(Type_Token),
+                        typeof(VarDeclaration)
+                    )
+                );
+                holder.SetBlock((Block)result);
+            }
+        }
+        return program;
+    }
 
     public List<string> ListBaseTypes_(Program program) {
         List<string> types_ = new List<string>(Type_.BuiltInTypes_);
@@ -254,7 +285,9 @@ public class Compiler {
         bool changed = false;
 
         do {
-            changed = false;
+            (changed, tree) = PerformMatchingChanged(
+                tree, matcher
+            );
             foreach ((int i, TreeToken subtree) in tree.IndexTraverse()) {
                 IToken subtoken = subtree[i];
                 if (subtoken is TreeToken) {
