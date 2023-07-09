@@ -13,7 +13,7 @@ public class IntMatcher : IMatcher {
                     break;
                 }
                 bool foundMatch = false;
-                string digit = ((TextToken)token).Text;
+                string digit = ((TextToken)token).GetText();
                 if (digit == "-" && !anyMatch) {
                     foundMatch = true;
                 } else if ("1234567890".Contains(digit)) {

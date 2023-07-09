@@ -19,7 +19,7 @@ public class SymbolMatcher : IMatcher {
                 IToken token = tokens[j];
                 if (!(token is TextToken)) break;
                 replaced.Add(token);
-                char chr = ((TextToken)token).Text[0];
+                char chr = ((TextToken)token).GetText()[0];
                 for (int l = 0; l < possibleSymbols.Count; l++) {
                     string symbol = possibleSymbols[l];
                     if (symbol[k] != chr) {

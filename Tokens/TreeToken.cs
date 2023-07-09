@@ -3,9 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class TreeToken : IToken, IEnumerable<IToken> {
-    public List<IToken> tokens;
+    List<IToken> tokens;
     
     public TreeToken(List<IToken> tokens) {
+        this.tokens = tokens;
+    }
+
+    public List<IToken> GetTokens() {
+        return tokens;
+    }
+
+    public void SetTokens(List<IToken> tokens) {
         this.tokens = tokens;
     }
 
@@ -77,7 +85,7 @@ public class TreeToken : IToken, IEnumerable<IToken> {
             bool whitespaceHere = false;
             if (token is TreeToken 
                 || (token is TextToken && 
-                ((TextToken)token).Text == "\n")
+                ((TextToken)token).GetText() == "\n")
                 || Utils.IsInstance(token, typeof(Unit<>))) {
                 whitespace = true;
                 whitespaceHere = true;

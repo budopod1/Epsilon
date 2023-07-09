@@ -7,4 +7,19 @@ public class FunctionHolder : Holder {
     public override TreeToken Copy(List<IToken> tokens) {
         return (TreeToken)new FunctionHolder(tokens);
     }
+
+    public FuncTemplate GetTemplate() {
+        if (this.Count < 2) return null;
+        IToken token = this[0];
+        if (!(token is FuncTemplate)) return null;
+        return (FuncTemplate)token;
+    }
+
+    public void SetTemplate(FuncTemplate template) {
+        if (this.Count < 2)
+            throw new InvalidOperationException(
+                "FuncHolder does not have template already set"
+            );
+        this[0] = template;
+    }
 }

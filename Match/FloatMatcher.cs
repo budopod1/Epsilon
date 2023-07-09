@@ -13,7 +13,7 @@ public class FloatMatcher : IMatcher {
                 if (!(token is TextToken)) {
                     break;
                 }
-                string digit = ((TextToken)token).Text;
+                string digit = ((TextToken)token).GetText();
                 bool foundMatch = false;
                 if (digit == "-" && !anyMatch) {
                     foundMatch = true;

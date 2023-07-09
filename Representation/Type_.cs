@@ -7,6 +7,8 @@ public class Type_ {
         "Void",
         "Bool",
         "Byte",
+        // https://en.wikipedia.org/wiki/Set_(mathematics)#Special
+        // _sets_of_numbers_in_mathematics
         "W",
         "Z",
         "Q",
@@ -61,8 +63,6 @@ public enum Primitive {
     Void,
     Bool,
     Byte,
-    // https://en.wikipedia.org/wiki/Set_(mathematics)#Special
-    // _sets_of_numbers_in_mathematics
     W, // unsigned integers
     Z, // signed integers
     Q, // floats

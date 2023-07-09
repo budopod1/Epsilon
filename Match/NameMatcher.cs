@@ -9,7 +9,7 @@ public class NameMatcher : IMatcher {
             if (!(stoken is TextToken)) {
                 continue;
             }
-            string name = ((TextToken)stoken).Text;
+            string name = ((TextToken)stoken).GetText();
             if (!Utils.NameStartChars.Contains(name)) {
                 continue;
             }
@@ -19,7 +19,7 @@ public class NameMatcher : IMatcher {
             for (j = i+1; j < tokens.Count; j++) {
                 IToken token = tokens[j];
                 if (token is TextToken) {
-                    string text = ((TextToken)token).Text;
+                    string text = ((TextToken)token).GetText();
                     
                     if (Utils.NameChars.Contains(text)) {
                         replaced.Add(token);

@@ -5,7 +5,7 @@ public class StringMatcher : IMatcher {
     public Match Match(TreeToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
-            if (!(token is TextToken) || ((TextToken)token).Text != "\"") {
+            if (!(token is TextToken) || ((TextToken)token).GetText() != "\"") {
                 continue;
             }
             
@@ -18,7 +18,7 @@ public class StringMatcher : IMatcher {
                     continue;
                 }
                 matched.Add(token);
-                string text = ((TextToken)token).Text;
+                string text = ((TextToken)token).GetText();
                 if (wasBackslash) {
                     wasBackslash = false;
                 } else {

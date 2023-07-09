@@ -70,10 +70,13 @@ public class Compiler {
         Console.WriteLine("Compiling structs...");
         program = CompileStructs(program);
         
+        // Console.WriteLine("Parsing func templates...");
+        // program = ParseFuncTemplates(program);
+        
         Console.WriteLine(program.ToString());
     }
 
-    public Program TokenizeFunctionHolders(Program program_) {
+    Program TokenizeFunctionHolders(Program program_) {
         Program program = program_;
         FunctionHolderMatcher matcher = new FunctionHolderMatcher(
             typeof(FuncTemplate), typeof(Block), typeof(FunctionHolder)
@@ -86,7 +89,7 @@ public class Compiler {
         return program;
     }
 
-    public Program TokenizeStructHolders(Program program_) {
+    Program TokenizeStructHolders(Program program_) {
         Program program = program_;
         StructHolderMatcher matcher = new StructHolderMatcher(
             typeof(Name), typeof(Block), typeof(StructHolder)
@@ -99,7 +102,7 @@ public class Compiler {
         return program;
     }
     
-    public Program TokenizeStrings(Program program_) {
+    Program TokenizeStrings(Program program_) {
         Program program = program_;
         StringMatcher matcher = new StringMatcher();
         while (true) {
@@ -117,7 +120,7 @@ public class Compiler {
         return program;
     }
     
-    public Program TokenizeFuncTemplates(Program program_) {
+    Program TokenizeFuncTemplates(Program program_) {
         Program program = program_;
         FuncTemplateMatcher matcher = new FuncTemplateMatcher(
             '#', '{', typeof(FuncTemplate)
@@ -130,7 +133,7 @@ public class Compiler {
         return program;
     }
 
-    public Program TokenizeBlocks(Program program_) {
+    Program TokenizeBlocks(Program program_) {
         Program program = program_;
         BlockMatcher matcher = new BlockMatcher(
             typeof(BracketOpen), typeof(BracketClose),
@@ -144,7 +147,7 @@ public class Compiler {
         return program;
     }
 
-    public Program TokenizeSymbols(Program program_, Dictionary<string, Type> symbols) {
+    Program TokenizeSymbols(Program program_, Dictionary<string, Type> symbols) {
         Program program = program_;
         SymbolMatcher matcher = new SymbolMatcher(symbols);
         while (true) {
@@ -155,7 +158,7 @@ public class Compiler {
         return program;
     }
     
-    public Program TokenizeFloats(Program program_) {
+    Program TokenizeFloats(Program program_) {
         Program program = program_;
         FloatMatcher matcher = new FloatMatcher();
         while (true) {
@@ -173,7 +176,7 @@ public class Compiler {
         return program;
     }
 
-    public Program TokenizeInts(Program program_) {
+    Program TokenizeInts(Program program_) {
         Program program = program_;
         IntMatcher matcher = new IntMatcher();
         while (true) {
@@ -191,7 +194,7 @@ public class Compiler {
         return program;
     }
 
-    public Program TokenizeNames(Program program_) {
+    Program TokenizeNames(Program program_) {
         Program program = program_;
         NameMatcher matcher = new NameMatcher();
         while (true) {
@@ -202,13 +205,13 @@ public class Compiler {
         return program;
     }
 
-    public Program TokenizeGenerics(Program program) {
+    Program TokenizeGenerics(Program program) {
         return (Program)PerformTreeMatching(program, new BlockMatcher(
             typeof(GenericsOpen), typeof(GenericsClose), typeof(Generics)
         ));
     }
 
-    public Program TokenizeBaseTypes_(Program program, List<string> bases) {
+    Program TokenizeBaseTypes_(Program program, List<string> bases) {
         program = (Program)program.Copy();
         foreach (IToken token in program) {
             if (token is Holder) {
@@ -226,7 +229,7 @@ public class Compiler {
         return program;
     }
     
-    public Program TokenizeTypes_(Program program) {
+    Program TokenizeTypes_(Program program) {
         program = (Program)program.Copy();
         foreach (IToken token in program) {
             if (token is Holder) {
@@ -248,7 +251,7 @@ public class Compiler {
         return program;
     }
 
-    public Program TokenizeVarDeclarations(Program program) {
+    Program TokenizeVarDeclarations(Program program) {
         program = (Program)program.Copy();
         foreach (IToken token in program) {
             if (token is Holder) {
@@ -267,7 +270,7 @@ public class Compiler {
         return program;
     }
 
-    public Program CompileStructs(Program program) {
+    Program CompileStructs(Program program) {
         return (Program)PerformMatching(
             program, new StructCompilerMatcher(
                 typeof(StructHolder), typeof(Struct), 
@@ -279,7 +282,13 @@ public class Compiler {
         );
     }
 
-    public List<string> ListBaseTypes_(Program program) {
+    /*
+    Program ParseFuncTemplates(Program program) {
+        
+    }
+    */
+
+    List<string> ListBaseTypes_(Program program) {
         List<string> types_ = new List<string>(Type_.BuiltInTypes_);
         foreach (IToken token_ in program) {
             if (token_ is StructHolder) {
@@ -294,7 +303,7 @@ public class Compiler {
         return types_;
     }
 
-    public TreeToken PerformTreeMatching(TreeToken tree, IMatcher matcher) {
+    TreeToken PerformTreeMatching(TreeToken tree, IMatcher matcher) {
         tree = tree.Copy();
         tree = PerformMatching(tree, matcher);
         bool changed = false;
@@ -318,7 +327,7 @@ public class Compiler {
         return tree;
     }
 
-    public TreeToken PerformMatching(TreeToken tree, IMatcher matcher) {
+    TreeToken PerformMatching(TreeToken tree, IMatcher matcher) {
         while (true) {
             Match match = matcher.Match(tree);
             if (match == null) break;
@@ -327,7 +336,7 @@ public class Compiler {
         return tree;
     }
 
-    public (bool, TreeToken) PerformMatchingChanged(TreeToken tree, IMatcher matcher) {
+    (bool, TreeToken) PerformMatchingChanged(TreeToken tree, IMatcher matcher) {
         bool changed = false;
         while (true) {
             Match match = matcher.Match(tree);

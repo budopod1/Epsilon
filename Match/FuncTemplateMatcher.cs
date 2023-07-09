@@ -19,7 +19,7 @@ public class FuncTemplateMatcher : IMatcher {
             if (!(stoken is TextToken)) {
                 continue;
             }
-            if (((TextToken)stoken).Text != startChar.ToString()) {
+            if (((TextToken)stoken).GetText() != startChar.ToString()) {
                 continue;
             }
             List<IToken> replaced = new List<IToken>();
@@ -29,7 +29,7 @@ public class FuncTemplateMatcher : IMatcher {
             for (j = i+1; j < tokens.Count; j++) {
                 IToken token = tokens[j];
                 if (token is TextToken) {
-                    string text = ((TextToken)token).Text;
+                    string text = ((TextToken)token).GetText();
                     
                     if (text != endMarkerChar.ToString()) {
                         replaced.Add(token);
