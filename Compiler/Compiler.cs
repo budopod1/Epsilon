@@ -67,6 +67,9 @@ public class Compiler {
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
         
+        Console.WriteLine("Compiling structs...");
+        program = CompileStructs(program);
+        
         Console.WriteLine(program.ToString());
     }
 
@@ -262,6 +265,18 @@ public class Compiler {
             }
         }
         return program;
+    }
+
+    public Program CompileStructs(Program program) {
+        return (Program)PerformMatching(
+            program, new StructCompilerMatcher(
+                typeof(StructHolder), typeof(Struct), 
+                new ListTokenParser<Field>(
+                    typeof(Comma), typeof(VarDeclaration), 
+                    (token) => new Field((VarDeclaration)token)
+                )
+            )
+        );
     }
 
     public List<string> ListBaseTypes_(Program program) {

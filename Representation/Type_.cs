@@ -10,7 +10,8 @@ public class Type_ {
         "W",
         "Z",
         "Q",
-        "Array"
+        "Array",
+        "Struct",
     };
     
     string name;
