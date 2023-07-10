@@ -8,14 +8,14 @@ public class FunctionHolder : Holder {
         return (TreeToken)new FunctionHolder(tokens);
     }
 
-    public FuncTemplate GetTemplate() {
+    public RawFuncTemplate GetRawTemplate() {
         if (this.Count < 2) return null;
         IToken token = this[0];
-        if (!(token is FuncTemplate)) return null;
-        return (FuncTemplate)token;
+        if (!(token is RawFuncTemplate)) return null;
+        return (RawFuncTemplate)token;
     }
 
-    public void SetTemplate(FuncTemplate template) {
+    public void SetTemplate(IToken template) {
         if (this.Count < 2)
             throw new InvalidOperationException(
                 "FuncHolder does not have template already set"

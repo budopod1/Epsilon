@@ -18,6 +18,9 @@ public class Compiler {
         Console.WriteLine("Tokenizing function templates...");
         program = TokenizeFuncTemplates(program);
         
+        Console.WriteLine("Tokenizing function arguments...");
+        program = TokenizeFuncArguments(program);
+        
         Console.WriteLine("Tokenizing names...");
         program = TokenizeNames(program);
         
@@ -28,21 +31,7 @@ public class Compiler {
         program = TokenizeInts(program);
         
         Console.WriteLine("Tokenizing symbols...");
-        program = TokenizeSymbols(
-            program,
-            new Dictionary<string, Type> {
-                {"=", typeof(Equal)},
-                {" ", null},
-                {"\n", null},
-                {"\t", null},
-                {"{", typeof(BracketOpen)},
-                {"}", typeof(BracketClose)},
-                {"<", typeof(GenericsOpen)},
-                {">", typeof(GenericsClose)},
-                {":", typeof(Colon)},
-                {",", typeof(Comma)},
-            }
-        );
+        program = TokenizeSymbols(program);
         
         Console.WriteLine("Tokenizing blocks...");
         program = TokenizeBlocks(program);
@@ -64,14 +53,14 @@ public class Compiler {
         Console.WriteLine("Tokenizing types_...");
         program = TokenizeTypes_(program);
         
+        Console.WriteLine("Tokenizing function argument types_...");
+        program = TokenizeFuncArgumentTypes_(program, baseTypes);
+        
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
         
         Console.WriteLine("Compiling structs...");
         program = CompileStructs(program);
-        
-        // Console.WriteLine("Parsing func templates...");
-        // program = ParseFuncTemplates(program);
         
         Console.WriteLine(program.ToString());
     }
@@ -79,12 +68,76 @@ public class Compiler {
     Program TokenizeFunctionHolders(Program program_) {
         Program program = program_;
         FunctionHolderMatcher matcher = new FunctionHolderMatcher(
-            typeof(FuncTemplate), typeof(Block), typeof(FunctionHolder)
+            typeof(RawFuncTemplate), typeof(Block), typeof(FunctionHolder)
         );
         while (true) {
             Match match = matcher.Match(program);
             if (match == null) break;
             program = (Program)match.Replace(program);
+        }
+        return program;
+    }
+
+    Program TokenizeFuncArguments(Program program_) {
+        Program program = (Program)program_.Copy();
+        IMatcher matcher = new FunctionArgumentMatcher(
+            "<", ">", typeof(RawFunctionArgument)
+        );
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is RawFuncTemplate)) continue;
+            RawFuncTemplate template = ((RawFuncTemplate)token);
+            while (true) { 
+                Match match = matcher.Match(template);
+                if (match == null) break;
+                template = (RawFuncTemplate)match.Replace(template);
+            }
+            program[i] = template;
+        }
+        return program;
+    }
+
+    Program TokenizeFuncArgumentTypes_(Program program_, List<string> bases) {
+        Program program = (Program)program_.Copy();
+        IMatcher symbolMatcher = new SymbolMatcher(
+            new Dictionary<string, Type> {
+                {"<", typeof(GenericsOpen)},
+                {">", typeof(GenericsClose)}
+            }
+        );
+        IMatcher nameMatcher = new NameMatcher();
+        IMatcher baseMatcher = new UnitSwitcherMatcher<string>(
+            typeof(Name), bases, typeof(BaseTokenType_)
+        );
+        IMatcher genericMatcher = new BlockMatcher(
+            typeof(GenericsOpen), typeof(GenericsClose), typeof(Generics)
+        );
+        IMatcher type_Matcher = new Type_Matcher(
+            typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
+            new ListTokenParser<Type_>(
+                typeof(Comma), typeof(Type_Token), 
+                (IToken generic) => ((Type_Token)generic).GetValue()
+            )
+        );
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is FunctionHolder)) continue;
+            FunctionHolder funcHolder = ((FunctionHolder)token);
+            RawFuncTemplate template = funcHolder.GetRawTemplate();
+            Console.WriteLine(template.ToString());
+            for (int j = 0; j < template.Count; j++) {
+                IToken subtoken = template[j];
+                if (!(subtoken is RawFunctionArgument)) continue;
+                TreeToken argument = ((TreeToken)subtoken);
+                Console.WriteLine(argument.ToString());
+                argument = PerformMatching(argument, symbolMatcher);
+                argument = PerformMatching(argument, nameMatcher);
+                argument = PerformMatching(argument, baseMatcher);
+                argument = PerformTreeMatching(argument, genericMatcher);
+                argument = PerformTreeMatching(argument, type_Matcher);
+                Console.WriteLine(argument.ToString());
+                template[j] = argument;
+            }
         }
         return program;
     }
@@ -95,6 +148,8 @@ public class Compiler {
             typeof(Name), typeof(Block), typeof(StructHolder)
         );
         while (true) {
+            // TODO: replace this block and similar ones in other 
+            // functions with PerformMatching()
             Match match = matcher.Match(program);
             if (match == null) break;
             program = (Program)match.Replace(program);
@@ -122,8 +177,8 @@ public class Compiler {
     
     Program TokenizeFuncTemplates(Program program_) {
         Program program = program_;
-        FuncTemplateMatcher matcher = new FuncTemplateMatcher(
-            '#', '{', typeof(FuncTemplate)
+        RawFuncTemplateMatcher matcher = new RawFuncTemplateMatcher(
+            '#', '{', typeof(RawFuncTemplate)
         );
         while (true) {
             Match match = matcher.Match(program);
@@ -147,9 +202,22 @@ public class Compiler {
         return program;
     }
 
-    Program TokenizeSymbols(Program program_, Dictionary<string, Type> symbols) {
+    Program TokenizeSymbols(Program program_) {
         Program program = program_;
-        SymbolMatcher matcher = new SymbolMatcher(symbols);
+        SymbolMatcher matcher = new SymbolMatcher(
+            new Dictionary<string, Type> {
+                {"=", typeof(Equal)},
+                {" ", null},
+                {"\n", null},
+                {"\t", null},
+                {"{", typeof(BracketOpen)},
+                {"}", typeof(BracketClose)},
+                {"<", typeof(GenericsOpen)},
+                {">", typeof(GenericsClose)},
+                {":", typeof(Colon)},
+                {",", typeof(Comma)},
+            }
+        );
         while (true) {
             Match match = matcher.Match(program);
             if (match == null) break;
@@ -281,12 +349,6 @@ public class Compiler {
             )
         );
     }
-
-    /*
-    Program ParseFuncTemplates(Program program) {
-        
-    }
-    */
 
     List<string> ListBaseTypes_(Program program) {
         List<string> types_ = new List<string>(Type_.BuiltInTypes_);

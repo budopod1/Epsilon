@@ -3,7 +3,11 @@
     Array<Array<W>>:n
 }
 
-#r(Array<f>:val) {
+#r<Array<f>:val> {
+    
+}
+
+#example(<R: a>, <W: b>) {
     
 }
 

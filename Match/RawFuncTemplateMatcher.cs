@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-public class FuncTemplateMatcher : IMatcher {
+public class RawFuncTemplateMatcher : IMatcher {
     char startChar;
     char endMarkerChar;
     Type holderType;
     
-    public FuncTemplateMatcher(char start, char endMarker, Type holder) {
+    public RawFuncTemplateMatcher(char start, char endMarker, Type holder) {
         startChar = start;
         endMarkerChar = endMarker;
         holderType = holder;
@@ -23,9 +23,9 @@ public class FuncTemplateMatcher : IMatcher {
                 continue;
             }
             List<IToken> replaced = new List<IToken>();
+            List<IToken> replacementTokens = new List<IToken>();
             replaced.Add(stoken);
             int j;
-            string template = "";
             for (j = i+1; j < tokens.Count; j++) {
                 IToken token = tokens[j];
                 if (token is TextToken) {
@@ -33,14 +33,17 @@ public class FuncTemplateMatcher : IMatcher {
                     
                     if (text != endMarkerChar.ToString()) {
                         replaced.Add(token);
-                        template += text;
+                        if (text.Trim().Length > 0) {
+                            replacementTokens.Add(token);
+                        }
                         continue;
                     }
                 }
                 break;
             }
             List<IToken> replacement = new List<IToken>();
-            replacement.Add(new FuncTemplate(template.Trim()));
+            // replace with reflection?
+            replacement.Add(new RawFuncTemplate(replacementTokens)); 
             return new Match(i, j-1, replacement, replaced);
         }
         return null;
