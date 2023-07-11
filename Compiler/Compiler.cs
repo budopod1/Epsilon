@@ -124,18 +124,15 @@ public class Compiler {
             if (!(token is FunctionHolder)) continue;
             FunctionHolder funcHolder = ((FunctionHolder)token);
             RawFuncTemplate template = funcHolder.GetRawTemplate();
-            Console.WriteLine(template.ToString());
             for (int j = 0; j < template.Count; j++) {
                 IToken subtoken = template[j];
                 if (!(subtoken is RawFunctionArgument)) continue;
                 TreeToken argument = ((TreeToken)subtoken);
-                Console.WriteLine(argument.ToString());
                 argument = PerformMatching(argument, symbolMatcher);
                 argument = PerformMatching(argument, nameMatcher);
                 argument = PerformMatching(argument, baseMatcher);
                 argument = PerformTreeMatching(argument, genericMatcher);
                 argument = PerformTreeMatching(argument, type_Matcher);
-                Console.WriteLine(argument.ToString());
                 template[j] = argument;
             }
         }
