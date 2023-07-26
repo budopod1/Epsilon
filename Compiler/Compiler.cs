@@ -42,10 +42,11 @@ public class Compiler {
         Console.WriteLine("Tokenizing structs...");
         program = TokenizeStructHolders(program);
 
-        List<string> baseTypes = ListBaseTypes_(program);
+        Console.WriteLine("Computing base types_...");
+        ComputeBaseTypes_(program);
         
         Console.WriteLine("Tokenizing base types...");
-        program = TokenizeBaseTypes_(program, baseTypes);
+        program = TokenizeBaseTypes_(program);
         
         Console.WriteLine("Tokenizing generics...");
         program = TokenizeGenerics(program);
@@ -54,15 +55,88 @@ public class Compiler {
         program = TokenizeTypes_(program);
         
         Console.WriteLine("Tokenizing function argument types_...");
-        program = TokenizeFuncArgumentTypes_(program, baseTypes);
+        program = TokenizeFuncArgumentTypes_(program);
         
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
         
         Console.WriteLine("Compiling structs...");
         program = CompileStructs(program);
+
+        Console.WriteLine("Tokenize template features...");
+        program = TokenizeTemplateFeatures(program);
+        
+        Console.WriteLine("Parsing template features...");
+        program = ParseFunctionTemplates(program);
         
         Console.WriteLine(program.ToString());
+    }
+
+    Program TokenizeTemplateFeatures(Program program_) {
+        Program program = ((Program)program_.Copy());
+        IMatcher symbolMatcher = new SymbolMatcher(new Dictionary<string, Type> {
+            {" ", null}, {"\n", null}
+        });
+        IMatcher nameMatcher = new NameMatcher();
+        IMatcher argumentConverterMatcher = new ArgumentConverterMatcher(
+            typeof(RawFunctionArgument), typeof(Name), typeof(Type_Token),
+            typeof(FunctionArgumentToken)
+        );
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is FunctionHolder)) continue;
+            FunctionHolder holder = ((FunctionHolder)token);
+            TreeToken template = holder.GetRawTemplate();
+            template = PerformMatching(template, symbolMatcher);
+            template = PerformMatching(template, nameMatcher);
+            template = PerformMatching(template, argumentConverterMatcher);
+            holder.SetTemplate(template);
+        }
+        return program;
+    }
+
+    Program ParseFunctionTemplates(Program program_) {
+        Program program = ((Program)program_.Copy());
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is FunctionHolder)) continue;
+            FunctionHolder holder = ((FunctionHolder)token);
+            RawFuncTemplate rawTemplate = holder.GetRawTemplate();
+            List<IPatternSegment> segments = new List<IPatternSegment>();
+            List<int> slots = new List<int>();
+            int j = -1;
+            foreach (IToken subtoken in rawTemplate) {
+                j++;
+                Type tokenType = subtoken.GetType();
+                IPatternSegment segment = null;
+                if (subtoken is TextToken) {
+                    segment = new TextPatternSegment(
+                        ((TextToken)subtoken).GetText()
+                    );
+                } else if (subtoken is Unit<string>) {
+                    segment = new UnitPatternSegment<string>(
+                        tokenType, ((Unit<string>)subtoken).GetValue()
+                    );
+                } else if (subtoken is FunctionArgumentToken) {
+                    segment = new Type_PatternSegment(
+                        ((FunctionArgumentToken)subtoken).GetType_()
+                    );
+                    slots.Add(j);
+                }
+                if (segment == null) {
+                    throw new InvalidOperationException(
+                        $"Segment of type {tokenType} cannot be part of a func template"
+                    );
+                }
+                segments.Add(segment);
+            }
+            holder.SetTemplate(new FuncTemplate(
+                new ConfigurablePatternExtractor<List<IToken>>(
+                    segments, new SlotPatternProcessor(slots)
+                )
+            ));
+        }
+        return program;
     }
 
     Program TokenizeFunctionHolders(Program program_) {
@@ -97,7 +171,7 @@ public class Compiler {
         return program;
     }
 
-    Program TokenizeFuncArgumentTypes_(Program program_, List<string> bases) {
+    Program TokenizeFuncArgumentTypes_(Program program_) {
         Program program = (Program)program_.Copy();
         IMatcher symbolMatcher = new SymbolMatcher(
             new Dictionary<string, Type> {
@@ -107,7 +181,7 @@ public class Compiler {
         );
         IMatcher nameMatcher = new NameMatcher();
         IMatcher baseMatcher = new UnitSwitcherMatcher<string>(
-            typeof(Name), bases, typeof(BaseTokenType_)
+            typeof(Name), program.GetBaseTypes_(), typeof(BaseTokenType_)
         );
         IMatcher genericMatcher = new BlockMatcher(
             typeof(GenericsOpen), typeof(GenericsClose), typeof(Generics)
@@ -276,7 +350,7 @@ public class Compiler {
         ));
     }
 
-    Program TokenizeBaseTypes_(Program program, List<string> bases) {
+    Program TokenizeBaseTypes_(Program program) {
         program = (Program)program.Copy();
         foreach (IToken token in program) {
             if (token is Holder) {
@@ -285,7 +359,7 @@ public class Compiler {
                 if (block == null) continue;
                 TreeToken result = PerformTreeMatching(block, 
                     new UnitSwitcherMatcher<string>(
-                        typeof(Name), bases, typeof(BaseTokenType_)
+                        typeof(Name), program.GetBaseTypes_(), typeof(BaseTokenType_)
                     )
                 );
                 holder.SetBlock((Block)result);
@@ -347,7 +421,7 @@ public class Compiler {
         );
     }
 
-    List<string> ListBaseTypes_(Program program) {
+    void ComputeBaseTypes_(Program program) {
         List<string> types_ = new List<string>(Type_.BuiltInTypes_);
         foreach (IToken token_ in program) {
             if (token_ is StructHolder) {
@@ -359,7 +433,7 @@ public class Compiler {
                 }
             }
         }
-        return types_;
+        program.SetBaseTypes_(types_);
     }
 
     TreeToken PerformTreeMatching(TreeToken tree, IMatcher matcher) {

@@ -1,13 +1,14 @@
 #h {
     f:v
     Array<Array<W>>:n
+    v = 3
 }
 
 #r<Array<f>:val> {
     
 }
 
-#example(<R: a>, <W: b>) {
+#example(<Q: a>, <W: b>) {
     
 }
 

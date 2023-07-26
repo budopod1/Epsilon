@@ -2,19 +2,31 @@ using System;
 using System.Collections.Generic;
 
 public class Type_ {
+// https://en.wikipedia.org/wiki/Set_(mathematics)#Special_sets_of_numbers_in_mathematics
     public static List<string> BuiltInTypes_ = new List<string> {
         "Unkown",
         "Void",
         "Bool",
         "Byte",
-        // https://en.wikipedia.org/wiki/Set_(mathematics)#Special
-        // _sets_of_numbers_in_mathematics
-        "W",
+        "W", // whole numbers
         "Z",
         "Q",
         "Array",
         "Struct",
     };
+
+    public static List<KeyValuePair<string, string>> BuiltInTypes_Decent = 
+        new List<KeyValuePair<string, string>> {
+            new KeyValuePair<string, string>("Unkown", null),
+            new KeyValuePair<string, string>("Void", null),
+            new KeyValuePair<string, string>("Unkown", null),
+            new KeyValuePair<string, string>("Bool", null),
+            new KeyValuePair<string, string>("Byte", "W"),
+            new KeyValuePair<string, string>("W", "Z"),
+            new KeyValuePair<string, string>("Z", "Q"),
+            new KeyValuePair<string, string>("Array", null),
+            new KeyValuePair<string, string>("Struct", null),
+        };
     
     string name;
     List<Type_> generics;
