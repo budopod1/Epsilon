@@ -15,6 +15,13 @@ public class FunctionHolder : Holder {
         return (RawFuncTemplate)token;
     }
 
+    public FuncTemplate GetTemplate() {
+        if (this.Count < 2) return null;
+        IToken token = this[0];
+        if (!(token is FuncTemplate)) return null;
+        return (FuncTemplate)token;
+    }
+
     public void SetTemplate(IToken template) {
         if (this.Count < 2)
             throw new InvalidOperationException(

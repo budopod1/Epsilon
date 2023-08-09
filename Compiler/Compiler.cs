@@ -60,16 +60,51 @@ public class Compiler {
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
         
-        Console.WriteLine("Compiling structs...");
-        program = CompileStructs(program);
+        Console.WriteLine("Objectifying structs...");
+        program = ObjectifyingStructs(program);
 
         Console.WriteLine("Tokenize template features...");
         program = TokenizeTemplateFeatures(program);
         
-        Console.WriteLine("Parsing template features...");
+        Console.WriteLine("Parsing templates...");
         program = ParseFunctionTemplates(program);
         
+        Console.WriteLine("Objectifying functions...");
+        program = ObjectifyingFunctions(program);
+        
+        Console.WriteLine("Parsing function code...");
+        program = ParseFunctionCode(program);
+        
         Console.WriteLine(program.ToString());
+    }
+
+    Program ParseFunctionCode(Program program_) {
+        Program program = ((Program)program_.Copy());
+        List<IMatcher> rules = new List<IMatcher> {
+            
+        };
+        foreach (IToken token in program) {
+            if (token is Function) {
+                Block block = ((Function)token).GetBlock();
+                TEMP(block);
+            }
+        }
+        return program;
+    }
+
+    IToken TEMP(IParentToken parent, IMatcher rule) {
+        for (int i = 0; i < parent.Count; i++) {
+            IToken sub = parent[i];
+            if (sub is IParentToken) {
+                
+            }
+        }
+    }
+
+    Program ObjectifyingFunctions(Program program) {
+        return (Program)PerformMatching(program, new FunctionObjectifyerMatcher(
+            typeof(Function)
+        ));
     }
 
     Program TokenizeTemplateFeatures(Program program_) {
@@ -103,6 +138,7 @@ public class Compiler {
             FunctionHolder holder = ((FunctionHolder)token);
             RawFuncTemplate rawTemplate = holder.GetRawTemplate();
             List<IPatternSegment> segments = new List<IPatternSegment>();
+            List<FunctionArgumentToken> arguments = new List<FunctionArgumentToken>();
             List<int> slots = new List<int>();
             int j = -1;
             foreach (IToken subtoken in rawTemplate) {
@@ -118,8 +154,10 @@ public class Compiler {
                         tokenType, ((Unit<string>)subtoken).GetValue()
                     );
                 } else if (subtoken is FunctionArgumentToken) {
+                    FunctionArgumentToken argument = ((FunctionArgumentToken)subtoken);
+                    arguments.Add(argument);
                     segment = new Type_PatternSegment(
-                        ((FunctionArgumentToken)subtoken).GetType_()
+                        argument.GetType_()
                     );
                     slots.Add(j);
                 }
@@ -133,7 +171,8 @@ public class Compiler {
             holder.SetTemplate(new FuncTemplate(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(slots)
-                )
+                ),
+                arguments
             ));
         }
         return program;
@@ -409,9 +448,9 @@ public class Compiler {
         return program;
     }
 
-    Program CompileStructs(Program program) {
+    Program ObjectifyingStructs(Program program) {
         return (Program)PerformMatching(
-            program, new StructCompilerMatcher(
+            program, new StructObjectifyerMatcher(
                 typeof(StructHolder), typeof(Struct), 
                 new ListTokenParser<Field>(
                     typeof(Comma), typeof(VarDeclaration), 

@@ -1,5 +1,5 @@
 using System;
 
 public interface IMatcher {
-    Match Match(TreeToken token);
+    Match Match(IParentToken token);
 }

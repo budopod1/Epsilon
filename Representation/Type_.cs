@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class Type_ {
 // https://en.wikipedia.org/wiki/Set_(mathematics)#Special_sets_of_numbers_in_mathematics
     public static List<string> BuiltInTypes_ = new List<string> {
-        "Unkown",
+        "Unknown",
         "Void",
         "Bool",
         "Byte",
@@ -15,9 +15,9 @@ public class Type_ {
         "Struct",
     };
 
-    public static List<KeyValuePair<string, string>> BuiltInTypes_Decent = 
+    public static List<KeyValuePair<string, string>> BuiltInTypes_Descent = 
         new List<KeyValuePair<string, string>> {
-            new KeyValuePair<string, string>("Unkown", null),
+            new KeyValuePair<string, string>("Unknown", null),
             new KeyValuePair<string, string>("Void", null),
             new KeyValuePair<string, string>("Unkown", null),
             new KeyValuePair<string, string>("Bool", null),
@@ -27,6 +27,14 @@ public class Type_ {
             new KeyValuePair<string, string>("Array", null),
             new KeyValuePair<string, string>("Struct", null),
         };
+
+    public static Type_ Unknown() {
+        return new Type_("Unknown");
+    }
+
+    public static Type_ Void() {
+        return new Type_("Void");
+    }
     
     string name;
     List<Type_> generics;

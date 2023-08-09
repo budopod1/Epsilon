@@ -1,0 +1,4 @@
+* refactor all matchers into patternmatchers with custom pattern processors
+* refactor methods in Compiler.cs to use PerformMatching
+* remove all Copy()ing because it's shallow and therefore pointless
+* used IParentToken more often in matchers for iterating over children

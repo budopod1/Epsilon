@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class TreeToken : IToken, IEnumerable<IToken> {
+public class TreeToken : IMultiLineToken, IParentToken, IEnumerable<IToken> {
     List<IToken> tokens;
     
     public TreeToken(List<IToken> tokens) {
@@ -82,16 +82,12 @@ public class TreeToken : IToken, IEnumerable<IToken> {
         string result = "";
         bool whitespace = false;
         foreach (IToken token in this) {
-            bool whitespaceHere = false;
-            if (token is TreeToken 
+            result += token.ToString();
+            if (token is IMultiLineToken 
                 || (token is TextToken && 
                 ((TextToken)token).GetText() == "\n")
                 || Utils.IsInstance(token, typeof(Unit<>))) {
                 whitespace = true;
-                whitespaceHere = true;
-            }
-            result += token.ToString();
-            if (whitespaceHere) {
                 result += "\n";
             }
         }

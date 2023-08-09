@@ -3,399 +3,6 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Collections;
-public interface IToken {}
-public class TokenList : IEnumerator<IToken> {
-    List<IToken> tokens;
-    int i = -1;
-    
-    public TokenList(List<IToken> tokens) {
-        this.tokens = tokens;
-    }
-    public bool MoveNext() {
-        i++;
-        return (i < tokens.Count);
-    }
-    public void Reset() {
-        i = -1;
-    }
-    public IToken Current {
-        get {
-            return this.tokens[i];
-        }
-    }
-    public void Dispose() {}
-    object IEnumerator.Current {
-        get {
-            return this.Current;
-        }
-    }
-}
-public class Equal : Symbolic {}
-public class Symbolic : IToken {
-    public override string ToString() {
-        return "(" + this.GetType().Name + ")";
-    }
-}
-public class BracketOpen : Symbolic {}
-public class BracketClose : Symbolic {}
-public class Block : TreeToken {
-    public Block(List<IToken> tokens) : base(tokens) {}
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new Block(tokens);
-    }
-}
-public class Colon : Symbolic {}
-public class Generics : TreeToken {
-    public Generics(List<IToken> tokens) : base(tokens) {}
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new Generics(tokens);
-    }
-}
-public class GenericsClose : Symbolic {}
-public class GenericsOpen : Symbolic {}
-public class StructHolder : Holder {
-    public StructHolder(List<IToken> tokens) : base(tokens) {}
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new StructHolder(tokens);
-    }
-}
-public class Unit<T> : IToken {
-    T value;
-    
-    public Unit(T value) {
-        this.value = value;
-    }
-    public T GetValue() {
-        return value;
-    }
-    public override string ToString() {
-        return Utils.WrapName(this.GetType().Name, this.value.ToString());
-    }
-}
-public class Name : Unit<string> {
-    public Name(string name) : base(name) {}
-}
-public class ConstantValue : Unit<int> {
-    public ConstantValue(int constant) : base(constant) {}
-}
-public class Holder : TreeToken {
-    public Holder(List<IToken> tokens) : base(tokens) {}
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new Holder(tokens);
-    }
-    public Block GetBlock() {
-        if (this.Count < 2) return null;
-        IToken token = this[1];
-        if (!(token is Block)) return null;
-        return (Block)token;
-    }
-    public void SetBlock(Block block) {
-        if (this.Count < 2)
-            throw new InvalidOperationException("Holder does not have block already set");
-        this[1] = block;
-    }
-}
-public class BaseTokenType_ : Unit<string> {
-    public BaseTokenType_(string type_) : base(type_) {}
-}
-public class Comma : Symbolic {}
-public class Type_Token : Unit<Type_> {
-    public Type_Token(Type_ type_) : base(type_) {}
-}
-public class VarDeclaration : TreeToken {
-    public VarDeclaration(List<IToken> tokens) : base(tokens) {}
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new VarDeclaration(tokens);
-    }
-    public Type_ GetType_() {
-        if (this.Count < 2) return null;
-        IToken type_token = this[0];
-        if (!(type_token is Type_Token)) return null;
-        return ((Type_Token)type_token).GetValue();
-    }
-    public Name GetName() {
-        if (this.Count < 2) return null;
-        IToken name = this[1];
-        if (!(name is Name)) return null;
-        return (Name)name;
-    }
-}
-public class Struct : IToken {
-    string name;
-    List<Field> fields;
-    
-    public Struct(string name, List<Field> fields) {
-        this.name = name;
-        this.fields = fields;
-    }
-    public override string ToString() {
-        string result = $"Name: {name}";
-        foreach (Field field in fields) {
-            result += "\n" + field.ToString();
-        }
-        return Utils.WrapName(
-            "Struct", 
-            Utils.WrapNewline(Utils.Indent(result))
-        );
-    }
-}
-public class TextToken : IToken {
-    string text;
-    
-    public TextToken(string text) {
-        this.text = text;
-    }
-    public string GetText() {
-        return text;
-    }
-    public void SetText(string text) {
-        this.text = text;
-    }
-    public override string ToString() {
-        return this.text;
-    }
-}
-public class TreeToken : IToken, IEnumerable<IToken> {
-    List<IToken> tokens;
-    
-    public TreeToken(List<IToken> tokens) {
-        this.tokens = tokens;
-    }
-    public List<IToken> GetTokens() {
-        return tokens;
-    }
-    public void SetTokens(List<IToken> tokens) {
-        this.tokens = tokens;
-    }
-    public void Add(IToken token) {
-        this.tokens.Add(token);
-    }
-    public IToken this[int i] {
-        get {
-            return this.tokens[i];
-        }
-        set {
-            this.tokens[i] = value;
-        }
-    }
-    public virtual TreeToken Copy(List<IToken> tokens) {
-        return new TreeToken(tokens);
-    }
-    public TreeToken Copy() {
-        return Copy(new List<IToken>(this.tokens));
-    }
-    public int Count {
-        get {
-            return this.tokens.Count;
-        }
-    }
-    public IEnumerator<IToken> GetEnumerator() {
-        return new TokenList(this.tokens);
-    }
-    
-    IEnumerator IEnumerable.GetEnumerator() {
-        return this.GetEnumerator();
-    }
-    public IEnumerable<IToken> Traverse() {
-        yield return this;
-        foreach (IToken token in this) {
-            if (token is TreeToken) {
-                foreach (IToken subToken in ((TreeToken)token).Traverse()) {
-                    yield return subToken;
-                }
-            } else {
-                yield return token;
-            }
-        }
-    }
-    public IEnumerable<(int, TreeToken)> IndexTraverse() {
-        for (int i = 0; i < this.Count; i++) {
-            yield return (i, this);
-            IToken token = this[i];
-            if (token is TreeToken) {
-                foreach ((int, TreeToken) sub in ((TreeToken)token).IndexTraverse()) {
-                    yield return sub;
-                }
-            }
-        }
-    }
-    public override string ToString() {
-        string result = "";
-        bool whitespace = false;
-        foreach (IToken token in this) {
-            bool whitespaceHere = false;
-            if (token is TreeToken 
-                || (token is TextToken && 
-                ((TextToken)token).GetText() == "\n")
-                || Utils.IsInstance(token, typeof(Unit<>))) {
-                whitespace = true;
-                whitespaceHere = true;
-            }
-            result += token.ToString();
-            if (whitespaceHere) {
-                result += "\n";
-            }
-        }
-        result = result.Trim();
-        if (whitespace) {
-            result = Utils.Indent(result);
-            result = Utils.WrapNewline(result);
-        }
-        return Utils.WrapName(this.GetType().Name, result);
-    }
-}
-public class FunctionHolder : Holder {
-    public FunctionHolder(List<IToken> tokens) : base(tokens) {}
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new FunctionHolder(tokens);
-    }
-    public RawFuncTemplate GetRawTemplate() {
-        if (this.Count < 2) return null;
-        IToken token = this[0];
-        if (!(token is RawFuncTemplate)) return null;
-        return (RawFuncTemplate)token;
-    }
-    public void SetTemplate(IToken template) {
-        if (this.Count < 2)
-            throw new InvalidOperationException(
-                "FuncHolder does not have template already set"
-            );
-        this[0] = template;
-    }
-}
-public class RawFuncTemplate : TreeToken {
-    public RawFuncTemplate(List<IToken> tokens) : base(tokens) {}
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new RawFuncTemplate(tokens);
-    }
-}
-public class RawFunctionArgument : TreeToken {
-    public RawFunctionArgument(List<IToken> tokens) : base(tokens) {}
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new RawFunctionArgument(tokens);
-    }
-}
-public class Program : TreeToken { 
-    Constants constants;
-    List<string> baseTypes_ = null;
-    
-    public Program(List<IToken> tokens,
-                    Constants constants) : base(tokens) {
-        this.constants = constants;
-    }
-    
-    public Program(List<IToken> tokens, Constants constants,
-                   List<string> baseTypes_) : base(tokens) {
-        this.constants = constants;
-        this.baseTypes_ = baseTypes_;
-    }
-    public Constants GetConstants() {
-        return constants;
-    }
-    public List<string> GetBaseTypes_() {
-        return baseTypes_;
-    }
-    public void SetBaseTypes_(List<string> baseTypes_) {
-        this.baseTypes_ = baseTypes_;
-    }
-    
-    public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new Program(tokens, constants, baseTypes_);
-    }
-}
-public interface IValueToken : IToken {
-    Type_ GetType_();
-}
-public class FunctionArgumentToken : IToken {
-    string name;
-    Type_ type_;
-    
-    public FunctionArgumentToken(string name, Type_ type_) {
-        this.name = name;
-        this.type_ = type_;
-    }
-    public string GetName() {
-        return name;
-    }
-    public Type_ GetType_() {
-        return type_;
-    }
-    public override string ToString() {
-        return Utils.WrapName(this.GetType().Name, type_.ToString() + ":" + name);
-    }
-}
-public class FunctionToken : IToken {
-    PatternExtractor<List<IToken>> pattern;
-    List<FunctionArgumentToken> arguments;
-    Block block;
-    
-    public FunctionToken(PatternExtractor<List<IToken>> pattern, 
-                         List<FunctionArgumentToken> arguments, Block block) {
-        this.pattern = pattern;
-        this.arguments = arguments;
-        this.block = block;
-    }
-    public PatternExtractor<List<IToken>> GetPattern() {
-        return pattern;
-    }
-    public List<FunctionArgumentToken> GetArguments() {
-        return arguments;
-    }
-    public Block GetBlock() {
-        return block;
-    }
-    public void SetBlock(Block block) {
-        this.block = block;
-    }
-    public override string ToString() {
-        string title = Utils.WrapName(
-            this.GetType().Name, String.Join(", ", arguments), "<", ">"
-        );
-        return Utils.WrapName(title, block.ToString());
-    }
-}
-public class FuncTemplate : Unit<PatternExtractor<List<IToken>>> {
-    public FuncTemplate(PatternExtractor<List<IToken>> pattern) : base(pattern) {}
-}
-public class Utils {
-    public static string Tab = "    ";
-    public static string Numbers = "1234567890";
-    public static string Uppercase = "QWERTYUIOPASDFGHJKLZXCVBNM";
-    public static string Lowercase = "qwertyuiopasdfghjklzxcvbnm";
-    public static string NameStartChars = Uppercase + Lowercase + "_";
-    public static string NameChars = Uppercase + Lowercase + Numbers + "_";
-    
-    public static string WrapName(string name, string content, 
-                                  string wrapStart="(", string wrapEnd=")") {
-        return name + wrapStart + content + wrapEnd;
-    }
-    public static string WrapNewline(string text) {
-        return "\n" + text + "\n";
-    }
-    public static string Indent(string text) {
-        return Utils.Tab + text.Replace("\n", "\n" + Utils.Tab);
-    }
-    public static bool IsInstance(Type a, Type b) {
-        if (a.IsGenericType)
-            a = a.GetGenericTypeDefinition();
-        if (b.IsGenericType)
-            b = b.GetGenericTypeDefinition();
-        if (a.IsSubclassOf(b)) return true;
-        return a == b;
-    }
-    
-    public static bool IsInstance(Object a, Type b) {
-        return Utils.IsInstance(a.GetType(), b);
-    }
-}
 public class ListTokenParser<T> {
     enum ParseState {
         ExpectItem,
@@ -434,6 +41,37 @@ public class ListTokenParser<T> {
             }
         }
         return list;
+    }
+}
+public class Utils {
+    public static string Tab = "    ";
+    public static string Numbers = "1234567890";
+    public static string Uppercase = "QWERTYUIOPASDFGHJKLZXCVBNM";
+    public static string Lowercase = "qwertyuiopasdfghjklzxcvbnm";
+    public static string NameStartChars = Uppercase + Lowercase + "_";
+    public static string NameChars = Uppercase + Lowercase + Numbers + "_";
+    
+    public static string WrapName(string name, string content, 
+                                  string wrapStart="(", string wrapEnd=")") {
+        return name + wrapStart + content + wrapEnd;
+    }
+    public static string WrapNewline(string text) {
+        return "\n" + text + "\n";
+    }
+    public static string Indent(string text) {
+        return Utils.Tab + text.Replace("\n", "\n" + Utils.Tab);
+    }
+    public static bool IsInstance(Type a, Type b) {
+        if (a.IsGenericType)
+            a = a.GetGenericTypeDefinition();
+        if (b.IsGenericType)
+            b = b.GetGenericTypeDefinition();
+        if (a.IsSubclassOf(b)) return true;
+        return a == b;
+    }
+    
+    public static bool IsInstance(Object a, Type b) {
+        return Utils.IsInstance(a.GetType(), b);
     }
 }
 public class Compiler {
@@ -533,6 +171,7 @@ public class Compiler {
             FunctionHolder holder = ((FunctionHolder)token);
             RawFuncTemplate rawTemplate = holder.GetRawTemplate();
             List<IPatternSegment> segments = new List<IPatternSegment>();
+            List<FunctionArgumentToken> arguments = new List<FunctionArgumentToken>();
             List<int> slots = new List<int>();
             int j = -1;
             foreach (IToken subtoken in rawTemplate) {
@@ -548,8 +187,10 @@ public class Compiler {
                         tokenType, ((Unit<string>)subtoken).GetValue()
                     );
                 } else if (subtoken is FunctionArgumentToken) {
+                    FunctionArgumentToken argument = ((FunctionArgumentToken)subtoken);
+                    arguments.Add(argument);
                     segment = new Type_PatternSegment(
-                        ((FunctionArgumentToken)subtoken).GetType_()
+                        argument.GetType_()
                     );
                     slots.Add(j);
                 }
@@ -563,7 +204,8 @@ public class Compiler {
             holder.SetTemplate(new FuncTemplate(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(slots)
-                )
+                ),
+                arguments
             ));
         }
         return program;
@@ -893,54 +535,49 @@ public class Compiler {
         return (changed, tree);
     }
 }
-public class Match {
-    int start;
-    int end;
-    List<IToken> replacement;
-    List<IToken> matched;
+public class ArgumentConverterMatcher : IMatcher {
+    Type oldArgument;
+    Type nameType;
+    Type type_TokenType;
+    Type newArgument;
     
-    public Match(int start, int end, List<IToken> replacement,
-                 List<IToken> matched) {
-        this.start = start;
-        this.end = end;
-        this.replacement = replacement;
-        this.matched = matched;
-        // Console.WriteLine(this.ToString());
+    public ArgumentConverterMatcher(Type oldArgument, Type name, Type type_Token,
+                                    Type newArgument) {
+        this.oldArgument = oldArgument;
+        nameType = name;
+        type_TokenType = type_Token;
+        this.newArgument = newArgument;
     }
-    public TreeToken Replace(TreeToken tokens) {
-        List<IToken> result = new List<IToken>();
-        int i = 0;
-        foreach (IToken token in tokens) {
-            if (i > this.end || i < this.start) {
-                result.Add(token);
-            } else if (i == this.start) {
-                result.AddRange(this.replacement);
+    
+    public Match Match(TreeToken tokens) {
+        for (int i = 0; i < tokens.Count; i++) {
+            IToken token = tokens[i];
+            if (Utils.IsInstance(token, oldArgument)) {
+                Unit<string> name = null;
+                Unit<Type_> type_Token = null;
+                foreach (IToken subtoken in (TreeToken)token) {
+                    if (Utils.IsInstance(subtoken, nameType)) {
+                        name = ((Unit<string>)subtoken);
+                    } else if (Utils.IsInstance(subtoken, type_TokenType)) {
+                        type_Token = ((Unit<Type_>)subtoken);
+                    }
+                }
+                if (name == null || type_Token == null) {
+                    throw new InvalidOperationException(
+                        "RawFunctionArgument is incomplete"
+                    );
+                }
+                IToken replacement = (IToken)Activator.CreateInstance(
+                    newArgument, new object[] {
+                        name.GetValue(), type_Token.GetValue()
+                    }
+                );
+                return new Match(i, i, new List<IToken> {replacement},
+                                 new List<IToken> {token});
             }
-            i++;
         }
-        return tokens.Copy(result);
+        return null;
     }
-    public void SetReplacement(List<IToken> replacement) {
-        this.replacement = replacement;
-    }
-    public List<IToken> GetMatched() {
-        return this.matched;
-    }
-    public override string ToString() {
-        string result = "(" + this.start.ToString();
-        result += ", " + this.end.ToString() + "):";
-        foreach (IToken token in this.matched) {
-            result += token.ToString();
-        }
-        result += "|";
-        foreach (IToken token in this.replacement) {
-            result += token.ToString();
-        }
-        return Utils.WrapName(this.GetType().Name, result);
-    }
-}
-public interface IMatcher {
-    Match Match(TreeToken token);
 }
 public class BlockMatcher : IMatcher {
     Type start;
@@ -988,6 +625,79 @@ public class BlockMatcher : IMatcher {
         return null;
     }
 }
+public class FloatMatcher : IMatcher {
+    public Match Match(TreeToken tokens) {
+        for (int i = 0; i < tokens.Count; i++) {
+            List<IToken> replaced = new List<IToken>();
+            bool dot = false;
+            bool anyMatch = false;
+            int j;
+            for (j = i; j < tokens.Count; j++) {
+                IToken token = tokens[j];
+                if (!(token is TextToken)) {
+                    break;
+                }
+                string digit = ((TextToken)token).GetText();
+                bool foundMatch = false;
+                if (digit == "-" && !anyMatch) {
+                    foundMatch = true;
+                } else if ("1234567890".Contains(digit)) {
+                    foundMatch = true;
+                } else if (digit == "." && !dot) {
+                    dot = true;
+                    foundMatch = true;
+                }
+                anyMatch |= foundMatch;
+                if (!foundMatch) {
+                    break;
+                }
+                replaced.Add(token);
+            }
+            if (anyMatch && dot) {
+                return new Match(i, j-1, replaced, new List<IToken>());
+            }
+        }
+        return null;
+    }
+}
+public class FunctionArgumentMatcher : IMatcher {
+    string start;
+    string end;
+    Type holderType;
+    
+    public FunctionArgumentMatcher(string start, string end, Type holder) {
+        this.start = start;
+        this.end = end;
+        holderType = holder;
+    }
+    
+    public Match Match(TreeToken tokens) {
+        for (int i = 0; i < tokens.Count-1; i++) {
+            bool first = true;
+            int indentCount = 0;
+            List<IToken> replaced = new List<IToken>();
+            List<IToken> replacementTokens = new List<IToken>();
+            for (int j = i; j < tokens.Count; j++) {
+                IToken token = tokens[j];
+                if (!(token is TextToken)) break;
+                TextToken ttoken = ((TextToken)token);
+                string text = ttoken.GetText();
+                if ((text != start) && first) break;
+                if (text == start) indentCount++;
+                if (text == end) indentCount--;
+                if (indentCount == 0) {
+                    IToken holder = (IToken)Activator.CreateInstance(
+                        holderType, new object[] {replacementTokens}
+                    );
+                    return new Match(i, j, new List<IToken> {holder}, replaced);
+                }
+                if (!first) replacementTokens.Add(token);
+                first = false;
+            }
+        }
+        return null;
+    }
+}
 public class FunctionHolderMatcher : IMatcher {
     Type templateType;
     Type blockType;
@@ -1009,6 +719,239 @@ public class FunctionHolderMatcher : IMatcher {
                     holderType, new object[] {replaced}
                 );
                 return new Match(i, i+1, new List<IToken> {holder}, replaced);
+            }
+        }
+        return null;
+    }
+}
+public interface IMatcher {
+    Match Match(TreeToken token);
+}
+public class IntMatcher : IMatcher {
+    public Match Match(TreeToken tokens) {
+        for (int i = 0; i < tokens.Count; i++) {
+            List<IToken> replaced = new List<IToken>();
+            bool anyMatch = false;
+            int j;
+            for (j = i; j < tokens.Count; j++) {
+                IToken token = tokens[j];
+                if (!(token is TextToken)) {
+                    break;
+                }
+                bool foundMatch = false;
+                string digit = ((TextToken)token).GetText();
+                if (digit == "-" && !anyMatch) {
+                    foundMatch = true;
+                } else if ("1234567890".Contains(digit)) {
+                    foundMatch = true;
+                }
+                anyMatch |= foundMatch;
+                if (!foundMatch) {
+                    break;
+                }
+                replaced.Add(token);
+            }
+            if (anyMatch) {
+                return new Match(i, j-1, replaced, new List<IToken>());
+            }
+        }
+        return null;
+    }
+}
+public class Match {
+    int start;
+    int end;
+    List<IToken> replacement;
+    List<IToken> matched;
+    
+    public Match(int start, int end, List<IToken> replacement,
+                 List<IToken> matched) {
+        this.start = start;
+        this.end = end;
+        this.replacement = replacement;
+        this.matched = matched;
+        // Console.WriteLine(this.ToString());
+    }
+    public TreeToken Replace(TreeToken tokens) {
+        List<IToken> result = new List<IToken>();
+        int i = 0;
+        foreach (IToken token in tokens) {
+            if (i > this.end || i < this.start) {
+                result.Add(token);
+            } else if (i == this.start) {
+                result.AddRange(this.replacement);
+            }
+            i++;
+        }
+        return tokens.Copy(result);
+    }
+    public void SetReplacement(List<IToken> replacement) {
+        this.replacement = replacement;
+    }
+    public List<IToken> GetMatched() {
+        return this.matched;
+    }
+    public override string ToString() {
+        string result = "(" + this.start.ToString();
+        result += ", " + this.end.ToString() + "):";
+        foreach (IToken token in this.matched) {
+            result += token.ToString();
+        }
+        result += "|";
+        foreach (IToken token in this.replacement) {
+            result += token.ToString();
+        }
+        return Utils.WrapName(this.GetType().Name, result);
+    }
+}
+public class NameMatcher : IMatcher {
+    public Match Match(TreeToken tokens) {
+        int i = -1;
+        foreach (IToken stoken in tokens) {
+            i += 1;
+            if (!(stoken is TextToken)) {
+                continue;
+            }
+            string name = ((TextToken)stoken).GetText();
+            if (!Utils.NameStartChars.Contains(name)) {
+                continue;
+            }
+            List<IToken> replaced = new List<IToken>();
+            replaced.Add(stoken);
+            int j;
+            for (j = i+1; j < tokens.Count; j++) {
+                IToken token = tokens[j];
+                if (token is TextToken) {
+                    string text = ((TextToken)token).GetText();
+                    
+                    if (Utils.NameChars.Contains(text)) {
+                        replaced.Add(token);
+                        name += text;
+                        continue;
+                    }
+                }
+                break;
+            }
+            List<IToken> replacement = new List<IToken>();
+            replacement.Add(new Name(name));
+            return new Match(i, j-1, replacement, replaced);
+        }
+        return null;
+    }
+}
+public class RawFuncTemplateMatcher : IMatcher {
+    char startChar;
+    char endMarkerChar;
+    Type holderType;
+    
+    public RawFuncTemplateMatcher(char start, char endMarker, Type holder) {
+        startChar = start;
+        endMarkerChar = endMarker;
+        holderType = holder;
+    }
+    
+    public Match Match(TreeToken tokens) {
+        int i = -1;
+        foreach (IToken stoken in tokens) {
+            i += 1;
+            if (!(stoken is TextToken)) {
+                continue;
+            }
+            if (((TextToken)stoken).GetText() != startChar.ToString()) {
+                continue;
+            }
+            List<IToken> replaced = new List<IToken>();
+            List<IToken> replacementTokens = new List<IToken>();
+            replaced.Add(stoken);
+            int j;
+            for (j = i+1; j < tokens.Count; j++) {
+                IToken token = tokens[j];
+                if (token is TextToken) {
+                    string text = ((TextToken)token).GetText();
+                    
+                    if (text != endMarkerChar.ToString()) {
+                        replaced.Add(token);
+                        if (text.Trim().Length > 0) {
+                            replacementTokens.Add(token);
+                        }
+                        continue;
+                    }
+                }
+                break;
+            }
+            List<IToken> replacement = new List<IToken>();
+            // replace with reflection?
+            replacement.Add(new RawFuncTemplate(replacementTokens)); 
+            return new Match(i, j-1, replacement, replaced);
+        }
+        return null;
+    }
+}
+public class StringMatcher : IMatcher {
+    public Match Match(TreeToken tokens) {
+        for (int i = 0; i < tokens.Count; i++) {
+            IToken token = tokens[i];
+            if (!(token is TextToken) || ((TextToken)token).GetText() != "\"") {
+                continue;
+            }
+            
+            List<IToken> matched = new List<IToken>();
+            matched.Add(token);
+            bool wasBackslash = false;
+            for (int j = i + 1; j < tokens.Count; j++) {
+                token = tokens[j];
+                if (!(token is TextToken)) {
+                    continue;
+                }
+                matched.Add(token);
+                string text = ((TextToken)token).GetText();
+                if (wasBackslash) {
+                    wasBackslash = false;
+                } else {
+                    if (text == "\\") {
+                        wasBackslash = true;
+                    } else if (text == "\"") {
+                        return new Match(i, j, new List<IToken>(),
+                                         matched);
+                    }
+                }
+            }
+            
+        }
+        return null;
+    }
+}
+public class StructCompilerMatcher : IMatcher {
+    Type structHolderType;
+    Type structCompiledType;
+    ListTokenParser<Field> listParser;
+    
+    public StructCompilerMatcher(Type structHolderType, Type structCompiledType,
+                               ListTokenParser<Field> listParser) {
+        this.structHolderType = structHolderType;
+        this.structCompiledType = structCompiledType;
+        this.listParser = listParser;
+    }
+    
+    public Match Match(TreeToken tokens) {
+        for (int i = 0; i < tokens.Count; i++) {
+            IToken token = tokens[i];
+            if (Utils.IsInstance(token, structHolderType)) {
+                Holder holder = ((Holder)token);
+                Block block = holder.GetBlock();
+                if (block == null) continue;
+                IToken nameT = holder[0];
+                if (!(nameT is Unit<string>)) continue;
+                Name name = ((Name)nameT);
+                string nameStr = name.GetValue();
+                List<Field> fields = listParser.Parse(block);
+                IToken compiled = (IToken)Activator.CreateInstance(
+                    structCompiledType, new object[] {
+                        nameStr, fields
+                    }
+                );
+                List<IToken> replaced = new List<IToken> {token};
+                return new Match(i, i, new List<IToken> {compiled}, replaced);
             }
         }
         return null;
@@ -1040,34 +983,43 @@ public class StructHolderMatcher : IMatcher {
         return null;
     }
 }
-public class UnitSwitcherMatcher<T> : IMatcher where T : IEquatable<T> {
-    Type matchType;
-    List<T> matchValues;
-    Type replaceType;
-    
-    public UnitSwitcherMatcher(Type matchType, List<T> matchValues, Type replaceType) {
-        this.matchType = matchType;
-        this.matchValues = matchValues;
-        this.replaceType = replaceType;
+public class SymbolMatcher : IMatcher {
+    Dictionary<string, Type> symbols;
+    public SymbolMatcher(Dictionary<string, Type> symbols) {
+        this.symbols = symbols;
     }
     
     public Match Match(TreeToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            IToken token = tokens[i];
-            
-            if (!Utils.IsInstance(token, matchType)) continue;
-            
-            Unit<T> unit = ((Unit<T>)token);
-            T value = unit.GetValue();
-            foreach (T matchValue in matchValues) {
-                if (matchValue.Equals(value)) {
-                    List<IToken> replacement = new List<IToken> {
-                        (Unit<T>)Activator.CreateInstance(
-                            replaceType, new object[] {value}
-                        )
-                    };
-                    List<IToken> replaced = new List<IToken> {token};
-                    return new Match(i, i, replacement, replaced);
+            List<string> possibleSymbols = new List<string>(this.symbols.Keys);
+            List<IToken> replaced = new List<IToken>();
+            int k = -1;
+            for (int j = i; j < tokens.Count; j++) {
+                k++;
+                IToken token = tokens[j];
+                if (!(token is TextToken)) break;
+                replaced.Add(token);
+                char chr = ((TextToken)token).GetText()[0];
+                for (int l = 0; l < possibleSymbols.Count; l++) {
+                    string symbol = possibleSymbols[l];
+                    if (symbol[k] != chr) {
+                        possibleSymbols.RemoveAt(l);
+                        l--; // account for a removal shifting later
+                        // items down by one
+                        continue;
+                    }
+                    if (k == symbol.Length-1) {
+                        List<IToken> replacement = new List<IToken>();
+                        Type type = this.symbols[symbol];
+                        if (type != null) {
+                            Object result = Activator.CreateInstance(this.symbols[symbol]);
+                            replacement.Add((IToken)result);
+                        }
+                        return new Match(i, j, replacement, replaced);
+                    }
+                }
+                if (possibleSymbols.Count == 0) {
+                    break;
                 }
             }
         }
@@ -1128,6 +1080,40 @@ public class Type_Matcher : IMatcher {
         return null;
     }
 }
+public class UnitSwitcherMatcher<T> : IMatcher where T : IEquatable<T> {
+    Type matchType;
+    List<T> matchValues;
+    Type replaceType;
+    
+    public UnitSwitcherMatcher(Type matchType, List<T> matchValues, Type replaceType) {
+        this.matchType = matchType;
+        this.matchValues = matchValues;
+        this.replaceType = replaceType;
+    }
+    
+    public Match Match(TreeToken tokens) {
+        for (int i = 0; i < tokens.Count; i++) {
+            IToken token = tokens[i];
+            
+            if (!Utils.IsInstance(token, matchType)) continue;
+            
+            Unit<T> unit = ((Unit<T>)token);
+            T value = unit.GetValue();
+            foreach (T matchValue in matchValues) {
+                if (matchValue.Equals(value)) {
+                    List<IToken> replacement = new List<IToken> {
+                        (Unit<T>)Activator.CreateInstance(
+                            replaceType, new object[] {value}
+                        )
+                    };
+                    List<IToken> replaced = new List<IToken> {token};
+                    return new Match(i, i, replacement, replaced);
+                }
+            }
+        }
+        return null;
+    }
+}
 public class VarDeclareMatcher : IMatcher {
     Type varType;
     Type declareType;
@@ -1161,341 +1147,23 @@ public class VarDeclareMatcher : IMatcher {
         return null;
     }
 }
-public class StructCompilerMatcher : IMatcher {
-    Type structHolderType;
-    Type structCompiledType;
-    ListTokenParser<Field> listParser;
+public class FunctionConverterMatcher : IMatcher {
+    Type newType;
     
-    public StructCompilerMatcher(Type structHolderType, Type structCompiledType,
-                               ListTokenParser<Field> listParser) {
-        this.structHolderType = structHolderType;
-        this.structCompiledType = structCompiledType;
-        this.listParser = listParser;
+    public FunctionConverterMatcher(Type newType) {
+        this.newType = newType;
     }
     
     public Match Match(TreeToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
-            if (Utils.IsInstance(token, structHolderType)) {
-                Holder holder = ((Holder)token);
-                Block block = holder.GetBlock();
-                if (block == null) continue;
-                IToken nameT = holder[0];
-                if (!(nameT is Unit<string>)) continue;
-                Name name = ((Name)nameT);
-                string nameStr = name.GetValue();
-                List<Field> fields = listParser.Parse(block);
-                IToken compiled = (IToken)Activator.CreateInstance(
-                    structCompiledType, new object[] {
-                        nameStr, fields
-                    }
-                );
-                List<IToken> replaced = new List<IToken> {token};
-                return new Match(i, i, new List<IToken> {compiled}, replaced);
-            }
-        }
-        return null;
-    }
-}
-public class FloatMatcher : IMatcher {
-    public Match Match(TreeToken tokens) {
-        for (int i = 0; i < tokens.Count; i++) {
-            List<IToken> replaced = new List<IToken>();
-            bool dot = false;
-            bool anyMatch = false;
-            int j;
-            for (j = i; j < tokens.Count; j++) {
-                IToken token = tokens[j];
-                if (!(token is TextToken)) {
-                    break;
-                }
-                string digit = ((TextToken)token).GetText();
-                bool foundMatch = false;
-                if (digit == "-" && !anyMatch) {
-                    foundMatch = true;
-                } else if ("1234567890".Contains(digit)) {
-                    foundMatch = true;
-                } else if (digit == "." && !dot) {
-                    dot = true;
-                    foundMatch = true;
-                }
-                anyMatch |= foundMatch;
-                if (!foundMatch) {
-                    break;
-                }
-                replaced.Add(token);
-            }
-            if (anyMatch && dot) {
-                return new Match(i, j-1, replaced, new List<IToken>());
-            }
-        }
-        return null;
-    }
-}
-public class IntMatcher : IMatcher {
-    public Match Match(TreeToken tokens) {
-        for (int i = 0; i < tokens.Count; i++) {
-            List<IToken> replaced = new List<IToken>();
-            bool anyMatch = false;
-            int j;
-            for (j = i; j < tokens.Count; j++) {
-                IToken token = tokens[j];
-                if (!(token is TextToken)) {
-                    break;
-                }
-                bool foundMatch = false;
-                string digit = ((TextToken)token).GetText();
-                if (digit == "-" && !anyMatch) {
-                    foundMatch = true;
-                } else if ("1234567890".Contains(digit)) {
-                    foundMatch = true;
-                }
-                anyMatch |= foundMatch;
-                if (!foundMatch) {
-                    break;
-                }
-                replaced.Add(token);
-            }
-            if (anyMatch) {
-                return new Match(i, j-1, replaced, new List<IToken>());
-            }
-        }
-        return null;
-    }
-}
-public class NameMatcher : IMatcher {
-    public Match Match(TreeToken tokens) {
-        int i = -1;
-        foreach (IToken stoken in tokens) {
-            i += 1;
-            if (!(stoken is TextToken)) {
-                continue;
-            }
-            string name = ((TextToken)stoken).GetText();
-            if (!Utils.NameStartChars.Contains(name)) {
-                continue;
-            }
-            List<IToken> replaced = new List<IToken>();
-            replaced.Add(stoken);
-            int j;
-            for (j = i+1; j < tokens.Count; j++) {
-                IToken token = tokens[j];
-                if (token is TextToken) {
-                    string text = ((TextToken)token).GetText();
-                    
-                    if (Utils.NameChars.Contains(text)) {
-                        replaced.Add(token);
-                        name += text;
-                        continue;
-                    }
-                }
-                break;
-            }
-            List<IToken> replacement = new List<IToken>();
-            replacement.Add(new Name(name));
-            return new Match(i, j-1, replacement, replaced);
-        }
-        return null;
-    }
-}
-public class SymbolMatcher : IMatcher {
-    Dictionary<string, Type> symbols;
-    public SymbolMatcher(Dictionary<string, Type> symbols) {
-        this.symbols = symbols;
-    }
-    
-    public Match Match(TreeToken tokens) {
-        for (int i = 0; i < tokens.Count; i++) {
-            List<string> possibleSymbols = new List<string>(this.symbols.Keys);
-            List<IToken> replaced = new List<IToken>();
-            int k = -1;
-            for (int j = i; j < tokens.Count; j++) {
-                k++;
-                IToken token = tokens[j];
-                if (!(token is TextToken)) break;
-                replaced.Add(token);
-                char chr = ((TextToken)token).GetText()[0];
-                for (int l = 0; l < possibleSymbols.Count; l++) {
-                    string symbol = possibleSymbols[l];
-                    if (symbol[k] != chr) {
-                        possibleSymbols.RemoveAt(l);
-                        l--; // account for a removal shifting later
-                        // items down by one
-                        continue;
-                    }
-                    if (k == symbol.Length-1) {
-                        List<IToken> replacement = new List<IToken>();
-                        Type type = this.symbols[symbol];
-                        if (type != null) {
-                            Object result = Activator.CreateInstance(this.symbols[symbol]);
-                            replacement.Add((IToken)result);
-                        }
-                        return new Match(i, j, replacement, replaced);
-                    }
-                }
-                if (possibleSymbols.Count == 0) {
-                    break;
-                }
-            }
-        }
-        return null;
-    }
-}
-public class StringMatcher : IMatcher {
-    public Match Match(TreeToken tokens) {
-        for (int i = 0; i < tokens.Count; i++) {
-            IToken token = tokens[i];
-            if (!(token is TextToken) || ((TextToken)token).GetText() != "\"") {
-                continue;
-            }
-            
-            List<IToken> matched = new List<IToken>();
-            matched.Add(token);
-            bool wasBackslash = false;
-            for (int j = i + 1; j < tokens.Count; j++) {
-                token = tokens[j];
-                if (!(token is TextToken)) {
-                    continue;
-                }
-                matched.Add(token);
-                string text = ((TextToken)token).GetText();
-                if (wasBackslash) {
-                    wasBackslash = false;
-                } else {
-                    if (text == "\\") {
-                        wasBackslash = true;
-                    } else if (text == "\"") {
-                        return new Match(i, j, new List<IToken>(),
-                                         matched);
-                    }
-                }
-            }
-            
-        }
-        return null;
-    }
-}
-public class RawFuncTemplateMatcher : IMatcher {
-    char startChar;
-    char endMarkerChar;
-    Type holderType;
-    
-    public RawFuncTemplateMatcher(char start, char endMarker, Type holder) {
-        startChar = start;
-        endMarkerChar = endMarker;
-        holderType = holder;
-    }
-    
-    public Match Match(TreeToken tokens) {
-        int i = -1;
-        foreach (IToken stoken in tokens) {
-            i += 1;
-            if (!(stoken is TextToken)) {
-                continue;
-            }
-            if (((TextToken)stoken).GetText() != startChar.ToString()) {
-                continue;
-            }
-            List<IToken> replaced = new List<IToken>();
-            List<IToken> replacementTokens = new List<IToken>();
-            replaced.Add(stoken);
-            int j;
-            for (j = i+1; j < tokens.Count; j++) {
-                IToken token = tokens[j];
-                if (token is TextToken) {
-                    string text = ((TextToken)token).GetText();
-                    
-                    if (text != endMarkerChar.ToString()) {
-                        replaced.Add(token);
-                        if (text.Trim().Length > 0) {
-                            replacementTokens.Add(token);
-                        }
-                        continue;
-                    }
-                }
-                break;
-            }
-            List<IToken> replacement = new List<IToken>();
-            // replace with reflection?
-            replacement.Add(new RawFuncTemplate(replacementTokens)); 
-            return new Match(i, j-1, replacement, replaced);
-        }
-        return null;
-    }
-}
-public class FunctionArgumentMatcher : IMatcher {
-    string start;
-    string end;
-    Type holderType;
-    
-    public FunctionArgumentMatcher(string start, string end, Type holder) {
-        this.start = start;
-        this.end = end;
-        holderType = holder;
-    }
-    
-    public Match Match(TreeToken tokens) {
-        for (int i = 0; i < tokens.Count-1; i++) {
-            bool first = true;
-            int indentCount = 0;
-            List<IToken> replaced = new List<IToken>();
-            List<IToken> replacementTokens = new List<IToken>();
-            for (int j = i; j < tokens.Count; j++) {
-                IToken token = tokens[j];
-                if (!(token is TextToken)) break;
-                TextToken ttoken = ((TextToken)token);
-                string text = ttoken.GetText();
-                if ((text != start) && first) break;
-                if (text == start) indentCount++;
-                if (text == end) indentCount--;
-                if (indentCount == 0) {
-                    IToken holder = (IToken)Activator.CreateInstance(
-                        holderType, new object[] {replacementTokens}
-                    );
-                    return new Match(i, j, new List<IToken> {holder}, replaced);
-                }
-                if (!first) replacementTokens.Add(token);
-                first = false;
-            }
-        }
-        return null;
-    }
-}
-public class ArgumentConverterMatcher : IMatcher {
-    Type oldArgument;
-    Type nameType;
-    Type type_TokenType;
-    Type newArgument;
-    
-    public ArgumentConverterMatcher(Type oldArgument, Type name, Type type_Token,
-                                    Type newArgument) {
-        this.oldArgument = oldArgument;
-        nameType = name;
-        type_TokenType = type_Token;
-        this.newArgument = newArgument;
-    }
-    
-    public Match Match(TreeToken tokens) {
-        for (int i = 0; i < tokens.Count; i++) {
-            IToken token = tokens[i];
-            if (Utils.IsInstance(token, oldArgument)) {
-                Unit<string> name = null;
-                Unit<Type_> type_Token = null;
-                foreach (IToken subtoken in (TreeToken)token) {
-                    if (Utils.IsInstance(subtoken, nameType)) {
-                        name = ((Unit<string>)subtoken);
-                    } else if (Utils.IsInstance(subtoken, type_TokenType)) {
-                        type_Token = ((Unit<Type_>)subtoken);
-                    }
-                }
-                if (name == null || type_Token == null) {
-                    throw new InvalidOperationException(
-                        "RawFunctionArgument is incomplete"
-                    );
-                }
+            if (token is FunctionHolder) { // TEMP (see TODO.txt)
+                RawFuncTemplate raw = ((FuncTemplate)token);
+                FuncTemplate template = raw.GetTemplate();
+                Block block = raw.GetBlock();
                 IToken replacement = (IToken)Activator.CreateInstance(
-                    newArgument, new object[] {
-                        name.GetValue(), type_Token.GetValue()
+                    newType, new object[] {
+                        template.GetValue(), template.GetArguments(), block
                     }
                 );
                 return new Match(i, i, new List<IToken> {replacement},
@@ -1505,47 +1173,24 @@ public class ArgumentConverterMatcher : IMatcher {
         return null;
     }
 }
+public class ConfigurablePatternExtractor<T> : PatternExtractor<T> {
+    public ConfigurablePatternExtractor(List<IPatternSegment> segments, 
+                                        PatternProcessor<T> processor) {
+        this.segments = segments;
+        this.processor = processor;
+    }
+    public override string ToString() {
+        IEnumerable<string> segmentsStrings = segments.Select(
+            (IPatternSegment segment) => segment.ToString()
+        );
+        return Utils.WrapName(
+            this.GetType().Name,
+            String.Join(", ", segmentsStrings)
+        );
+    }
+}
 public interface IPatternSegment {
     bool Matches(IToken token);
-}
-public class TypePatternSegment : IPatternSegment {
-    Type type;
-    
-    public TypePatternSegment(Type type) {
-        this.type = type;
-    }
-    public bool Matches(IToken token) {
-        return Utils.IsInstance(token, type);
-    }
-}
-public class TextPatternSegment : IPatternSegment {
-    string text;
-    
-    public TextPatternSegment(string text) {
-        this.text = text;
-    }
-    public bool Matches(IToken token) {
-        return (token is TextToken 
-            && ((TextToken)token).GetText() == text);
-    }
-}
-public class Type_PatternSegment : IPatternSegment {
-    Type_ type_;
-    
-    public Type_PatternSegment(Type_ type_) {
-        this.type_ = type_;
-    }
-    public bool Matches(IToken token) {
-        return (token is IValueToken 
-            && ((IValueToken)token).GetType_() == type_);
-    }
-}
-public abstract class PatternProcessor<T> {
-    protected abstract T Process(List<IToken> tokens);
-    
-    public virtual T Process(List<IToken> tokens, int start, int end) {
-        return Process(tokens);
-    }
 }
 public class MatcherPatternProcessor : PatternProcessor<Match> {
     PatternProcessor<List<IToken>> subprocessor;
@@ -1589,17 +1234,11 @@ abstract public class PatternExtractor<T> {
         return default(T);
     }
 }
-public class UnitPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
-    T value;
-    Type unit;
+public abstract class PatternProcessor<T> {
+    protected abstract T Process(List<IToken> tokens);
     
-    public UnitPatternSegment(Type unit, T value) {
-        this.value = value;
-        this.unit = unit;
-    }
-    public bool Matches(IToken token) {
-        return (token is Unit<T> && Utils.IsInstance(token, unit)
-            && ((Unit<T>)token).GetValue().Equals(value));
+    public virtual T Process(List<IToken> tokens, int start, int end) {
+        return Process(tokens);
     }
 }
 public class SlotPatternProcessor : PatternProcessor<List<IToken>> {
@@ -1616,40 +1255,52 @@ public class SlotPatternProcessor : PatternProcessor<List<IToken>> {
         return result;
     }
 }
-public class ConfigurablePatternExtractor<T> : PatternExtractor<T> {
-    public ConfigurablePatternExtractor(List<IPatternSegment> segments, 
-                                        PatternProcessor<T> processor) {
-        this.segments = segments;
-        this.processor = processor;
+public class TextPatternSegment : IPatternSegment {
+    string text;
+    
+    public TextPatternSegment(string text) {
+        this.text = text;
     }
-    public override string ToString() {
-        IEnumerable<string> segmentsStrings = segments.Select(
-            (IPatternSegment segment) => segment.ToString()
-        );
-        return Utils.WrapName(
-            this.GetType().Name,
-            String.Join(", ", segmentsStrings)
-        );
+    public bool Matches(IToken token) {
+        return (token is TextToken 
+            && ((TextToken)token).GetText() == text);
     }
 }
-public class FloatConstant : Constant {
-    string value;
-    public FloatConstant(string value) {
+public class TypePatternSegment : IPatternSegment {
+    Type type;
+    
+    public TypePatternSegment(Type type) {
+        this.type = type;
+    }
+    public bool Matches(IToken token) {
+        return Utils.IsInstance(token, type);
+    }
+}
+public class Type_PatternSegment : IPatternSegment {
+    Type_ type_;
+    
+    public Type_PatternSegment(Type_ type_) {
+        this.type_ = type_;
+    }
+    public bool Matches(IToken token) {
+        return (token is IValueToken 
+            && ((IValueToken)token).GetType_() == type_);
+    }
+}
+public class UnitPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
+    T value;
+    Type unit;
+    
+    public UnitPatternSegment(Type unit, T value) {
         this.value = value;
+        this.unit = unit;
+    }
+    public bool Matches(IToken token) {
+        return (token is Unit<T> && Utils.IsInstance(token, unit)
+            && ((Unit<T>)token).GetValue().Equals(value));
     }
 }
-public class StringConstant : Constant {
-    string value;
-    public StringConstant(string value) {
-        this.value = value;
-    }
-}
-public class IntConstant : Constant {
-    string value;
-    public IntConstant(string value) {
-        this.value = value;
-    }
-}
+public class Constant {}
 public class Constants {
     Dictionary<int, Constant> constants = new Dictionary<int, Constant>();
     int counter = 0;
@@ -1658,7 +1309,6 @@ public class Constants {
         return counter++;
     }
 }
-public class Constant {}
 public class Field {
     string name;
     Type_ type_;
@@ -1679,6 +1329,24 @@ public class Field {
     }
     public override string ToString() {
         return $"{type_}:{name}";
+    }
+}
+public class FloatConstant : Constant {
+    string value;
+    public FloatConstant(string value) {
+        this.value = value;
+    }
+}
+public class IntConstant : Constant {
+    string value;
+    public IntConstant(string value) {
+        this.value = value;
+    }
+}
+public class StringConstant : Constant {
+    string value;
+    public StringConstant(string value) {
+        this.value = value;
     }
 }
 public class Type_ {
@@ -1760,3 +1428,379 @@ public enum Type_Type {
     Struct
 }
 */
+public class BaseTokenType_ : Unit<string> {
+    public BaseTokenType_(string type_) : base(type_) {}
+}
+public class Block : TreeToken {
+    public Block(List<IToken> tokens) : base(tokens) {}
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new Block(tokens);
+    }
+}
+public class BracketClose : Symbolic {}
+public class BracketOpen : Symbolic {}
+public class Colon : Symbolic {}
+public class Comma : Symbolic {}
+public class ConstantValue : Unit<int> {
+    public ConstantValue(int constant) : base(constant) {}
+}
+public class Equal : Symbolic {}
+public class FunctionArgumentToken : IToken {
+    string name;
+    Type_ type_;
+    
+    public FunctionArgumentToken(string name, Type_ type_) {
+        this.name = name;
+        this.type_ = type_;
+    }
+    public string GetName() {
+        return name;
+    }
+    public Type_ GetType_() {
+        return type_;
+    }
+    public override string ToString() {
+        return Utils.WrapName(this.GetType().Name, type_.ToString() + ":" + name);
+    }
+}
+public class FunctionToken : IToken {
+    PatternExtractor<List<IToken>> pattern;
+    List<FunctionArgumentToken> arguments;
+    Block block;
+    
+    public FunctionToken(PatternExtractor<List<IToken>> pattern, 
+                         List<FunctionArgumentToken> arguments, Block block) {
+        this.pattern = pattern;
+        this.arguments = arguments;
+        this.block = block;
+    }
+    public PatternExtractor<List<IToken>> GetPattern() {
+        return pattern;
+    }
+    public List<FunctionArgumentToken> GetArguments() {
+        return arguments;
+    }
+    public Block GetBlock() {
+        return block;
+    }
+    public void SetBlock(Block block) {
+        this.block = block;
+    }
+    public override string ToString() {
+        string title = Utils.WrapName(
+            this.GetType().Name, String.Join(", ", arguments), "<", ">"
+        );
+        return Utils.WrapName(title, block.ToString());
+    }
+}
+public class Generics : TreeToken {
+    public Generics(List<IToken> tokens) : base(tokens) {}
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new Generics(tokens);
+    }
+}
+public class GenericsClose : Symbolic {}
+public class GenericsOpen : Symbolic {}
+public class Holder : TreeToken {
+    public Holder(List<IToken> tokens) : base(tokens) {}
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new Holder(tokens);
+    }
+    public Block GetBlock() {
+        if (this.Count < 2) return null;
+        IToken token = this[1];
+        if (!(token is Block)) return null;
+        return (Block)token;
+    }
+    public void SetBlock(Block block) {
+        if (this.Count < 2)
+            throw new InvalidOperationException("Holder does not have block already set");
+        this[1] = block;
+    }
+}
+public interface IToken {}
+public interface IValueToken : IToken {
+    Type_ GetType_();
+}
+public class Name : Unit<string> {
+    public Name(string name) : base(name) {}
+}
+public class Program : TreeToken { 
+    Constants constants;
+    List<string> baseTypes_ = null;
+    
+    public Program(List<IToken> tokens,
+                    Constants constants) : base(tokens) {
+        this.constants = constants;
+    }
+    
+    public Program(List<IToken> tokens, Constants constants,
+                   List<string> baseTypes_) : base(tokens) {
+        this.constants = constants;
+        this.baseTypes_ = baseTypes_;
+    }
+    public Constants GetConstants() {
+        return constants;
+    }
+    public List<string> GetBaseTypes_() {
+        return baseTypes_;
+    }
+    public void SetBaseTypes_(List<string> baseTypes_) {
+        this.baseTypes_ = baseTypes_;
+    }
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new Program(tokens, constants, baseTypes_);
+    }
+}
+public class RawFuncTemplate : TreeToken {
+    public RawFuncTemplate(List<IToken> tokens) : base(tokens) {}
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new RawFuncTemplate(tokens);
+    }
+}
+public class RawFunctionArgument : TreeToken {
+    public RawFunctionArgument(List<IToken> tokens) : base(tokens) {}
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new RawFunctionArgument(tokens);
+    }
+}
+public class Struct : IToken {
+    string name;
+    List<Field> fields;
+    
+    public Struct(string name, List<Field> fields) {
+        this.name = name;
+        this.fields = fields;
+    }
+    public override string ToString() {
+        string result = $"Name: {name}";
+        foreach (Field field in fields) {
+            result += "\n" + field.ToString();
+        }
+        return Utils.WrapName(
+            "Struct", 
+            Utils.WrapNewline(Utils.Indent(result))
+        );
+    }
+}
+public class StructHolder : Holder {
+    public StructHolder(List<IToken> tokens) : base(tokens) {}
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new StructHolder(tokens);
+    }
+}
+public class Symbolic : IToken {
+    public override string ToString() {
+        return "(" + this.GetType().Name + ")";
+    }
+}
+public class TextToken : IToken {
+    string text;
+    
+    public TextToken(string text) {
+        this.text = text;
+    }
+    public string GetText() {
+        return text;
+    }
+    public void SetText(string text) {
+        this.text = text;
+    }
+    public override string ToString() {
+        return this.text;
+    }
+}
+public class TokenList : IEnumerator<IToken> {
+    List<IToken> tokens;
+    int i = -1;
+    
+    public TokenList(List<IToken> tokens) {
+        this.tokens = tokens;
+    }
+    public bool MoveNext() {
+        i++;
+        return (i < tokens.Count);
+    }
+    public void Reset() {
+        i = -1;
+    }
+    public IToken Current {
+        get {
+            return this.tokens[i];
+        }
+    }
+    public void Dispose() {}
+    object IEnumerator.Current {
+        get {
+            return this.Current;
+        }
+    }
+}
+public class TreeToken : IToken, IEnumerable<IToken> {
+    List<IToken> tokens;
+    
+    public TreeToken(List<IToken> tokens) {
+        this.tokens = tokens;
+    }
+    public List<IToken> GetTokens() {
+        return tokens;
+    }
+    public void SetTokens(List<IToken> tokens) {
+        this.tokens = tokens;
+    }
+    public void Add(IToken token) {
+        this.tokens.Add(token);
+    }
+    public IToken this[int i] {
+        get {
+            return this.tokens[i];
+        }
+        set {
+            this.tokens[i] = value;
+        }
+    }
+    public virtual TreeToken Copy(List<IToken> tokens) {
+        return new TreeToken(tokens);
+    }
+    public TreeToken Copy() {
+        return Copy(new List<IToken>(this.tokens));
+    }
+    public int Count {
+        get {
+            return this.tokens.Count;
+        }
+    }
+    public IEnumerator<IToken> GetEnumerator() {
+        return new TokenList(this.tokens);
+    }
+    
+    IEnumerator IEnumerable.GetEnumerator() {
+        return this.GetEnumerator();
+    }
+    public IEnumerable<IToken> Traverse() {
+        yield return this;
+        foreach (IToken token in this) {
+            if (token is TreeToken) {
+                foreach (IToken subToken in ((TreeToken)token).Traverse()) {
+                    yield return subToken;
+                }
+            } else {
+                yield return token;
+            }
+        }
+    }
+    public IEnumerable<(int, TreeToken)> IndexTraverse() {
+        for (int i = 0; i < this.Count; i++) {
+            yield return (i, this);
+            IToken token = this[i];
+            if (token is TreeToken) {
+                foreach ((int, TreeToken) sub in ((TreeToken)token).IndexTraverse()) {
+                    yield return sub;
+                }
+            }
+        }
+    }
+    public override string ToString() {
+        string result = "";
+        bool whitespace = false;
+        foreach (IToken token in this) {
+            bool whitespaceHere = false;
+            if (token is TreeToken 
+                || (token is TextToken && 
+                ((TextToken)token).GetText() == "\n")
+                || Utils.IsInstance(token, typeof(Unit<>))) {
+                whitespace = true;
+                whitespaceHere = true;
+            }
+            result += token.ToString();
+            if (whitespaceHere) {
+                result += "\n";
+            }
+        }
+        result = result.Trim();
+        if (whitespace) {
+            result = Utils.Indent(result);
+            result = Utils.WrapNewline(result);
+        }
+        return Utils.WrapName(this.GetType().Name, result);
+    }
+}
+public class Type_Token : Unit<Type_> {
+    public Type_Token(Type_ type_) : base(type_) {}
+}
+public class Unit<T> : IToken {
+    T value;
+    
+    public Unit(T value) {
+        this.value = value;
+    }
+    public T GetValue() {
+        return value;
+    }
+    public override string ToString() {
+        return Utils.WrapName(this.GetType().Name, this.value.ToString());
+    }
+}
+public class VarDeclaration : TreeToken {
+    public VarDeclaration(List<IToken> tokens) : base(tokens) {}
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new VarDeclaration(tokens);
+    }
+    public Type_ GetType_() {
+        if (this.Count < 2) return null;
+        IToken type_token = this[0];
+        if (!(type_token is Type_Token)) return null;
+        return ((Type_Token)type_token).GetValue();
+    }
+    public Name GetName() {
+        if (this.Count < 2) return null;
+        IToken name = this[1];
+        if (!(name is Name)) return null;
+        return (Name)name;
+    }
+}
+public class FunctionHolder : Holder {
+    public FunctionHolder(List<IToken> tokens) : base(tokens) {}
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new FunctionHolder(tokens);
+    }
+    public RawFuncTemplate GetRawTemplate() {
+        if (this.Count < 2) return null;
+        IToken token = this[0];
+        if (!(token is RawFuncTemplate)) return null;
+        return (RawFuncTemplate)token;
+    }
+    public RawFuncTemplate GetTemplate() {
+        if (this.Count < 2) return null;
+        IToken token = this[0];
+        if (!(token is FuncTemplate)) return null;
+        return (FuncTemplate)token;
+    }
+    public void SetTemplate(IToken template) {
+        if (this.Count < 2)
+            throw new InvalidOperationException(
+                "FuncHolder does not have template already set"
+            );
+        this[0] = template;
+    }
+}
+public class FuncTemplate : Unit<PatternExtractor<List<IToken>>> {
+    List<FunctionArgumentToken> arguments;
+    
+    public FuncTemplate(PatternExtractor<List<IToken>> pattern, 
+                        List<FunctionArgumentToken> arguments) : base(pattern) {
+        this.arguments = arguments;
+    }
+    public List<FunctionArgumentToken> GetArguments() {
+        return arguments;
+    }
+}

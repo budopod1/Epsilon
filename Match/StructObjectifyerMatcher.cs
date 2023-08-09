@@ -2,12 +2,12 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 
-public class StructCompilerMatcher : IMatcher {
+public class StructObjectifyerMatcher : IMatcher {
     Type structHolderType;
     Type structCompiledType;
     ListTokenParser<Field> listParser;
     
-    public StructCompilerMatcher(Type structHolderType, Type structCompiledType,
+    public StructObjectifyerMatcher(Type structHolderType, Type structCompiledType,
                                ListTokenParser<Field> listParser) {
         this.structHolderType = structHolderType;
         this.structCompiledType = structCompiledType;
