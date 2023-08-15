@@ -1,6 +1,6 @@
 using System;
 
-public interface IParentToken : IToken {
+public interface IParentToken : IMultiLineToken {
     IToken this[int i] {
         get;
         set;

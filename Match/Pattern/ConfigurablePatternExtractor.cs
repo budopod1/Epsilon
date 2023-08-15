@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class ConfigurablePatternExtractor<T> : PatternExtractor<T> {
     public ConfigurablePatternExtractor(List<IPatternSegment> segments, 
-                                        PatternProcessor<T> processor) {
+                                        IPatternProcessor<T> processor) {
         this.segments = segments;
         this.processor = processor;
     }

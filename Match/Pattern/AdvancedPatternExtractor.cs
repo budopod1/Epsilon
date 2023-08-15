@@ -13,9 +13,9 @@ abstract public class AdvancedPatternExtractor<T> {
     protected int minRepeats;
     protected int maxRepeats;
     protected List<IPatternSegment> end;
-    protected PatternProcessor<T> processor;
+    protected IPatternProcessor<T> processor;
 
-    public T Extract(TreeToken tokens) {
+    public T Extract(IParentToken tokens) {
         Part part = Part.Start;
         for (int i = 0; i < tokens.Count; i++) {
             bool finishedMatch = false;

@@ -1,32 +1,10 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
-public class Type_ {
-// https://en.wikipedia.org/wiki/Set_(mathematics)#Special_sets_of_numbers_in_mathematics
-    public static List<string> BuiltInTypes_ = new List<string> {
-        "Unknown",
-        "Void",
-        "Bool",
-        "Byte",
-        "W", // whole numbers
-        "Z",
-        "Q",
-        "Array",
-        "Struct",
-    };
-
-    public static List<KeyValuePair<string, string>> BuiltInTypes_Descent = 
-        new List<KeyValuePair<string, string>> {
-            new KeyValuePair<string, string>("Unknown", null),
-            new KeyValuePair<string, string>("Void", null),
-            new KeyValuePair<string, string>("Unkown", null),
-            new KeyValuePair<string, string>("Bool", null),
-            new KeyValuePair<string, string>("Byte", "W"),
-            new KeyValuePair<string, string>("W", "Z"),
-            new KeyValuePair<string, string>("Z", "Q"),
-            new KeyValuePair<string, string>("Array", null),
-            new KeyValuePair<string, string>("Struct", null),
-        };
+public class Type_ : IEquatable<Type_> {
+    // https://en.wikipedia.org/wiki/
+    // Set_(mathematics)#Special_sets_of_numbers_in_mathematics
 
     public static Type_ Unknown() {
         return new Type_("Unknown");
@@ -36,32 +14,81 @@ public class Type_ {
         return new Type_("Void");
     }
     
-    string name;
+    BaseType_ baseType_; // null signifies Any
     List<Type_> generics;
 
-    public Type_(string name, List<Type_> generics) {
-        this.name = name;
+    public static Type_ Any() {
+        return new Type_((BaseType_)null);
+    }
+
+    public Type_(BaseType_ baseType_, List<Type_> generics = null) {
+        this.baseType_ = baseType_;
+        if (generics == null) {
+            generics = new List<Type_>();
+        }
         this.generics = generics;
     }
 
-    public Type_(string name) {
-        this.name = name;
-        this.generics = new List<Type_>();
+    public Type_(string name, int? bits, List<Type_> generics = null) {
+        this.baseType_ = new BaseType_(name, bits);
+        if (generics == null) {
+            generics = new List<Type_>();
+        }
+        this.generics = generics;
+    }
+
+    public Type_(string name, List<Type_> generics = null) {
+        this.baseType_ = new BaseType_(name);
+        if (generics == null) {
+            generics = new List<Type_>();
+        }
+        this.generics = generics;
     }
 
     public Type_ WithGenerics(List<Type_> generics) {
-        return new Type_(this.name, generics);
+        return new Type_(baseType_, generics);
     }
 
-    public string GetName() {
-        return name;
+    public BaseType_ GetBaseType_() {
+        return baseType_;
     }
 
     public List<Type_> GetGenerics() {
         return generics;
     }
 
+    public bool IsConvertibleTo(Type_ other) {
+        if (other.GetBaseType_() == null) {
+            // other is Type_.Any()
+            return baseType_.GetName() != "Unknown";
+        }
+        if (baseType_ == null) {
+            // this is Type_.Any()
+            return other.GetBaseType_().GetName() != "Unknown";
+        }
+        if (baseType_.IsConvertibleTo(other.GetBaseType_())) {
+            // maybe make casting of generics automatic later?
+            return GenericsEqual(other);
+        }
+        return false;
+    }
+
+    public bool Equals(Type_ other) {
+        if (baseType_ == null) return false;
+        if (baseType_.Equals(other.GetBaseType_())) {
+            return GenericsEqual(other);
+        }
+        return false;
+    }
+
+    public bool GenericsEqual(Type_ other) {
+        return generics.SequenceEqual(other.GetGenerics());
+    }
+
     public override string ToString() {
+        if (baseType_ == null) {
+            return "Any<>";
+        }
         string genericStr = "";
         bool first = true;
         foreach (Type_ generic in generics){
@@ -71,30 +98,8 @@ public class Type_ {
             genericStr += generic.ToString();
             first = false;
         }
-        return Utils.WrapName(name, genericStr, "<", ">");
+        return Utils.WrapName(
+            baseType_.ToString(), genericStr, "<", ">"
+        );
     }
 }
-
-/*
-using System;
-
-public enum Primitive {
-    Unkown,
-    Void,
-    Bool,
-    Byte,
-    W, // unsigned integers
-    Z, // signed integers
-    Q, // floats
-    Bytes,
-}
-*/
-/*
-using System;
-
-// To explain: the type of the type_
-public enum Type_Type {
-    Primitive,
-    Struct
-}
-*/

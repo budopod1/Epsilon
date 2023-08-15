@@ -9,7 +9,7 @@ public class FunctionConverterMatcher : IMatcher {
         this.newType = newType;
     }
     
-    public Match Match(TreeToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
             if (token is FunctionHolder) { // TEMP (see TODO.txt)

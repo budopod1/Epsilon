@@ -22,6 +22,12 @@ public class Utils {
     }
 
     public static bool IsInstance(Type a, Type b) {
+        /*
+        if (b.IsInterface()) {
+            if (a.GetInterfaces().Contains(b)) return true;
+        }
+        */
+        if (b.IsAssignableFrom(a)) return true;
         if (a.IsGenericType)
             a = a.GetGenericTypeDefinition();
         if (b.IsGenericType)
@@ -32,5 +38,9 @@ public class Utils {
     
     public static bool IsInstance(Object a, Type b) {
         return Utils.IsInstance(a.GetType(), b);
+    }
+
+    public static string TitleCase(string text) {
+        return Char.ToUpper(text[0]) + text.Substring(1).ToLower();
     }
 }

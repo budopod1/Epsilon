@@ -15,8 +15,11 @@ public class Assignment : IParentToken {
             return value;
         }
         set {
-            if (i == 0) variable = (Name)value;
-            this.value = (IValueToken)value;
+            if (i == 0) {
+                variable = (Name)value;
+            } else {
+                this.value = (IValueToken)value;
+            }
         }
     }
     

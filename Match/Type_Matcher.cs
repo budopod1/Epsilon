@@ -16,19 +16,19 @@ public class Type_Matcher : IMatcher {
         this.listParser = listParser;
     }
     
-    public Match Match(TreeToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken name = tokens[i];
             
             if (Utils.IsInstance(name, baseType)) {
-                Unit<string> nameUnit = ((Unit<string>)name);
+                Unit<BaseType_> nameUnit = ((Unit<BaseType_>)name);
                 Type_ type_;
                 List<IToken> replacement;
                 List<IToken> replaced;
                 if (i + 1 < tokens.Count) {
                     IToken next = tokens[i + 1];
                     if (Utils.IsInstance(next, genericsType)) {
-                        TreeToken generics = ((TreeToken)next);
+                        IParentToken generics = ((IParentToken)next);
                         List<Type_> genericTypes_ = listParser.Parse(generics);
                         if (genericTypes_ == null) continue;
                         type_ = new Type_(nameUnit.GetValue(), genericTypes_);

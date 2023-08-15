@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 public class StringMatcher : IMatcher {
-    public Match Match(TreeToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
             if (!(token is TextToken) || ((TextToken)token).GetText() != "\"") {

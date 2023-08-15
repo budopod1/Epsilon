@@ -17,10 +17,11 @@ public class ListTokenParser<T> {
         this.parser = parser;
     }
 
-    public List<T> Parse(TreeToken tree) {
+    public List<T> Parse(IParentToken tree) {
         List<T> list = new List<T>();
         ParseState state = ParseState.ExpectItem;
-        foreach (IToken token in tree) {
+        for (int i = 0; i < tree.Count; i++) {
+            IToken token = tree[i];
             switch (state) {
                 case ParseState.ExpectItem:
                     if (Utils.IsInstance(token, item)) {

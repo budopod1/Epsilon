@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class TreeToken : IMultiLineToken, IParentToken, IEnumerable<IToken> {
+public class TreeToken : IParentToken, IEnumerable<IToken> {
     List<IToken> tokens;
     
     public TreeToken(List<IToken> tokens) {

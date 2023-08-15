@@ -14,7 +14,7 @@ public class StructObjectifyerMatcher : IMatcher {
         this.listParser = listParser;
     }
     
-    public Match Match(TreeToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
             if (Utils.IsInstance(token, structHolderType)) {

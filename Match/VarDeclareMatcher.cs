@@ -16,7 +16,7 @@ public class VarDeclareMatcher : IMatcher {
         this.varDeclareType = varDeclareType;
     }
     
-    public Match Match(TreeToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count-2; i++) {
             IToken a = tokens[i];
             IToken b = tokens[i+1];

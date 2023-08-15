@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class Program : TreeToken { 
     Constants constants;
-    List<string> baseTypes_ = null;
+    List<string> baseType_Names = null;
     
     public Program(List<IToken> tokens,
                     Constants constants) : base(tokens) {
@@ -11,24 +11,25 @@ public class Program : TreeToken {
     }
     
     public Program(List<IToken> tokens, Constants constants,
-                   List<string> baseTypes_) : base(tokens) {
+                   List<string> baseType_Names) : base(tokens) {
         this.constants = constants;
-        this.baseTypes_ = baseTypes_;
+        this.baseType_Names = baseType_Names;
     }
 
     public Constants GetConstants() {
         return constants;
     }
 
-    public List<string> GetBaseTypes_() {
-        return baseTypes_;
+    public List<string> GetBaseType_Names() {
+        return baseType_Names;
     }
 
-    public void SetBaseTypes_(List<string> baseTypes_) {
-        this.baseTypes_ = baseTypes_;
+    public void SetBaseType_Names(List<string> baseType_Names) {
+        this.baseType_Names = baseType_Names;
     }
     
     public override TreeToken Copy(List<IToken> tokens) {
-        return (TreeToken)new Program(tokens, constants, baseTypes_);
+        return (TreeToken)new Program(tokens, constants,
+                                      baseType_Names);
     }
 }

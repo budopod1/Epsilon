@@ -13,7 +13,7 @@ public class FunctionHolderMatcher : IMatcher {
         holderType = holder;
     }
     
-    public Match Match(TreeToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count-1; i++) {
             IToken a = tokens[i];
             IToken b = tokens[i+1];

@@ -16,13 +16,15 @@ public class ArgumentConverterMatcher : IMatcher {
         this.newArgument = newArgument;
     }
     
-    public Match Match(TreeToken tokens) {
-        for (int i = 0; i < tokens.Count; i++) {
-            IToken token = tokens[i];
+    public Match Match(IParentToken tokens) {
+        for (int j = 0; j < tokens.Count; j++) {
+            IToken token = tokens[j];
             if (Utils.IsInstance(token, oldArgument)) {
                 Unit<string> name = null;
                 Unit<Type_> type_Token = null;
-                foreach (IToken subtoken in (TreeToken)token) {
+                IParentToken tree = ((IParentToken)token);
+                for (int i = 0; i < tree.Count; i++) {
+                    IToken subtoken = tree[i];
                     if (Utils.IsInstance(subtoken, nameType)) {
                         name = ((Unit<string>)subtoken);
                     } else if (Utils.IsInstance(subtoken, type_TokenType)) {
@@ -39,7 +41,7 @@ public class ArgumentConverterMatcher : IMatcher {
                         name.GetValue(), type_Token.GetValue()
                     }
                 );
-                return new Match(i, i, new List<IToken> {replacement},
+                return new Match(j, j, new List<IToken> {replacement},
                                  new List<IToken> {token});
             }
         }

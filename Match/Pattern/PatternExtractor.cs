@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 abstract public class PatternExtractor<T> {
     protected List<IPatternSegment> segments;
-    protected PatternProcessor<T> processor;
+    protected IPatternProcessor<T> processor;
     
-    public T Extract(TreeToken tokens) {
+    public T Extract(IParentToken tokens) {
         int maxStart = tokens.Count - segments.Count;
         for (int i = 0; i < maxStart; i++) {
             bool matches = true;
@@ -21,7 +21,7 @@ abstract public class PatternExtractor<T> {
                 }
             }
             if (matches) {
-                return processor.Process(tokenList, i, i+j);
+                return processor.Process(tokenList, i, i+j-1);
             }
         }
         return default(T);

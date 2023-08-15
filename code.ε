@@ -2,6 +2,9 @@
     f:v
     Array<Array<W>>:n
     v = 3
+    r = 5 + 8
+    g = (8 / 2) * 4 - 1
+    a
 }
 
 #r<Array<f>:val> {
@@ -14,5 +17,6 @@
 
 f {
     Array<Z>:d,
-    Byte:b
+    Byte:b,
+    Z128:long
 }

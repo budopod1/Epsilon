@@ -9,7 +9,7 @@ public class SymbolMatcher : IMatcher {
         this.symbols = symbols;
     }
     
-    public Match Match(TreeToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             List<string> possibleSymbols = new List<string>(this.symbols.Keys);
             List<IToken> replaced = new List<IToken>();

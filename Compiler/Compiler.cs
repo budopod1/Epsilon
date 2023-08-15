@@ -59,6 +59,8 @@ public class Compiler {
         
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
+
+        // Console.WriteLine(program.ToString());
         
         Console.WriteLine("Objectifying structs...");
         program = ObjectifyingStructs(program);
@@ -80,25 +82,97 @@ public class Compiler {
 
     Program ParseFunctionCode(Program program_) {
         Program program = ((Program)program_.Copy());
+        
         List<IMatcher> rules = new List<IMatcher> {
-            
+            new PatternMatcher(
+                new List<IPatternSegment> {
+                    new Type_PatternSegment(new Type_("Q")),
+                    new TypePatternSegment(typeof(Plus)),
+                    new Type_PatternSegment(new Type_("Q")),
+                }, new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor(new List<int> {0, 2}), typeof(Addition)
+                )
+            ),
+            new PatternMatcher(
+                new List<IPatternSegment> {
+                    new Type_PatternSegment(new Type_("Q")),
+                    new TypePatternSegment(typeof(Minus)),
+                    new Type_PatternSegment(new Type_("Q")),
+                }, new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor(new List<int> {0, 2}), typeof(Subtraction)
+                )
+            ),
+            new PatternMatcher(
+                new List<IPatternSegment> {
+                    new Type_PatternSegment(new Type_("Q")),
+                    new TypePatternSegment(typeof(Star)),
+                    new Type_PatternSegment(new Type_("Q")),
+                }, new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor(new List<int> {0, 2}),
+                                             typeof(Multiplication)
+                )
+            ),
+            new PatternMatcher(
+                new List<IPatternSegment> {
+                    new Type_PatternSegment(new Type_("Q")),
+                    new TypePatternSegment(typeof(Slash)),
+                    new Type_PatternSegment(new Type_("Q")),
+                }, new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor(new List<int> {0, 2}), typeof(Division)
+                )
+            ),
+            new PatternMatcher(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(Name)),
+                    new TypePatternSegment(typeof(Equal)),
+                    new Type_PatternSegment(Type_.Any()),
+                }, new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor(new List<int> {0, 2}), typeof(Assignment)
+                )
+            ),
         };
+        
         foreach (IToken token in program) {
             if (token is Function) {
-                Block block = ((Function)token).GetBlock();
-                TEMP(block);
+                Function function = ((Function)token);
+                Block block = function.GetBlock();
+                bool anythingChanged = true;
+                while (anythingChanged) {
+                    anythingChanged = false;
+                    foreach (IMatcher rule in rules) {
+                        IToken ntoken;
+                        (ntoken, anythingChanged) = DoFunctionCodeRule(
+                            block, rule
+                        );
+                        block = ((Block)ntoken);
+                        if (anythingChanged) {
+                            break;
+                        }
+                    }
+                }
+                function.SetBlock(block);
             }
         }
         return program;
     }
 
-    IToken TEMP(IParentToken parent, IMatcher rule) {
+    (IToken, bool) DoFunctionCodeRule(IParentToken parent_, IMatcher rule) {
+        bool changed = false;
+        IParentToken parent = parent_;
+        if (parent is TreeToken) {
+            TreeToken tree = ((TreeToken)parent);
+            (changed, parent) = PerformMatchingChanged(tree, rule);
+        }
         for (int i = 0; i < parent.Count; i++) {
             IToken sub = parent[i];
             if (sub is IParentToken) {
-                
+                bool thisChanged;
+                (sub, thisChanged) = DoFunctionCodeRule((IParentToken)sub, rule);
+                parent[i] = sub;
+                if (thisChanged) changed = true;
             }
         }
+        return (parent, changed);
     }
 
     Program ObjectifyingFunctions(Program program) {
@@ -212,6 +286,9 @@ public class Compiler {
 
     Program TokenizeFuncArgumentTypes_(Program program_) {
         Program program = (Program)program_.Copy();
+        List<string> baseType_Names = program.GetBaseType_Names();
+        Func<string, BaseType_> converter = (string source) => 
+            BaseType_.ParseString(source, baseType_Names);
         IMatcher symbolMatcher = new SymbolMatcher(
             new Dictionary<string, Type> {
                 {"<", typeof(GenericsOpen)},
@@ -219,8 +296,9 @@ public class Compiler {
             }
         );
         IMatcher nameMatcher = new NameMatcher();
-        IMatcher baseMatcher = new UnitSwitcherMatcher<string>(
-            typeof(Name), program.GetBaseTypes_(), typeof(BaseTokenType_)
+        IMatcher baseMatcher = new UnitSwitcherMatcher
+                                   <string, BaseType_>(
+            typeof(Name), converter, typeof(BaseTokenType_)
         );
         IMatcher genericMatcher = new BlockMatcher(
             typeof(GenericsOpen), typeof(GenericsClose), typeof(Generics)
@@ -317,6 +395,10 @@ public class Compiler {
         SymbolMatcher matcher = new SymbolMatcher(
             new Dictionary<string, Type> {
                 {"=", typeof(Equal)},
+                {"+", typeof(Plus)},
+                {"-", typeof(Minus)},
+                {"*", typeof(Star)},
+                {"/", typeof(Slash)},
                 {" ", null},
                 {"\n", null},
                 {"\t", null},
@@ -391,14 +473,18 @@ public class Compiler {
 
     Program TokenizeBaseTypes_(Program program) {
         program = (Program)program.Copy();
+        List<string> baseType_Names = program.GetBaseType_Names();
+        Func<string, BaseType_> converter = (string source) => 
+            BaseType_.ParseString(source, baseType_Names);
         foreach (IToken token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
                 if (block == null) continue;
                 TreeToken result = PerformTreeMatching(block, 
-                    new UnitSwitcherMatcher<string>(
-                        typeof(Name), program.GetBaseTypes_(), typeof(BaseTokenType_)
+                    new UnitSwitcherMatcher<string, BaseType_>(
+                        typeof(Name), converter,
+                        typeof(BaseTokenType_)
                     )
                 );
                 holder.SetBlock((Block)result);
@@ -416,7 +502,8 @@ public class Compiler {
                 if (block == null) continue;
                 TreeToken result = PerformTreeMatching(block, 
                     new Type_Matcher(
-                        typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
+                        typeof(BaseTokenType_), typeof(Generics),
+                        typeof(Type_Token),
                         new ListTokenParser<Type_>(
                             typeof(Comma), typeof(Type_Token), 
                             (IToken generic) => ((Type_Token)generic).GetValue()
@@ -461,7 +548,7 @@ public class Compiler {
     }
 
     void ComputeBaseTypes_(Program program) {
-        List<string> types_ = new List<string>(Type_.BuiltInTypes_);
+        List<string> types_ = new List<string>();
         foreach (IToken token_ in program) {
             if (token_ is StructHolder) {
                 StructHolder token = ((StructHolder)token_);
@@ -472,7 +559,7 @@ public class Compiler {
                 }
             }
         }
-        program.SetBaseTypes_(types_);
+        program.SetBaseType_Names(types_);
     }
 
     TreeToken PerformTreeMatching(TreeToken tree, IMatcher matcher) {

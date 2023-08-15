@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 public class Match {
     int start;
@@ -41,12 +42,12 @@ public class Match {
     public override string ToString() {
         string result = "(" + this.start.ToString();
         result += ", " + this.end.ToString() + "):";
-        foreach (IToken token in this.matched) {
-            result += token.ToString();
+        for (int i = 0; i < this.matched.Count; i++) {
+            result += this.matched[i].ToString();
         }
         result += "|";
-        foreach (IToken token in this.replacement) {
-            result += token.ToString();
+        for (int i = 0; i < this.replacement.Count; i++) {
+            result += this.replacement[i].ToString();
         }
         return Utils.WrapName(this.GetType().Name, result);
     }

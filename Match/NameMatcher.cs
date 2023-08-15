@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 
 public class NameMatcher : IMatcher {
-    public Match Match(TreeToken tokens) {
-        int i = -1;
-        foreach (IToken stoken in tokens) {
-            i += 1;
+    public Match Match(IParentToken tokens) {
+        for (int i = 0; i < tokens.Count; i++) {
+            IToken stoken = tokens[i];
             if (!(stoken is TextToken)) {
                 continue;
             }

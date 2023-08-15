@@ -9,6 +9,6 @@ public class Type_PatternSegment : IPatternSegment {
 
     public bool Matches(IToken token) {
         return (token is IValueToken 
-            && ((IValueToken)token).GetType_() == type_);
+            && ((IValueToken)token).GetType_().IsConvertibleTo(type_));
     }
 }
