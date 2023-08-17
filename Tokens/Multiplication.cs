@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-public class Multiplication : ParentToken, IValueToken {
+public class Multiplication : IParentToken, IValueToken {
+    public IParentToken parent { get; set; }
+    
     IValueToken o1;
     IValueToken o2;
     
-    public override int Count {
+    public int Count {
         get { return 2; }
     }
     
-    public override Token this[int i] {
+    public IToken this[int i] {
         get {
             if (i == 0) return o1;
             return o2;

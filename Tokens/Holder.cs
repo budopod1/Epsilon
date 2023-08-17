@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 
 public class Holder : TreeToken {
-    public Holder(List<Token> tokens) : base(tokens) {}
+    public Holder(List<IToken> tokens) : base(tokens) {}
     
-    public override TreeToken Copy(List<Token> tokens) {
+    public override TreeToken Copy(List<IToken> tokens) {
         return (TreeToken)new Holder(tokens);
     }
 
     public Block GetBlock() {
         if (this.Count < 2) return null;
-        Token token = this[1];
+        IToken token = this[1];
         if (!(token is Block)) return null;
         return (Block)token;
     }

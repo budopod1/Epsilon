@@ -1,6 +1,8 @@
 using System;
 
-public class Unit<T> : Token {
+public class Unit<T> : IToken {
+    public IParentToken parent { get; set; }
+    
     T value;
     
     public Unit(T value) {

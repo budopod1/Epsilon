@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 
 public class StringMatcher : IMatcher {
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            Token token = tokens[i];
+            IToken token = tokens[i];
             if (!(token is TextToken) || ((TextToken)token).GetText() != "\"") {
                 continue;
             }
             
-            List<Token> matched = new List<Token>();
+            List<IToken> matched = new List<IToken>();
             matched.Add(token);
             bool wasBackslash = false;
             for (int j = i + 1; j < tokens.Count; j++) {
@@ -25,7 +25,7 @@ public class StringMatcher : IMatcher {
                     if (text == "\\") {
                         wasBackslash = true;
                     } else if (text == "\"") {
-                        return new Match(i, j, new List<Token>(),
+                        return new Match(i, j, new List<IToken>(),
                                          matched);
                     }
                 }

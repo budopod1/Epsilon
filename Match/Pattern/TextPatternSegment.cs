@@ -7,7 +7,7 @@ public class TextPatternSegment : IPatternSegment {
         this.text = text;
     }
 
-    public bool Matches(Token token) {
+    public bool Matches(IToken token) {
         return (token is TextToken 
             && ((TextToken)token).GetText() == text);
     }

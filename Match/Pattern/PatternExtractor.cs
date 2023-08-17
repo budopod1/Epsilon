@@ -5,15 +5,15 @@ abstract public class PatternExtractor<T> {
     protected List<IPatternSegment> segments;
     protected IPatternProcessor<T> processor;
     
-    public T Extract(ParentToken tokens) {
+    public T Extract(IParentToken tokens) {
         int maxStart = tokens.Count - segments.Count;
         for (int i = 0; i < maxStart; i++) {
             bool matches = true;
             int j;
-            List<Token> tokenList = new List<Token>();
+            List<IToken> tokenList = new List<IToken>();
             for (j = 0; j < segments.Count; j++) {
                 IPatternSegment segment = segments[j];
-                Token token = tokens[i+j];
+                IToken token = tokens[i+j];
                 tokenList.Add(token);
                 if (!segment.Matches(token)) {
                     matches = false;

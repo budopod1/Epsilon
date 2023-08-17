@@ -2,20 +2,20 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 
-public class Wrapper2PatternProcessor : IPatternProcessor<List<Token>> {
+public class Wrapper2PatternProcessor : IPatternProcessor<List<IToken>> {
     Type wrapper;
-    IPatternProcessor<List<Token>> subprocessor;
+    IPatternProcessor<List<IToken>> subprocessor;
     
-    public Wrapper2PatternProcessor(IPatternProcessor<List<Token>> subprocessor,
+    public Wrapper2PatternProcessor(IPatternProcessor<List<IToken>> subprocessor,
                                    Type wrapper) {
         this.wrapper = wrapper;
         this.subprocessor = subprocessor;
     }
 
-    public List<Token> Process(List<Token> tokens, int start, int end) {
-        Token result = (Token)Activator.CreateInstance(
+    public List<IToken> Process(List<IToken> tokens, int start, int end) {
+        IToken result = (IToken)Activator.CreateInstance(
             wrapper, subprocessor.Process(tokens, start, end).ToArray()
         );
-        return new List<Token> {result};
+        return new List<IToken> {result};
     }
 }

@@ -1,19 +1,21 @@
 using System;
 using System.Collections.Generic;
 
-public class Function : Token, IMultiLineToken {
-    PatternExtractor<List<Token>> pattern;
+public class Function : IMultiLineToken {
+    public IParentToken parent { get; set; }
+    
+    PatternExtractor<List<IToken>> pattern;
     List<FunctionArgumentToken> arguments;
     Block block;
     
-    public Function(PatternExtractor<List<Token>> pattern, 
+    public Function(PatternExtractor<List<IToken>> pattern, 
                          List<FunctionArgumentToken> arguments, Block block) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.block = block;
     }
 
-    public PatternExtractor<List<Token>> GetPattern() {
+    public PatternExtractor<List<IToken>> GetPattern() {
         return pattern;
     }
 

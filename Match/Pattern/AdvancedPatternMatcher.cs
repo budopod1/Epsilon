@@ -5,7 +5,7 @@ public class AdvancedPatternMatcher : AdvancedPatternExtractor<Match>, IMatcher 
     public AdvancedPatternMatcher(
         List<IPatternSegment> start, List<IPatternSegment> repeated, int minRepeats,
         int maxRepeats, List<IPatternSegment> end,
-        IPatternProcessor<List<Token>> subprocessor) {
+        IPatternProcessor<List<IToken>> subprocessor) {
         this.start = start;
         this.repeated = repeated;
         this.minRepeats = minRepeats;
@@ -14,7 +14,7 @@ public class AdvancedPatternMatcher : AdvancedPatternExtractor<Match>, IMatcher 
         this.processor = new MatcherPatternProcessor(subprocessor);
     }
 
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         return this.Extract(tokens);
     }
 }

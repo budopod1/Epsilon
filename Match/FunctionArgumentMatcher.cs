@@ -12,14 +12,14 @@ public class FunctionArgumentMatcher : IMatcher {
         holderType = holder;
     }
     
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count-1; i++) {
             bool first = true;
             int indentCount = 0;
-            List<Token> replaced = new List<Token>();
-            List<Token> replacementTokens = new List<Token>();
+            List<IToken> replaced = new List<IToken>();
+            List<IToken> replacementTokens = new List<IToken>();
             for (int j = i; j < tokens.Count; j++) {
-                Token token = tokens[j];
+                IToken token = tokens[j];
                 if (!(token is TextToken)) break;
                 TextToken ttoken = ((TextToken)token);
                 string text = ttoken.GetText();
@@ -27,10 +27,10 @@ public class FunctionArgumentMatcher : IMatcher {
                 if (text == start) indentCount++;
                 if (text == end) indentCount--;
                 if (indentCount == 0) {
-                    Token holder = (Token)Activator.CreateInstance(
+                    IToken holder = (IToken)Activator.CreateInstance(
                         holderType, new object[] {replacementTokens}
                     );
-                    return new Match(i, j, new List<Token> {holder}, replaced);
+                    return new Match(i, j, new List<IToken> {holder}, replaced);
                 }
                 if (!first) replacementTokens.Add(token);
                 first = false;

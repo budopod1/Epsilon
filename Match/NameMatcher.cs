@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 
 public class NameMatcher : IMatcher {
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            Token stoken = tokens[i];
+            IToken stoken = tokens[i];
             if (!(stoken is TextToken)) {
                 continue;
             }
@@ -12,11 +12,11 @@ public class NameMatcher : IMatcher {
             if (!Utils.NameStartChars.Contains(name)) {
                 continue;
             }
-            List<Token> replaced = new List<Token>();
+            List<IToken> replaced = new List<IToken>();
             replaced.Add(stoken);
             int j;
             for (j = i+1; j < tokens.Count; j++) {
-                Token token = tokens[j];
+                IToken token = tokens[j];
                 if (token is TextToken) {
                     string text = ((TextToken)token).GetText();
                     
@@ -28,7 +28,7 @@ public class NameMatcher : IMatcher {
                 }
                 break;
             }
-            List<Token> replacement = new List<Token>();
+            List<IToken> replacement = new List<IToken>();
             replacement.Add(new Name(name));
             return new Match(i, j-1, replacement, replaced);
         }

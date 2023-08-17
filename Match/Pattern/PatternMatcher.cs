@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 public class PatternMatcher : PatternExtractor<Match>, IMatcher {
     public PatternMatcher(List<IPatternSegment> segments, 
-                          IPatternProcessor<List<Token>> subprocessor) {
+                          IPatternProcessor<List<IToken>> subprocessor) {
         this.segments = segments;
         this.processor = new MatcherPatternProcessor(subprocessor);
     }
 
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         return this.Extract(tokens);
     }
 }

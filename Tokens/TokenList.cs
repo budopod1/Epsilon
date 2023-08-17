@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class TokenList : IEnumerator<Token> {
-    List<Token> tokens;
+public class TokenList : IEnumerator<IToken> {
+    List<IToken> tokens;
     int i = -1;
     
-    public TokenList(List<Token> tokens) {
+    public TokenList(List<IToken> tokens) {
         this.tokens = tokens;
     }
 
@@ -19,7 +19,7 @@ public class TokenList : IEnumerator<Token> {
         i = -1;
     }
 
-    public Token Current {
+    public IToken Current {
         get {
             return this.tokens[i];
         }

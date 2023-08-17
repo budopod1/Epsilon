@@ -1,3 +1,3 @@
 using System;
 
-public interface IMultiLineToken {}
+public interface IMultiLineToken : IToken {}

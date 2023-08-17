@@ -16,15 +16,15 @@ public class ArgumentConverterMatcher : IMatcher {
         this.newArgument = newArgument;
     }
     
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int j = 0; j < tokens.Count; j++) {
-            Token token = tokens[j];
+            IToken token = tokens[j];
             if (Utils.IsInstance(token, oldArgument)) {
                 Unit<string> name = null;
                 Unit<Type_> type_Token = null;
-                ParentToken tree = ((ParentToken)token);
+                IParentToken tree = ((IParentToken)token);
                 for (int i = 0; i < tree.Count; i++) {
-                    Token subtoken = tree[i];
+                    IToken subtoken = tree[i];
                     if (Utils.IsInstance(subtoken, nameType)) {
                         name = ((Unit<string>)subtoken);
                     } else if (Utils.IsInstance(subtoken, type_TokenType)) {
@@ -36,13 +36,13 @@ public class ArgumentConverterMatcher : IMatcher {
                         "RawFunctionArgument is incomplete"
                     );
                 }
-                Token replacement = (Token)Activator.CreateInstance(
+                IToken replacement = (IToken)Activator.CreateInstance(
                     newArgument, new object[] {
                         name.GetValue(), type_Token.GetValue()
                     }
                 );
-                return new Match(j, j, new List<Token> {replacement},
-                                 new List<Token> {token});
+                return new Match(j, j, new List<IToken> {replacement},
+                                 new List<IToken> {token});
             }
         }
         return null;

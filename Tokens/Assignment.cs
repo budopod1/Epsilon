@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-public class Assignment : ParentToken {
+public class Assignment : IParentToken {
+    public IParentToken parent { get; set; }
+    
     Name variable;
     IValueToken value;
     
-    public override int Count {
+    public int Count {
         get { return 2; }
     }
     
-    public override Token this[int i] {
+    public IToken this[int i] {
         get {
             if (i == 0) return variable;
             return value;

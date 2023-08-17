@@ -1,5 +1,5 @@
 using System;
 
 public interface IMatcher {
-    Match Match(ParentToken token);
+    Match Match(IParentToken token);
 }

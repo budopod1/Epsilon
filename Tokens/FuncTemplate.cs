@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-public class FuncTemplate : Unit<PatternExtractor<List<Token>>>, IMultiLineToken {
+public class FuncTemplate : Unit<PatternExtractor<List<IToken>>>, IMultiLineToken {
     List<FunctionArgumentToken> arguments;
     
-    public FuncTemplate(PatternExtractor<List<Token>> pattern, 
+    public FuncTemplate(PatternExtractor<List<IToken>> pattern, 
                         List<FunctionArgumentToken> arguments) : base(pattern) {
         this.arguments = arguments;
     }

@@ -9,19 +9,19 @@ public class ListTokenParser<T> {
     
     Type seperator;
     Type item;
-    Func<Token, T> parser;
+    Func<IToken, T> parser;
     
-    public ListTokenParser(Type seperator, Type item, Func<Token, T> parser) {
+    public ListTokenParser(Type seperator, Type item, Func<IToken, T> parser) {
         this.seperator = seperator;
         this.item = item;
         this.parser = parser;
     }
 
-    public List<T> Parse(ParentToken tree) {
+    public List<T> Parse(IParentToken tree) {
         List<T> list = new List<T>();
         ParseState state = ParseState.ExpectItem;
         for (int i = 0; i < tree.Count; i++) {
-            Token token = tree[i];
+            IToken token = tree[i];
             switch (state) {
                 case ParseState.ExpectItem:
                     if (Utils.IsInstance(token, item)) {

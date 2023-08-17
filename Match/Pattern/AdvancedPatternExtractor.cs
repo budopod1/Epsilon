@@ -15,7 +15,7 @@ abstract public class AdvancedPatternExtractor<T> {
     protected List<IPatternSegment> end;
     protected IPatternProcessor<T> processor;
 
-    public T Extract(ParentToken tokens) {
+    public T Extract(IParentToken tokens) {
         Part part = Part.Start;
         for (int i = 0; i < tokens.Count; i++) {
             bool finishedMatch = false;
@@ -23,10 +23,10 @@ abstract public class AdvancedPatternExtractor<T> {
             int lastRepeatStop = -2; // default value should never be used
             int pi = 0; // part index
             int repeats = 0;
-            List<Token> tokenList = new List<Token>();
-            List<Token> repeatPartList = new List<Token>();
+            List<IToken> tokenList = new List<IToken>();
+            List<IToken> repeatPartList = new List<IToken>();
             for (j = 0; (i+j) < tokens.Count; j++) {
-                Token token = tokens[i+j];
+                IToken token = tokens[i+j];
                 if (part == Part.Start) {
                     if (start.Count == 0) {
                         j--; // back it up, as this doesn't count
@@ -65,7 +65,7 @@ abstract public class AdvancedPatternExtractor<T> {
                                 part = Part.End;
                                 continue;
                             }
-                            repeatPartList = new List<Token>();
+                            repeatPartList = new List<IToken>();
                             lastRepeatStop = j;
                         }
                         continue;

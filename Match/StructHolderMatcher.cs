@@ -13,16 +13,16 @@ public class StructHolderMatcher : IMatcher {
         holderType = holder;
     }
     
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count-1; i++) {
-            Token a = tokens[i];
-            Token b = tokens[i+1];
+            IToken a = tokens[i];
+            IToken b = tokens[i+1];
             if (Utils.IsInstance(a, nameType) && Utils.IsInstance(b, blockType)) {
-                List<Token> replaced = new List<Token> {a, b};
-                Token holder = (Token)Activator.CreateInstance(
+                List<IToken> replaced = new List<IToken> {a, b};
+                IToken holder = (IToken)Activator.CreateInstance(
                     holderType, new object[] {replaced}
                 );
-                return new Match(i, i+1, new List<Token> {holder}, replaced);
+                return new Match(i, i+1, new List<IToken> {holder}, replaced);
             }
         }
         return null;

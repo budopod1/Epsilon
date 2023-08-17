@@ -1,5 +1,5 @@
 using System;
 
 public interface IPatternSegment {
-    bool Matches(Token token);
+    bool Matches(IToken token);
 }

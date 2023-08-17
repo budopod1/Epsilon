@@ -16,20 +16,20 @@ public class VarDeclareMatcher : IMatcher {
         this.varDeclareType = varDeclareType;
     }
     
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count-2; i++) {
-            Token a = tokens[i];
-            Token b = tokens[i+1];
-            Token c = tokens[i+2];
+            IToken a = tokens[i];
+            IToken b = tokens[i+1];
+            IToken c = tokens[i+2];
             if (Utils.IsInstance(a, type_Type) && Utils.IsInstance(b, declareType)
                 && Utils.IsInstance(c, varType)) {
-                List<Token> replaced = new List<Token> {a, b, c};
-                Token result = (Token)Activator.CreateInstance(
+                List<IToken> replaced = new List<IToken> {a, b, c};
+                IToken result = (IToken)Activator.CreateInstance(
                     varDeclareType, new object[] {
-                        new List<Token> {a, c}
+                        new List<IToken> {a, c}
                     }
                 );
-                return new Match(i, i+2, new List<Token> {result}, replaced);
+                return new Match(i, i+2, new List<IToken> {result}, replaced);
             }
         }
         return null;

@@ -7,7 +7,7 @@ public class Type_PatternSegment : IPatternSegment {
         this.type_ = type_;
     }
 
-    public bool Matches(Token token) {
+    public bool Matches(IToken token) {
         return (token is IValueToken 
             && ((IValueToken)token).GetType_().IsConvertibleTo(type_));
     }

@@ -5,12 +5,12 @@ public class Program : TreeToken {
     Constants constants;
     List<string> baseType_Names = null;
     
-    public Program(List<Token> tokens,
+    public Program(List<IToken> tokens,
                     Constants constants) : base(tokens) {
         this.constants = constants;
     }
     
-    public Program(List<Token> tokens, Constants constants,
+    public Program(List<IToken> tokens, Constants constants,
                    List<string> baseType_Names) : base(tokens) {
         this.constants = constants;
         this.baseType_Names = baseType_Names;
@@ -24,39 +24,25 @@ public class Program : TreeToken {
         return baseType_Names;
     }
 
-    public void SetBaseType_Names(List<string> baseType_Names) {
-        this.baseType_Names = baseType_Names;
-    }
-
     public void UpdateParents() {
         UpdateParents(this);
     }
 
-    public static void UpdateParents(ParentToken token) {
+    public static void UpdateParents(IParentToken token) {
         for (int i = 0; i < token.Count; i++) {
-            Token sub = token[i];
+            IToken sub = token[i];
             sub.parent = token;
-            if (sub is ParentToken) {
-                UpdateParents(sub);
-            }
+            if (sub is IParentToken)
+                UpdateParents((IParentToken)token);
         }
-    }
-    
-    public override TreeToken Copy(List<Token> tokens) {
-        return (TreeToken)new Program(tokens, constants,
-                                      baseType_Names);
     }
 
-    public static Program GetProgram(Token token) {
-        Token current = token;
-        int i = 0;
-        while (!(current is Program)) {
-            current = current.parent;
-            if (++i > 1000) {
-                throw new ArgumentException("Cannot find parent within 1000 iterations: there may be a circular refrence");
-            }
-            if (current == null) return null;
-        }
-        return (Program)current;
+    public void SetBaseType_Names(List<string> baseType_Names) {
+        this.baseType_Names = baseType_Names;
+    }
+    
+    public override TreeToken Copy(List<IToken> tokens) {
+        return (TreeToken)new Program(tokens, constants,
+                                      baseType_Names);
     }
 }

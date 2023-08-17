@@ -16,40 +16,40 @@ public class Type_Matcher : IMatcher {
         this.listParser = listParser;
     }
     
-    public Match Match(ParentToken tokens) {
+    public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            Token name = tokens[i];
+            IToken name = tokens[i];
             
             if (Utils.IsInstance(name, baseType)) {
                 Unit<BaseType_> nameUnit = ((Unit<BaseType_>)name);
                 Type_ type_;
-                List<Token> replacement;
-                List<Token> replaced;
+                List<IToken> replacement;
+                List<IToken> replaced;
                 if (i + 1 < tokens.Count) {
-                    Token next = tokens[i + 1];
+                    IToken next = tokens[i + 1];
                     if (Utils.IsInstance(next, genericsType)) {
-                        ParentToken generics = ((ParentToken)next);
+                        IParentToken generics = ((IParentToken)next);
                         List<Type_> genericTypes_ = listParser.Parse(generics);
                         if (genericTypes_ == null) continue;
                         type_ = new Type_(nameUnit.GetValue(), genericTypes_);
-                        replacement = new List<Token> {
-                            (Token)Activator.CreateInstance(
+                        replacement = new List<IToken> {
+                            (IToken)Activator.CreateInstance(
                                 replaceType, new object[] {type_}
                             )
                         };
-                        replaced = new List<Token> {
+                        replaced = new List<IToken> {
                             name, generics
                         };
                         return new Match(i, i+1, replacement, replaced);
                     }
                 }
                 type_ = new Type_(nameUnit.GetValue());
-                replacement = new List<Token> {
-                    (Token)Activator.CreateInstance(
+                replacement = new List<IToken> {
+                    (IToken)Activator.CreateInstance(
                         replaceType, new object[] {type_}
                     )
                 };
-                replaced = new List<Token> {name};
+                replaced = new List<IToken> {name};
                 return new Match(i, i, replacement, replaced);
             }
         }
