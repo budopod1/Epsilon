@@ -7,7 +7,7 @@ public class Compiler {
     public void Compile(string text) {
         Console.WriteLine("Compiling...");
         
-        Program program = new Program(new List<IToken>(), new Constants());
+        Program program = new Program(new List<Token>(), new Constants());
         foreach (char chr in text) {
             program.Add(new TextToken(chr.ToString()));
         }
@@ -82,6 +82,8 @@ public class Compiler {
 
     Program ParseFunctionCode(Program program_) {
         Program program = ((Program)program_.Copy());
+
+        program.UpdateParents();
         
         List<IMatcher> rules = new List<IMatcher> {
             new PatternMatcher(
@@ -132,7 +134,7 @@ public class Compiler {
             ),
         };
         
-        foreach (IToken token in program) {
+        foreach (Token token in program) {
             if (token is Function) {
                 Function function = ((Function)token);
                 Block block = function.GetBlock();
@@ -140,7 +142,7 @@ public class Compiler {
                 while (anythingChanged) {
                     anythingChanged = false;
                     foreach (IMatcher rule in rules) {
-                        IToken ntoken;
+                        Token ntoken;
                         (ntoken, anythingChanged) = DoFunctionCodeRule(
                             block, rule
                         );
@@ -156,18 +158,19 @@ public class Compiler {
         return program;
     }
 
-    (IToken, bool) DoFunctionCodeRule(IParentToken parent_, IMatcher rule) {
+    (Token, bool) DoFunctionCodeRule(ParentToken parent_, IMatcher rule) {
         bool changed = false;
-        IParentToken parent = parent_;
+        ParentToken parent = parent_;
         if (parent is TreeToken) {
             TreeToken tree = ((TreeToken)parent);
             (changed, parent) = PerformMatchingChanged(tree, rule);
+            if (changed) Program.UpdateParents(parent);
         }
         for (int i = 0; i < parent.Count; i++) {
-            IToken sub = parent[i];
-            if (sub is IParentToken) {
+            Token sub = parent[i];
+            if (sub is ParentToken) {
                 bool thisChanged;
-                (sub, thisChanged) = DoFunctionCodeRule((IParentToken)sub, rule);
+                (sub, thisChanged) = DoFunctionCodeRule((ParentToken)sub, rule);
                 parent[i] = sub;
                 if (thisChanged) changed = true;
             }
@@ -192,7 +195,7 @@ public class Compiler {
             typeof(FunctionArgumentToken)
         );
         for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
+            Token token = program[i];
             if (!(token is FunctionHolder)) continue;
             FunctionHolder holder = ((FunctionHolder)token);
             TreeToken template = holder.GetRawTemplate();
@@ -207,7 +210,7 @@ public class Compiler {
     Program ParseFunctionTemplates(Program program_) {
         Program program = ((Program)program_.Copy());
         for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
+            Token token = program[i];
             if (!(token is FunctionHolder)) continue;
             FunctionHolder holder = ((FunctionHolder)token);
             RawFuncTemplate rawTemplate = holder.GetRawTemplate();
@@ -215,7 +218,7 @@ public class Compiler {
             List<FunctionArgumentToken> arguments = new List<FunctionArgumentToken>();
             List<int> slots = new List<int>();
             int j = -1;
-            foreach (IToken subtoken in rawTemplate) {
+            foreach (Token subtoken in rawTemplate) {
                 j++;
                 Type tokenType = subtoken.GetType();
                 IPatternSegment segment = null;
@@ -243,7 +246,7 @@ public class Compiler {
                 segments.Add(segment);
             }
             holder.SetTemplate(new FuncTemplate(
-                new ConfigurablePatternExtractor<List<IToken>>(
+                new ConfigurablePatternExtractor<List<Token>>(
                     segments, new SlotPatternProcessor(slots)
                 ),
                 arguments
@@ -271,7 +274,7 @@ public class Compiler {
             "<", ">", typeof(RawFunctionArgument)
         );
         for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
+            Token token = program[i];
             if (!(token is RawFuncTemplate)) continue;
             RawFuncTemplate template = ((RawFuncTemplate)token);
             while (true) { 
@@ -307,16 +310,16 @@ public class Compiler {
             typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
             new ListTokenParser<Type_>(
                 typeof(Comma), typeof(Type_Token), 
-                (IToken generic) => ((Type_Token)generic).GetValue()
+                (Token generic) => ((Type_Token)generic).GetValue()
             )
         );
         for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
+            Token token = program[i];
             if (!(token is FunctionHolder)) continue;
             FunctionHolder funcHolder = ((FunctionHolder)token);
             RawFuncTemplate template = funcHolder.GetRawTemplate();
             for (int j = 0; j < template.Count; j++) {
-                IToken subtoken = template[j];
+                Token subtoken = template[j];
                 if (!(subtoken is RawFunctionArgument)) continue;
                 TreeToken argument = ((TreeToken)subtoken);
                 argument = PerformMatching(argument, symbolMatcher);
@@ -355,7 +358,7 @@ public class Compiler {
             int constant = program.GetConstants().AddConstant(
                 new StringConstant(matchedString)
             );
-            List<IToken> replacement = new List<IToken>();
+            List<Token> replacement = new List<Token>();
             replacement.Add(new ConstantValue(constant));
             match.SetReplacement(replacement);
             program = (Program)match.Replace(program);
@@ -428,7 +431,7 @@ public class Compiler {
             int constant = program.GetConstants().AddConstant(
                 new FloatConstant(matchedString)
             );
-            List<IToken> replacement = new List<IToken>();
+            List<Token> replacement = new List<Token>();
             replacement.Add(new ConstantValue(constant));
             match.SetReplacement(replacement);
             program = (Program)match.Replace(program);
@@ -446,7 +449,7 @@ public class Compiler {
             int constant = program.GetConstants().AddConstant(
                 new IntConstant(matchedString)
             );
-            List<IToken> replacement = new List<IToken>();
+            List<Token> replacement = new List<Token>();
             replacement.Add(new ConstantValue(constant));
             match.SetReplacement(replacement);
             program = (Program)match.Replace(program);
@@ -476,7 +479,7 @@ public class Compiler {
         List<string> baseType_Names = program.GetBaseType_Names();
         Func<string, BaseType_> converter = (string source) => 
             BaseType_.ParseString(source, baseType_Names);
-        foreach (IToken token in program) {
+        foreach (Token token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
@@ -495,7 +498,7 @@ public class Compiler {
     
     Program TokenizeTypes_(Program program) {
         program = (Program)program.Copy();
-        foreach (IToken token in program) {
+        foreach (Token token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
@@ -506,7 +509,7 @@ public class Compiler {
                         typeof(Type_Token),
                         new ListTokenParser<Type_>(
                             typeof(Comma), typeof(Type_Token), 
-                            (IToken generic) => ((Type_Token)generic).GetValue()
+                            (Token generic) => ((Type_Token)generic).GetValue()
                         )
                     )
                 );
@@ -518,7 +521,7 @@ public class Compiler {
 
     Program TokenizeVarDeclarations(Program program) {
         program = (Program)program.Copy();
-        foreach (IToken token in program) {
+        foreach (Token token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
@@ -549,11 +552,11 @@ public class Compiler {
 
     void ComputeBaseTypes_(Program program) {
         List<string> types_ = new List<string>();
-        foreach (IToken token_ in program) {
+        foreach (Token token_ in program) {
             if (token_ is StructHolder) {
                 StructHolder token = ((StructHolder)token_);
                 if (token.Count == 0) continue;
-                IToken name = token[0];
+                Token name = token[0];
                 if (name is Name) {
                     types_.Add(((Name)name).GetValue());
                 }
@@ -572,7 +575,7 @@ public class Compiler {
                 tree, matcher
             );
             foreach ((int i, TreeToken subtree) in tree.IndexTraverse()) {
-                IToken subtoken = subtree[i];
+                Token subtoken = subtree[i];
                 if (subtoken is TreeToken) {
                     (bool changedHere, TreeToken newToken) = PerformMatchingChanged(
                         (TreeToken)subtoken, matcher

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class FunctionArgumentToken : IToken {
+public class FunctionArgumentToken : Token {
     string name;
     Type_ type_;
     

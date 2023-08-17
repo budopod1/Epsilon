@@ -9,14 +9,14 @@ public class SymbolMatcher : IMatcher {
         this.symbols = symbols;
     }
     
-    public Match Match(IParentToken tokens) {
+    public Match Match(ParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             List<string> possibleSymbols = new List<string>(this.symbols.Keys);
-            List<IToken> replaced = new List<IToken>();
+            List<Token> replaced = new List<Token>();
             int k = -1;
             for (int j = i; j < tokens.Count; j++) {
                 k++;
-                IToken token = tokens[j];
+                Token token = tokens[j];
                 if (!(token is TextToken)) break;
                 replaced.Add(token);
                 char chr = ((TextToken)token).GetText()[0];
@@ -29,11 +29,11 @@ public class SymbolMatcher : IMatcher {
                         continue;
                     }
                     if (k == symbol.Length-1) {
-                        List<IToken> replacement = new List<IToken>();
+                        List<Token> replacement = new List<Token>();
                         Type type = this.symbols[symbol];
                         if (type != null) {
                             Object result = Activator.CreateInstance(this.symbols[symbol]);
-                            replacement.Add((IToken)result);
+                            replacement.Add((Token)result);
                         }
                         return new Match(i, j, replacement, replaced);
                     }

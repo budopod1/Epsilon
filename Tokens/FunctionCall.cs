@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-public class FunctionCall : IParentToken, IValueToken {
+public class FunctionCall : ParentToken, IValueToken {
     Name function;
     List<IValueToken> arguments;
     
-    public int Count {
+    public override int Count {
         get {
             return 1 + arguments.Count;
         }
     }
     
-    public IToken this[int i] {
+    public override Token this[int i] {
         get {
             if (i == 0) return function;
             return arguments[i-1];

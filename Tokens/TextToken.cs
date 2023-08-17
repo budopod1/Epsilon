@@ -1,6 +1,6 @@
 using System;
 
-public class TextToken : IToken {
+public class TextToken : Token {
     string text;
     
     public TextToken(string text) {

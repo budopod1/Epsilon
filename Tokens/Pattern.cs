@@ -1,7 +1,7 @@
 /*
 using System;
 
-public class Pattern : IToken {
+public class Pattern : Token {
     // TODO: complete
 }
 */

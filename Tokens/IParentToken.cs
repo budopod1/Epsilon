@@ -1,12 +1,12 @@
 using System;
 
-public interface IParentToken : IMultiLineToken {
-    IToken this[int i] {
+public abstract class ParentToken : Token, IMultiLineToken {
+    public abstract Token this[int i] {
         get;
         set;
     }
 
-    int Count {
+    public abstract int Count {
         get;
     }
 }

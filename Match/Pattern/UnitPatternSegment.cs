@@ -9,7 +9,7 @@ public class UnitPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
         this.unit = unit;
     }
 
-    public bool Matches(IToken token) {
+    public bool Matches(Token token) {
         return (token is Unit<T> && Utils.IsInstance(token, unit)
             && ((Unit<T>)token).GetValue().Equals(value));
     }

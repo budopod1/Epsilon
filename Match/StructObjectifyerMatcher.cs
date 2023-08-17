@@ -14,25 +14,25 @@ public class StructObjectifyerMatcher : IMatcher {
         this.listParser = listParser;
     }
     
-    public Match Match(IParentToken tokens) {
+    public Match Match(ParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            IToken token = tokens[i];
+            Token token = tokens[i];
             if (Utils.IsInstance(token, structHolderType)) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
                 if (block == null) continue;
-                IToken nameT = holder[0];
+                Token nameT = holder[0];
                 if (!(nameT is Unit<string>)) continue;
                 Name name = ((Name)nameT);
                 string nameStr = name.GetValue();
                 List<Field> fields = listParser.Parse(block);
-                IToken compiled = (IToken)Activator.CreateInstance(
+                Token compiled = (Token)Activator.CreateInstance(
                     structCompiledType, new object[] {
                         nameStr, fields
                     }
                 );
-                List<IToken> replaced = new List<IToken> {token};
-                return new Match(i, i, new List<IToken> {compiled}, replaced);
+                List<Token> replaced = new List<Token> {token};
+                return new Match(i, i, new List<Token> {compiled}, replaced);
             }
         }
         return null;

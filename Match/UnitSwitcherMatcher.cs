@@ -13,9 +13,9 @@ public class UnitSwitcherMatcher<TOld, TNew> : IMatcher {
         this.replaceType = replaceType;
     }
     
-    public Match Match(IParentToken tokens) {
+    public Match Match(ParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            IToken token = tokens[i];
+            Token token = tokens[i];
             
             if (!Utils.IsInstance(token, matchType)) continue;
             
@@ -23,12 +23,12 @@ public class UnitSwitcherMatcher<TOld, TNew> : IMatcher {
             TOld value = unit.GetValue();
             TNew replacement = replacer(value);
             if (replacement != null) {
-                List<IToken> replacementTokens = new List<IToken> {
+                List<Token> replacementTokens = new List<Token> {
                     (Unit<TNew>)Activator.CreateInstance(
                         replaceType, new object[] {replacement}
                     )
                 };
-                List<IToken> replaced = new List<IToken> {token};
+                List<Token> replaced = new List<Token> {token};
                 return new Match(i, i, replacementTokens, replaced);
             }
         }

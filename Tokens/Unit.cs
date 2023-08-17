@@ -1,6 +1,6 @@
 using System;
 
-public class Unit<T> : IToken {
+public class Unit<T> : Token {
     T value;
     
     public Unit(T value) {

@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 
 public class FloatMatcher : IMatcher {
-    public Match Match(IParentToken tokens) {
+    public Match Match(ParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            List<IToken> replaced = new List<IToken>();
+            List<Token> replaced = new List<Token>();
             bool dot = false;
             bool anyMatch = false;
             int j;
             for (j = i; j < tokens.Count; j++) {
-                IToken token = tokens[j];
+                Token token = tokens[j];
                 if (!(token is TextToken)) {
                     break;
                 }
@@ -30,7 +30,7 @@ public class FloatMatcher : IMatcher {
                 replaced.Add(token);
             }
             if (anyMatch && dot) {
-                return new Match(i, j-1, replaced, new List<IToken>());
+                return new Match(i, j-1, replaced, new List<Token>());
             }
         }
         return null;

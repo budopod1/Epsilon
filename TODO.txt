@@ -4,3 +4,4 @@
 * used IParentToken more often in matchers for iterating over children
 * remove Symbolic token and children
 * add compilation exceptions
+* make concurrent pattern matchers

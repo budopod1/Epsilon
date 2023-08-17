@@ -7,7 +7,7 @@ public class TypePatternSegment : IPatternSegment {
         this.type = type;
     }
 
-    public bool Matches(IToken token) {
+    public bool Matches(Token token) {
         return Utils.IsInstance(token, type);
     }
 }

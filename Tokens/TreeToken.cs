@@ -2,26 +2,26 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class TreeToken : IParentToken, IEnumerable<IToken> {
-    List<IToken> tokens;
+public class TreeToken : ParentToken, IEnumerable<Token> {
+    List<Token> tokens;
     
-    public TreeToken(List<IToken> tokens) {
+    public TreeToken(List<Token> tokens) {
         this.tokens = tokens;
     }
 
-    public List<IToken> GetTokens() {
+    public List<Token> GetTokens() {
         return tokens;
     }
 
-    public void SetTokens(List<IToken> tokens) {
+    public void SetTokens(List<Token> tokens) {
         this.tokens = tokens;
     }
 
-    public void Add(IToken token) {
+    public void Add(Token token) {
         this.tokens.Add(token);
     }
 
-    public IToken this[int i] {
+    public override Token this[int i] {
         get {
             return this.tokens[i];
         }
@@ -31,21 +31,21 @@ public class TreeToken : IParentToken, IEnumerable<IToken> {
         }
     }
 
-    public virtual TreeToken Copy(List<IToken> tokens) {
+    public virtual TreeToken Copy(List<Token> tokens) {
         return new TreeToken(tokens);
     }
 
     public TreeToken Copy() {
-        return Copy(new List<IToken>(this.tokens));
+        return Copy(new List<Token>(this.tokens));
     }
 
-    public int Count {
+    public override int Count {
         get {
             return this.tokens.Count;
         }
     }
 
-    public IEnumerator<IToken> GetEnumerator() {
+    public IEnumerator<Token> GetEnumerator() {
         return new TokenList(this.tokens);
     }
     
@@ -53,11 +53,11 @@ public class TreeToken : IParentToken, IEnumerable<IToken> {
         return this.GetEnumerator();
     }
 
-    public IEnumerable<IToken> Traverse() {
+    public IEnumerable<Token> Traverse() {
         yield return this;
-        foreach (IToken token in this) {
+        foreach (Token token in this) {
             if (token is TreeToken) {
-                foreach (IToken subToken in ((TreeToken)token).Traverse()) {
+                foreach (Token subToken in ((TreeToken)token).Traverse()) {
                     yield return subToken;
                 }
             } else {
@@ -69,7 +69,7 @@ public class TreeToken : IParentToken, IEnumerable<IToken> {
     public IEnumerable<(int, TreeToken)> IndexTraverse() {
         for (int i = 0; i < this.Count; i++) {
             yield return (i, this);
-            IToken token = this[i];
+            Token token = this[i];
             if (token is TreeToken) {
                 foreach ((int, TreeToken) sub in ((TreeToken)token).IndexTraverse()) {
                     yield return sub;
@@ -81,7 +81,7 @@ public class TreeToken : IParentToken, IEnumerable<IToken> {
     public override string ToString() {
         string result = "";
         bool whitespace = false;
-        foreach (IToken token in this) {
+        foreach (Token token in this) {
             result += token.ToString();
             if (token is IMultiLineToken 
                 || (token is TextToken && 

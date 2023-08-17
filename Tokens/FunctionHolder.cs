@@ -2,27 +2,27 @@ using System;
 using System.Collections.Generic;
 
 public class FunctionHolder : Holder {
-    public FunctionHolder(List<IToken> tokens) : base(tokens) {}
+    public FunctionHolder(List<Token> tokens) : base(tokens) {}
     
-    public override TreeToken Copy(List<IToken> tokens) {
+    public override TreeToken Copy(List<Token> tokens) {
         return (TreeToken)new FunctionHolder(tokens);
     }
 
     public RawFuncTemplate GetRawTemplate() {
         if (this.Count < 2) return null;
-        IToken token = this[0];
+        Token token = this[0];
         if (!(token is RawFuncTemplate)) return null;
         return (RawFuncTemplate)token;
     }
 
     public FuncTemplate GetTemplate() {
         if (this.Count < 2) return null;
-        IToken token = this[0];
+        Token token = this[0];
         if (!(token is FuncTemplate)) return null;
         return (FuncTemplate)token;
     }
 
-    public void SetTemplate(IToken template) {
+    public void SetTemplate(Token template) {
         if (this.Count < 2)
             throw new InvalidOperationException(
                 "FuncHolder does not have template already set"

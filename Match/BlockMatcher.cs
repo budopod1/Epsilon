@@ -13,13 +13,13 @@ public class BlockMatcher : IMatcher {
         this.holder = holder;
     }
     
-    public Match Match(IParentToken tokens) {
+    public Match Match(ParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             int indent = 0;
             bool any = false;
-            List<IToken> replaced = new List<IToken>();
+            List<Token> replaced = new List<Token>();
             for (int j = i; j < tokens.Count; j++) {
-                IToken token = tokens[j];
+                Token token = tokens[j];
                 replaced.Add(token);
                 if (Utils.IsInstance(token, start)) {
                     indent++;
@@ -31,11 +31,11 @@ public class BlockMatcher : IMatcher {
                 }
                 if (indent == 0) {
                     if (any) {
-                        List<IToken> replacement = new List<IToken>();
-                        List<IToken> replace = new List<IToken>(replaced);
+                        List<Token> replacement = new List<Token>();
+                        List<Token> replace = new List<Token>(replaced);
                         replace.RemoveAt(0);
                         replace.RemoveAt(replace.Count-1);
-                        IToken holderToken = (IToken)Activator.CreateInstance(holder, new object[] {replace});
+                        Token holderToken = (Token)Activator.CreateInstance(holder, new object[] {replace});
                         replacement.Add(holderToken);
                         return new Match(i, j, replacement, replaced);
                     } else {

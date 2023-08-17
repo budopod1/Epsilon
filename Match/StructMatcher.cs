@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 
 public class StructMatcher : IMatcher {
-    public Match Match(IParentToken tokens) {
+    public Match Match(ParentToken tokens) {
         int i = 0;
-        foreach (IToken token in tokens) {
+        foreach (Token token in tokens) {
             
             i++;
         }

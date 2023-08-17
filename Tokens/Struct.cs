@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Struct : IMultiLineToken {
+public class Struct : Token, IMultiLineToken {
     string name;
     List<Field> fields;
     

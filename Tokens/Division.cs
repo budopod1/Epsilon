@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 
-public class Division : IParentToken, IValueToken {
+public class Division : ParentToken, IValueToken {
     IValueToken o1;
     IValueToken o2;
     
-    public int Count {
+    public override int Count {
         get { return 2; }
     }
     
-    public IToken this[int i] {
+    public override Token this[int i] {
         get {
             if (i == 0) return o1;
             return o2;
