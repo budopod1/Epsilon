@@ -7,7 +7,7 @@ abstract public class PatternExtractor<T> {
     
     public T Extract(IParentToken tokens) {
         int maxStart = tokens.Count - segments.Count;
-        for (int i = 0; i < maxStart; i++) {
+        for (int i = 0; i <= maxStart; i++) {
             bool matches = true;
             int j;
             List<IToken> tokenList = new List<IToken>();

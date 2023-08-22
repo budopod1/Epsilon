@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class Generics : TreeToken {
     public Generics(List<IToken> tokens) : base(tokens) {}
     
-    public override TreeToken Copy(List<IToken> tokens) {
+    protected override TreeToken Copy_(List<IToken> tokens) {
         return (TreeToken)new Generics(tokens);
     }
 }

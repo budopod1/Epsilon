@@ -25,23 +25,15 @@ public class Program : TreeToken {
     }
 
     public void UpdateParents() {
-        UpdateParents(this);
-    }
-
-    public static void UpdateParents(IParentToken token) {
-        for (int i = 0; i < token.Count; i++) {
-            IToken sub = token[i];
-            sub.parent = token;
-            if (sub is IParentToken)
-                UpdateParents((IParentToken)token);
-        }
+        TokenUtils.UpdateParents(this);
+        parent = null;
     }
 
     public void SetBaseType_Names(List<string> baseType_Names) {
         this.baseType_Names = baseType_Names;
     }
     
-    public override TreeToken Copy(List<IToken> tokens) {
+    protected override TreeToken Copy_(List<IToken> tokens) {
         return (TreeToken)new Program(tokens, constants,
                                       baseType_Names);
     }

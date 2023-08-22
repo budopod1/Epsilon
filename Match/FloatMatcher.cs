@@ -7,6 +7,7 @@ public class FloatMatcher : IMatcher {
             List<IToken> replaced = new List<IToken>();
             bool dot = false;
             bool anyMatch = false;
+            bool content = false;
             int j;
             for (j = i; j < tokens.Count; j++) {
                 IToken token = tokens[j];
@@ -19,6 +20,7 @@ public class FloatMatcher : IMatcher {
                     foundMatch = true;
                 } else if ("1234567890".Contains(digit)) {
                     foundMatch = true;
+                    content = true;
                 } else if (digit == "." && !dot) {
                     dot = true;
                     foundMatch = true;
@@ -29,8 +31,8 @@ public class FloatMatcher : IMatcher {
                 }
                 replaced.Add(token);
             }
-            if (anyMatch && dot) {
-                return new Match(i, j-1, replaced, new List<IToken>());
+            if (anyMatch && dot && content) {
+                return new Match(i, j-1, new List<IToken>(), replaced);
             }
         }
         return null;

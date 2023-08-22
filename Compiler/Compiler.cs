@@ -1,9 +1,8 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class Compiler {
-    public Compiler() {}
-
     public void Compile(string text) {
         Console.WriteLine("Compiling...");
         
@@ -59,8 +58,6 @@ public class Compiler {
         
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
-
-        // Console.WriteLine(program.ToString());
         
         Console.WriteLine("Objectifying structs...");
         program = ObjectifyingStructs(program);
@@ -74,6 +71,12 @@ public class Compiler {
         Console.WriteLine("Objectifying functions...");
         program = ObjectifyingFunctions(program);
         
+        Console.WriteLine("Splitting program into lines...");
+        program = SplitProgramIntoLines(program);
+        
+        Console.WriteLine("Getting scope variables...");
+        program = GetScopeVariables(program);
+        
         Console.WriteLine("Parsing function code...");
         program = ParseFunctionCode(program);
         
@@ -85,97 +88,214 @@ public class Compiler {
 
         program.UpdateParents();
         
-        List<IMatcher> rules = new List<IMatcher> {
-            new PatternMatcher(
-                new List<IPatternSegment> {
-                    new Type_PatternSegment(new Type_("Q")),
-                    new TypePatternSegment(typeof(Plus)),
-                    new Type_PatternSegment(new Type_("Q")),
-                }, new Wrapper2PatternProcessor(
-                    new SlotPatternProcessor(new List<int> {0, 2}), typeof(Addition)
+        List<List<IMatcher>> rules = new List<List<IMatcher>> {
+            new List<IMatcher> {
+                new BlockMatcher(
+                    typeof(ParenthesisOpen), typeof(ParenthesisClose), typeof(RawGroup)
                 )
-            ),
-            new PatternMatcher(
-                new List<IPatternSegment> {
-                    new Type_PatternSegment(new Type_("Q")),
-                    new TypePatternSegment(typeof(Minus)),
-                    new Type_PatternSegment(new Type_("Q")),
-                }, new Wrapper2PatternProcessor(
-                    new SlotPatternProcessor(new List<int> {0, 2}), typeof(Subtraction)
-                )
-            ),
-            new PatternMatcher(
-                new List<IPatternSegment> {
-                    new Type_PatternSegment(new Type_("Q")),
-                    new TypePatternSegment(typeof(Star)),
-                    new Type_PatternSegment(new Type_("Q")),
-                }, new Wrapper2PatternProcessor(
-                    new SlotPatternProcessor(new List<int> {0, 2}),
-                                             typeof(Multiplication)
-                )
-            ),
-            new PatternMatcher(
-                new List<IPatternSegment> {
-                    new Type_PatternSegment(new Type_("Q")),
-                    new TypePatternSegment(typeof(Slash)),
-                    new Type_PatternSegment(new Type_("Q")),
-                }, new Wrapper2PatternProcessor(
-                    new SlotPatternProcessor(new List<int> {0, 2}), typeof(Division)
-                )
-            ),
-            new PatternMatcher(
-                new List<IPatternSegment> {
-                    new TypePatternSegment(typeof(Name)),
-                    new TypePatternSegment(typeof(Equal)),
-                    new Type_PatternSegment(Type_.Any()),
-                }, new Wrapper2PatternProcessor(
-                    new SlotPatternProcessor(new List<int> {0, 2}), typeof(Assignment)
-                )
-            ),
+            },
+            new List<IMatcher> {
+                new GroupConverterMatcher(typeof(RawGroup), typeof(Group)),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new ConditionPatternSegment<Name>(
+                            (Name name) => Scope.GetEnclosing(name)
+                                                .ContainsVar(name.GetValue())
+                        ),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0}), typeof(Variable)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new Type_PatternSegment(new Type_("Q")),
+                        new TypePatternSegment(typeof(Plus)),
+                        new Type_PatternSegment(new Type_("Q")),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Addition)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new Type_PatternSegment(new Type_("Q")),
+                        new TypePatternSegment(typeof(Minus)),
+                        new Type_PatternSegment(new Type_("Q")),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Subtraction)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new Type_PatternSegment(new Type_("Q")),
+                        new TypePatternSegment(typeof(Star)),
+                        new Type_PatternSegment(new Type_("Q")),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                                                 typeof(Multiplication)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new Type_PatternSegment(new Type_("Q")),
+                        new TypePatternSegment(typeof(Slash)),
+                        new Type_PatternSegment(new Type_("Q")),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Division)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new Type_PatternSegment(new Type_("Q")),
+                        new TypePatternSegment(typeof(Percent)),
+                        new Type_PatternSegment(new Type_("Q")),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Modulo)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Variable)),
+                        new TypePatternSegment(typeof(Equal)),
+                        new Type_PatternSegment(Type_.Any()),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Assignment)
+                    )
+                ),
+            }
         };
         
         foreach (IToken token in program) {
             if (token is Function) {
                 Function function = ((Function)token);
                 Block block = function.GetBlock();
-                bool anythingChanged = true;
-                while (anythingChanged) {
-                    anythingChanged = false;
-                    foreach (IMatcher rule in rules) {
-                        IToken ntoken;
-                        (ntoken, anythingChanged) = DoFunctionCodeRule(
-                            block, rule
-                        );
-                        block = ((Block)ntoken);
-                        if (anythingChanged) {
-                            break;
+                /*
+                foreach (List<IMatcher> ruleset in rules) {
+                    bool anythingChanged = true;
+                    while (anythingChanged) {
+                        anythingChanged = false;
+                        foreach (IMatcher rule in ruleset) {
+                            IToken ntoken;
+                            (ntoken, anythingChanged) = 
+                                DoFunctionCodeRule(
+                                block, rule
+                            );
+                            block = ((Block)ntoken);
+                            if (anythingChanged) {
+                                break;
+                            }
+                            Console.WriteLine(block);
                         }
                     }
                 }
-                function.SetBlock(block);
+                */
+                function.SetBlock(DoBlockCodeRules(block, rules));
             }
         }
         return program;
     }
 
-    (IToken, bool) DoFunctionCodeRule(IParentToken parent_, IMatcher rule) {
-        bool changed = false;
-        IParentToken parent = parent_;
-        if (parent is TreeToken) {
-            TreeToken tree = ((TreeToken)parent);
-            (changed, parent) = PerformMatchingChanged(tree, rule);
-            if (changed) Program.UpdateParents(parent);
+    Block DoBlockCodeRules(Block block, List<List<IMatcher>> rules) {
+        for (int i = 0; i < block.Count; i++) {
+            IToken token = block[i];
+            if (token is Line) {
+                Line line = ((Line)token);
+                foreach (List<IMatcher> ruleset in rules) {
+                    line = (Line)DoTreeCodeRules(line, ruleset);
+                }
+                block[i] = line;
+            } // TODO: else if (token is Block) {
         }
+        return block;
+    }
+
+    IParentToken DoTreeCodeRules(IParentToken parent_, List<IMatcher> ruleset) {
+        IParentToken parent = parent_;
+        bool changed = true;
+        while (changed) {
+            changed = false;
+            for (int i = 0; i < parent.Count; i++) {
+                IToken sub = parent[i];
+                if (sub is IParentToken) {
+                    IParentToken subparent = ((IParentToken)sub);
+                    parent[i] = DoTreeCodeRules(subparent, ruleset);
+                }
+            }
+            if (parent is TreeToken) {
+                TreeToken tree = ((TreeToken)parent);
+                foreach (IMatcher rule in ruleset) {
+                    (changed, parent) = PerformMatchingChanged(tree, rule);
+                    if (changed) {
+                        TokenUtils.UpdateParents(parent);
+                        break;
+                    }
+                }
+            }
+        }
+        return parent;
+    }
+
+    /*
+    (IToken, bool) DoFunctionCodeRule(IParentToken parent_, IMatcher rule) {
+        IParentToken parent = parent_;
         for (int i = 0; i < parent.Count; i++) {
             IToken sub = parent[i];
             if (sub is IParentToken) {
                 bool thisChanged;
                 (sub, thisChanged) = DoFunctionCodeRule((IParentToken)sub, rule);
                 parent[i] = sub;
-                if (thisChanged) changed = true;
+                if (thisChanged) {
+                    return (parent, true);
+                }
             }
         }
+        bool changed = false;
+        if (parent is TreeToken) {
+            TreeToken tree = ((TreeToken)parent);
+            (changed, parent) = PerformMatchingChanged(tree, rule);
+            if (changed) TokenUtils.UpdateParents(parent);
+        }
         return (parent, changed);
+    }
+    */
+
+    Program SplitProgramIntoLines(Program program) {
+        SplitTokensParser parser = new SplitTokensParser(typeof(HNL), false);
+        foreach (IToken token in program) {
+            if (token is Function) {
+                Function function = ((Function)token);
+                Block block = function.GetBlock();
+                List<List<IToken>> rawLines = parser.Parse(block);
+                List<IToken> lines = new List<IToken>();
+                foreach(List<IToken> section in rawLines) {
+                    lines.Add(new Line(section));
+                }
+                function.SetBlock((Block)block.Copy(lines));
+            }
+        }
+        return program;
+    }
+
+    Program GetScopeVariables(Program program) {
+        foreach (IToken token in program) {
+            if (token is Function) {
+                Function function = ((Function)token);
+                Scope scope = function.GetScope();
+                function.SetBlock((Block)PerformTreeMatching(
+                    function.GetBlock(), new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new TypePatternSegment(typeof(VarDeclaration)),
+                        }, new DisposePatternProcessor((List<IToken> tokens) => {
+                            VarDeclaration declaration = ((VarDeclaration)tokens[0]);
+                            scope.AddVar(
+                                declaration.GetName().GetValue(),
+                                declaration.GetType_()
+                            );
+                        })
+                    )
+                ));
+            }
+        }
+        return program;
     }
 
     Program ObjectifyingFunctions(Program program) {
@@ -354,9 +474,13 @@ public class Compiler {
         while (true) {
             Match match = matcher.Match(program);
             if (match == null) break;
-            string matchedString = String.Join("", match.GetMatched());
+            string matchedString = String.Join(
+                "", match.GetMatched().Select(
+                    (IToken token) => ((TextToken)token).GetText()
+                )
+            );
             int constant = program.GetConstants().AddConstant(
-                new StringConstant(matchedString)
+                StringConstant.FromString(matchedString)
             );
             List<IToken> replacement = new List<IToken>();
             replacement.Add(new ConstantValue(constant));
@@ -402,15 +526,19 @@ public class Compiler {
                 {"-", typeof(Minus)},
                 {"*", typeof(Star)},
                 {"/", typeof(Slash)},
+                {"%", typeof(Percent)},
                 {" ", null},
                 {"\n", null},
                 {"\t", null},
                 {"{", typeof(BracketOpen)},
                 {"}", typeof(BracketClose)},
+                {"(", typeof(ParenthesisOpen)},
+                {")", typeof(ParenthesisClose)},
                 {"<", typeof(GenericsOpen)},
                 {">", typeof(GenericsClose)},
                 {":", typeof(Colon)},
                 {",", typeof(Comma)},
+                {";", typeof(HNL)},
             }
         );
         while (true) {
@@ -427,9 +555,13 @@ public class Compiler {
         while (true) {
             Match match = matcher.Match(program);
             if (match == null) break;
-            string matchedString = String.Join("", match.GetMatched());
+            string matchedString = String.Join(
+                "", match.GetMatched().Select(
+                    (IToken token) => ((TextToken)token).GetText()
+                )
+            );
             int constant = program.GetConstants().AddConstant(
-                new FloatConstant(matchedString)
+                FloatConstant.FromString(matchedString)
             );
             List<IToken> replacement = new List<IToken>();
             replacement.Add(new ConstantValue(constant));
@@ -445,9 +577,13 @@ public class Compiler {
         while (true) {
             Match match = matcher.Match(program);
             if (match == null) break;
-            string matchedString = String.Join("", match.GetMatched());
+            string matchedString = String.Join(
+                "", match.GetMatched().Select(
+                    (IToken token) => ((TextToken)token).GetText()
+                )
+            );
             int constant = program.GetConstants().AddConstant(
-                new IntConstant(matchedString)
+                IntConstant.FromString(matchedString)
             );
             List<IToken> replacement = new List<IToken>();
             replacement.Add(new ConstantValue(constant));

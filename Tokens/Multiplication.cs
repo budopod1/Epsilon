@@ -37,6 +37,6 @@ public class Multiplication : IParentToken, IValueToken {
     }
 
     public Type_ GetType_() {
-        return Type_.Unknown(); // temp
+        return Type_.Common(o1.GetType_(), o2.GetType_());
     }
 }

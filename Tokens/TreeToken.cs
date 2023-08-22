@@ -33,12 +33,20 @@ public class TreeToken : IParentToken, IEnumerable<IToken> {
         }
     }
 
-    public virtual TreeToken Copy(List<IToken> tokens) {
+    protected virtual TreeToken Copy_(List<IToken> tokens) {
         return new TreeToken(tokens);
     }
 
+    public TreeToken Copy(List<IToken> tokens) {
+        TreeToken copy = Copy_(tokens);
+        copy.parent = parent;
+        return copy;
+    }
+
     public TreeToken Copy() {
-        return Copy(new List<IToken>(this.tokens));
+        TreeToken copy = Copy_(new List<IToken>(this.tokens));
+        copy.parent = parent;
+        return copy;
     }
 
     public int Count {

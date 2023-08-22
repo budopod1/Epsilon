@@ -1,12 +1,34 @@
 using System;
 using System.Collections.Generic;
 
-public class Function : IMultiLineToken {
+public class Function : IParentToken {
     public IParentToken parent { get; set; }
+    
+    public int Count {
+        get { return 1 + arguments.Count; }
+    }
+    
+    public IToken this[int i] {
+        get {
+            if (i == 0) {
+                return block;
+            } else {
+                return arguments[i-1];
+            }
+        }
+        set {
+            if (i == 0) {
+                block = ((Block)value);
+            } else {
+                arguments[i-1] = (FunctionArgumentToken)value;
+            }
+        }
+    }
     
     PatternExtractor<List<IToken>> pattern;
     List<FunctionArgumentToken> arguments;
     Block block;
+    Scope scope = new Scope();
     
     public Function(PatternExtractor<List<IToken>> pattern, 
                          List<FunctionArgumentToken> arguments, Block block) {
@@ -29,6 +51,10 @@ public class Function : IMultiLineToken {
 
     public void SetBlock(Block block) {
         this.block = block;
+    }
+
+    public Scope GetScope() {
+        return scope;
     }
 
     public override string ToString() {

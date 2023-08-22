@@ -6,7 +6,6 @@ public class BaseType_ : IEquatable<BaseType_> {
     // https://en.wikipedia.org/wiki/
     // Set_(mathematics)#Special_sets_of_numbers_in_mathematics
     public static List<string> BuiltInTypes_ = new List<string> {
-        "Unknown",
         "Void",
         "Bool",
         "Byte", // equivalent to W8
@@ -15,6 +14,11 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Q", // floats
         "Array",
         "Struct",
+    };
+
+    public static List<string> SpecialTypes_ = new List<string> {
+        "Any", // matches any type_ except Unkown and Void
+        "Unknown",
     };
 
     public static List<string> NumberTypes_ = new List<string> {
@@ -89,6 +93,10 @@ public class BaseType_ : IEquatable<BaseType_> {
     public bool IsConvertibleTo(BaseType_ other) {
         string oName = other.GetName();
         if (name == oName) return true;
+        if (name == "Any" && oName != "Unkown" && oName != "Void") 
+            return true;
+        if (oName == "Any" && name != "Unkown" && name != "Void") 
+            return true;
         if (ConvertibleTo.ContainsKey(name)) {
             return ConvertibleTo[name].Contains(oName);
         }

@@ -6,6 +6,7 @@ public class IntMatcher : IMatcher {
         for (int i = 0; i < tokens.Count; i++) {
             List<IToken> replaced = new List<IToken>();
             bool anyMatch = false;
+            bool content = false;
             int j;
             for (j = i; j < tokens.Count; j++) {
                 IToken token = tokens[j];
@@ -18,6 +19,7 @@ public class IntMatcher : IMatcher {
                     foundMatch = true;
                 } else if ("1234567890".Contains(digit)) {
                     foundMatch = true;
+                    content = true;
                 }
                 anyMatch |= foundMatch;
                 if (!foundMatch) {
@@ -25,8 +27,8 @@ public class IntMatcher : IMatcher {
                 }
                 replaced.Add(token);
             }
-            if (anyMatch) {
-                return new Match(i, j-1, replaced, new List<IToken>());
+            if (anyMatch && content) {
+                return new Match(i, j-1, new List<IToken>(), replaced);
             }
         }
         return null;

@@ -14,7 +14,6 @@ public class Match {
         this.end = end;
         this.replacement = replacement;
         this.matched = matched;
-        // Console.WriteLine(this.ToString());
     }
 
     public TreeToken Replace(TreeToken tokens) {
@@ -36,7 +35,7 @@ public class Match {
     }
 
     public List<IToken> GetMatched() {
-        return this.matched;
+        return matched;
     }
 
     public override string ToString() {

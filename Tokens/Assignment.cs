@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class Assignment : IParentToken {
     public IParentToken parent { get; set; }
     
-    Name variable;
+    Variable variable;
     IValueToken value;
     
     public int Count {
@@ -18,14 +18,14 @@ public class Assignment : IParentToken {
         }
         set {
             if (i == 0) {
-                variable = (Name)value;
+                variable = (Variable)value;
             } else {
                 this.value = (IValueToken)value;
             }
         }
     }
     
-    public Assignment(Name variable, IValueToken value) {
+    public Assignment(Variable variable, IValueToken value) {
         this.variable = variable;
         this.value = value;
     }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Subtraction : IParentToken {
+public class Subtraction : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     
     IValueToken o1;
@@ -37,6 +37,6 @@ public class Subtraction : IParentToken {
     }
 
     public Type_ GetType_() {
-        return Type_.Unknown(); // temp
+        return Type_.Common(o1.GetType_(), o2.GetType_());
     }
 }

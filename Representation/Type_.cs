@@ -18,7 +18,46 @@ public class Type_ : IEquatable<Type_> {
     List<Type_> generics;
 
     public static Type_ Any() {
-        return new Type_((BaseType_)null);
+        return new Type_("Any");
+    }
+
+    public static Type_ Common(Type_ a, Type_ b) {
+        if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
+            return Unknown();
+        BaseType_ abt = a.GetBaseType_();
+        BaseType_ bbt = b.GetBaseType_();
+        bool aToB = abt.IsConvertibleTo(bbt);
+        bool bToA = bbt.IsConvertibleTo(abt);
+        if (aToB && bToA) {
+            if (bbt.GetBits() > abt.GetBits()) {
+                return b;
+            } else {
+                return a;
+            }
+        } else if (aToB) {
+            return b;
+        } else if (bToA) {
+            return a;
+        } else {
+            return Unknown();
+        }
+    }
+
+    public static Type_ CommonSpecific(Type_ a, Type_ b,
+                                            string name) {
+        if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
+            return Unknown();
+        int? abits = a.GetBaseType_().GetBits();
+        int? bbits = b.GetBaseType_().GetBits();
+        int? bits = null;
+        if (abits==null) {
+            bits = bbits;
+        } else if (bbits==null) {
+            bits = abits;
+        } else {
+            bits = Math.Max(abits.Value, bbits.Value);
+        }
+        return new Type_(name, bits);
     }
 
     public Type_(BaseType_ baseType_, List<Type_> generics = null) {
@@ -58,14 +97,6 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool IsConvertibleTo(Type_ other) {
-        if (other.GetBaseType_() == null) {
-            // other is Type_.Any()
-            return baseType_.GetName() != "Unknown";
-        }
-        if (baseType_ == null) {
-            // this is Type_.Any()
-            return other.GetBaseType_().GetName() != "Unknown";
-        }
         if (baseType_.IsConvertibleTo(other.GetBaseType_())) {
             // maybe make casting of generics automatic later?
             return GenericsEqual(other);
@@ -74,7 +105,6 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool Equals(Type_ other) {
-        if (baseType_ == null) return false;
         if (baseType_.Equals(other.GetBaseType_())) {
             return GenericsEqual(other);
         }
@@ -86,9 +116,6 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public override string ToString() {
-        if (baseType_ == null) {
-            return "Any<>";
-        }
         string genericStr = "";
         bool first = true;
         foreach (Type_ generic in generics){

@@ -30,20 +30,18 @@ public class BlockMatcher : IMatcher {
                     indent--;
                 }
                 if (indent == 0) {
-                    if (any) {
-                        List<IToken> replacement = new List<IToken>();
-                        List<IToken> replace = new List<IToken>(replaced);
-                        replace.RemoveAt(0);
-                        replace.RemoveAt(replace.Count-1);
-                        IToken holderToken = (IToken)Activator.CreateInstance(holder, new object[] {replace});
-                        replacement.Add(holderToken);
-                        return new Match(i, j, replacement, replaced);
-                    } else {
-                        break;
-                    }
+                    if (!any) break;
+                    List<IToken> replacement = new List<IToken>();
+                    List<IToken> replace = new List<IToken>(replaced);
+                    replace.RemoveAt(0);
+                    replace.RemoveAt(replace.Count-1);
+                    IToken holderToken = (IToken)Activator.CreateInstance(holder, new object[] {replace});
+                    replacement.Add(holderToken);
+                    return new Match(i, j, replacement, replaced);
                 }
                 any = true;
             }
+            any = false;
         }
         return null;
     }

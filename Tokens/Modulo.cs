@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Division : IParentToken, IValueToken {
+public class Modulo : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     
     IValueToken o1;
@@ -25,7 +25,7 @@ public class Division : IParentToken, IValueToken {
         }
     }
     
-    public Division(IValueToken o1, IValueToken o2) {
+    public Modulo(IValueToken o1, IValueToken o2) {
         this.o1 = o1;
         this.o2 = o2;
     }
@@ -37,8 +37,6 @@ public class Division : IParentToken, IValueToken {
     }
 
     public Type_ GetType_() {
-        return Type_.CommonSpecific(
-            o1.GetType_(), o2.GetType_(), "Q"
-        );
+        return Type_.Common(o1.GetType_(), o2.GetType_());
     }
 }

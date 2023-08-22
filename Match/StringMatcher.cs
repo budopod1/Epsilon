@@ -5,7 +5,8 @@ public class StringMatcher : IMatcher {
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
-            if (!(token is TextToken) || ((TextToken)token).GetText() != "\"") {
+            if (!(token is TextToken) || 
+                ((TextToken)token).GetText() != "\"") {
                 continue;
             }
             
