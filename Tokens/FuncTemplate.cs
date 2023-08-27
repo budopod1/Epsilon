@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-public class FuncTemplate : Unit<PatternExtractor<List<IToken>>>, IMultiLineToken {
+public class FuncTemplate : Unit<PatternExtractor<List<IToken>>>,
+                            IMultiLineToken {
     List<FunctionArgumentToken> arguments;
     
     public FuncTemplate(PatternExtractor<List<IToken>> pattern, 

@@ -11,4 +11,8 @@ public class ConditionPatternSegment<T> : IPatternSegment {
         if (token is T) return cond((T)token);
         return false;
     }
+    
+    public bool Equals(IPatternSegment obj) {
+        return obj == this;
+    }
 }

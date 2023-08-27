@@ -1,5 +1,5 @@
 using System;
 
-public interface IPatternSegment {
+public interface IPatternSegment : IEquatable<IPatternSegment> {
     bool Matches(IToken token);
 }

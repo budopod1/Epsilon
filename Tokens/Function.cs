@@ -29,12 +29,15 @@ public class Function : IParentToken {
     List<FunctionArgumentToken> arguments;
     Block block;
     Scope scope = new Scope();
+    Type_ returnType_;
     
     public Function(PatternExtractor<List<IToken>> pattern, 
-                         List<FunctionArgumentToken> arguments, Block block) {
+                    List<FunctionArgumentToken> arguments, Block block,
+                    Type_ returnType_) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.block = block;
+        this.returnType_ = returnType_;
     }
 
     public PatternExtractor<List<IToken>> GetPattern() {
@@ -55,6 +58,10 @@ public class Function : IParentToken {
 
     public Scope GetScope() {
         return scope;
+    }
+
+    public Type_ GetReturnType_() {
+        return returnType_;
     }
 
     public override string ToString() {

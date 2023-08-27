@@ -1,9 +1,19 @@
 using System;
 using System.Collections.Generic;
 
-abstract public class PatternExtractor<T> {
+abstract public class PatternExtractor<T> : ITokenExtractor<T> {
     protected List<IPatternSegment> segments;
     protected IPatternProcessor<T> processor;
+    
+    Action<List<IToken>, int, int> callback;
+
+    public void SetCallback(Action<List<IToken>, int, int> callback) {
+        this.callback = callback;
+    }
+
+    public List<IPatternSegment> GetSegments() {
+        return segments;
+    }
     
     public T Extract(IParentToken tokens) {
         int maxStart = tokens.Count - segments.Count;
@@ -21,9 +31,14 @@ abstract public class PatternExtractor<T> {
                 }
             }
             if (matches) {
+                if (callback != null) {
+                    callback(tokenList, i, i+j-1);
+                    callback = null;
+                }
                 return processor.Process(tokenList, i, i+j-1);
             }
         }
+        callback = null;
         return default(T);
     }
 }

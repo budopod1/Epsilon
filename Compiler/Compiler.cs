@@ -87,15 +87,88 @@ public class Compiler {
         Program program = ((Program)program_.Copy());
 
         program.UpdateParents();
+
+        List<IMatcher> functionRules = new List<IMatcher>();
+        List<IMatcher> addMatchingFunctionRules = new List<IMatcher>();
+
+        List<Function> functions = new List<Function>();
+        
+        foreach (IToken token in program) {
+            if (token is Function) {
+                functions.Add((Function)token);
+            }
+        }
+
+        foreach (Function function in functions) {
+            functionRules.Add(
+                new FunctionRuleMatcher(function, typeof(RawFunctionCall))
+            );
+            addMatchingFunctionRules.Add(
+                new AddMatchingFunctionMatcher(function)
+            );
+        }
         
         List<List<IMatcher>> rules = new List<List<IMatcher>> {
             new List<IMatcher> {
                 new BlockMatcher(
                     typeof(ParenthesisOpen), typeof(ParenthesisClose), typeof(RawGroup)
+                ),
+                new BlockMatcher(
+                    typeof(SquareOpen), typeof(SquareClose), typeof(RawParameterGroup)
                 )
             },
+            functionRules,
+            addMatchingFunctionRules,
             new List<IMatcher> {
                 new GroupConverterMatcher(typeof(RawGroup), typeof(Group)),
+                // new GroupConverterMatcher(typeof(RawParameterGroup), typeof(ParameterGroup)),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(RawFunctionCall))
+                    }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                        RawFunctionCall call = ((RawFunctionCall)(tokens[0]));
+
+                        List<Type_> paramTypes_ = new List<Type_>();
+                        List<IValueToken> parameters = new List<IValueToken>();
+                        
+                        for (int i = 0; i < call.Count; i++) {
+                            RawParameterGroup rparameter = (call[i]) as RawParameterGroup;
+                            if (rparameter.Count != 1) return null;
+                            IValueToken parameter = (rparameter[0]) as IValueToken;
+                            if (parameter == null) return null;
+                            paramTypes_.Add(parameter.GetType_());
+                            parameters.Add(parameter);
+                        }
+
+                        foreach (Function function in call.GetMatchingFunctions()) {
+                            List<Type_> argTypes_ = function.GetArguments().ConvertAll<Type_>(
+                                (FunctionArgumentToken arg) => arg.GetType_()
+                            );
+                            if (paramTypes_.Count != argTypes_.Count) continue;
+
+                            bool matches = true;
+
+                            for (int i = 0; i < paramTypes_.Count; i++) {
+                                Type_ pt = paramTypes_[i];
+                                Type_ at = argTypes_[i];
+                                if (!pt.IsConvertibleTo(at)) {
+                                    matches = false;
+                                    break;
+                                }
+                            }
+
+                            if (matches) {
+                                return new List<IToken> {
+                                    new FunctionCall(
+                                        function, parameters
+                                    )
+                                };
+                            }
+                        }
+                        
+                        return null;
+                    })
+                ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new ConditionPatternSegment<Name>(
@@ -164,33 +237,11 @@ public class Compiler {
             }
         };
         
-        foreach (IToken token in program) {
-            if (token is Function) {
-                Function function = ((Function)token);
-                Block block = function.GetBlock();
-                /*
-                foreach (List<IMatcher> ruleset in rules) {
-                    bool anythingChanged = true;
-                    while (anythingChanged) {
-                        anythingChanged = false;
-                        foreach (IMatcher rule in ruleset) {
-                            IToken ntoken;
-                            (ntoken, anythingChanged) = 
-                                DoFunctionCodeRule(
-                                block, rule
-                            );
-                            block = ((Block)ntoken);
-                            if (anythingChanged) {
-                                break;
-                            }
-                            Console.WriteLine(block);
-                        }
-                    }
-                }
-                */
-                function.SetBlock(DoBlockCodeRules(block, rules));
-            }
+        foreach (Function function in functions) {
+            Block block = function.GetBlock();
+            function.SetBlock(DoBlockCodeRules(block, rules));
         }
+        
         return program;
     }
 
@@ -280,6 +331,7 @@ public class Compiler {
             if (token is Function) {
                 Function function = ((Function)token);
                 Scope scope = function.GetScope();
+                /*
                 function.SetBlock((Block)PerformTreeMatching(
                     function.GetBlock(), new PatternMatcher(
                         new List<IPatternSegment> {
@@ -290,6 +342,23 @@ public class Compiler {
                                 declaration.GetName().GetValue(),
                                 declaration.GetType_()
                             );
+                        })
+                    )
+                ));
+                */
+                function.SetBlock((Block)PerformTreeMatching(
+                    function.GetBlock(), new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new TypePatternSegment(typeof(VarDeclaration)),
+                        }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                            VarDeclaration declaration = ((VarDeclaration)tokens[0]);
+                            string name = declaration.GetName().GetValue();
+                            int id = scope.AddVar(
+                                name, declaration.GetType_()
+                            );
+                            return new List<IToken> {
+                                new Variable(name, id)
+                            };
                         })
                     )
                 ));
@@ -329,6 +398,9 @@ public class Compiler {
 
     Program ParseFunctionTemplates(Program program_) {
         Program program = ((Program)program_.Copy());
+        List<Type> argumentTypes = new List<Type> {
+            typeof(RawParameterGroup)
+        };
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
             if (!(token is FunctionHolder)) continue;
@@ -353,9 +425,7 @@ public class Compiler {
                 } else if (subtoken is FunctionArgumentToken) {
                     FunctionArgumentToken argument = ((FunctionArgumentToken)subtoken);
                     arguments.Add(argument);
-                    segment = new Type_PatternSegment(
-                        argument.GetType_()
-                    );
+                    segment = new TypesPatternSegment(argumentTypes);
                     slots.Add(j);
                 }
                 if (segment == null) {
@@ -536,6 +606,8 @@ public class Compiler {
                 {")", typeof(ParenthesisClose)},
                 {"<", typeof(GenericsOpen)},
                 {">", typeof(GenericsClose)},
+                {"[", typeof(SquareOpen)},
+                {"]", typeof(SquareClose)},
                 {":", typeof(Colon)},
                 {",", typeof(Comma)},
                 {";", typeof(HNL)},

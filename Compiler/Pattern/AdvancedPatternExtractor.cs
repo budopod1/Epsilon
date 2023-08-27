@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-abstract public class AdvancedPatternExtractor<T> {
+abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
     enum Part {
         Start,
         Repeated,
@@ -14,6 +14,32 @@ abstract public class AdvancedPatternExtractor<T> {
     protected int maxRepeats;
     protected List<IPatternSegment> end;
     protected IPatternProcessor<T> processor;
+    
+    Action<List<IToken>, int, int> callback;
+
+    public void SetCallback(Action<List<IToken>, int, int> callback) {
+        this.callback = callback;
+    }
+
+    public List<IPatternSegment> GetStartSegments() {
+        return start;
+    }
+
+    public int GetMinRepeats() {
+        return minRepeats;
+    }
+
+    public int GetMaxRepeats() {
+        return maxRepeats;
+    }
+
+    public List<IPatternSegment> GetRepeatedSegments() {
+        return repeated;
+    }
+
+    public List<IPatternSegment> GetEndSegments() {
+        return end;
+    }
 
     public T Extract(IParentToken tokens) {
         Part part = Part.Start;
@@ -97,9 +123,14 @@ abstract public class AdvancedPatternExtractor<T> {
                 }
             }
             if (finishedMatch) {
+                if (callback != null) {
+                    callback(tokenList, i, i+j-1);
+                    callback = null;
+                }
                 return processor.Process(tokenList, i, i+j);
             }
         }
+        callback = null;
         return default(T);
     }
 }

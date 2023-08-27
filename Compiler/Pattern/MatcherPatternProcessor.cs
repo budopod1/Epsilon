@@ -9,6 +9,8 @@ public class MatcherPatternProcessor : IPatternProcessor<Match> {
     }
     
     public Match Process(List<IToken> tokens, int start, int end) {
-        return new Match(start, end, subprocessor.Process(tokens, start, end), tokens);
+        List<IToken> replacement = subprocessor.Process(tokens, start, end);
+        if (replacement == null) return null;
+        return new Match(start, end, replacement, tokens);
     }
 }

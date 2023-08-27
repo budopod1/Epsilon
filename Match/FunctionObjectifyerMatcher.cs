@@ -18,7 +18,8 @@ public class FunctionObjectifyerMatcher : IMatcher {
                 IToken replacement = (IToken)Activator.CreateInstance(
                     newType, new object[] {
                         template.GetValue(), template.GetArguments(),
-                        holder.GetBlock()
+                        holder.GetBlock(),
+                        Type_.Unknown() // TEMP: replace with return value
                     }
                 );
                 return new Match(i, i, new List<IToken> {replacement},

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public class Utils {
     public static string Tab = "    ";
@@ -42,5 +43,15 @@ public class Utils {
 
     public static string TitleCase(string text) {
         return Char.ToUpper(text[0]) + text.Substring(1).ToLower();
+    }
+
+    public static bool ListEqual<T>(List<T> a, List<T> b) where T : IEquatable<T> {
+        if (a.Count != b.Count) return false;
+        for (int i = 0; i < a.Count; i++) {
+            T ai = a[i];
+            T bi = b[i];
+            if (!ai.Equals(bi)) return false;
+        }
+        return true;
     }
 }

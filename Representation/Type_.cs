@@ -112,7 +112,7 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool GenericsEqual(Type_ other) {
-        return generics.SequenceEqual(other.GetGenerics());
+        return Utils.ListEqual<Type_>(generics, other.GetGenerics());
     }
 
     public override string ToString() {

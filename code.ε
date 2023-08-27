@@ -16,6 +16,10 @@
 }
 
 #example(<Q: a>, <W: b>) {
+    [1.2] plus [1];
+}
+
+#<Q: a> plus <Z: b> {
     
 }
 
