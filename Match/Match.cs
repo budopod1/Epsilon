@@ -30,12 +30,25 @@ public class Match {
         return tokens.Copy(result);
     }
 
+    public void SingleReplace(IParentToken tokens) {
+        if (Length() != 1) {
+            throw new InvalidOperationException(
+                "SingleReplace can only be used on Matches with length 1"
+            );
+        }
+        tokens[start] = replacement[0];
+    }
+
     public void SetReplacement(List<IToken> replacement) {
         this.replacement = replacement;
     }
 
     public List<IToken> GetMatched() {
         return matched;
+    }
+
+    public int Length() {
+        return end - start + 1;
     }
 
     public override string ToString() {
