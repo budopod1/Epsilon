@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class Holder : TreeToken {
     public Holder(List<IToken> tokens) : base(tokens) {}
     
-    protected override TreeToken Copy_(List<IToken> tokens) {
+    protected override TreeToken _Copy(List<IToken> tokens) {
         return (TreeToken)new Holder(tokens);
     }
 

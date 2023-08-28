@@ -33,18 +33,18 @@ public class TreeToken : IParentToken, IEnumerable<IToken> {
         }
     }
 
-    protected virtual TreeToken Copy_(List<IToken> tokens) {
+    protected virtual TreeToken _Copy(List<IToken> tokens) {
         return new TreeToken(tokens);
     }
 
     public TreeToken Copy(List<IToken> tokens) {
-        TreeToken copy = Copy_(tokens);
+        TreeToken copy = _Copy(tokens);
         copy.parent = parent;
         return copy;
     }
 
     public TreeToken Copy() {
-        TreeToken copy = Copy_(new List<IToken>(this.tokens));
+        TreeToken copy = _Copy(new List<IToken>(this.tokens));
         copy.parent = parent;
         return copy;
     }

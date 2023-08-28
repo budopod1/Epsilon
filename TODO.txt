@@ -5,7 +5,6 @@ TODO:
 * used IParentToken more often in matchers for iterating over children
 * add compilation exceptions
 * make VarDeclaration no longer a TreeToken, but a IParentToken
-* change TreeToken.Copy_ to TreeToken._Copy
 * replace TreeToken.Traverse with TokenUtils.Traverse
 * change VarDeclaration tokenization
 * change the:

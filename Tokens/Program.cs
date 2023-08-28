@@ -33,8 +33,7 @@ public class Program : TreeToken {
         this.baseType_Names = baseType_Names;
     }
     
-    protected override TreeToken Copy_(List<IToken> tokens) {
-        return (TreeToken)new Program(tokens, constants,
-                                      baseType_Names);
+    protected override TreeToken _Copy(List<IToken> tokens) {
+        return new Program(tokens, constants, baseType_Names);
     }
 }

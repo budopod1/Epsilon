@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class FunctionHolder : Holder {
     public FunctionHolder(List<IToken> tokens) : base(tokens) {}
     
-    protected override TreeToken Copy_(List<IToken> tokens) {
+    protected override TreeToken _Copy(List<IToken> tokens) {
         return (TreeToken)new FunctionHolder(tokens);
     }
 
