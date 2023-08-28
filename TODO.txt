@@ -1,8 +1,6 @@
 TODO:
 * refactor all matchers into patternmatchers with custom pattern processors
 * refactor methods in Compiler.cs to use PerformMatching
-* remove unnecessary Copy()ing
-* used IParentToken more often in matchers for iterating over children
 * add compilation exceptions
 * make VarDeclaration no longer a TreeToken, but a IParentToken
 * replace TreeToken.Traverse with TokenUtils.Traverse

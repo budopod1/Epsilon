@@ -118,8 +118,7 @@ public class Compiler {
         return program;
     }
 
-    Program TokenizeFuncArguments(Program program_) {
-        Program program = (Program)program_.Copy();
+    Program TokenizeFuncArguments(Program program) {
         IMatcher matcher = new FunctionArgumentMatcher(
             "<", ">", typeof(RawFunctionArgument)
         );
@@ -257,7 +256,6 @@ public class Compiler {
     }
 
     Program TokenizeBaseTypes_(Program program) {
-        program = (Program)program.Copy();
         List<string> baseType_Names = program.GetBaseType_Names();
         Func<string, BaseType_> converter = (string source) => 
             BaseType_.ParseString(source, baseType_Names);
@@ -285,7 +283,6 @@ public class Compiler {
     }
     
     Program TokenizeTypes_(Program program) {
-        program = (Program)program.Copy();
         foreach (IToken token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);
@@ -307,8 +304,7 @@ public class Compiler {
         return program;
     }
 
-    Program TokenizeFuncArgumentTypes_(Program program_) {
-        Program program = (Program)program_.Copy();
+    Program TokenizeFuncArgumentTypes_(Program program) {
         List<string> baseType_Names = program.GetBaseType_Names();
         Func<string, BaseType_> converter = (string source) => 
             BaseType_.ParseString(source, baseType_Names);
@@ -347,7 +343,6 @@ public class Compiler {
     }
 
     Program TokenizeVarDeclarations(Program program) {
-        program = (Program)program.Copy();
         foreach (IToken token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);
@@ -412,8 +407,7 @@ public class Compiler {
         return program;
     }
 
-    Program ParseFunctionTemplates(Program program_) {
-        Program program = ((Program)program_.Copy());
+    Program ParseFunctionTemplates(Program program) {
         List<Type> argumentTypes = new List<Type> {
             typeof(RawParameterGroup)
         };
@@ -510,9 +504,7 @@ public class Compiler {
         return program;
     }
 
-    Program ParseFunctionCode(Program program_) {
-        Program program = ((Program)program_.Copy());
-
+    Program ParseFunctionCode(Program program) {
         program.UpdateParents();
 
         List<IMatcher> functionRules = new List<IMatcher>();
