@@ -18,5 +18,3 @@ TODO:
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * compute function return values
 * reorder compiler methods
-
-DONE:
