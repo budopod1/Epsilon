@@ -3,7 +3,6 @@ TODO:
 * refactor methods in Compiler.cs to use PerformMatching
 * remove unnecessary Copy()ing
 * used IParentToken more often in matchers for iterating over children
-* remove Symbolic token and children
 * add compilation exceptions
 * make VarDeclaration no longer a TreeToken, but a IParentToken
 * change TreeToken.Copy_ to TreeToken._Copy
