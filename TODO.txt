@@ -19,5 +19,6 @@ TODO:
 * add support for nested blocks
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * compute function return values
+* reorder compiler methods
 
 DONE:

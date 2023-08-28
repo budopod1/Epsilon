@@ -29,8 +29,8 @@ public class Compiler {
         Console.WriteLine("Tokenizing ints...");
         program = TokenizeInts(program);
         
-        Console.WriteLine("Tokenizing symbols...");
-        program = TokenizeSymbols(program);
+        Console.WriteLine("Removing whitespace...");
+        program = RemoveWhitespace(program);
         
         Console.WriteLine("Tokenizing blocks...");
         program = TokenizeBlocks(program);
@@ -80,7 +80,7 @@ public class Compiler {
         Console.WriteLine("Parsing function code...");
         program = ParseFunctionCode(program);
         
-        Console.WriteLine(program.ToString());
+        Console.WriteLine(program);
     }
 
     Program ParseFunctionCode(Program program_) {
@@ -111,10 +111,10 @@ public class Compiler {
         List<List<IMatcher>> rules = new List<List<IMatcher>> {
             new List<IMatcher> {
                 new BlockMatcher(
-                    typeof(ParenthesisOpen), typeof(ParenthesisClose), typeof(RawGroup)
+                    new TextPatternSegment("("), new TextPatternSegment(")"), typeof(RawGroup)
                 ),
                 new BlockMatcher(
-                    typeof(SquareOpen), typeof(SquareClose), typeof(RawParameterGroup)
+                    new TextPatternSegment("["), new TextPatternSegment("]"), typeof(RawParameterGroup)
                 )
             },
             functionRules,
@@ -182,7 +182,7 @@ public class Compiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new Type_PatternSegment(new Type_("Q")),
-                        new TypePatternSegment(typeof(Plus)),
+                        new TextPatternSegment("+"),
                         new Type_PatternSegment(new Type_("Q")),
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}), typeof(Addition)
@@ -191,7 +191,7 @@ public class Compiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new Type_PatternSegment(new Type_("Q")),
-                        new TypePatternSegment(typeof(Minus)),
+                        new TextPatternSegment("-"),
                         new Type_PatternSegment(new Type_("Q")),
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}), typeof(Subtraction)
@@ -200,7 +200,7 @@ public class Compiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new Type_PatternSegment(new Type_("Q")),
-                        new TypePatternSegment(typeof(Star)),
+                        new TextPatternSegment("*"),
                         new Type_PatternSegment(new Type_("Q")),
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}),
@@ -210,7 +210,7 @@ public class Compiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new Type_PatternSegment(new Type_("Q")),
-                        new TypePatternSegment(typeof(Slash)),
+                        new TextPatternSegment("/"),
                         new Type_PatternSegment(new Type_("Q")),
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}), typeof(Division)
@@ -219,7 +219,7 @@ public class Compiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new Type_PatternSegment(new Type_("Q")),
-                        new TypePatternSegment(typeof(Percent)),
+                        new TextPatternSegment("%"),
                         new Type_PatternSegment(new Type_("Q")),
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}), typeof(Modulo)
@@ -228,7 +228,7 @@ public class Compiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Variable)),
-                        new TypePatternSegment(typeof(Equal)),
+                        new TextPatternSegment("="),
                         new Type_PatternSegment(Type_.Any()),
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}), typeof(Assignment)
@@ -266,7 +266,7 @@ public class Compiler {
             changed = false;
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
-                if (sub is IParentToken) {
+                if (sub is IParentToken && !(sub is IBarMatchingInto)) {
                     IParentToken subparent = ((IParentToken)sub);
                     parent[i] = DoTreeCodeRules(subparent, ruleset);
                 }
@@ -310,7 +310,7 @@ public class Compiler {
     */
 
     Program SplitProgramIntoLines(Program program) {
-        SplitTokensParser parser = new SplitTokensParser(typeof(HNL), false);
+        SplitTokensParser parser = new SplitTokensParser(new TextPatternSegment(";"), false);
         foreach (IToken token in program) {
             if (token is Function) {
                 Function function = ((Function)token);
@@ -373,11 +373,14 @@ public class Compiler {
         ));
     }
 
-    Program TokenizeTemplateFeatures(Program program_) {
-        Program program = ((Program)program_.Copy());
-        IMatcher symbolMatcher = new SymbolMatcher(new Dictionary<string, Type> {
-            {" ", null}, {"\n", null}
-        });
+    Program TokenizeTemplateFeatures(Program program) {
+        IMatcher whitespaceMatcher = new PatternMatcher(
+            new List<IPatternSegment> {
+                new TextsPatternSegment(new List<string> {
+                    " ", "\n", "\r", "\t"
+                })
+            }, new DisposePatternProcessor()
+        );
         IMatcher nameMatcher = new NameMatcher();
         IMatcher argumentConverterMatcher = new ArgumentConverterMatcher(
             typeof(RawFunctionArgument), typeof(Name), typeof(Type_Token),
@@ -388,7 +391,7 @@ public class Compiler {
             if (!(token is FunctionHolder)) continue;
             FunctionHolder holder = ((FunctionHolder)token);
             TreeToken template = holder.GetRawTemplate();
-            template = PerformMatching(template, symbolMatcher);
+            template = PerformMatching(template, whitespaceMatcher);
             template = PerformMatching(template, nameMatcher);
             template = PerformMatching(template, argumentConverterMatcher);
             holder.SetTemplate(template);
@@ -482,24 +485,18 @@ public class Compiler {
         List<string> baseType_Names = program.GetBaseType_Names();
         Func<string, BaseType_> converter = (string source) => 
             BaseType_.ParseString(source, baseType_Names);
-        IMatcher symbolMatcher = new SymbolMatcher(
-            new Dictionary<string, Type> {
-                {"<", typeof(GenericsOpen)},
-                {">", typeof(GenericsClose)}
-            }
-        );
         IMatcher nameMatcher = new NameMatcher();
         IMatcher baseMatcher = new UnitSwitcherMatcher
                                    <string, BaseType_>(
             typeof(Name), converter, typeof(BaseTokenType_)
         );
         IMatcher genericMatcher = new BlockMatcher(
-            typeof(GenericsOpen), typeof(GenericsClose), typeof(Generics)
+            new TextPatternSegment("<"), new TextPatternSegment(">"), typeof(Generics)
         );
         IMatcher type_Matcher = new Type_Matcher(
             typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
             new ListTokenParser<Type_>(
-                typeof(Comma), typeof(Type_Token), 
+                new TextPatternSegment(","), typeof(Type_Token), 
                 (IToken generic) => ((Type_Token)generic).GetValue()
             )
         );
@@ -512,7 +509,6 @@ public class Compiler {
                 IToken subtoken = template[j];
                 if (!(subtoken is RawFunctionArgument)) continue;
                 TreeToken argument = ((TreeToken)subtoken);
-                argument = PerformMatching(argument, symbolMatcher);
                 argument = PerformMatching(argument, nameMatcher);
                 argument = PerformMatching(argument, baseMatcher);
                 argument = PerformTreeMatching(argument, genericMatcher);
@@ -576,7 +572,7 @@ public class Compiler {
     Program TokenizeBlocks(Program program_) {
         Program program = program_;
         BlockMatcher matcher = new BlockMatcher(
-            typeof(BracketOpen), typeof(BracketClose),
+            new TextPatternSegment("{"), new TextPatternSegment("}"),
             typeof(Block)
         );
         while (true) {
@@ -587,38 +583,16 @@ public class Compiler {
         return program;
     }
 
-    Program TokenizeSymbols(Program program_) {
-        Program program = program_;
-        SymbolMatcher matcher = new SymbolMatcher(
-            new Dictionary<string, Type> {
-                {"=", typeof(Equal)},
-                {"+", typeof(Plus)},
-                {"-", typeof(Minus)},
-                {"*", typeof(Star)},
-                {"/", typeof(Slash)},
-                {"%", typeof(Percent)},
-                {" ", null},
-                {"\n", null},
-                {"\t", null},
-                {"{", typeof(BracketOpen)},
-                {"}", typeof(BracketClose)},
-                {"(", typeof(ParenthesisOpen)},
-                {")", typeof(ParenthesisClose)},
-                {"<", typeof(GenericsOpen)},
-                {">", typeof(GenericsClose)},
-                {"[", typeof(SquareOpen)},
-                {"]", typeof(SquareClose)},
-                {":", typeof(Colon)},
-                {",", typeof(Comma)},
-                {";", typeof(HNL)},
-            }
+    Program RemoveWhitespace(Program program) {
+        return (Program)PerformMatching(
+            program, new PatternMatcher(
+                new List<IPatternSegment> {
+                    new TextsPatternSegment(new List<string> {
+                        " ", "\n", "\r", "\t"
+                    })
+                }, new DisposePatternProcessor()
+            )
         );
-        while (true) {
-            Match match = matcher.Match(program);
-            if (match == null) break;
-            program = (Program)match.Replace(program);
-        }
-        return program;
     }
     
     Program TokenizeFloats(Program program_) {
@@ -678,7 +652,7 @@ public class Compiler {
 
     Program TokenizeGenerics(Program program) {
         return (Program)PerformTreeMatching(program, new BlockMatcher(
-            typeof(GenericsOpen), typeof(GenericsClose), typeof(Generics)
+            new TextPatternSegment("<"), new TextPatternSegment(">"), typeof(Generics)
         ));
     }
 
@@ -716,7 +690,7 @@ public class Compiler {
                         typeof(BaseTokenType_), typeof(Generics),
                         typeof(Type_Token),
                         new ListTokenParser<Type_>(
-                            typeof(Comma), typeof(Type_Token), 
+                            new TextPatternSegment(","), typeof(Type_Token), 
                             (IToken generic) => ((Type_Token)generic).GetValue()
                         )
                     )
@@ -735,10 +709,19 @@ public class Compiler {
                 Block block = holder.GetBlock();
                 if (block == null) continue;
                 TreeToken result = PerformTreeMatching(block, 
+                    /*
                     new VarDeclareMatcher(
                         typeof(Name), typeof(Colon), typeof(Type_Token),
                         typeof(VarDeclaration)
                     )
+                    */
+                    new PatternMatcher(new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Type_Token)),
+                        new TextPatternSegment(":"),
+                        new TypePatternSegment(typeof(Name))
+                    }, new WrapperPatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(VarDeclaration)
+                    ))
                 );
                 holder.SetBlock((Block)result);
             }
@@ -751,7 +734,7 @@ public class Compiler {
             program, new StructObjectifyerMatcher(
                 typeof(StructHolder), typeof(Struct), 
                 new ListTokenParser<Field>(
-                    typeof(Comma), typeof(VarDeclaration), 
+                    new TextPatternSegment(","), typeof(VarDeclaration), 
                     (token) => new Field((VarDeclaration)token)
                 )
             )
@@ -774,27 +757,38 @@ public class Compiler {
     }
 
     TreeToken PerformTreeMatching(TreeToken tree, IMatcher matcher) {
-        tree = tree.Copy();
-        tree = PerformMatching(tree, matcher);
-        bool changed = false;
+        (bool _, IParentToken result) = PerformTreeMatching_(tree, matcher);
+        return (TreeToken)result;
+    }
 
-        do {
-            (changed, tree) = PerformMatchingChanged(
-                tree, matcher
-            );
-            foreach ((int i, TreeToken subtree) in tree.IndexTraverse()) {
-                IToken subtoken = subtree[i];
-                if (subtoken is TreeToken) {
-                    (bool changedHere, TreeToken newToken) = PerformMatchingChanged(
-                        (TreeToken)subtoken, matcher
-                    );
-                    subtree[i] = newToken;
-                    if (changedHere) changed = true;
+    (bool, IParentToken) PerformTreeMatching_(IParentToken parent, IMatcher matcher) {
+        bool changed = true;
+        bool anyChanged = false;
+        
+        while (changed) {
+            changed = false;
+            
+            for (int i = 0; i < parent.Count; i++) {
+                IToken sub = parent[i];
+                if (sub is IParentToken && !(sub is IBarMatchingInto)) {
+                    IParentToken subparent = ((IParentToken)sub);
+                    bool tchanged;
+                    (tchanged, parent[i]) = PerformTreeMatching_(subparent, matcher);
+                    changed |= tchanged;
                 }
             }
-        } while (changed);
+            
+            if (parent is TreeToken) {
+                TreeToken tree = ((TreeToken)parent);
+                bool tchanged;
+                (tchanged, parent) = PerformMatchingChanged(tree, matcher);
+                changed |= tchanged;
+            }
+
+            anyChanged |= changed;
+        }
         
-        return tree;
+        return (anyChanged, parent);
     }
 
     TreeToken PerformMatching(TreeToken tree, IMatcher matcher) {

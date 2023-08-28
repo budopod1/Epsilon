@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 public class FuncTemplate : Unit<PatternExtractor<List<IToken>>>,
-                            IMultiLineToken {
+                            IMultiLineToken, IBarMatchingInto {
     List<FunctionArgumentToken> arguments;
     
     public FuncTemplate(PatternExtractor<List<IToken>> pattern, 

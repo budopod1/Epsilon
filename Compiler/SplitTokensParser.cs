@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 
 public class SplitTokensParser {
-    Type seperator;
+    IPatternSegment seperator;
     bool allowUnterminated;
     
-    public SplitTokensParser(Type seperator, bool allowUnterminated) {
+    public SplitTokensParser(IPatternSegment seperator, bool allowUnterminated) {
         this.seperator = seperator;
         this.allowUnterminated = allowUnterminated;
     }
@@ -15,7 +15,7 @@ public class SplitTokensParser {
         List<IToken> soFar = new List<IToken>();
         for (int i = 0; i < tree.Count; i++) {
             IToken token = tree[i];
-            if (Utils.IsInstance(token, seperator)) {
+            if (seperator.Matches(token)) {
                 result.Add(soFar);
                 soFar = new List<IToken>();
             } else {

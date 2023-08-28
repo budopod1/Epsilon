@@ -1,10 +1,9 @@
 #h {
-    W:v;
+    W:v = 3;
     Array<Array<W>>:n;
     Q:r;
     Q:g;
     Byte:a;
-    v = 3;
     r = 5 + 8.5;
     g = ((8+1) / 2) * 4 - r;
     a;
@@ -15,11 +14,11 @@
     
 }
 
-#example(<Q: a>, <W: b>) {
-    [1.2] plus [1];
+#example(<Q: a>, <Array<Array<Q>>: b>) {
+    [1.2] + [1];
 }
 
-#<Q: a> plus <Z: b> {
+#<Q: a> + <Z: b> {
     
 }
 

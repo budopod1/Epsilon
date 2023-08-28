@@ -9,11 +9,11 @@ public class DisposePatternProcessor : IPatternProcessor<List<IToken>> {
     }
     
     public DisposePatternProcessor() {
-        this.action = (List<IToken> tokens) => {};
+        this.action = null;
     }
 
     public List<IToken> Process(List<IToken> tokens, int start, int end) {
-        action(tokens);
+        if (action != null) action(tokens);
         return new List<IToken>();
     }
 }

@@ -7,11 +7,11 @@ public class ListTokenParser<T> {
         ExpectSeperator
     }
     
-    Type seperator;
+    IPatternSegment seperator;
     Type item;
     Func<IToken, T> parser;
     
-    public ListTokenParser(Type seperator, Type item, Func<IToken, T> parser) {
+    public ListTokenParser(IPatternSegment seperator, Type item, Func<IToken, T> parser) {
         this.seperator = seperator;
         this.item = item;
         this.parser = parser;
@@ -32,7 +32,7 @@ public class ListTokenParser<T> {
                     }
                     break;
                 case ParseState.ExpectSeperator:
-                    if (Utils.IsInstance(token, seperator)) {
+                    if (seperator.Matches(token)) {
                         state = ParseState.ExpectItem;
                     } else {
                         return null;

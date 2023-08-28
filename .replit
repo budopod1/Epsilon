@@ -1,6 +1,6 @@
-run = "bash run.bash"
+run = "bash run.sh"
 
-hidden = [".git", "App.exe", "run.bash"]
+hidden = [".git", "App.exe", "run.sh"]
 
 [nix]
 channel = "stable-22_11"

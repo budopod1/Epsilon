@@ -3,11 +3,11 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class BlockMatcher : IMatcher {
-    Type start;
-    Type end;
+    IPatternSegment start;
+    IPatternSegment end;
     Type holder;
     
-    public BlockMatcher(Type start, Type end, Type holder) {
+    public BlockMatcher(IPatternSegment start, IPatternSegment end, Type holder) {
         this.start = start;
         this.end = end;
         this.holder = holder;
@@ -21,9 +21,9 @@ public class BlockMatcher : IMatcher {
             for (int j = i; j < tokens.Count; j++) {
                 IToken token = tokens[j];
                 replaced.Add(token);
-                if (Utils.IsInstance(token, start)) {
+                if (start.Matches(token)) {
                     indent++;
-                } else if (Utils.IsInstance(token, end)) {
+                } else if (end.Matches(token)) {
                     if (!any) {
                         break;
                     }
