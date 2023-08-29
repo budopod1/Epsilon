@@ -348,13 +348,7 @@ public class Compiler {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
                 if (block == null) continue;
-                TreeToken result = PerformTreeMatching(block, 
-                    /*
-                    new VarDeclareMatcher(
-                        typeof(Name), typeof(Colon), typeof(Type_Token),
-                        typeof(VarDeclaration)
-                    )
-                    */
+                TreeToken result = PerformTreeMatching(block,
                     new PatternMatcher(new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment(":"),

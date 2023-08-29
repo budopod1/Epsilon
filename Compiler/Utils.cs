@@ -23,11 +23,6 @@ public class Utils {
     }
 
     public static bool IsInstance(Type a, Type b) {
-        /*
-        if (b.IsInterface()) {
-            if (a.GetInterfaces().Contains(b)) return true;
-        }
-        */
         if (b.IsAssignableFrom(a)) return true;
         if (a.IsGenericType)
             a = a.GetGenericTypeDefinition();
