@@ -3,7 +3,6 @@ TODO:
 * refactor methods in Compiler.cs to use PerformMatching
 * add compilation exceptions
 * replace TreeToken.Traverse with TokenUtils.Traverse
-* change VarDeclaration tokenization
 * change the:
         foreach (IToken token in program) {
             if (token is Function) {
