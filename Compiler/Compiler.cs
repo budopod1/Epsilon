@@ -359,7 +359,7 @@ public class Compiler {
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment(":"),
                         new TypePatternSegment(typeof(Name))
-                    }, new WrapperPatternProcessor(
+                    }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}), typeof(VarDeclaration)
                     ))
                 );
