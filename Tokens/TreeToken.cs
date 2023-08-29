@@ -63,31 +63,6 @@ public class TreeToken : IParentToken, IEnumerable<IToken> {
         return this.GetEnumerator();
     }
 
-    public IEnumerable<IToken> Traverse() {
-        yield return this;
-        foreach (IToken token in this) {
-            if (token is TreeToken) {
-                foreach (IToken subToken in ((TreeToken)token).Traverse()) {
-                    yield return subToken;
-                }
-            } else {
-                yield return token;
-            }
-        }
-    }
-
-    public IEnumerable<(int, TreeToken)> IndexTraverse() {
-        for (int i = 0; i < this.Count; i++) {
-            yield return (i, this);
-            IToken token = this[i];
-            if (token is TreeToken) {
-                foreach ((int, TreeToken) sub in ((TreeToken)token).IndexTraverse()) {
-                    yield return sub;
-                }
-            }
-        }
-    }
-
     public override string ToString() {
         string result = "";
         bool whitespace = false;

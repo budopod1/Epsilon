@@ -2,7 +2,6 @@ TODO:
 * refactor most matchers into patternmatchers with custom pattern processors
 * refactor methods in Compiler.cs to use PerformMatching
 * add compilation exceptions
-* replace TreeToken.Traverse with TokenUtils.Traverse
 * change the:
         foreach (IToken token in program) {
             if (token is Function) {
