@@ -23,6 +23,9 @@ public class Compiler {
         Console.WriteLine("Tokenizing names...");
         program = TokenizeNames(program);
         
+        Console.WriteLine("Tokenizing keywords...");
+        program = TokenizeKeywords(program);
+        
         Console.WriteLine("Tokenizing floats...");
         program = TokenizeFloats(program);
         
@@ -136,15 +139,29 @@ public class Compiler {
         return program;
     }
 
-    Program TokenizeNames(Program program_) {
-        Program program = program_;
-        NameMatcher matcher = new NameMatcher();
-        while (true) {
-            Match match = matcher.Match(program);
-            if (match == null) break;
-            program = (Program)match.Replace(program);
-        }
-        return program;
+    Program TokenizeNames(Program program) {
+        return (Program)PerformMatching(program, new NameMatcher());
+    }
+
+    Program TokenizeKeywords(Program program) {
+        Dictionary<string, Type> keywords = new Dictionary<string, Type> {
+            {"return", typeof(ReturnKeyword)}
+        };
+        return (Program)PerformMatching(
+            program,
+            new PatternMatcher(
+                new List<IPatternSegment> {
+                    new UnitsPatternSegment<string>(
+                        typeof(Name), keywords.Keys.ToList()
+                    )
+                }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                    string name = ((Name)(tokens[0])).GetValue();
+                    return new List<IToken> {(IToken)Activator.CreateInstance(
+                        keywords[name]
+                    )};
+                })
+            )
+        );
     }
     
     Program TokenizeFloats(Program program_) {

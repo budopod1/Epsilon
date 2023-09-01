@@ -11,7 +11,7 @@
 }
 
 #r<Array<f>:val> {
-    
+    return 4;
 }
 
 #example(<Q: a>, <Array<Array<Q>>: b>) {
