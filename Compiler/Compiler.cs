@@ -86,39 +86,14 @@ public class Compiler {
         Console.WriteLine(program);
     }
     
-    Program TokenizeStrings(Program program_) {
-        Program program = program_;
-        StringMatcher matcher = new StringMatcher();
-        while (true) {
-            Match match = matcher.Match(program);
-            if (match == null) break;
-            string matchedString = String.Join(
-                "", match.GetMatched().Select(
-                    (IToken token) => ((TextToken)token).GetText()
-                )
-            );
-            int constant = program.GetConstants().AddConstant(
-                StringConstant.FromString(matchedString)
-            );
-            List<IToken> replacement = new List<IToken>();
-            replacement.Add(new ConstantValue(constant));
-            match.SetReplacement(replacement);
-            program = (Program)match.Replace(program);
-        }
-        return program;
+    Program TokenizeStrings(Program program) {
+        return (Program)PerformMatching(program, new StringMatcher(program));
     }
     
-    Program TokenizeFuncTemplates(Program program_) {
-        Program program = program_;
-        RawFuncTemplateMatcher matcher = new RawFuncTemplateMatcher(
+    Program TokenizeFuncTemplates(Program program) {
+        return (Program)PerformMatching(program, new RawFuncTemplateMatcher(
             '#', '{', typeof(RawFuncTemplate)
-        );
-        while (true) {
-            Match match = matcher.Match(program);
-            if (match == null) break;
-            program = (Program)match.Replace(program);
-        }
-        return program;
+        ));
     }
 
     Program TokenizeFuncArguments(Program program) {
@@ -129,12 +104,7 @@ public class Compiler {
             IToken token = program[i];
             if (!(token is RawFuncTemplate)) continue;
             RawFuncTemplate template = ((RawFuncTemplate)token);
-            while (true) { 
-                Match match = matcher.Match(template);
-                if (match == null) break;
-                template = (RawFuncTemplate)match.Replace(template);
-            }
-            program[i] = template;
+            program[i] = (RawFuncTemplate)PerformMatching(template, matcher);
         }
         return program;
     }
@@ -164,26 +134,8 @@ public class Compiler {
         );
     }
     
-    Program TokenizeFloats(Program program_) {
-        Program program = program_;
-        FloatMatcher matcher = new FloatMatcher();
-        while (true) {
-            Match match = matcher.Match(program);
-            if (match == null) break;
-            string matchedString = String.Join(
-                "", match.GetMatched().Select(
-                    (IToken token) => ((TextToken)token).GetText()
-                )
-            );
-            int constant = program.GetConstants().AddConstant(
-                FloatConstant.FromString(matchedString)
-            );
-            List<IToken> replacement = new List<IToken>();
-            replacement.Add(new ConstantValue(constant));
-            match.SetReplacement(replacement);
-            program = (Program)match.Replace(program);
-        }
-        return program;
+    Program TokenizeFloats(Program program) {
+        return (Program)PerformMatching(program, new FloatMatcher(program));
     }
 
     Program TokenizeInts(Program program_) {
@@ -220,41 +172,23 @@ public class Compiler {
         );
     }
 
-    Program TokenizeBlocks(Program program_) {
-        Program program = program_;
-        BlockMatcher matcher = new BlockMatcher(
+    Program TokenizeBlocks(Program program) {
+        return (Program)PerformMatching(program, new BlockMatcher(
             new TextPatternSegment("{"), new TextPatternSegment("}"),
             typeof(Block)
-        );
-        return (Program)PerformMatching(program, matcher);
+        ));
     }
 
-    Program TokenizeFunctionHolders(Program program_) {
-        Program program = program_;
-        FunctionHolderMatcher matcher = new FunctionHolderMatcher(
+    Program TokenizeFunctionHolders(Program program) {
+        return (Program)PerformMatching(program, new FunctionHolderMatcher(
             typeof(RawFuncTemplate), typeof(Block), typeof(FunctionHolder)
-        );
-        while (true) {
-            Match match = matcher.Match(program);
-            if (match == null) break;
-            program = (Program)match.Replace(program);
-        }
-        return program;
+        ));
     }
 
-    Program TokenizeStructHolders(Program program_) {
-        Program program = program_;
-        StructHolderMatcher matcher = new StructHolderMatcher(
+    Program TokenizeStructHolders(Program program) {
+        return (Program)PerformMatching(program, new StructHolderMatcher(
             typeof(Name), typeof(Block), typeof(StructHolder)
-        );
-        while (true) {
-            // TODO: replace this block and similar ones in other 
-            // functions with PerformMatching()
-            Match match = matcher.Match(program);
-            if (match == null) break;
-            program = (Program)match.Replace(program);
-        }
-        return program;
+        ));
     }
 
     void ComputeBaseTypes_(Program program) {

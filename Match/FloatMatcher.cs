@@ -1,7 +1,14 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class FloatMatcher : IMatcher {
+    Program program;
+
+    public FloatMatcher(Program program) {
+        this.program = program;
+    }
+    
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             List<IToken> replaced = new List<IToken>();
@@ -32,7 +39,19 @@ public class FloatMatcher : IMatcher {
                 replaced.Add(token);
             }
             if (anyMatch && dot && content) {
-                return new Match(i, j-1, new List<IToken>(), replaced);
+                string matchedString = String.Join(
+                    "", replaced.Select(
+                        (IToken sub) => ((TextToken)sub).GetText()
+                    )
+                );
+                int constant = program.GetConstants().AddConstant(
+                    FloatConstant.FromString(matchedString)
+                );
+                List<IToken> replacement = new List<IToken> {
+                    new ConstantValue(constant)
+                };
+                
+                return new Match(i, j-1, replacement, replaced);
             }
         }
         return null;

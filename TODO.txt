@@ -1,6 +1,5 @@
 TODO:
 * refactor most matchers into patternmatchers with custom pattern processors
-* refactor methods in Compiler.cs to use PerformMatching
 * add compilation exceptions
 * change the:
         foreach (IToken token in program) {
@@ -11,4 +10,4 @@ TODO:
 * use custom internal errors
 * add support for nested blocks
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
-* compute function return values
+* get function return values

@@ -19,7 +19,7 @@
 }
 
 #<Q: a> + <Z: b> {
-    
+    "this is \n some \r\\ text";
 }
 
 f {

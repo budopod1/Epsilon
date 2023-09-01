@@ -1,7 +1,14 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class StringMatcher : IMatcher {
+    Program program;
+
+    public StringMatcher(Program program) {
+        this.program = program;
+    }
+    
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
@@ -26,12 +33,22 @@ public class StringMatcher : IMatcher {
                     if (text == "\\") {
                         wasBackslash = true;
                     } else if (text == "\"") {
-                        return new Match(i, j, new List<IToken>(),
-                                         matched);
+                        string matchedString = String.Join(
+                            "", matched.Select(
+                                (IToken sub) => ((TextToken)sub).GetText()
+                            )
+                        );
+                        int constant = program.GetConstants().AddConstant(
+                            StringConstant.FromString(matchedString)
+                        );
+                        List<IToken> replacement = new List<IToken> {
+                            new ConstantValue(constant)
+                        };
+                        
+                        return new Match(i, j, replacement, matched);
                     }
                 }
             }
-            
         }
         return null;
     }
