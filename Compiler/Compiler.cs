@@ -138,26 +138,8 @@ public class Compiler {
         return (Program)PerformMatching(program, new FloatMatcher(program));
     }
 
-    Program TokenizeInts(Program program_) {
-        Program program = program_;
-        IntMatcher matcher = new IntMatcher();
-        while (true) {
-            Match match = matcher.Match(program);
-            if (match == null) break;
-            string matchedString = String.Join(
-                "", match.GetMatched().Select(
-                    (IToken token) => ((TextToken)token).GetText()
-                )
-            );
-            int constant = program.GetConstants().AddConstant(
-                IntConstant.FromString(matchedString)
-            );
-            List<IToken> replacement = new List<IToken>();
-            replacement.Add(new ConstantValue(constant));
-            match.SetReplacement(replacement);
-            program = (Program)match.Replace(program);
-        }
-        return program;
+    Program TokenizeInts(Program program) {
+        return (Program)PerformMatching(program, new IntMatcher(program));
     }
 
     Program RemoveWhitespace(Program program) {
