@@ -1,6 +1,6 @@
 run = "bash run.sh"
 
-hidden = [".git", "App.exe", "run.sh"]
+hidden = [".git", "App.exe", "run.sh", "combine.py", "blank.py"]
 
 [nix]
 channel = "stable-22_11"

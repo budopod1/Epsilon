@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Reflection;
 using System.Collections.Generic;
@@ -14,12 +15,12 @@ public class FunctionObjectifyerMatcher : IMatcher {
             IToken token = tokens[i];
             if (token is FunctionHolder) {
                 FunctionHolder holder = ((FunctionHolder)token);
-                FuncTemplate template = holder.GetTemplate();
+                FuncSignature sig = holder.GetSignature();
+                FuncTemplate template = sig.GetTemplate();
                 IToken replacement = (IToken)Activator.CreateInstance(
                     newType, new object[] {
                         template.GetValue(), template.GetArguments(),
-                        holder.GetBlock(),
-                        Type_.Unknown() // TEMP: replace with return value
+                        holder.GetBlock(), sig.GetReturnType_()
                     }
                 );
                 return new Match(i, i, new List<IToken> {replacement},
@@ -29,3 +30,4 @@ public class FunctionObjectifyerMatcher : IMatcher {
         return null;
     }
 }
+*/

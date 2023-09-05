@@ -1,4 +1,4 @@
-#h {
+Array<W>#h {
     W:v = 3;
     Array<Array<W>>:n;
     Q:r;
@@ -10,15 +10,15 @@
     7 % 8;
 }
 
-#r<Array<f>:val> {
+Z#r<Array<f>:val> {
     return 4;
 }
 
-#example(<Q: a>, <Array<Array<Q>>: b>) {
+Q#example(<Q: a>, <Array<Array<Q>>: b>) {
     [1.2] + [1];
 }
 
-#<Q: a> + <Z: b> {
+f#<Q: a> + <Z: b> {
     "this is \n some \r\\ text";
 }
 

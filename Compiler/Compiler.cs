@@ -15,7 +15,7 @@ public class Compiler {
         program = TokenizeStrings(program);
         
         Console.WriteLine("Tokenizing function templates...");
-        program = TokenizeFuncTemplates(program);
+        program = TokenizeFuncSignatures(program);
         
         Console.WriteLine("Tokenizing function arguments...");
         program = TokenizeFuncArguments(program);
@@ -56,8 +56,8 @@ public class Compiler {
         Console.WriteLine("Tokenizing types_...");
         program = TokenizeTypes_(program);
         
-        Console.WriteLine("Tokenizing function argument types_...");
-        program = TokenizeFuncArgumentTypes_(program);
+        // Console.WriteLine("Tokenizing function argument types_...");
+        // program = TokenizeFuncArgumentTypes_(program);
         
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
@@ -70,6 +70,9 @@ public class Compiler {
         
         Console.WriteLine("Parsing templates...");
         program = ParseFunctionTemplates(program);
+        
+        Console.WriteLine("Parsing function signatures...");
+        program = ParseFunctionSignatures(program);
         
         Console.WriteLine("Objectifying functions...");
         program = ObjectifyingFunctions(program);
@@ -90,10 +93,8 @@ public class Compiler {
         return (Program)PerformMatching(program, new StringMatcher(program));
     }
     
-    Program TokenizeFuncTemplates(Program program) {
-        return (Program)PerformMatching(program, new RawFuncTemplateMatcher(
-            '#', '{', typeof(RawFuncTemplate)
-        ));
+    Program TokenizeFuncSignatures(Program program) {
+        return (Program)PerformMatching(program, new RawFuncSignatureMatcher());
     }
 
     Program TokenizeFuncArguments(Program program) {
@@ -102,15 +103,24 @@ public class Compiler {
         );
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
-            if (!(token is RawFuncTemplate)) continue;
-            RawFuncTemplate template = ((RawFuncTemplate)token);
-            program[i] = (RawFuncTemplate)PerformMatching(template, matcher);
+            if (!(token is RawFuncSignature)) continue;
+            RawFuncSignature sig = ((RawFuncSignature)token);
+            RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
+            sig.SetTemplate(PerformMatching(template, matcher));
         }
         return program;
     }
 
     Program TokenizeNames(Program program) {
-        return (Program)PerformMatching(program, new NameMatcher());
+        IMatcher matcher = new NameMatcher();
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is RawFuncSignature)) continue;
+            RawFuncSignature sig = ((RawFuncSignature)token);
+            sig.SetReturnType_(PerformMatching((TreeToken)sig.GetReturnType_(), matcher));
+            sig.SetTemplate(PerformTreeMatching((TreeToken)sig.GetTemplate(), matcher));
+        }
+        return (Program)PerformMatching(program, matcher);
     }
 
     Program TokenizeKeywords(Program program) {
@@ -162,8 +172,20 @@ public class Compiler {
     }
 
     Program TokenizeFunctionHolders(Program program) {
+        /*
         return (Program)PerformMatching(program, new FunctionHolderMatcher(
-            typeof(RawFuncTemplate), typeof(Block), typeof(FunctionHolder)
+            typeof(RawFuncSignature), typeof(Block), typeof(FunctionHolder)
+        ));
+        */
+        return (Program)PerformMatching(program, new PatternMatcher(
+            new List<IPatternSegment> {
+                new TypePatternSegment(typeof(RawFuncSignature)),
+                new TypePatternSegment(typeof(Block))
+            }, new FuncPatternProcessor<List<IToken>>(
+                (List<IToken> tokens) => new List<IToken> {
+                    new FunctionHolder(tokens)
+                }
+            )
         ));
     }
 
@@ -192,51 +214,84 @@ public class Compiler {
         List<string> baseType_Names = program.GetBaseType_Names();
         Func<string, BaseType_> converter = (string source) => 
             BaseType_.ParseString(source, baseType_Names);
+        IMatcher matcher = new UnitSwitcherMatcher<string, BaseType_>(
+            typeof(Name), converter, typeof(BaseTokenType_)
+        );
         foreach (IToken token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
                 if (block == null) continue;
-                TreeToken result = PerformTreeMatching(block, 
-                    new UnitSwitcherMatcher<string, BaseType_>(
-                        typeof(Name), converter,
-                        typeof(BaseTokenType_)
-                    )
-                );
+                TreeToken result = PerformTreeMatching(block, matcher);
                 holder.SetBlock((Block)result);
+                if (token is FunctionHolder) {
+                    RawFuncSignature sig = ((FunctionHolder)token).GetRawSignature();
+                    sig.SetReturnType_(PerformTreeMatching(
+                        (TreeToken)sig.GetReturnType_(), matcher)
+                    );
+                    TreeToken template = (TreeToken)sig.GetTemplate();
+                    for (int i = 0; i < template.Count; i++) {
+                        IToken sub = template[i];
+                        if (sub is RawFunctionArgument) {
+                            template[i] = PerformTreeMatching((RawFunctionArgument)sub, matcher);
+                        }
+                    }
+                }
             }
         }
         return program;
     }
 
     Program TokenizeGenerics(Program program) {
-        return (Program)PerformTreeMatching(program, new BlockMatcher(
+        IMatcher matcher = new BlockMatcher(
             new TextPatternSegment("<"), new TextPatternSegment(">"), typeof(Generics)
-        ));
+        );
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is FunctionHolder)) continue;
+            RawFuncSignature sig = ((FunctionHolder)token).GetRawSignature();
+            sig.SetReturnType_(PerformTreeMatching((TreeToken)sig.GetReturnType_(), matcher));
+            sig.SetTemplate(PerformTreeMatching((TreeToken)sig.GetTemplate(), matcher));
+        }
+        return (Program)PerformTreeMatching(program, matcher);
     }
     
     Program TokenizeTypes_(Program program) {
+        IMatcher matcher = new Type_Matcher(
+            typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
+            new ListTokenParser<Type_>(
+                new TextPatternSegment(","), typeof(Type_Token), 
+                (IToken generic) => ((Type_Token)generic).GetValue()
+            )
+        );
         foreach (IToken token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
                 if (block == null) continue;
-                TreeToken result = PerformTreeMatching(block, 
-                    new Type_Matcher(
-                        typeof(BaseTokenType_), typeof(Generics),
-                        typeof(Type_Token),
-                        new ListTokenParser<Type_>(
-                            new TextPatternSegment(","), typeof(Type_Token), 
-                            (IToken generic) => ((Type_Token)generic).GetValue()
-                        )
-                    )
-                );
+                TreeToken result = PerformTreeMatching(block, matcher);
                 holder.SetBlock((Block)result);
+                if (token is FunctionHolder) {
+                    RawFuncSignature sig = ((FunctionHolder)token).GetRawSignature();
+                    sig.SetReturnType_(PerformTreeMatching(
+                        (TreeToken)sig.GetReturnType_(), matcher
+                    ));
+                    TreeToken template = (TreeToken)sig.GetTemplate();
+                    for (int i = 0; i < template.Count; i++) {
+                        IToken sub = template[i];
+                        if (sub is RawFunctionArgument) {
+                            template[i] = PerformTreeMatching(
+                                (RawFunctionArgument)sub, matcher
+                            );
+                        }
+                    }
+                }
             }
         }
         return program;
     }
 
+    /*
     Program TokenizeFuncArgumentTypes_(Program program) {
         List<string> baseType_Names = program.GetBaseType_Names();
         Func<string, BaseType_> converter = (string source) => 
@@ -274,6 +329,7 @@ public class Compiler {
         }
         return program;
     }
+    */
 
     Program TokenizeVarDeclarations(Program program) {
         foreach (IToken token in program) {
@@ -316,7 +372,6 @@ public class Compiler {
                 })
             }, new DisposePatternProcessor()
         );
-        IMatcher nameMatcher = new NameMatcher();
         IMatcher argumentConverterMatcher = new ArgumentConverterMatcher(
             typeof(RawFunctionArgument), typeof(Name), typeof(Type_Token),
             typeof(FunctionArgumentToken)
@@ -325,11 +380,11 @@ public class Compiler {
             IToken token = program[i];
             if (!(token is FunctionHolder)) continue;
             FunctionHolder holder = ((FunctionHolder)token);
-            TreeToken template = holder.GetRawTemplate();
+            RawFuncSignature sig = holder.GetRawSignature();
+            TreeToken template = (TreeToken)sig.GetTemplate();
             template = PerformMatching(template, whitespaceMatcher);
-            template = PerformMatching(template, nameMatcher);
             template = PerformMatching(template, argumentConverterMatcher);
-            holder.SetTemplate(template);
+            sig.SetTemplate(template);
         }
         return program;
     }
@@ -342,7 +397,8 @@ public class Compiler {
             IToken token = program[i];
             if (!(token is FunctionHolder)) continue;
             FunctionHolder holder = ((FunctionHolder)token);
-            RawFuncTemplate rawTemplate = holder.GetRawTemplate();
+            RawFuncSignature sig = holder.GetRawSignature();
+            RawFuncTemplate rawTemplate = (RawFuncTemplate)sig.GetTemplate();
             List<IPatternSegment> segments = new List<IPatternSegment>();
             List<FunctionArgumentToken> arguments = new List<FunctionArgumentToken>();
             List<int> slots = new List<int>();
@@ -372,7 +428,7 @@ public class Compiler {
                 }
                 segments.Add(segment);
             }
-            holder.SetTemplate(new FuncTemplate(
+            sig.SetTemplate(new FuncTemplate(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(slots)
                 ),
@@ -382,9 +438,42 @@ public class Compiler {
         return program;
     }
 
+    Program ParseFunctionSignatures(Program program) {
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is FunctionHolder)) continue;
+            FunctionHolder holder = ((FunctionHolder)token);
+            RawFuncSignature sig = holder.GetRawSignature();
+            holder.SetSignature(
+                new FuncSignature(
+                    ((RawFuncReturnType_)sig.GetReturnType_()).GetType_(),
+                    (FuncTemplate)sig.GetTemplate()
+                )
+            );
+        }
+        return program;
+    }
+
     Program ObjectifyingFunctions(Program program) {
+        /*
         return (Program)PerformMatching(program, new FunctionObjectifyerMatcher(
             typeof(Function)
+        ));
+        */
+        return (Program)PerformMatching(program, new PatternMatcher(
+            new List<IPatternSegment> {
+                new TypePatternSegment(typeof(FunctionHolder))
+            }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                FunctionHolder holder = ((FunctionHolder)tokens[0]);
+                FuncSignature sig = holder.GetSignature();
+                FuncTemplate template = sig.GetTemplate();
+                return new List<IToken> {
+                    new Function(
+                        template.GetValue(), template.GetArguments(),
+                        holder.GetBlock(), sig.GetReturnType_()
+                    )
+                };
+            })
         ));
     }
 

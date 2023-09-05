@@ -8,25 +8,25 @@ public class FunctionHolder : Holder {
         return (TreeToken)new FunctionHolder(tokens);
     }
 
-    public RawFuncTemplate GetRawTemplate() {
+    public RawFuncSignature GetRawSignature() {
         if (this.Count < 2) return null;
         IToken token = this[0];
-        if (!(token is RawFuncTemplate)) return null;
-        return (RawFuncTemplate)token;
+        if (!(token is RawFuncSignature)) return null;
+        return (RawFuncSignature)token;
     }
 
-    public FuncTemplate GetTemplate() {
+    public FuncSignature GetSignature() {
         if (this.Count < 2) return null;
         IToken token = this[0];
-        if (!(token is FuncTemplate)) return null;
-        return (FuncTemplate)token;
+        if (!(token is FuncSignature)) return null;
+        return (FuncSignature)token;
     }
 
-    public void SetTemplate(IToken template) {
+    public void SetSignature(IToken signature) {
         if (this.Count < 2)
             throw new InvalidOperationException(
-                "FuncHolder does not have template already set"
+                "FunctionHolder does not have signature already set"
             );
-        this[0] = template;
+        this[0] = signature;
     }
 }
