@@ -56,9 +56,6 @@ public class Compiler {
         Console.WriteLine("Tokenizing types_...");
         program = TokenizeTypes_(program);
         
-        // Console.WriteLine("Tokenizing function argument types_...");
-        // program = TokenizeFuncArgumentTypes_(program);
-        
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
         
@@ -172,11 +169,6 @@ public class Compiler {
     }
 
     Program TokenizeFunctionHolders(Program program) {
-        /*
-        return (Program)PerformMatching(program, new FunctionHolderMatcher(
-            typeof(RawFuncSignature), typeof(Block), typeof(FunctionHolder)
-        ));
-        */
         return (Program)PerformMatching(program, new PatternMatcher(
             new List<IPatternSegment> {
                 new TypePatternSegment(typeof(RawFuncSignature)),
@@ -290,46 +282,6 @@ public class Compiler {
         }
         return program;
     }
-
-    /*
-    Program TokenizeFuncArgumentTypes_(Program program) {
-        List<string> baseType_Names = program.GetBaseType_Names();
-        Func<string, BaseType_> converter = (string source) => 
-            BaseType_.ParseString(source, baseType_Names);
-        IMatcher nameMatcher = new NameMatcher();
-        IMatcher baseMatcher = new UnitSwitcherMatcher
-                                   <string, BaseType_>(
-            typeof(Name), converter, typeof(BaseTokenType_)
-        );
-        IMatcher genericMatcher = new BlockMatcher(
-            new TextPatternSegment("<"), new TextPatternSegment(">"), typeof(Generics)
-        );
-        IMatcher type_Matcher = new Type_Matcher(
-            typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
-            new ListTokenParser<Type_>(
-                new TextPatternSegment(","), typeof(Type_Token), 
-                (IToken generic) => ((Type_Token)generic).GetValue()
-            )
-        );
-        for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
-            if (!(token is FunctionHolder)) continue;
-            FunctionHolder funcHolder = ((FunctionHolder)token);
-            RawFuncTemplate template = funcHolder.GetRawTemplate();
-            for (int j = 0; j < template.Count; j++) {
-                IToken subtoken = template[j];
-                if (!(subtoken is RawFunctionArgument)) continue;
-                TreeToken argument = ((TreeToken)subtoken);
-                argument = PerformMatching(argument, nameMatcher);
-                argument = PerformMatching(argument, baseMatcher);
-                argument = PerformTreeMatching(argument, genericMatcher);
-                argument = PerformTreeMatching(argument, type_Matcher);
-                template[j] = argument;
-            }
-        }
-        return program;
-    }
-    */
 
     Program TokenizeVarDeclarations(Program program) {
         foreach (IToken token in program) {
@@ -455,11 +407,6 @@ public class Compiler {
     }
 
     Program ObjectifyingFunctions(Program program) {
-        /*
-        return (Program)PerformMatching(program, new FunctionObjectifyerMatcher(
-            typeof(Function)
-        ));
-        */
         return (Program)PerformMatching(program, new PatternMatcher(
             new List<IPatternSegment> {
                 new TypePatternSegment(typeof(FunctionHolder))
