@@ -1,14 +1,15 @@
 TODO:
 * refactor most matchers into patternmatchers with custom pattern processors
 * replace usage of Activator with direct instantiation
-* add compilation exceptions
 * change the:
         foreach (IToken token in program) {
             if (token is Function) {
                 Function function = ((Function)token);
                 Block block = function.GetBlock();
     structure into a system that will iterate over recursively nested blocks
-* use custom internal errors
+* fix order of operations
 * add support for nested blocks
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * get function return values
+* add better SyntaxError messages
+* color "compliation error" output

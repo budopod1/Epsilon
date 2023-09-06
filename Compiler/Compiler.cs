@@ -7,7 +7,9 @@ public class Compiler {
         try {
             _Compile(text);
         } catch (SyntaxErrorException e) {
-            Console.WriteLine($"SyntaxError: {e.Message}");
+            Console.WriteLine(
+                $"compliation error: {e.Message}"
+            );
         }
     }
 
