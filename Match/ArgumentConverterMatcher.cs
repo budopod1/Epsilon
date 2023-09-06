@@ -32,8 +32,8 @@ public class ArgumentConverterMatcher : IMatcher {
                     }
                 }
                 if (name == null || type_Token == null) {
-                    throw new InvalidOperationException(
-                        "RawFunctionArgument is incomplete"
+                    throw new SyntaxErrorException(
+                        "Function argument is incomplete"
                     );
                 }
                 IToken replacement = (IToken)Activator.CreateInstance(

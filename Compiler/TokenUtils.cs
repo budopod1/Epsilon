@@ -17,11 +17,6 @@ public class TokenUtils {
         while (!(current is T)) {
             current = current.parent;
             if (current == null || ++i >= 1000) {
-                /*
-                throw new InvalidOperationException(
-                    $"Cannot find ancestor {typeof(T).Name} in token"
-                );
-                */
                 return default(T);
             }
         }

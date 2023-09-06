@@ -14,11 +14,11 @@ Z#r<Array<f>:val> {
     return 4;
 }
 
-Q#example(<Q: a>, <Array<Array<Q>>: b>) {
-    [1.2] + [1];
+Q#example<Q: a><Array<Array<Q>>: b> {
+    [1.2] + [1] + 5;
 }
 
-f#<Q: a> + <Z: b> {
+Z#<Q: a> + <Z: b> {
     "this is \n some \r\\ text";
 }
 

@@ -25,7 +25,7 @@ public class SplitTokensParser {
         if (allowUnterminated) {
             result.Add(soFar);
         } else if (soFar.Count > 0) {
-            throw new ArgumentException("Unterimated tokens");
+            return null;
         } 
         return result;
     }

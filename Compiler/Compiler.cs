@@ -4,6 +4,14 @@ using System.Collections.Generic;
 
 public class Compiler {
     public void Compile(string text) {
+        try {
+            _Compile(text);
+        } catch (SyntaxErrorException e) {
+            Console.WriteLine($"SyntaxError: {e.Message}");
+        }
+    }
+
+    void _Compile(string text) {
         Console.WriteLine("Compiling...");
         
         Program program = new Program(new List<IToken>(), new Constants());
@@ -374,8 +382,8 @@ public class Compiler {
                     slots.Add(j);
                 }
                 if (segment == null) {
-                    throw new InvalidOperationException(
-                        $"Segment of type {tokenType} cannot be part of a func template"
+                    throw new SyntaxErrorException(
+                        "Invalid syntax in function template"
                     );
                 }
                 segments.Add(segment);
@@ -431,6 +439,9 @@ public class Compiler {
                 Function function = ((Function)token);
                 Block block = function.GetBlock();
                 List<List<IToken>> rawLines = parser.Parse(block);
+                if (rawLines == null) {
+                    throw new SyntaxErrorException("Unterminated block");
+                }
                 List<IToken> lines = new List<IToken>();
                 foreach(List<IToken> section in rawLines) {
                     lines.Add(new Line(section));
