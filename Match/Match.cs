@@ -51,6 +51,14 @@ public class Match {
         return end - start + 1;
     }
 
+    public int GetStart() {
+        return start;
+    }
+
+    public int GetEnd() {
+        return end;
+    }
+
     public override string ToString() {
         string result = "(" + this.start.ToString();
         result += ", " + this.end.ToString() + "):";

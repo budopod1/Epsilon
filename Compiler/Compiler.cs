@@ -574,52 +574,58 @@ public class Compiler {
                         new SlotPatternProcessor(new List<int> {0}), typeof(Variable)
                     )
                 ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new Type_PatternSegment(new Type_("Q")),
-                        new TextPatternSegment("+"),
-                        new Type_PatternSegment(new Type_("Q")),
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Addition)
+                new CombinedMatchersMatcher(new List<IMatcher> {
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("*"),
+                            new Type_PatternSegment(new Type_("Q")),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}),
+                            typeof(Multiplication)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("/"),
+                            new Type_PatternSegment(new Type_("Q")),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}), 
+                            typeof(Division)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("%"),
+                            new Type_PatternSegment(new Type_("Q")),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}),
+                            typeof(Modulo)
+                        )
                     )
-                ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new Type_PatternSegment(new Type_("Q")),
-                        new TextPatternSegment("-"),
-                        new Type_PatternSegment(new Type_("Q")),
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Subtraction)
+                }),
+                new CombinedMatchersMatcher(new List<IMatcher> {
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("+"),
+                            new Type_PatternSegment(new Type_("Q")),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}), typeof(Addition)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("-"),
+                            new Type_PatternSegment(new Type_("Q")),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}), typeof(Subtraction)
+                        )
                     )
-                ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new Type_PatternSegment(new Type_("Q")),
-                        new TextPatternSegment("*"),
-                        new Type_PatternSegment(new Type_("Q")),
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
-                                                 typeof(Multiplication)
-                    )
-                ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new Type_PatternSegment(new Type_("Q")),
-                        new TextPatternSegment("/"),
-                        new Type_PatternSegment(new Type_("Q")),
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Division)
-                    )
-                ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new Type_PatternSegment(new Type_("Q")),
-                        new TextPatternSegment("%"),
-                        new Type_PatternSegment(new Type_("Q")),
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}), typeof(Modulo)
-                    )
-                ),
+                }),
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Variable)),
