@@ -1,6 +1,14 @@
 TODO:
 * refactor most matchers into patternmatchers with custom pattern processors
 * replace usage of Activator with direct instantiation
+* add:
+    if (!Type_.AreCompatible(o1.GetType_(), o2.GetType_())) {
+        throw new SyntaxErrorException(
+            \$"Cannot check equality of {o1.GetType_()} and {o2.GetType_()}"
+        );
+    }
+    to all the comparison and equality operations
+* add checks so that only numbers types_ (which includes bool) can be used in boolean operations (eg. And, Or...)
 * change the:
         foreach (IToken token in program) {
             if (token is Function) {

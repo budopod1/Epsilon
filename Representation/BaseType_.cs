@@ -22,7 +22,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static List<string> NumberTypes_ = new List<string> {
-        "Byte", "W", "Z", "Q"
+        "Byte", "W", "Z", "Q", "Bool"
     };
 
     public static List<string> BitTypes_ = new List<string> {
@@ -34,6 +34,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static Dictionary<string, List<string>> ConvertibleTo = new Dictionary<string, List<string>> {
+        {"Bool", new List<string> {"Byte", "W", "Z", "Q"}},
         {"Byte", new List<string> {"W", "Z", "Q"}},
         {"W", new List<string> {"Byte", "Z", "Q"}},
         {"Z", new List<string> {"Q"}},

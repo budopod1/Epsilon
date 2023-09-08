@@ -604,7 +604,7 @@ public class Compiler {
                             new SlotPatternProcessor(new List<int> {0, 2}),
                             typeof(Modulo)
                         )
-                    )
+                    ),
                 }),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
@@ -624,7 +624,116 @@ public class Compiler {
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 2}), typeof(Subtraction)
                         )
+                    ),
+                }),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TextPatternSegment("!"),
+                        new Type_PatternSegment(Type_.Any()),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(Not)
                     )
+                ),
+                new CombinedMatchersMatcher(new List<IMatcher> {
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment("&"),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}),
+                            typeof(AND)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment("|"),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}),
+                            typeof(OR)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment("^"),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}),
+                            typeof(XOR)
+                        )
+                    ),
+                }),
+                new CombinedMatchersMatcher(new List<IMatcher> {
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment(">"),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}),
+                            typeof(Greater)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment("<"),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 2}),
+                            typeof(Less)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment(">"),
+                            new TextPatternSegment("="),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(GreaterEqual)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment("<"),
+                            new TextPatternSegment("="),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(LessEqual)
+                        )
+                    ),
+                }),
+                new CombinedMatchersMatcher(new List<IMatcher> {
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment("="),
+                            new TextPatternSegment("="),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(Equals)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(Type_.Any()),
+                            new TextPatternSegment("!"),
+                            new TextPatternSegment("="),
+                            new Type_PatternSegment(Type_.Any()),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(NotEquals)
+                        )
+                    ),
                 }),
                 new PatternMatcher(
                     new List<IPatternSegment> {

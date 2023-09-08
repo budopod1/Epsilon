@@ -21,7 +21,19 @@ public class Type_ : IEquatable<Type_> {
         return new Type_("Any");
     }
 
+    public static bool AreCompatible(Type_ a, Type_ b) {
+        if (a.Equals(b)) return true;
+        if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
+            return false;
+        BaseType_ abt = a.GetBaseType_();
+        BaseType_ bbt = b.GetBaseType_();
+        bool aToB = abt.IsConvertibleTo(bbt);
+        bool bToA = bbt.IsConvertibleTo(abt);
+        return aToB || bToA;
+    }
+
     public static Type_ Common(Type_ a, Type_ b) {
+        if (a.Equals(b)) return a;
         if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
             return Unknown();
         BaseType_ abt = a.GetBaseType_();
@@ -45,6 +57,7 @@ public class Type_ : IEquatable<Type_> {
 
     public static Type_ CommonSpecific(Type_ a, Type_ b,
                                             string name) {
+        if (a.Equals(b) && a.GetBaseType_().GetName()==name) return a;
         if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
             return Unknown();
         int? abits = a.GetBaseType_().GetBits();
