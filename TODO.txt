@@ -1,7 +1,6 @@
 TODO:
 * refactor most matchers into patternmatchers with custom pattern processors
 * replace usage of Activator with direct instantiation
-* add MatcherPatternSegment
 * change the:
         foreach (IToken token in program) {
             if (token is Function) {

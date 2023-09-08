@@ -7,9 +7,10 @@ public class Compiler {
         try {
             _Compile(text);
         } catch (SyntaxErrorException e) {
-            Console.WriteLine(
-                $"compliation error: {e.Message}"
-            );
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.Write("compliation error: ");
+            Console.ResetColor();
+            Console.WriteLine(e.Message);
         }
     }
 
