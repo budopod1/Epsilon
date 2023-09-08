@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 public class VarDeclaration : IParentToken {
     public IParentToken parent { get; set; }

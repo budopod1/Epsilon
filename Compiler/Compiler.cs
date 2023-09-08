@@ -183,17 +183,16 @@ public class Compiler {
             new List<IPatternSegment> {
                 new TypePatternSegment(typeof(RawFuncSignature)),
                 new TypePatternSegment(typeof(Block))
-            }, new FuncPatternProcessor<List<IToken>>(
-                (List<IToken> tokens) => new List<IToken> {
-                    new FunctionHolder(tokens)
-                }
-            )
+            }, new WrapperPatternProcessor(typeof(FunctionHolder))
         ));
     }
 
     Program TokenizeStructHolders(Program program) {
-        return (Program)PerformMatching(program, new StructHolderMatcher(
-            typeof(Name), typeof(Block), typeof(StructHolder)
+        return (Program)PerformMatching(program, new PatternMatcher(
+            new List<IPatternSegment> {
+                new TypePatternSegment(typeof(Name)),
+                new TypePatternSegment(typeof(Block))
+            }, new WrapperPatternProcessor(typeof(StructHolder))
         ));
     }
 

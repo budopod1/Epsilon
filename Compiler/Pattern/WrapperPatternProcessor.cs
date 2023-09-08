@@ -11,10 +11,19 @@ public class WrapperPatternProcessor : IPatternProcessor<List<IToken>> {
         this.wrapper = wrapper;
         this.subprocessor = subprocessor;
     }
+    
+    public WrapperPatternProcessor(Type wrapper) {
+        this.wrapper = wrapper;
+        this.subprocessor = null;
+    }
 
     public List<IToken> Process(List<IToken> tokens, int start, int end) {
+        List<IToken> ntokens = tokens;
+        if (subprocessor != null) {
+            ntokens = subprocessor.Process(tokens, start, end);
+        }
         IToken result = (IToken)Activator.CreateInstance(
-            wrapper, new object[] {subprocessor.Process(tokens, start, end)}
+            wrapper, new object[] {ntokens}
         );
         return new List<IToken> {result};
     }
