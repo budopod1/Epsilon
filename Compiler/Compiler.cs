@@ -61,6 +61,9 @@ public class Compiler {
         Console.WriteLine("Tokenizing base types...");
         program = TokenizeBaseTypes_(program);
         
+        Console.WriteLine("Tokenizing constant keyword values...");
+        program = TokenizeConstantKeywordValues(program);
+        
         Console.WriteLine("Tokenizing generics...");
         program = TokenizeGenerics(program);
         
@@ -239,6 +242,41 @@ public class Compiler {
                         }
                     }
                 }
+            }
+        }
+        return program;
+    }
+    
+    Program TokenizeConstantKeywordValues(Program program) {
+        Constants constants = program.GetConstants();
+        Dictionary<string, Func<IConstant>> values = new Dictionary<string, Func<IConstant>> {
+            {"true", () => new BoolConstant(true)},
+            {"false", () => new BoolConstant(false)},
+            {"infinity", () => new FloatConstant(Single.NegativeInfinity)},
+            {"NaN", () => new FloatConstant(Single.NaN)},
+            {"pi", () => new FloatConstant(MathF.PI)},
+            {"e", () => new FloatConstant(MathF.E)},
+        };
+        IMatcher matcher = new PatternMatcher(
+            new List<IPatternSegment> {
+                new UnitsPatternSegment<string>(
+                    typeof(Name), values.Keys.ToList()
+                )
+            }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                Name name = ((Name)tokens[0]);
+                int constant = constants.AddConstant(
+                    values[name.GetValue()]()
+                );
+                return new List<IToken> {new ConstantValue(constant)};
+            })
+        );
+        foreach (IToken token in program) {
+            if (token is FunctionHolder) {
+                FunctionHolder holder = ((FunctionHolder)token);
+                Block block = holder.GetBlock();
+                if (block == null) continue;
+                TreeToken result = PerformTreeMatching(block, matcher);
+                holder.SetBlock((Block)result);
             }
         }
         return program;

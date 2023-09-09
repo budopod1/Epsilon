@@ -1,6 +1,8 @@
 TODO:
 * refactor most matchers into patternmatchers with custom pattern processors
 * replace usage of Activator with direct instantiation
+* investigate whether floats or doubles should be the default Q
+* investiage whether DoubleConstant should be added
 * add:
     if (!Type_.AreCompatible(o1.GetType_(), o2.GetType_())) {
         throw new SyntaxErrorException(

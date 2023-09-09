@@ -25,6 +25,12 @@ Z#<Q: a> + <Z: b> {
     "this is \n some \r\\ text";
 }
 
+#dhffg {
+    Bool:b3 = true | false;
+    e ** pi;
+    NaN + infinity;
+}
+
 f {
     Array<Z>:d,
     Byte:b,
