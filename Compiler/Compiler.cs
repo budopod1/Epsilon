@@ -822,16 +822,20 @@ public class Compiler {
             if (parent is TreeToken) {
                 TreeToken tree = ((TreeToken)parent);
                 foreach (IMatcher rule in ruleset) {
-                    (changed, parent) = PerformMatchingChanged(tree, rule);
-                    if (changed) {
+                    Match match = rule.Match(tree);
+                    if (match != null) {
+                        changed = true;
+                        parent = match.Replace(tree);
                         TokenUtils.UpdateParents(parent);
                         break;
                     }
                 }
             } else {
                 foreach (IMatcher rule in ruleset) {
-                    changed = PerformIParentMatchingChanged(parent, rule);
-                    if (changed) {
+                    Match match = rule.Match(parent);
+                    if (match != null && match.Length() == 1) {
+                        changed = true;
+                        match.SingleReplace(parent);
                         TokenUtils.UpdateParents(parent);
                         break;
                     }
