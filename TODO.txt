@@ -3,6 +3,10 @@ TODO:
 * replace usage of Activator with direct instantiation
 * investigate whether floats or doubles should be the default Q
 * investiage whether DoubleConstant should be added
+* rename AND, OR, XOR to BitwiseAND, etc
+* add logical and, or (maybe xor (would that be ^^?))
+* stop bitwise boolean operators from casting types (require to arguments to be both the same type (which must be an integer type), then cast to the larger number of bits)
+* add UniaryOperation class
 * add:
     if (!Type_.AreCompatible(o1.GetType_(), o2.GetType_())) {
         throw new SyntaxErrorException(
