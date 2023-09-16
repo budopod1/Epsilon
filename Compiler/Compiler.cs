@@ -54,6 +54,9 @@ public class Compiler {
         
         Console.WriteLine("Tokenizing structs...");
         program = TokenizeStructHolders(program);
+        
+        Console.WriteLine("Converting function blocks...");
+        program = ConvertFunctionBlocks(program);
 
         Console.WriteLine("Computing base types_...");
         ComputeBaseTypes_(program);
@@ -198,6 +201,25 @@ public class Compiler {
                 new TypePatternSegment(typeof(Block))
             }, new WrapperPatternProcessor(typeof(StructHolder))
         ));
+    }
+
+    Program ConvertFunctionBlocks(Program program) {
+        IMatcher matcher = new PatternMatcher(
+            new List<IPatternSegment> {
+                new TypePatternSegment(typeof(Block), true)
+            }, new WrapperPatternProcessor(
+                new UnwrapperPatternProcessor(),
+                typeof(CodeBlock)
+            )
+        );
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (token is FunctionHolder) {
+                FunctionHolder holder = ((FunctionHolder)token);
+                program[i] = PerformTreeMatching(holder, matcher);
+            }
+        }
+        return program;
     }
 
     void ComputeBaseTypes_(Program program) {
@@ -465,7 +487,7 @@ public class Compiler {
                 return new List<IToken> {
                     new Function(
                         template.GetValue(), template.GetArguments(),
-                        holder.GetBlock(), sig.GetReturnType_()
+                        (CodeBlock)holder.GetBlock(), sig.GetReturnType_()
                     )
                 };
             })
@@ -477,7 +499,7 @@ public class Compiler {
         foreach (IToken token in program) {
             if (token is Function) {
                 Function function = ((Function)token);
-                Block block = function.GetBlock();
+                CodeBlock block = function.GetBlock();
                 List<List<IToken>> rawLines = parser.Parse(block);
                 if (rawLines == null) {
                     throw new SyntaxErrorException("Unterminated block");
@@ -486,7 +508,7 @@ public class Compiler {
                 foreach(List<IToken> section in rawLines) {
                     lines.Add(new Line(section));
                 }
-                function.SetBlock((Block)block.Copy(lines));
+                function.SetBlock((CodeBlock)block.Copy(lines));
             }
         }
         return program;
@@ -497,7 +519,7 @@ public class Compiler {
             if (token is Function) {
                 Function function = ((Function)token);
                 Scope scope = function.GetScope();
-                function.SetBlock((Block)PerformTreeMatching(
+                function.SetBlock((CodeBlock)PerformTreeMatching(
                     function.GetBlock(), new PatternMatcher(
                         new List<IPatternSegment> {
                             new TypePatternSegment(typeof(VarDeclaration)),
@@ -797,14 +819,14 @@ public class Compiler {
         };
         
         foreach (Function function in functions) {
-            Block block = function.GetBlock();
+            CodeBlock block = function.GetBlock();
             function.SetBlock(DoBlockCodeRules(block, rules));
         }
         
         return program;
     }
 
-    Block DoBlockCodeRules(Block block, List<List<IMatcher>> rules) {
+    CodeBlock DoBlockCodeRules(CodeBlock block, List<List<IMatcher>> rules) {
         for (int i = 0; i < block.Count; i++) {
             IToken token = block[i];
             if (token is Line) {
@@ -883,6 +905,8 @@ public class Compiler {
                 bool tchanged;
                 (tchanged, parent) = PerformMatchingChanged(tree, matcher);
                 changed |= tchanged;
+            } else {
+                changed |= PerformIParentMatchingChanged(parent, matcher);
             }
 
             anyChanged |= changed;

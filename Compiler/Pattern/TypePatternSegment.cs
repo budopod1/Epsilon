@@ -2,6 +2,7 @@ using System;
 
 public class TypePatternSegment : IPatternSegment {
     Type type;
+    bool exact = false;
 
     public Type GetMType() {
         return type;
@@ -10,9 +11,18 @@ public class TypePatternSegment : IPatternSegment {
     public TypePatternSegment(Type type) {
         this.type = type;
     }
+    
+    public TypePatternSegment(Type type, bool exact) {
+        this.type = type;
+        this.exact = exact;
+    }
 
     public bool Matches(IToken token) {
-        return Utils.IsInstance(token, type);
+        if (exact) {
+            return token.GetType() == type;
+        } else {
+            return Utils.IsInstance(token, type);
+        }
     }
 
     public bool Equals(IPatternSegment obj) {

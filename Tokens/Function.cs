@@ -18,7 +18,7 @@ public class Function : IParentToken {
         }
         set {
             if (i == 0) {
-                block = ((Block)value);
+                block = ((CodeBlock)value);
             } else {
                 arguments[i-1] = (FunctionArgumentToken)value;
             }
@@ -27,12 +27,12 @@ public class Function : IParentToken {
     
     PatternExtractor<List<IToken>> pattern;
     List<FunctionArgumentToken> arguments;
-    Block block;
+    CodeBlock block;
     Scope scope = new Scope();
     Type_ returnType_;
     
     public Function(PatternExtractor<List<IToken>> pattern, 
-                    List<FunctionArgumentToken> arguments, Block block,
+                    List<FunctionArgumentToken> arguments, CodeBlock block,
                     Type_ returnType_) {
         this.pattern = pattern;
         this.arguments = arguments;
@@ -48,11 +48,11 @@ public class Function : IParentToken {
         return arguments;
     }
 
-    public Block GetBlock() {
+    public CodeBlock GetBlock() {
         return block;
     }
 
-    public void SetBlock(Block block) {
+    public void SetBlock(CodeBlock block) {
         this.block = block;
     }
 
