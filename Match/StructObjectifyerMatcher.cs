@@ -26,6 +26,11 @@ public class StructObjectifyerMatcher : IMatcher {
                 Name name = ((Name)nameT);
                 string nameStr = name.GetValue();
                 List<Field> fields = listParser.Parse(block);
+                if (fields == null) {
+                    throw new SyntaxErrorException(
+                        "Malformed struct"
+                    );
+                }
                 IToken compiled = (IToken)Activator.CreateInstance(
                     structCompiledType, new object[] {
                         nameStr, fields

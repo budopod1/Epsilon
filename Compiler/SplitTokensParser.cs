@@ -11,6 +11,14 @@ public class SplitTokensParser {
     }
 
     public List<List<IToken>> Parse(IParentToken tree) {
+        List<IToken> list = new List<IToken>();
+        for (int i = 0; i < tree.Count; i++) {
+            list.Add(tree[i]);
+        }
+        return Parse(list);
+    }
+
+    public List<List<IToken>> Parse(List<IToken> tree) {
         List<List<IToken>> result = new List<List<IToken>>();
         List<IToken> soFar = new List<IToken>();
         for (int i = 0; i < tree.Count; i++) {

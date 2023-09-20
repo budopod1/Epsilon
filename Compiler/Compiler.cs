@@ -413,7 +413,7 @@ public class Compiler {
 
     Program ParseFunctionTemplates(Program program) {
         List<Type> argumentTypes = new List<Type> {
-            typeof(RawParameterGroup)
+            typeof(RawSquareGroup)
         };
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
@@ -566,17 +566,18 @@ public class Compiler {
         List<List<IMatcher>> rules = new List<List<IMatcher>> {
             new List<IMatcher> {
                 new BlockMatcher(
-                    new TextPatternSegment("("), new TextPatternSegment(")"), typeof(RawGroup)
+                    new TextPatternSegment("("), new TextPatternSegment(")"),
+                    typeof(RawGroup)
                 ),
                 new BlockMatcher(
-                    new TextPatternSegment("["), new TextPatternSegment("]"), typeof(RawParameterGroup)
+                    new TextPatternSegment("["), new TextPatternSegment("]"),
+                    typeof(RawSquareGroup)
                 )
             },
             functionRules,
             addMatchingFunctionRules,
             new List<IMatcher> {
                 new GroupConverterMatcher(typeof(RawGroup), typeof(Group)),
-                // new GroupConverterMatcher(typeof(RawParameterGroup), typeof(ParameterGroup)),
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(RawFunctionCall))
@@ -587,7 +588,7 @@ public class Compiler {
                         List<IValueToken> parameters = new List<IValueToken>();
                         
                         for (int i = 0; i < call.Count; i++) {
-                            RawParameterGroup rparameter = (call[i]) as RawParameterGroup;
+                            RawSquareGroup rparameter = (call[i]) as RawSquareGroup;
                             if (rparameter.Count != 1) return null;
                             IValueToken parameter = (rparameter[0]) as IValueToken;
                             if (parameter == null) return null;
@@ -623,6 +624,20 @@ public class Compiler {
                         
                         return null;
                     })
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new ConditionPatternSegment<RawSquareGroup>(
+                            (RawSquareGroup group) => !(group.parent is RawFunctionCall)
+                        )
+                    }, new WrapperPatternProcessor(
+                        new SplitTokensProcessor(
+                            new UnwrapperPatternProcessor(),
+                            new TextPatternSegment(","),
+                            typeof(ValueListItem)
+                        ),
+                        typeof(ValueList)
+                    )
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
@@ -844,6 +859,7 @@ public class Compiler {
         IParentToken parent = parent_;
         bool changed = true;
         while (changed) {
+            Console.WriteLine(parent);
             changed = false;
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
