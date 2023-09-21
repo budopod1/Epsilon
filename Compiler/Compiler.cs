@@ -729,7 +729,7 @@ public class Compiler {
                             new Type_PatternSegment(Type_.Any()),
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 2}),
-                            typeof(AND)
+                            typeof(BitwiseAND)
                         )
                     ),
                     new PatternMatcher(
@@ -739,7 +739,7 @@ public class Compiler {
                             new Type_PatternSegment(Type_.Any()),
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 2}),
-                            typeof(OR)
+                            typeof(BitwiseOR)
                         )
                     ),
                     new PatternMatcher(
@@ -749,7 +749,7 @@ public class Compiler {
                             new Type_PatternSegment(Type_.Any()),
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 2}),
-                            typeof(XOR)
+                            typeof(BitwiseXOR)
                         )
                     ),
                 }),
@@ -859,7 +859,6 @@ public class Compiler {
         IParentToken parent = parent_;
         bool changed = true;
         while (changed) {
-            Console.WriteLine(parent);
             changed = false;
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
