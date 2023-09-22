@@ -2,14 +2,14 @@ using System;
 using System.Globalization;
 
 public class FloatConstant : IConstant {
-    float value;
+    double value;
 
-    public FloatConstant(float value) {
+    public FloatConstant(double value) {
         this.value = value;
     }
 
     public static FloatConstant FromString(string value) {
-        return new FloatConstant(float.Parse(
+        return new FloatConstant(double.Parse(
             value, CultureInfo.InvariantCulture
         ));
     }

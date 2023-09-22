@@ -274,8 +274,8 @@ public class Compiler {
         Dictionary<string, Func<IConstant>> values = new Dictionary<string, Func<IConstant>> {
             {"true", () => new BoolConstant(true)},
             {"false", () => new BoolConstant(false)},
-            {"infinity", () => new FloatConstant(Single.NegativeInfinity)},
-            {"NaN", () => new FloatConstant(Single.NaN)},
+            {"infinity", () => new FloatConstant(Double.NegativeInfinity)},
+            {"NaN", () => new FloatConstant(Double.NaN)},
             {"pi", () => new FloatConstant(MathF.PI)},
             {"e", () => new FloatConstant(MathF.E)},
         };
