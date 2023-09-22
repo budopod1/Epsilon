@@ -13,7 +13,7 @@ TODO:
         );
     }
     to all the comparison and equality operations
-* add checks so that only numbers types_ (which includes bool) can be used in boolean operations (eg. And, Or...)
+* add checks so that only numbers types_ (which includes bool) can be used in logical operations (eg. And, Or...)
 * change the:
         foreach (IToken token in program) {
             if (token is Function) {

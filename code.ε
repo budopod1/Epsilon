@@ -11,7 +11,7 @@ Array<W>#h {
     1 / 2 * 4;
     Bool:b = v == r;
     Bool:b2 = 0 < b ^ b & b | b;
-    !b2 | b1;
+    !b2 | b;
 }
 
 Z#r<Array<F>:val> {

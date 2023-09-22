@@ -715,7 +715,7 @@ public class Compiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new TextPatternSegment("!"),
-                        new Type_PatternSegment(Type_.Any()),
+                        new Type_PatternSegment(new Type_("Q")),
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {1}),
                         typeof(Not)
@@ -724,9 +724,9 @@ public class Compiler {
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
-                            new Type_PatternSegment(Type_.Any()),
+                            new Type_PatternSegment(new Type_("Z")),
                             new TextPatternSegment("&"),
-                            new Type_PatternSegment(Type_.Any()),
+                            new Type_PatternSegment(new Type_("Z")),
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 2}),
                             typeof(BitwiseAND)
@@ -734,9 +734,9 @@ public class Compiler {
                     ),
                     new PatternMatcher(
                         new List<IPatternSegment> {
-                            new Type_PatternSegment(Type_.Any()),
+                            new Type_PatternSegment(new Type_("Z")),
                             new TextPatternSegment("|"),
-                            new Type_PatternSegment(Type_.Any()),
+                            new Type_PatternSegment(new Type_("Z")),
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 2}),
                             typeof(BitwiseOR)
@@ -744,9 +744,9 @@ public class Compiler {
                     ),
                     new PatternMatcher(
                         new List<IPatternSegment> {
-                            new Type_PatternSegment(Type_.Any()),
+                            new Type_PatternSegment(new Type_("Z")),
                             new TextPatternSegment("^"),
-                            new Type_PatternSegment(Type_.Any()),
+                            new Type_PatternSegment(new Type_("Z")),
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 2}),
                             typeof(BitwiseXOR)
