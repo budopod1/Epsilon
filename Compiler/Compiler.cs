@@ -721,6 +721,15 @@ public class Compiler {
                         typeof(Not)
                     )
                 ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TextPatternSegment("~"),
+                        new Type_PatternSegment(new Type_("Z")),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(BitwiseNOT)
+                    )
+                ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
