@@ -651,6 +651,24 @@ public class Compiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
+                        new TextPatternSegment("!"),
+                        new Type_PatternSegment(new Type_("Q")),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(Not)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TextPatternSegment("~"),
+                        new Type_PatternSegment(new Type_("Z")),
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(BitwiseNOT)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
                         new Type_PatternSegment(new Type_("Q")),
                         new TextPatternSegment("*"),
                         new TextPatternSegment("*"),
@@ -712,24 +730,6 @@ public class Compiler {
                         )
                     ),
                 }),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TextPatternSegment("!"),
-                        new Type_PatternSegment(new Type_("Q")),
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
-                        typeof(Not)
-                    )
-                ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TextPatternSegment("~"),
-                        new Type_PatternSegment(new Type_("Z")),
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
-                        typeof(BitwiseNOT)
-                    )
-                ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
@@ -759,6 +759,41 @@ public class Compiler {
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 2}),
                             typeof(BitwiseXOR)
+                        )
+                    ),
+                }),
+                new CombinedMatchersMatcher(new List<IMatcher> {
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("&"),
+                            new TextPatternSegment("&"),
+                            new Type_PatternSegment(new Type_("Q")),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(And)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("|"),
+                            new TextPatternSegment("|"),
+                            new Type_PatternSegment(new Type_("Q")),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(Or)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("^"),
+                            new TextPatternSegment("^"),
+                            new Type_PatternSegment(new Type_("Q")),
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(Xor)
                         )
                     ),
                 }),
