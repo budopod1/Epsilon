@@ -649,6 +649,13 @@ public class Compiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(ValueList))
+                    }, new Wrapper2PatternProcessor(
+                        typeof(ArrayCreation)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
                         new ConditionPatternSegment<Name>(
                             (Name name) => Scope.GetEnclosing(name)
                                                 .ContainsVar(name.GetValue())

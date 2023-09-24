@@ -94,14 +94,22 @@ public class BaseType_ : IEquatable<BaseType_> {
     public bool IsConvertibleTo(BaseType_ other) {
         string oName = other.GetName();
         if (name == oName) return true;
-        if (name == "Any" && oName != "Unkown" && oName != "Void") 
+        if (IsAny() && !other.IsNon()) 
             return true;
-        if (oName == "Any" && name != "Unkown" && name != "Void") 
+        if (other.IsAny() && !IsNon()) 
             return true;
         if (ConvertibleTo.ContainsKey(name)) {
             return ConvertibleTo[name].Contains(oName);
         }
         return false;
+    }
+
+    public bool IsAny() {
+        return name == "Any";
+    }
+
+    public bool IsNon() {
+        return name == "Unkown" || name == "Void";
     }
 
     public override string ToString() {

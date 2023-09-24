@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Instantiation : IParentToken, IValueToken {
+public class ArrayCreation : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     
     Type_ type_;
@@ -23,20 +23,27 @@ public class Instantiation : IParentToken, IValueToken {
         }
     }
     
-    public Instantiation(Type_ type_, List<IValueToken> values) {
+    public ArrayCreation(Type_ type_, List<IValueToken> values) {
         this.type_ = type_;
         this.values = values;
     }
     
-    public Instantiation(Type_Token type_token, ValueList list) {
-        this.type_ = type_token.GetValue();
+    public ArrayCreation(ValueList list) {
         this.values = list.GetValues().Select(
             (ValueListItem token) => (IValueToken)token[0]
         ).ToList();
+        this.type_ = values[0].GetType_();
+        foreach (IValueToken value in values) {
+            if (!value.GetType_().Equals(type_)) {
+                throw new SyntaxErrorException(
+                    "Arrays cannot contain multiple types"
+                );
+            }
+        }
     }
 
     public Type_ GetType_() {
-        return type_;
+        return new Type_("Array", new List<Type_> {type_});
     }
 
     public override string ToString() {

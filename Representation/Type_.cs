@@ -23,10 +23,14 @@ public class Type_ : IEquatable<Type_> {
 
     public static bool AreCompatible(Type_ a, Type_ b) {
         if (a.Equals(b)) return true;
-        if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
-            return false;
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
+        if (abt.IsAny() && !bbt.IsNon()) 
+            return true;
+        if (bbt.IsAny() && !abt.IsNon()) 
+            return true;
+        if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
+            return false;
         bool aToB = abt.IsConvertibleTo(bbt);
         bool bToA = bbt.IsConvertibleTo(abt);
         return aToB || bToA;
@@ -110,7 +114,12 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool IsConvertibleTo(Type_ other) {
-        if (baseType_.IsConvertibleTo(other.GetBaseType_())) {
+        BaseType_ otherBaseType_ = other.GetBaseType_();
+        if (baseType_.IsConvertibleTo(otherBaseType_)) {
+            if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
+                return true;
+            if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
+                return true;
             // maybe make casting of generics automatic later?
             return GenericsEqual(other);
         }
