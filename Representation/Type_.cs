@@ -113,6 +113,10 @@ public class Type_ : IEquatable<Type_> {
         return generics;
     }
 
+    public Type_ GetGeneric(int i) {
+        return generics[i];
+    }
+
     public bool IsConvertibleTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
         if (baseType_.IsConvertibleTo(otherBaseType_)) {

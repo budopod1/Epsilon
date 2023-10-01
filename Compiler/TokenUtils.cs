@@ -36,4 +36,18 @@ public class TokenUtils {
             }
         }
     }
+
+    public static IEnumerable<T> TraverseFind<T>(IParentToken token) {
+        if (token is T) yield return (T)token;
+        for (int i = 0; i < token.Count; i++) {
+            IToken sub = token[i];
+            if (sub is IParentToken) {
+                foreach (T subsub in TraverseFind<T>((IParentToken)sub)) {
+                    yield return subsub;
+                }
+            } else if (sub is T) {
+                yield return (T)sub;
+            }
+        }
+    }
 }

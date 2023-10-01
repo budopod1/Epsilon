@@ -14,7 +14,7 @@ public class Variable : IValueToken {
     public Variable(Name source) {
         name = source.GetValue();
         Scope scope = Scope.GetEnclosing(source);
-        int newID = scope.GetIDByName(name).Value;
+        id = scope.GetIDByName(name).Value;
     }
 
     public string GetName() {

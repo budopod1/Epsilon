@@ -14,10 +14,11 @@ Array<W>#h {
     ~b2 | b;
     !2;
     true || false ^^ 1 && 1.2;
+    return -(2);
 }
 
 Z#r<Array<F>:val> {
-    Array<Q>:av = [1, 2, 3];
+    Array<Q>:av = Array<Q> [1, 2, 3];
     G:bv = G [true];
     return 4;
 }
@@ -34,6 +35,14 @@ Z#<Q: a> + <Z: b> {
     Bool:b3 = true | false;
     e ** pi;
     NaN + infinity;
+}
+
+#test<Bool: val> {
+    if (val) {
+        1+2;
+    } else {
+        2+3;
+    };
 }
 
 F {

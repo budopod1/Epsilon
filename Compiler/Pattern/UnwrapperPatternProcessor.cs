@@ -8,6 +8,11 @@ public class UnwrapperPatternProcessor : IPatternProcessor<List<IToken>> {
         foreach (IToken token in tokens) {
             if (token is TreeToken) {
                 result.AddRange(((TreeToken)token).GetTokens());
+            } else if (token is IParentToken) {
+                IParentToken parent = ((IParentToken)token);
+                for (int i = 0; i < parent.Count; i++) {
+                    result.Add(parent[i]);
+                }
             }
         }
         return result;

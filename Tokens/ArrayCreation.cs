@@ -28,15 +28,13 @@ public class ArrayCreation : IParentToken, IValueToken {
         this.values = values;
     }
     
-    public ArrayCreation(ValueList list) {
-        this.values = list.GetValues().Select(
-            (ValueListItem token) => (IValueToken)token[0]
-        ).ToList();
-        this.type_ = values[0].GetType_();
+    public ArrayCreation(Instantiation instantiation) {
+        values = instantiation.GetValues();
+        type_ = instantiation.GetType_().GetGeneric(0);
         foreach (IValueToken value in values) {
-            if (!value.GetType_().Equals(type_)) {
+            if (!value.GetType_().IsConvertibleTo(type_)) {
                 throw new SyntaxErrorException(
-                    "Arrays cannot contain multiple types"
+                    "Elements of array must be convertible to the type of the array"
                 );
             }
         }

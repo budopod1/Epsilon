@@ -39,6 +39,10 @@ public class Instantiation : IParentToken, IValueToken {
         return type_;
     }
 
+    public List<IValueToken> GetValues() {
+        return values;
+    }
+
     public override string ToString() {
         return Utils.WrapName(
             Utils.WrapName(

@@ -38,6 +38,9 @@ public class Function : IParentToken {
         this.arguments = arguments;
         this.block = block;
         this.returnType_ = returnType_;
+        foreach (FunctionArgumentToken argument in arguments) {
+            scope.AddVar(argument.GetName(), argument.GetType_());
+        }
     }
 
     public PatternExtractor<List<IToken>> GetPattern() {
