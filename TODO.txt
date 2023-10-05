@@ -1,7 +1,6 @@
 TODO:
 * refactor most matchers into patternmatchers with custom pattern processors
 * replace some usage of Activator with direct instantiation
-* add else if
 * stop bitwise boolean operators from casting types (require to arguments to be both the same type (which must be an integer type), then cast to the larger number of bits)
 * add:
     if (!Type_.AreCompatible(o1.GetType_(), o2.GetType_())) {

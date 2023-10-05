@@ -182,6 +182,7 @@ public class Compiler {
             {"return", typeof(ReturnKeyword)},
             {"if", typeof(IfKeyword)},
             {"else", typeof(ElseKeyword)},
+            {"elif", typeof(ElseIfKeyword)},
         };
         return (Program)PerformMatching(
             program,
@@ -733,6 +734,17 @@ public class Compiler {
                         new TypePatternSegment(typeof(CodeBlock))
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {1, 2}),
+                        typeof(Conditional)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Conditional)),
+                        new TypePatternSegment(typeof(ElseIfKeyword)),
+                        new TypePatternSegment(typeof(Group)),
+                        new TypePatternSegment(typeof(CodeBlock))
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2, 3}),
                         typeof(Conditional)
                     )
                 ),

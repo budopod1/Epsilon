@@ -59,7 +59,7 @@ public class Conditional : IParentToken {
     public override string ToString() {
         string result = String.Join(", ", conditions);
         if (elseBlock != null) {
-            result += ", " + elseBlock.ToString();
+            result += ", Else: " + elseBlock.ToString();
         }
         return Utils.WrapName(this.GetType().Name, result);
     }
