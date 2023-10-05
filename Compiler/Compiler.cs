@@ -733,17 +733,17 @@ public class Compiler {
                         new TypePatternSegment(typeof(CodeBlock))
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {1, 2}),
-                        typeof(If)
+                        typeof(Conditional)
                     )
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(If)),
+                        new TypePatternSegment(typeof(Conditional)),
                         new TypePatternSegment(typeof(ElseKeyword)),
                         new TypePatternSegment(typeof(CodeBlock))
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}),
-                        typeof(IfElse)
+                        typeof(Conditional)
                     )
                 ),
                 new PatternMatcher(

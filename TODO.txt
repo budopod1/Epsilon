@@ -21,3 +21,4 @@ TODO:
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * add negation
 * add better SyntaxError messages
+* change Condition and Field to structs (maybe)
