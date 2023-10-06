@@ -18,4 +18,3 @@ TODO:
     structure into a system that will iterate over recursively nested blocks
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * add better SyntaxError messages
-* change Condition and Field to structs (maybe)
