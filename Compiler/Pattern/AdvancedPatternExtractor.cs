@@ -46,11 +46,12 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
         for (int i = 0; i < tokens.Count; i++) {
             bool finishedMatch = false;
             int j;
-            int lastRepeatStop = -2; // default value should never be used
+            int lastRepeatStop = -2; // should always be assigned before refrence
             int pi = 0; // part index
             int repeats = 0;
             List<IToken> tokenList = new List<IToken>();
             List<IToken> repeatPartList = new List<IToken>();
+            bool spaceTermination = true;
             for (j = 0; (i+j) < tokens.Count; j++) {
                 IToken token = tokens[i+j];
                 if (part == Part.Start) {
@@ -71,6 +72,7 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                         }
                         continue;
                     } else {
+                        spaceTermination = false;
                         break;
                     }
                 } else if (part == Part.Repeated) {
@@ -101,12 +103,16 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                             j = lastRepeatStop;
                             part = Part.End;
                             continue;
+                        } else {
+                            spaceTermination = false;
+                            break;
                         }
                     }
                 } else if (part == Part.End) {
                     if (end.Count == 0) {
                         j--; // back it up, as this doesn't count
                         finishedMatch = true;
+                        spaceTermination = false;
                         break;
                     }
                     IPatternSegment segment = repeated[pi];
@@ -115,13 +121,20 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                         pi++;
                         if (pi == end.Count) {
                             finishedMatch = true;
+                            spaceTermination = false;
                             break;
                         }
                     } else {
+                        spaceTermination = false;
                         break;
                     }
                 }
             }
+            if (part == Part.End && end.Count == 0)
+                finishedMatch = true;
+            if (part == Part.Repeated && end.Count == 0 
+                && spaceTermination)
+                finishedMatch = true;
             if (finishedMatch) {
                 if (callback != null) {
                     callback(tokenList, i, i+j-1);

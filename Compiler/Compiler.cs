@@ -183,6 +183,8 @@ public class Compiler {
             {"if", typeof(IfKeyword)},
             {"else", typeof(ElseKeyword)},
             {"elif", typeof(ElseIfKeyword)},
+            {"while", typeof(WhileKeyword)},
+            {"switch", typeof(SwitchKeyword)},
         };
         return (Program)PerformMatching(
             program,
@@ -757,6 +759,30 @@ public class Compiler {
                         new SlotPatternProcessor(new List<int> {0, 2}),
                         typeof(Conditional)
                     )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(WhileKeyword)),
+                        new TypePatternSegment(typeof(Group)),
+                        new TypePatternSegment(typeof(CodeBlock))
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1, 2}),
+                        typeof(While)
+                    )
+                ),
+                new AdvancedPatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(SwitchKeyword)),
+                        new TypePatternSegment(typeof(Group))
+                    }, new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Group)),
+                        new TypePatternSegment(typeof(CodeBlock))
+                    }, 1, -1, new List<IPatternSegment>(), 
+                    new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                        return new List<IToken> {
+                            new Switch((IValueToken)tokens[1], tokens.Skip(2).ToArray())
+                        };
+                    })
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {

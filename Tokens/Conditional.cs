@@ -13,9 +13,7 @@ public class Conditional : IParentToken {
     
     public IToken this[int i] {
         get {
-            if (i == conditions.Count) {
-                return elseBlock;
-            }
+            if (i == conditions.Count) return elseBlock;
             return conditions[i];
         }
         set {
