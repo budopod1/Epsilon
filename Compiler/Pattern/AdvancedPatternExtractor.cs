@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
     enum Part {
-        Start,
-        Repeated,
-        End
+        START,
+        REPEATED,
+        END
     }
     
     protected List<IPatternSegment> start;
@@ -44,7 +44,7 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
     public T Extract(IParentToken tokens) {
         Part part;
         for (int i = 0; i < tokens.Count; i++) {
-            part = Part.Start;
+            part = Part.START;
             bool finishedMatch = false;
             int j;
             int lastRepeatStop = -2; // this variable should always be assigned before refrence
@@ -55,10 +55,10 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
             bool spaceTermination = true;
             for (j = 0; (i+j) < tokens.Count; j++) {
                 IToken token = tokens[i+j];
-                if (part == Part.Start) {
+                if (part == Part.START) {
                     if (start.Count == 0) {
                         j--; // back it up, as this doesn't count
-                        part = Part.Repeated;
+                        part = Part.REPEATED;
                         lastRepeatStop = j;
                         continue;
                     }
@@ -68,7 +68,7 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                         pi++;
                         if (pi == start.Count) {
                             pi = 0;
-                            part = Part.Repeated;
+                            part = Part.REPEATED;
                             lastRepeatStop = j;
                         }
                         continue;
@@ -76,9 +76,9 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                         spaceTermination = false;
                         break;
                     }
-                } else if (part == Part.Repeated) {
+                } else if (part == Part.REPEATED) {
                     if (repeated.Count == 0) {
-                        part = Part.End;
+                        part = Part.END;
                         j--; // back it up, as this doesn't count
                         continue;
                     }
@@ -91,7 +91,7 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                             tokenList.AddRange(repeatPartList);
                             repeats++;
                             if (repeats == maxRepeats) {
-                                part = Part.End;
+                                part = Part.END;
                                 continue;
                             }
                             repeatPartList = new List<IToken>();
@@ -102,14 +102,14 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                         if (repeats >= minRepeats) {
                             pi = 0;
                             j = lastRepeatStop;
-                            part = Part.End;
+                            part = Part.END;
                             continue;
                         } else {
                             spaceTermination = false;
                             break;
                         }
                     }
-                } else if (part == Part.End) {
+                } else if (part == Part.END) {
                     if (end.Count == 0) {
                         j--; // back it up, as this doesn't count
                         finishedMatch = true;
@@ -131,9 +131,9 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                     }
                 }
             }
-            if (part == Part.End && end.Count == 0)
+            if (part == Part.END && end.Count == 0)
                 finishedMatch = true;
-            if (part == Part.Repeated && end.Count == 0 
+            if (part == Part.REPEATED && end.Count == 0 
                 && spaceTermination)
                 finishedMatch = true;
             if (finishedMatch) {

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 public class ListTokenParser<T> {
     enum ParseState {
-        ExpectItem,
-        ExpectSeperator
+        EXPECTITEM,
+        EXPECTSEPARATOR
     }
     
     IPatternSegment seperator;
@@ -19,21 +19,21 @@ public class ListTokenParser<T> {
 
     public List<T> Parse(IParentToken tree) {
         List<T> list = new List<T>();
-        ParseState state = ParseState.ExpectItem;
+        ParseState state = ParseState.EXPECTITEM;
         for (int i = 0; i < tree.Count; i++) {
             IToken token = tree[i];
             switch (state) {
-                case ParseState.ExpectItem:
+                case ParseState.EXPECTITEM:
                     if (Utils.IsInstance(token, item)) {
                         list.Add(parser(token));
-                        state = ParseState.ExpectSeperator;
+                        state = ParseState.EXPECTSEPARATOR;
                     } else {
                         return null;
                     }
                     break;
-                case ParseState.ExpectSeperator:
+                case ParseState.EXPECTSEPARATOR:
                     if (seperator.Matches(token)) {
-                        state = ParseState.ExpectItem;
+                        state = ParseState.EXPECTITEM;
                     } else {
                         return null;
                     }
