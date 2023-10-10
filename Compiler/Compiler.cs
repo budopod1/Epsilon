@@ -777,6 +777,22 @@ public class Compiler {
                     }, new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
+                    }, 1, -1, new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(CodeBlock))
+                    }, 
+                    new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                        return new List<IToken> {
+                            new Switch((IValueToken)tokens[1], tokens.Skip(2).ToArray())
+                        };
+                    })
+                ),
+                new AdvancedPatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(SwitchKeyword)),
+                        new TypePatternSegment(typeof(Group))
+                    }, new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Group)),
+                        new TypePatternSegment(typeof(CodeBlock))
                     }, 1, -1, new List<IPatternSegment>(), 
                     new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
                         return new List<IToken> {

@@ -11,7 +11,7 @@ public class AdvancedPatternMatcher : AdvancedPatternExtractor<Match>, IMatcher 
         this.minRepeats = minRepeats;
         this.maxRepeats = maxRepeats;
         this.end = end;
-        this.processor = new MatcherPatternProcessor(subprocessor);
+        processor = new MatcherPatternProcessor(subprocessor);
     }
 
     public Match Match(IParentToken tokens) {

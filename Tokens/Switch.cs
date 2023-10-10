@@ -38,14 +38,16 @@ public class Switch : IParentToken {
     public Switch(IValueToken value, IToken[] rest) {
         this.value = value;
         arms = new List<SwitchArm>();
-        for (int i = 0; i < rest.Length; i+=2) {
+        int max = rest.Length;
+        if (max % 2 == 1) {
+            max--;
+            default_ = (CodeBlock)rest[rest.Length-1];
+        }
+        for (int i = 0; i < max; i+=2) {
             arms.Add(new SwitchArm(
                 (IValueToken)rest[i],
                 (CodeBlock)rest[i+1]
             ));
-        }
-        if (rest.Length % 2 == 1) {
-            default_ = (CodeBlock)rest[rest.Length-1];
         }
     }
 
@@ -67,7 +69,7 @@ public class Switch : IParentToken {
             result += arm.ToString() + ", ";
         }
         if (default_ != null) {
-            result += default_.ToString();
+            result += "Default: " + default_.ToString();
         }
         return Utils.WrapName("Switch", result);
     }

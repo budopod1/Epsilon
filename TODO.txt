@@ -14,4 +14,3 @@ TODO:
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * add better SyntaxError messages
 * add comments
-* add switch default

@@ -42,11 +42,12 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
     }
 
     public T Extract(IParentToken tokens) {
-        Part part = Part.Start;
+        Part part;
         for (int i = 0; i < tokens.Count; i++) {
+            part = Part.Start;
             bool finishedMatch = false;
             int j;
-            int lastRepeatStop = -2; // should always be assigned before refrence
+            int lastRepeatStop = -2; // this variable should always be assigned before refrence
             int pi = 0; // part index
             int repeats = 0;
             List<IToken> tokenList = new List<IToken>();
@@ -115,7 +116,7 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                         spaceTermination = false;
                         break;
                     }
-                    IPatternSegment segment = repeated[pi];
+                    IPatternSegment segment = end[pi];
                     if (segment.Matches(token)) {
                         tokenList.Add(token);
                         pi++;
