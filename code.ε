@@ -12,10 +12,16 @@ Array<W>#h {
     Bool:b = v == r;
     Bool:b2 = 0 < b ^ b & b | b;
     ~b2 | b;
-    !2;
+    !2; // h
     true || false ^^ 1 && 1.2;
     return -(2);
 }
+
+/*
+hjkhjkfsd
+f
+sdafdfs
+*/
 
 Z#r<Array<F>:val> {
     Array<Q>:av = Array<Q> [1, 2, 3];
@@ -28,7 +34,8 @@ Q#example<Q: a><Array<Array<Q>>: b> {
 }
 
 Z#<Q: a> + <Z: b> {
-    "this is \n some \r\\ text";
+    "this is \n some \r\\ text//"; //loltest
+    "more text";
 }
 
 #dhffg {

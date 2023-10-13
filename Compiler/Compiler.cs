@@ -40,6 +40,10 @@ public class Compiler {
         program = TokenizeStrings(program);
         if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
 
+        Console.WriteLine("Removing comments...");
+        program = RemoveComments(program);
+        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+
         Console.WriteLine("Tokenizing function templates...");
         program = TokenizeFuncSignatures(program);
         if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
@@ -145,6 +149,54 @@ public class Compiler {
     
     Program TokenizeStrings(Program program) {
         return (Program)PerformMatching(program, new StringMatcher(program));
+    }
+    
+    Program RemoveComments(Program program) {
+        List<IToken> tokens = new List<IToken>();
+        bool wasSlash = false;
+        bool wasStar = false;
+        bool isLineComment = false;
+        bool isBlockComment = false;
+        foreach (IToken token in program) {
+            TextToken textT = token as TextToken;
+            if (textT == null) {
+                if (!isLineComment && !isBlockComment) tokens.Add(token);
+            } else {
+                string text = textT.GetText();
+                if (isLineComment) {
+                    if (text == "\n") isLineComment = false;
+                } else if (isBlockComment) {
+                    if (text == "*") {
+                        wasStar = true;
+                    }
+                    if (wasStar && text == "/") {
+                        isBlockComment = false;
+                    }
+                } else {
+                    if (text == "/") {
+                        if (wasSlash) {
+                            isLineComment = true;
+                            tokens.RemoveAt(tokens.Count-1);
+                        } else {
+                            wasSlash = true;
+                            tokens.Add(token);
+                        }
+                    } else if (text == "*") {
+                        if (wasSlash) {
+                            isBlockComment = true;
+                            tokens.RemoveAt(tokens.Count-1);
+                        } else {
+                            tokens.Add(token);
+                        }
+                    } else {
+                        tokens.Add(token);
+                    }
+                }
+                if (text != "/") wasSlash = false;
+                if (text != "*") wasStar = false;
+            }
+        }
+        return (Program)program.Copy(tokens);
     }
     
     Program TokenizeFuncSignatures(Program program) {
