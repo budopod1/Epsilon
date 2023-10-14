@@ -1,1 +1,0 @@
-        Assignment(Name(v), ConstantValue(0))Assignment(Name(r), ConstantValue(1))(Plus)ConstantValue(2)Name(g)(Equal)(Division(ConstantValue(3), ConstantValue(4)))(Star)ConstantValue(5)ConstantValue(6)ConstantValue(7)Name(a)
