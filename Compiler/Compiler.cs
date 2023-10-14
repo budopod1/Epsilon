@@ -155,6 +155,10 @@ public class Compiler {
         Console.WriteLine("Parsing function code...");
         program = ParseFunctionCode(program);
         TimingStep();
+
+        Console.WriteLine("Verifying code...");
+        VerifyCode(program);
+        TimingStep();
         
         if (PRINT_RESULT) Console.WriteLine(program);
     }
@@ -1248,5 +1252,11 @@ public class Compiler {
             match.SingleReplace(parent);
         }
         return changed;
+    }
+
+    void VerifyCode(Program program) {
+        foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program)) {
+            token.Verify();
+        }
     }
 }
