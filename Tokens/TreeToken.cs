@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class TreeToken : IParentToken, IEnumerable<IToken> {
+public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
     public IParentToken parent { get; set; }
     
     List<IToken> tokens;
@@ -33,9 +33,7 @@ public class TreeToken : IParentToken, IEnumerable<IToken> {
         }
     }
 
-    protected virtual TreeToken _Copy(List<IToken> tokens) {
-        return new TreeToken(tokens);
-    }
+    protected abstract TreeToken _Copy(List<IToken> tokens);
 
     public TreeToken Copy(List<IToken> tokens) {
         TreeToken copy = _Copy(tokens);

@@ -1,6 +1,6 @@
 using System;
 
-public class Unit<T> : IToken {
+public abstract class Unit<T> : IToken {
     public IParentToken parent { get; set; }
     
     T value;
