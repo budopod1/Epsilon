@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class Compiler {
     public bool DEBUG = false;
     public bool PRINT_RESULT = true;
+    Stopwatch watch;
     
     public void Compile(string text) {
         try {
@@ -25,6 +26,13 @@ public class Compiler {
         Console.WriteLine(e.Message);
     }
 
+    void TimingStep() {
+        if (DEBUG) {
+            Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());
+            watch.Restart();
+        }
+    }
+
     void _Compile(string text) {
         Console.WriteLine("Compiling...");
         
@@ -33,116 +41,120 @@ public class Compiler {
             program.Add(new TextToken(chr.ToString()));
         }
         
-        Stopwatch watch = new Stopwatch();
+        watch = new Stopwatch();
         if (DEBUG) watch.Start();
 
         Console.WriteLine("Tokenizing strings...");
         program = TokenizeStrings(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Removing comments...");
         program = RemoveComments(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing function templates...");
         program = TokenizeFuncSignatures(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing function arguments...");
         program = TokenizeFuncArguments(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing names...");
         program = TokenizeNames(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing keywords...");
         program = TokenizeKeywords(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing floats...");
         program = TokenizeFloats(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing ints...");
         program = TokenizeInts(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Removing whitespace...");
         program = RemoveWhitespace(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing blocks...");
         program = TokenizeBlocks(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing functions...");
         program = TokenizeFunctionHolders(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing structs...");
         program = TokenizeStructHolders(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Converting function blocks...");
         program = ConvertFunctionBlocks(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Computing base types_...");
         ComputeBaseTypes_(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing base types...");
         program = TokenizeBaseTypes_(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing constant keyword values...");
         program = TokenizeConstantKeywordValues(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing generics...");
         program = TokenizeGenerics(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing types_...");
         program = TokenizeTypes_(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Objectifying structs...");
         program = ObjectifyingStructs(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Tokenize template features...");
         program = TokenizeTemplateFeatures(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Parsing templates...");
         program = ParseFunctionTemplates(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Parsing function signatures...");
         program = ParseFunctionSignatures(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Objectifying functions...");
         program = ObjectifyingFunctions(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Getting scope variables...");
         program = GetScopeVariables(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Restart();
+        TimingStep();
 
         Console.WriteLine("Parsing function code...");
         program = ParseFunctionCode(program);
-        if (DEBUG) Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());watch.Stop();
+        TimingStep();
+
+        Console.WriteLine("Parsing function code...");
+        program = ParseFunctionCode(program);
+        TimingStep();
         
         if (PRINT_RESULT) Console.WriteLine(program);
     }
