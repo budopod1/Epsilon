@@ -17,6 +17,7 @@ public abstract class BitwiseBinaryOp : BinaryOperation<IValueToken, IValueToken
     }
 
     public Type_ GetType_() {
-        return Type_.Common(o1.GetType_(), o2.GetType_());
+        // This is special for bitwise operations
+        return o1.GetType_();
     }
 }
