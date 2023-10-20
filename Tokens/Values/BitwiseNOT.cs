@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-public class BitwiseNOT : UnaryOperation<IValueToken>, IValueToken {
+public class BitwiseNOT : BitwiseUnaryOp {
     public BitwiseNOT(IValueToken o) : base(o) {}
-
-    public Type_ GetType_() {
-        return o.GetType_();
-    }
 }
