@@ -36,8 +36,7 @@ Q#example<Q: a><Array<Array<Q>>: b> {
 }
 
 Z#<Q: a> + <Z: b> {
-    "this is \n some \r\\ text//"; //loltest
-    "more text";
+    // loltest
 }
 
 #dhffg {
