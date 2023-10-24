@@ -21,7 +21,7 @@ public class Compiler {
 
     void ShowCompilationError(Exception e) {
         Console.ForegroundColor = ConsoleColor.DarkRed;
-        Console.Write("comnpilation error: ");
+        Console.Write("compilation error: ");
         Console.ResetColor();
         Console.WriteLine(e.Message);
     }
@@ -146,10 +146,6 @@ public class Compiler {
 
         Console.WriteLine("Getting scope variables...");
         program = GetScopeVariables(program);
-        TimingStep();
-
-        Console.WriteLine("Parsing function code...");
-        program = ParseFunctionCode(program);
         TimingStep();
 
         Console.WriteLine("Parsing function code...");

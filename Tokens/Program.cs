@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Program : TreeToken { 
+public class Program : TreeToken, IVerifier { 
     Constants constants;
     List<string> baseType_Names = null;
     
@@ -35,5 +35,15 @@ public class Program : TreeToken {
     
     protected override TreeToken _Copy(List<IToken> tokens) {
         return new Program(tokens, constants, baseType_Names);
+    }
+
+    public void Verify() {
+        foreach (IToken token in this) {
+            if (!(token is Function || token is Struct)) {
+                throw new SyntaxErrorException(
+                    "Invalid toplevel syntax"
+                );
+            }
+        }
     }
 }
