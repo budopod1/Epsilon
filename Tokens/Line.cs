@@ -14,5 +14,11 @@ public class Line : TreeToken, IVerifier {
                 "Expected semicolon"
             );
         }
+        IToken token = this[0];
+        if (token is CodeBlock) {
+            throw new SyntaxErrorException(
+                "Unmatched block"
+            );
+        }
     }
 }
