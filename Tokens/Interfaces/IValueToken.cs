@@ -1,5 +1,5 @@
 using System;
 
-public interface IValueToken : IToken {
+public interface IValueToken : ICompleteLine {
     Type_ GetType_();
 }

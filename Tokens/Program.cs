@@ -39,7 +39,7 @@ public class Program : TreeToken, IVerifier {
 
     public void Verify() {
         foreach (IToken token in this) {
-            if (!(token is Function || token is Struct)) {
+            if (!(token is ITopLevel)) {
                 throw new SyntaxErrorException(
                     "Invalid toplevel syntax"
                 );

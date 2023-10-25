@@ -14,7 +14,6 @@ Array<W>#h {
     ~b2 | b;
     !2; // h
     true || false ^^ 1 && 1.2;
-    return -(2);
 }
 
 /*
@@ -37,6 +36,7 @@ Q#example<Q: a><Array<Array<Q>>: b> {
 
 Z#<Q: a> + <Z: b> {
     // loltest
+    return -(2);
 }
 
 #dhffg {

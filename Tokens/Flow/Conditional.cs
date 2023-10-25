@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Conditional : IParentToken {
+public class Conditional : IFlowControl {
     public IParentToken parent { get; set; }
     
     List<Condition> conditions;

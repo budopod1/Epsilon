@@ -14,6 +14,7 @@ public class IntMatcher : IMatcher {
             List<IToken> replaced = new List<IToken>();
             bool anyMatch = false;
             bool content = false;
+            bool isNegative = false;
             int j;
             for (j = i; j < tokens.Count; j++) {
                 IToken token = tokens[j];
@@ -24,6 +25,7 @@ public class IntMatcher : IMatcher {
                 string digit = ((TextToken)token).GetText();
                 if (digit == "-" && !anyMatch) {
                     foundMatch = true;
+                    isNegative = true;
                 } else if ("1234567890".Contains(digit)) {
                     foundMatch = true;
                     content = true;
@@ -40,11 +42,19 @@ public class IntMatcher : IMatcher {
                         (IToken sub) => ((TextToken)sub).GetText()
                     )
                 );
-                int constant = program.GetConstants().AddConstant(
-                    IntConstant.FromString(matchedString)
+                IConstant constant;
+                if (isNegative) {
+                    constant = IntConstant.FromString(matchedString);
+                } else {
+                    constant = UnsignedIntConstant.FromString(
+                        matchedString
+                    );
+                }
+                int constantID = program.GetConstants().AddConstant(
+                    constant
                 );
                 List<IToken> replacement = new List<IToken> {
-                    new ConstantValue(constant)
+                    new ConstantValue(constantID)
                 };
                 return new Match(i, j-1, replacement, replaced);
             }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Switch : IParentToken {
+public class Switch : IFlowControl {
     public IParentToken parent { get; set; }
     
     IValueToken value;

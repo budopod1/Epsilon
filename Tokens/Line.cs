@@ -14,10 +14,11 @@ public class Line : TreeToken, IVerifier {
                 "Expected semicolon"
             );
         }
+        if (Count == 0) return;
         IToken token = this[0];
-        if (token is CodeBlock) {
+        if (!(token is ICompleteLine)) {
             throw new SyntaxErrorException(
-                "Unmatched block"
+                "Incomplete line"
             );
         }
     }

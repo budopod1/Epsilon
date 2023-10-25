@@ -13,4 +13,8 @@ public class Constants {
     public IConstant GetConstant(int id) {
         return constants[id];
     }
+
+    public override string ToString() {
+        return string.Join("\n", constants);
+    }
 }

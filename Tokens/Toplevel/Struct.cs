@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Struct : IMultiLineToken {
+public class Struct : IMultiLineToken, ITopLevel {
     public IParentToken parent { get; set; }
     
     string name;

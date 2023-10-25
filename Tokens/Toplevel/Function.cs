@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Function : IParentToken {
+public class Function : IParentToken, ITopLevel {
     public IParentToken parent { get; set; }
     
     public int Count {
