@@ -517,10 +517,7 @@ public class Compiler {
                 })
             }, new DisposePatternProcessor()
         );
-        IMatcher argumentConverterMatcher = new ArgumentConverterMatcher(
-            typeof(RawFunctionArgument), typeof(Name), typeof(Type_Token),
-            typeof(FunctionArgumentToken)
-        );
+        IMatcher argumentConverterMatcher = new ArgumentConverterMatcher();
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
             if (!(token is FunctionHolder)) continue;
