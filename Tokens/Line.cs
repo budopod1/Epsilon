@@ -11,7 +11,7 @@ public class Line : TreeToken, IVerifier {
     public void Verify() {
         if (Count > 1) {
             throw new SyntaxErrorException(
-                "Expected semicolon"
+                "Invalid syntax; Are you missing a semicolon?"
             );
         }
         if (Count == 0) return;

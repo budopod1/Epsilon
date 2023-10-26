@@ -5,4 +5,3 @@ TODO:
 * add checks so that only numbers types_ (which includes bool) can be used in logical operations (eg. And, Or...)
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * add better SyntaxError messages
-* make TextToken an IVerifier
