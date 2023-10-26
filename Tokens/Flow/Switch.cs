@@ -64,7 +64,7 @@ public class Switch : IFlowControl {
     }
 
     public override string ToString() {
-        string result = "";
+        string result = value.ToString() + ": ";
         foreach (SwitchArm arm in arms) {
             result += arm.ToString() + ", ";
         }
