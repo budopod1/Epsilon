@@ -423,14 +423,20 @@ public class Compiler {
 
     Program TokenizeGenerics(Program program) {
         IMatcher matcher = new BlockMatcher(
-            new TextPatternSegment("<"), new TextPatternSegment(">"), typeof(Generics)
+            new TypePatternSegment(typeof(BaseTokenType_)),
+            new TextPatternSegment("<"), new TextPatternSegment(">"),
+            typeof(Generics)
         );
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
             if (!(token is FunctionHolder)) continue;
             RawFuncSignature sig = ((FunctionHolder)token).GetRawSignature();
-            sig.SetReturnType_(PerformTreeMatching((TreeToken)sig.GetReturnType_(), matcher));
-            sig.SetTemplate(PerformTreeMatching((TreeToken)sig.GetTemplate(), matcher));
+            sig.SetReturnType_(
+                PerformTreeMatching((TreeToken)sig.GetReturnType_(), matcher)
+            );
+            sig.SetTemplate(
+                PerformTreeMatching((TreeToken)sig.GetTemplate(), matcher)
+            );
         }
         return (Program)PerformTreeMatching(program, matcher);
     }
@@ -1015,41 +1021,6 @@ public class Compiler {
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
-                            new Type_PatternSegment(new Type_("Q")),
-                            new TextPatternSegment("&"),
-                            new TextPatternSegment("&"),
-                            new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
-                            typeof(And)
-                        )
-                    ),
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new Type_PatternSegment(new Type_("Q")),
-                            new TextPatternSegment("|"),
-                            new TextPatternSegment("|"),
-                            new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
-                            typeof(Or)
-                        )
-                    ),
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new Type_PatternSegment(new Type_("Q")),
-                            new TextPatternSegment("^"),
-                            new TextPatternSegment("^"),
-                            new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
-                            typeof(Xor)
-                        )
-                    ),
-                }),
-                new CombinedMatchersMatcher(new List<IMatcher> {
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
                             new Type_PatternSegment(Type_.Any()),
                             new TextPatternSegment(">"),
                             new Type_PatternSegment(Type_.Any())
@@ -1112,6 +1083,41 @@ public class Compiler {
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 3}),
                             typeof(NotEquals)
+                        )
+                    ),
+                }),
+                new CombinedMatchersMatcher(new List<IMatcher> {
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("&"),
+                            new TextPatternSegment("&"),
+                            new Type_PatternSegment(new Type_("Q"))
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(And)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("|"),
+                            new TextPatternSegment("|"),
+                            new Type_PatternSegment(new Type_("Q"))
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(Or)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TextPatternSegment("^"),
+                            new TextPatternSegment("^"),
+                            new Type_PatternSegment(new Type_("Q"))
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}),
+                            typeof(Xor)
                         )
                     ),
                 }),

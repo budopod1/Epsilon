@@ -3,11 +3,22 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class BlockMatcher : IMatcher {
+    IPatternSegment prior;
     IPatternSegment start;
     IPatternSegment end;
     Type holder;
     
-    public BlockMatcher(IPatternSegment start, IPatternSegment end, Type holder) {
+    public BlockMatcher(IPatternSegment start, IPatternSegment end,
+                        Type holder) {
+        this.start = start;
+        this.end = end;
+        this.holder = holder;
+    }
+
+    public BlockMatcher(IPatternSegment prior, 
+                        IPatternSegment start, IPatternSegment end,
+                        Type holder) {
+        this.prior = prior;
         this.start = start;
         this.end = end;
         this.holder = holder;
@@ -20,8 +31,10 @@ public class BlockMatcher : IMatcher {
             List<IToken> replaced = new List<IToken>();
             for (int j = i; j < tokens.Count; j++) {
                 IToken token = tokens[j];
+                IToken priorToken = j>0 ? tokens[j-1] : null;
                 replaced.Add(token);
-                if (start.Matches(token)) {
+                if (start.Matches(token) && 
+                    (prior == null || prior.Matches(priorToken))) {
                     indent++;
                 } else if (end.Matches(token)) {
                     if (!any) {
