@@ -1140,6 +1140,15 @@ public class Compiler {
             new List<IMatcher> {
                 new PatternMatcher(
                     new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(ReturnKeyword))
+                    }, new InstantiationPatternProcessor(
+                        typeof(ReturnVoid)
+                    )
+                ),
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Group)),
                     }, new UnwrapperPatternProcessor()
                 ),

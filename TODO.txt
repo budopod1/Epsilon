@@ -7,4 +7,3 @@ TODO:
 * add better SyntaxError messages
 * Fix generics vs greated then and less them like:
     10 < b && c > 10
-* add ReturnVoid token

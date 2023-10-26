@@ -112,6 +112,10 @@ public class BaseType_ : IEquatable<BaseType_> {
         return name == "Unkown" || name == "Void";
     }
 
+    public bool IsVoid() {
+        return name == "Void";
+    }
+
     public override string ToString() {
         if (bits == null) {
             return name;

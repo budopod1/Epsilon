@@ -5,9 +5,10 @@ public class Return : UnaryOperation<IValueToken>, IVerifier, ICompleteLine {
 
     public void Verify() {
         Function func = TokenUtils.GetParentOfType<Function>(this);
-        if (!o.GetType_().IsConvertibleTo(func.GetReturnType_())) {
+        Type_ returnType_ = func.GetReturnType_();
+        if (!o.GetType_().IsConvertibleTo(returnType_)) {
             throw new SyntaxErrorException(
-                "Invalid return type"
+                $"Cannot return {o.GetType_()}; function expects {returnType_} return type"
             );
         }
     }

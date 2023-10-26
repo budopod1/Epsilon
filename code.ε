@@ -43,6 +43,7 @@ Z#<Q: a> + <Z: b> {
     Bool:b3 = true | false;
     e ** pi;
     NaN + infinity;
+    return;
 }
 
 #test<Bool: val>, <Bool: val2>, <Z: val3> {
