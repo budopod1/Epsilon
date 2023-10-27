@@ -216,9 +216,7 @@ public class Compiler {
     }
 
     Program TokenizeFuncArguments(Program program) {
-        IMatcher matcher = new FunctionArgumentMatcher(
-            "<", ">", typeof(RawFunctionArgument)
-        );
+        IMatcher matcher = new FunctionArgumentMatcher();
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
             if (!(token is RawFuncSignature)) continue;
