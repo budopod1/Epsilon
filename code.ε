@@ -57,6 +57,8 @@ Z#<Q: a> + <Z: b> {
 
     while (val) {
         4+1;
+        break;
+        continue;
     };
 
     switch (val3)

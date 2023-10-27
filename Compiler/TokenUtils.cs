@@ -11,6 +11,18 @@ public class TokenUtils {
         }
     }
 
+    public static IToken GetParentWithCond(IToken token, Func<IToken, bool> cond) {
+        IToken current = token;
+        int i = 0;
+        while (!cond(current)) {
+            current = current.parent;
+            if (current == null || ++i >= 1000) {
+                return null;
+            }
+        }
+        return current;
+    }
+
     public static T GetParentOfType<T>(IToken token) {
         IToken current = token;
         int i = 0;

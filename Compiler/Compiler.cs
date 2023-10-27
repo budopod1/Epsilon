@@ -247,6 +247,8 @@ public class Compiler {
             {"elif", typeof(ElseIfKeyword)},
             {"while", typeof(WhileKeyword)},
             {"switch", typeof(SwitchKeyword)},
+            {"break", typeof(BreakKeyword)},
+            {"continue", typeof(ContinueKeyword)},
         };
         return (Program)PerformMatching(
             program,
@@ -633,7 +635,7 @@ public class Compiler {
         );
         List<List<IToken>> rawLines = parser.Parse(block);
         if (rawLines == null) {
-            throw new SyntaxErrorException("Unterminated block");
+            throw new SyntaxErrorException("Missing semicolon");
         }
         List<IToken> lines = new List<IToken>();
         foreach(List<IToken> section in rawLines) {
@@ -793,6 +795,16 @@ public class Compiler {
                     }, new Wrapper2PatternProcessor(
                         typeof(Variable)
                     )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(BreakKeyword))
+                    }, new InstantiationPatternProcessor(typeof(Break))
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(ContinueKeyword))
+                    }, new InstantiationPatternProcessor(typeof(Continue))
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
