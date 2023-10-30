@@ -1156,6 +1156,16 @@ public class Compiler {
                         typeof(Assignment)
                     )
                 ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(MemberAccess)),
+                        new TextPatternSegment("="),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(MemberAssignment)
+                    )
+                )
             },
             new List<IMatcher> {
                 new PatternMatcher(

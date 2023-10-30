@@ -23,6 +23,10 @@ public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier 
         return field.GetType_();
     }
 
+    public string GetMember() {
+        return member;
+    }
+
     public override string ToString() {
         return Utils.WrapName(
             this.GetType().Name, 

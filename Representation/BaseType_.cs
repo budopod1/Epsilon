@@ -98,9 +98,8 @@ public class BaseType_ : IEquatable<BaseType_> {
             return true;
         if (other.IsAny() && !IsNon()) 
             return true;
-        if (ConvertibleTo.ContainsKey(name)) {
+        if (ConvertibleTo.ContainsKey(name))
             return ConvertibleTo[name].Contains(oName);
-        }
         return false;
     }
 

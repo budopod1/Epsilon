@@ -1,6 +1,6 @@
 using System;
 
-public class Assignment : BinaryOperation<IValueToken, IValueToken>, IVerifier, ICompleteLine {
+public class Assignment : BinaryOperation<Variable, IValueToken>, IVerifier, ICompleteLine {
     public Assignment(Variable o1, IValueToken o2) : base(o1, o2) {}
 
     public void Verify() {
