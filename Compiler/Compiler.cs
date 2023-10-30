@@ -7,6 +7,8 @@ using System.Collections.Generic;
 public class Compiler {
     public bool DEBUG = false;
     public bool PRINT_RESULT = true;
+    public bool PRINT_STEPS = true;
+    
     Stopwatch watch;
     
     public void Compile(string text) {
@@ -33,8 +35,14 @@ public class Compiler {
         }
     }
 
+    void Step(string text) {
+        if (PRINT_STEPS) {
+            Console.WriteLine(text);
+        }
+    }
+
     void _Compile(string text) {
-        Console.WriteLine("Compiling...");
+        Step("Compiling...");
         
         Program program = new Program(new List<IToken>(), new Constants());
         foreach (char chr in text) {
@@ -44,115 +52,115 @@ public class Compiler {
         watch = new Stopwatch();
         if (DEBUG) watch.Start();
 
-        Console.WriteLine("Tokenizing strings...");
+        Step("Tokenizing strings...");
         program = TokenizeStrings(program);
         TimingStep();
 
-        Console.WriteLine("Removing comments...");
+        Step("Removing comments...");
         program = RemoveComments(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing function templates...");
+        Step("Tokenizing function templates...");
         program = TokenizeFuncSignatures(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing function arguments...");
+        Step("Tokenizing function arguments...");
         program = TokenizeFuncArguments(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing names...");
+        Step("Tokenizing names...");
         program = TokenizeNames(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing keywords...");
+        Step("Tokenizing keywords...");
         program = TokenizeKeywords(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing floats...");
+        Step("Tokenizing floats...");
         program = TokenizeFloats(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing ints...");
+        Step("Tokenizing ints...");
         program = TokenizeInts(program);
         TimingStep();
 
-        Console.WriteLine("Removing whitespace...");
+        Step("Removing whitespace...");
         program = RemoveWhitespace(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing blocks...");
+        Step("Tokenizing blocks...");
         program = TokenizeBlocks(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing functions...");
+        Step("Tokenizing functions...");
         program = TokenizeFunctionHolders(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing structs...");
+        Step("Tokenizing structs...");
         program = TokenizeStructHolders(program);
         TimingStep();
 
-        Console.WriteLine("Converting function blocks...");
+        Step("Converting function blocks...");
         program = ConvertFunctionBlocks(program);
         TimingStep();
 
-        Console.WriteLine("Computing base types_...");
+        Step("Computing base types_...");
         ComputeBaseTypes_(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing base types...");
+        Step("Tokenizing base types...");
         program = TokenizeBaseTypes_(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing constant keyword values...");
+        Step("Tokenizing constant keyword values...");
         program = TokenizeConstantKeywordValues(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing generics...");
+        Step("Tokenizing generics...");
         program = TokenizeGenerics(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing types_...");
+        Step("Tokenizing types_...");
         program = TokenizeTypes_(program);
         TimingStep();
 
-        Console.WriteLine("Tokenizing var declarations...");
+        Step("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
         TimingStep();
 
-        Console.WriteLine("Objectifying structs...");
+        Step("Objectifying structs...");
         program = ObjectifyingStructs(program);
         TimingStep();
 
-        Console.WriteLine("Tokenize template features...");
+        Step("Tokenize template features...");
         program = TokenizeTemplateFeatures(program);
         TimingStep();
 
-        Console.WriteLine("Parsing templates...");
+        Step("Parsing templates...");
         program = ParseFunctionTemplates(program);
         TimingStep();
 
-        Console.WriteLine("Parsing function signatures...");
+        Step("Parsing function signatures...");
         program = ParseFunctionSignatures(program);
         TimingStep();
 
-        Console.WriteLine("Objectifying functions...");
+        Step("Objectifying functions...");
         program = ObjectifyingFunctions(program);
         TimingStep();
 
-        Console.WriteLine("Splitting program blocks into lines...");
+        Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
         TimingStep();
 
-        Console.WriteLine("Getting scope variables...");
+        Step("Getting scope variables...");
         program = GetScopeVariables(program);
         TimingStep();
 
-        Console.WriteLine("Parsing function code...");
+        Step("Parsing function code...");
         program = ParseFunctionCode(program);
         TimingStep();
 
-        Console.WriteLine("Verifying code...");
+        Step("Verifying code...");
         VerifyCode(program);
         TimingStep();
         
