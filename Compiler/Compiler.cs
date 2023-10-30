@@ -8,9 +8,9 @@ public class Compiler {
     public bool DEBUG = false;
     public bool PRINT_RESULT = true;
     public bool PRINT_STEPS = true;
-    
+
     Stopwatch watch;
-    
+
     public void Compile(string text) {
         try {
             _Compile(text);
@@ -43,12 +43,12 @@ public class Compiler {
 
     void _Compile(string text) {
         Step("Compiling...");
-        
+
         Program program = new Program(new List<IToken>(), new Constants());
         foreach (char chr in text) {
             program.Add(new TextToken(chr.ToString()));
         }
-        
+
         watch = new Stopwatch();
         if (DEBUG) watch.Start();
 
@@ -163,14 +163,14 @@ public class Compiler {
         Step("Verifying code...");
         VerifyCode(program);
         TimingStep();
-        
+
         if (PRINT_RESULT) Console.WriteLine(program);
     }
-    
+
     Program TokenizeStrings(Program program) {
         return (Program)PerformMatching(program, new StringMatcher(program));
     }
-    
+
     Program RemoveComments(Program program) {
         List<IToken> tokens = new List<IToken>();
         bool wasSlash = false;
@@ -218,7 +218,7 @@ public class Compiler {
         }
         return (Program)program.Copy(tokens);
     }
-    
+
     Program TokenizeFuncSignatures(Program program) {
         return (Program)PerformMatching(program, new RawFuncSignatureMatcher());
     }
@@ -274,7 +274,7 @@ public class Compiler {
             )
         );
     }
-    
+
     Program TokenizeFloats(Program program) {
         return (Program)PerformMatching(program, new FloatMatcher(program));
     }
@@ -393,7 +393,7 @@ public class Compiler {
         }
         return program;
     }
-    
+
     Program TokenizeConstantKeywordValues(Program program) {
         Constants constants = program.GetConstants();
         Dictionary<string, Func<IConstant>> values = new Dictionary<string, Func<IConstant>> {
@@ -448,7 +448,7 @@ public class Compiler {
         }
         return (Program)PerformTreeMatching(program, matcher);
     }
-    
+
     Program TokenizeTypes_(Program program) {
         IMatcher matcher = new Type_Matcher(
             typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
@@ -685,7 +685,7 @@ public class Compiler {
         List<IMatcher> addMatchingFunctionRules = new List<IMatcher>();
 
         List<Function> functions = new List<Function>();
-        
+
         foreach (IToken token in program) {
             if (token is Function) {
                 functions.Add((Function)token);
@@ -700,7 +700,7 @@ public class Compiler {
                 new AddMatchingFunctionMatcher(function)
             );
         }
-        
+
         List<List<IMatcher>> rules = new List<List<IMatcher>> {
             new List<IMatcher> {
                 new BlockMatcher(
@@ -724,7 +724,7 @@ public class Compiler {
 
                         List<Type_> paramTypes_ = new List<Type_>();
                         List<IValueToken> parameters = new List<IValueToken>();
-                        
+
                         for (int i = 0; i < call.Count; i++) {
                             RawSquareGroup rparameter = (call[i]) as RawSquareGroup;
                             if (rparameter.Count != 1) return null;
@@ -759,7 +759,7 @@ public class Compiler {
                                 };
                             }
                         }
-                        
+
                         return null;
                     })
                 ),
@@ -792,6 +792,16 @@ public class Compiler {
                         )
                     }, new Wrapper2PatternProcessor(
                         typeof(ArrayCreation)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(IValueToken)),
+                        new TextPatternSegment("."),
+                        new TypePatternSegment(typeof(Name))
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(MemberAccess)
                     )
                 ),
                 new PatternMatcher(
@@ -1175,12 +1185,12 @@ public class Compiler {
                 ),
             },
         };
-        
+
         foreach (Function function in functions) {
             CodeBlock block = function.GetBlock();
             function.SetBlock(DoBlockCodeRules(block, rules));
         }
-        
+
         return program;
     }
 
@@ -1244,10 +1254,10 @@ public class Compiler {
     (bool, IParentToken) PerformTreeMatching_(IParentToken parent, IMatcher matcher) {
         bool changed = true;
         bool anyChanged = false;
-        
+
         while (changed) {
             changed = false;
-            
+
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
                 if (sub is IParentToken && !(sub is IBarMatchingInto)) {
@@ -1257,7 +1267,7 @@ public class Compiler {
                     changed |= tchanged;
                 }
             }
-            
+
             if (parent is TreeToken) {
                 TreeToken tree = ((TreeToken)parent);
                 bool tchanged;
@@ -1269,7 +1279,7 @@ public class Compiler {
 
             anyChanged |= changed;
         }
-        
+
         return (anyChanged, parent);
     }
 

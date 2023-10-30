@@ -12,6 +12,22 @@ public class Struct : IMultiLineToken, ITopLevel {
         this.fields = fields;
     }
 
+    public string GetName() {
+        return name;
+    }
+
+    public List<Field> GetFields() {
+        return fields;
+    }
+
+    public Field GetField(string name) {
+        foreach (Field field in fields) {
+            if (field.GetName() == name)
+                return field;
+        }
+        return null;
+    }
+
     public override string ToString() {
         string result = $"Name: {name}";
         foreach (Field field in fields) {

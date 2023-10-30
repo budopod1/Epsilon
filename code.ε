@@ -25,6 +25,7 @@ sdafdfs
 Z#r<Array<F>:val> {
     Array<Q>:av = Array<Q> [1, 2, 3];
     G:bv = G [true];
+    bv.g;
     W:v = 3;
     v>>2<<3;
     return 4;

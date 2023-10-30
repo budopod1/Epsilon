@@ -124,7 +124,6 @@ public class Type_ : IEquatable<Type_> {
                 return true;
             if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
                 return true;
-            // maybe make casting of generics automatic later?
             return GenericsEqual(other);
         }
         return false;

@@ -46,4 +46,16 @@ public class Program : TreeToken, IVerifier {
             }
         }
     }
+
+    public Struct GetStructFromType_(Type_ type_) {
+        string name = type_.GetBaseType_().GetName();
+        foreach (IToken token in this) {
+            Struct struct_ = token as Struct;
+            if (struct_ == null) continue;
+            if (struct_.GetName() == name) {
+                return struct_;
+            } 
+        }
+        return null;
+    }
 }
