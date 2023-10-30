@@ -1,6 +1,6 @@
 using System;
 
-public class MemberAccess : UnaryOperation<IValueToken>, IValueToken {
+public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier {
     string member;
     
     public MemberAccess(IValueToken o, Name member) : base(o) {
@@ -28,5 +28,9 @@ public class MemberAccess : UnaryOperation<IValueToken>, IValueToken {
             this.GetType().Name, 
             o.ToString() + ", " + member
         );
+    }
+
+    public void Verify() {
+        GetType_();
     }
 }
