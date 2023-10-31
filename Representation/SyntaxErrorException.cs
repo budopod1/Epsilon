@@ -1,5 +1,13 @@
 using System;
 
 public class SyntaxErrorException : Exception {
-    public SyntaxErrorException(string message) : base(message) {}
+    public CodeSpan span;
+    
+    public SyntaxErrorException(string message, IToken token) : base(message) {
+        span = token.span;
+    }
+
+    public SyntaxErrorException(string message, CodeSpan span) : base(message) {
+        this.span = span;
+    }
 }

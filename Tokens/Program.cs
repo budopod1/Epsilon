@@ -41,7 +41,7 @@ public class Program : TreeToken, IVerifier {
         foreach (IToken token in this) {
             if (!(token is ITopLevel)) {
                 throw new SyntaxErrorException(
-                    "Invalid toplevel syntax"
+                    "Invalid toplevel syntax", token
                 );
             }
         }

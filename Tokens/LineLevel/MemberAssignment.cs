@@ -17,16 +17,16 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
         Struct struct_ = program.GetStructFromType_(type_);
         if (struct_ == null)
             throw new SyntaxErrorException(
-                $"You can assign to members of struct types, not {type_}"
+                $"You can assign to members of struct types, not {type_}", this
             );
         Field field = struct_.GetField(member);
         if (field == null)
             throw new SyntaxErrorException(
-                $"Struct {struct_.GetName()} has no member {member}"
+                $"Struct {struct_.GetName()} has no member {member}", this
             );
         if (!o2.GetType_().IsConvertibleTo(field.GetType_())) {
             throw new SyntaxErrorException(
-                $"Cannot assign value of type {o2.GetType_()} to member {member} of type {field.GetType_()}"
+                $"Cannot assign value of type {o2.GetType_()} to member {member} of type {field.GetType_()}", this
             );
         }
     }

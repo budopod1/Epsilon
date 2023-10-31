@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public class Compiler {
     public bool DEBUG = false;
     public bool PRINT_RESULT = true;
-    public bool PRINT_STEPS = true;
+    public bool PRINT_STEPS = false;
 
     Stopwatch watch;
 
@@ -15,17 +15,120 @@ public class Compiler {
         try {
             _Compile(text);
         } catch (SyntaxErrorException e) {
-            ShowCompilationError(e);
+            ShowCompilationError(e, text);
         } catch (TargetInvocationException e) {
-            ShowCompilationError(e.InnerException);
+            Exception inner = e.InnerException;
+            if (inner is SyntaxErrorException) {
+                ShowCompilationError((SyntaxErrorException)inner, text);
+            } else {
+                throw inner;
+            }
         }
     }
+    
+    void ShowCompilationError(SyntaxErrorException e, string text) {
+        CodeSpan span = e.span;
 
-    void ShowCompilationError(Exception e) {
+        int startLine = 1;
+        int endLine = 1;
+        int totalLines = 1;
+        int stage = 0;
+        int startIndex = 0;
+        
+        List<string> lines = new List<string> {""};
+        
+        for (int i = 0; i < text.Length; i++) {
+            if (stage == 0 && i == span.GetStart()) {
+                stage = 1;
+            } else if (stage == 1 && i == span.GetEnd()+1) {
+                stage = 2;
+            }
+            char chr = text[i];
+            if (chr == '\n') {
+                if (stage == 0) startIndex = 0;
+                if (stage <= 0)
+                    startLine++;
+                if (stage <= 1)
+                    endLine++;
+                totalLines++;
+                lines.Add("");
+            } else {
+                lines[lines.Count-1] += chr;
+                if (stage == 0) startIndex++;
+            }
+        }
+        
         Console.ForegroundColor = ConsoleColor.DarkRed;
         Console.Write("compilation error: ");
         Console.ResetColor();
         Console.WriteLine(e.Message);
+        if (startLine == endLine) {
+            string linenum = startLine.ToString();
+            int prefixLen = linenum.Length+1;
+            string line = lines[startLine-1];
+            while (line.Length > 0 && Utils.Whitespace.Contains(line[0])) {
+                line = line.Substring(1);
+                startIndex--;
+            }
+            Console.WriteLine(linenum + " " + line);
+            for (int j = 0; j < startIndex+prefixLen; j++)
+                Console.Write(" ");
+            for (int j = 0; j < span.Size(); j++)
+                Console.Write("^");
+            Console.WriteLine();
+        } else {
+            Console.Write("Lines ");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write(startLine);
+            Console.ResetColor();
+            Console.Write("–");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(endLine);
+            Console.ResetColor();
+
+            int firstLine = Math.Max(1, startLine-1);
+            int lastLine = Math.Min(lines.Count-1, endLine+1);
+
+            int prefixLen = lastLine.ToString().Length + 1;
+
+            for (int line = firstLine; line <= lastLine; line++) {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.Write(line.ToString().PadRight(prefixLen));
+                Console.ResetColor();
+                string prefix = "  ";
+                if (line == startLine) {
+                    prefix = "┏╸";
+                } else if (line == endLine) {
+                    prefix = "┗╸";
+                } else if (line > startLine && line < endLine) {
+                    prefix = "┃ ";
+                }
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write(prefix);
+                Console.ResetColor();
+                Console.WriteLine(lines[line-1]);
+            }
+            /*
+            int j = 0;
+            for (int line = firstLine; line <= finalLine; line++) {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.Write(line.ToString().PadRight(prefixLen));
+                Console.ResetColor();
+                string prefix = "  ";
+                if (line == startLine) {
+                    prefix = "┏╸";
+                } else if (line == endLine) {
+                    prefix = "┗╸";
+                } else if (line > startLine && line < endLine) {
+                    prefix = "┃ ";
+                }
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write(prefix);
+                Console.ResetColor();
+                Console.WriteLine(lines[j]);
+                j++;
+            }*/
+        }
     }
 
     void TimingStep() {
@@ -42,7 +145,7 @@ public class Compiler {
     }
 
     void _Compile(string text) {
-        Step("Compiling...");
+        Console.Write("Epsilon Compiler\n\n");
 
         Program program = new Program(new List<IToken>(), new Constants());
         program.span = new CodeSpan(0, text.Length-1);
@@ -65,7 +168,7 @@ public class Compiler {
         program = RemoveComments(program);
         TimingStep();
 
-        Step("Tokenizing function templates...");
+        Step("Tokenizing function signatures...");
         program = TokenizeFuncSignatures(program);
         TimingStep();
 
@@ -293,15 +396,7 @@ public class Compiler {
             token => {
                 if (token is TextToken) {
                     TextToken text = ((TextToken)token);
-                    switch (text.GetText()) {
-                        case " ":
-                        case "\n":
-                        case "\r":
-                        case "\t":
-                            return false;
-                        default:
-                            return true;
-                    }
+                    return !Utils.Whitespace.Contains(text.GetText()[0]);
                 }
                 return true;
             }
@@ -545,9 +640,6 @@ public class Compiler {
     }
 
     Program ParseFunctionTemplates(Program program) {
-        List<Type> argumentTypes = new List<Type> {
-            typeof(RawSquareGroup)
-        };
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
             if (!(token is FunctionHolder)) continue;
@@ -573,12 +665,12 @@ public class Compiler {
                 } else if (subtoken is FunctionArgumentToken) {
                     FunctionArgumentToken argument = ((FunctionArgumentToken)subtoken);
                     arguments.Add(argument);
-                    segment = new TypesPatternSegment(argumentTypes);
+                    segment = new TypePatternSegment(typeof(RawSquareGroup));
                     slots.Add(j);
                 }
                 if (segment == null) {
                     throw new SyntaxErrorException(
-                        "Invalid syntax in function template"
+                        "Invalid syntax in function template", subtoken
                     );
                 }
                 segments.Add(segment);
@@ -648,7 +740,7 @@ public class Compiler {
         );
         List<List<IToken>> rawLines = parser.Parse(block);
         if (rawLines == null) {
-            throw new SyntaxErrorException("Missing semicolon");
+            throw new SyntaxErrorException("Missing semicolon", block);
         }
         List<IToken> lines = new List<IToken>();
         foreach(List<IToken> section in rawLines) {

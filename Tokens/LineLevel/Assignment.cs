@@ -6,7 +6,7 @@ public class Assignment : BinaryOperation<Variable, IValueToken>, IVerifier, ICo
     public void Verify() {
         if (!o2.GetType_().IsConvertibleTo(o1.GetType_())) {
             throw new SyntaxErrorException(
-                $"Cannot assign value of type {o2.GetType_()} to variable of type {o1.GetType_()}"
+                $"Cannot assign value of type {o2.GetType_()} to variable of type {o1.GetType_()}", this
             );
         }
     }

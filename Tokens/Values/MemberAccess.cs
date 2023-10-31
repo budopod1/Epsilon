@@ -13,12 +13,12 @@ public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier 
         Struct struct_ = program.GetStructFromType_(type_);
         if (struct_ == null)
             throw new SyntaxErrorException(
-                $"You can access members of struct types, not {type_}"
+                $"You can access members of struct types, not {type_}", this
             );
         Field field = struct_.GetField(member);
         if (field == null)
             throw new SyntaxErrorException(
-                $"Struct {struct_.GetName()} has no member {member}"
+                $"Struct {struct_.GetName()} has no member {member}", this
             );
         return field.GetType_();
     }

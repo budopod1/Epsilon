@@ -24,7 +24,7 @@ public class TextToken : IVerifier {
 
     public void Verify() {
         throw new SyntaxErrorException(
-            $"Invalid char '{this.text}'"
+            $"Invalid char '{this.text}'", this
         );
     }
 }

@@ -8,7 +8,7 @@ public class Return : UnaryOperation<IValueToken>, IVerifier, ICompleteLine {
         Type_ returnType_ = func.GetReturnType_();
         if (!o.GetType_().IsConvertibleTo(returnType_)) {
             throw new SyntaxErrorException(
-                $"Cannot return {o.GetType_()}; function expects {returnType_} return type"
+                $"Cannot return {o.GetType_()}; function expects {returnType_} return type", this
             );
         }
     }

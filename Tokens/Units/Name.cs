@@ -8,6 +8,8 @@ public class Name : Unit<string>, IValueToken, IVerifier {
     }
 
     public void Verify() {
-        throw new SyntaxErrorException("No variable found with the name " + GetValue());
+        throw new SyntaxErrorException(
+            "No variable found with the name " + GetValue(), this
+        );
     }
 }

@@ -9,7 +9,7 @@ public class ReturnVoid : IVerifier, ICompleteLine {
         Type_ returnType_ = func.GetReturnType_();
         if (!func.GetReturnType_().GetBaseType_().IsVoid()) {
             throw new SyntaxErrorException(
-                $"Cannot return void; function expects {returnType_} return type"
+                $"Cannot return void; function expects {returnType_} return type", this
             );
         }
     }

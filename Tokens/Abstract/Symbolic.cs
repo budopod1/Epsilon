@@ -11,7 +11,7 @@ public abstract class Symbolic : IVerifier {
 
     public void Verify() {
         throw new SyntaxErrorException(
-            "Unmatched "+this.GetType().Name
+            "Unmatched "+this.GetType().Name, this
         );
     }
 }

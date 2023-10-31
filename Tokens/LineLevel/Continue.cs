@@ -10,7 +10,7 @@ public class Continue : IVerifier, ICompleteLine {
         );
         if (parent == null) {
             throw new SyntaxErrorException(
-                "Cannot continue outside of a loop"
+                "Cannot continue outside of a loop", this
             );
         }
     }

@@ -10,7 +10,7 @@ public class Break : IVerifier, ICompleteLine {
         );
         if (parent == null) {
             throw new SyntaxErrorException(
-                "Cannot break outside of a loop"
+                "Cannot break outside of a loop", this
             );
         }
     }

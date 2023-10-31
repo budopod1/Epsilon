@@ -11,14 +11,14 @@ public class Line : TreeToken, IVerifier {
     public void Verify() {
         if (Count > 1) {
             throw new SyntaxErrorException(
-                "Invalid syntax; Are you missing a semicolon?"
+                "Invalid syntax; Are you missing a semicolon?", this[1]
             );
         }
         if (Count == 0) return;
         IToken token = this[0];
         if (!(token is ICompleteLine)) {
             throw new SyntaxErrorException(
-                "Incomplete line"
+                "Incomplete line", token
             );
         }
     }

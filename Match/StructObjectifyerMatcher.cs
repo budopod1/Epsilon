@@ -28,7 +28,7 @@ public class StructObjectifyerMatcher : IMatcher {
                 List<Field> fields = listParser.Parse(block);
                 if (fields == null) {
                     throw new SyntaxErrorException(
-                        "Malformed struct"
+                        "Malformed struct", token
                     );
                 }
                 IToken compiled = (IToken)Activator.CreateInstance(

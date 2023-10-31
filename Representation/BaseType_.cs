@@ -67,7 +67,7 @@ public class BaseType_ : IEquatable<BaseType_> {
         if (BitTypes_.Contains(name)) {
             if (bits == null) bits = DefaultBits;
         } else if (bits != null) {
-            throw new SyntaxErrorException(
+            throw new BaseType_BitsException(
                 $"You can't set the bits for {name}"
             );
         }

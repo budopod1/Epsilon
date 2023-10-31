@@ -24,6 +24,10 @@ public class CodeSpan {
         return end;
     }
 
+    public int Size() {
+        return end - start + 1;
+    }
+
     public static CodeSpan Merge(IEnumerable<CodeSpan> spans) {
         IEnumerable<CodeSpan> nonNull = spans.Where(
             span => span != null
@@ -41,7 +45,7 @@ public class CodeSpan {
     public override string ToString() {
         return Utils.WrapName(
             this.GetType().Name,
-            $"{start}—{end}"
+            $"{start}–{end}"
         );
     }
 }

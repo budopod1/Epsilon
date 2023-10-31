@@ -20,11 +20,11 @@ public class ArgumentConverterMatcher : IMatcher {
                 }
                 if (name == null || type_Token == null) {
                     throw new SyntaxErrorException(
-                        "Function argument is incomplete"
+                        "Function argument is incomplete", token
                     );
                 }
                 IToken replacement = new FunctionArgumentToken(
-                        name.GetValue(), type_Token.GetValue()
+                    name.GetValue(), type_Token.GetValue()
                 );
                 return new Match(
                     j, j, new List<IToken> {replacement},

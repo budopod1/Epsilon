@@ -22,11 +22,20 @@ public class RawFuncSignatureMatcher : IMatcher {
                             continue;
                         } else if (txt == "\n" || txt == "{") {
                             if (hasHashtag) {
+                                if (after.Count == 0) {
+                                    throw new SyntaxErrorException(
+                                        "Function template cannot be empty", TokenUtils.MergeSpans(matched)
+                                    );
+                                }
+                                RawFuncReturnType_ ret = new RawFuncReturnType_(before);
+                                ret.span = TokenUtils.MergeSpans(before);
+                                RawFuncTemplate template = new RawFuncTemplate(after);
+                                template.span = TokenUtils.MergeSpans(after);
                                 return new Match(
                                     i, j-1, new List<IToken> {
                                         new RawFuncSignature(
-                                            new RawFuncReturnType_(before),
-                                            new RawFuncTemplate(after)
+                                            ret,
+                                            template
                                         )
                                     }, matched
                                 );

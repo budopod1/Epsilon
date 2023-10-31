@@ -35,7 +35,7 @@ public class ArrayCreation : IParentToken, IValueToken {
         foreach (IValueToken value in values) {
             if (!value.GetType_().IsConvertibleTo(type_)) {
                 throw new SyntaxErrorException(
-                    "Elements of array must be convertible to the type of the array"
+                    "Elements of array must be convertible to the type of the array", this
                 );
             }
         }
