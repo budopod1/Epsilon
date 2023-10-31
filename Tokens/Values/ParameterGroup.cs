@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class ParameterGroup : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     public int Count {
         get { return 1; }

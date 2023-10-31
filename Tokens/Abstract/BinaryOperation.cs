@@ -2,6 +2,7 @@ using System;
 
 public abstract class BinaryOperation<T1, T2> : IParentToken where T1 : IToken where T2 : IToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     protected T1 o1;
     protected T2 o2;

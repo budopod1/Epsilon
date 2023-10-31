@@ -136,9 +136,10 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
             if (part == Part.REPEATED && end.Count == 0 
                 && spaceTermination)
                 finishedMatch = true;
+            if (spaceTermination) j--;
             if (finishedMatch) {
                 if (callback != null) {
-                    callback(tokenList, i, i+j-1);
+                    callback(tokenList, i, i+j);
                     callback = null;
                 }
                 return processor.Process(tokenList, i, i+j);

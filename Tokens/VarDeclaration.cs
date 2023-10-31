@@ -2,6 +2,7 @@ using System;
 
 public class VarDeclaration : IParentToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     Type_ type_;
     Name name;

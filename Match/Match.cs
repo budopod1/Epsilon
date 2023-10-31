@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -16,14 +17,29 @@ public class Match {
         this.matched = matched;
     }
 
+    void UpdateSpans(List<IToken> tokens) {
+        CodeSpan span = CodeSpan.Merge(
+            tokens.Select(token => token.span)
+        );
+        foreach (IToken token in replacement) {
+            token.span = span;
+        }
+    }
+
     public TreeToken Replace(TreeToken tokens) {
         List<IToken> result = new List<IToken>();
+        List<IToken> formerTokens = new List<IToken>();
+        for (int j = start; j <= end; j++) {
+            if (j >= tokens.Count) Console.WriteLine(this);
+            formerTokens.Add(tokens[j]);
+        }
+        UpdateSpans(formerTokens);
         int i = 0;
         foreach (IToken token in tokens) {
-            if (i > this.end || i < this.start) {
+            if (i > end || i < start) {
                 result.Add(token);
-            } else if (i == this.start) {
-                result.AddRange(this.replacement);
+            } else if (i == start) {
+                result.AddRange(replacement);
             }
             i++;
         }
@@ -36,11 +52,8 @@ public class Match {
                 "SingleReplace can only be used on Matches with length 1"
             );
         }
+        UpdateSpans(new List<IToken> {tokens[start]});
         tokens[start] = replacement[0];
-    }
-
-    public void SetReplacement(List<IToken> replacement) {
-        this.replacement = replacement;
     }
 
     public List<IToken> GetMatched() {
@@ -60,15 +73,15 @@ public class Match {
     }
 
     public override string ToString() {
-        string result = "(" + this.start.ToString();
-        result += ", " + this.end.ToString() + "):";
-        for (int i = 0; i < this.matched.Count; i++) {
-            result += this.matched[i].ToString();
+        string result = "(" + start.ToString();
+        result += ", " + end.ToString() + "):";
+        for (int i = 0; i < matched.Count; i++) {
+            result += matched[i].ToString();
         }
         result += "|";
-        for (int i = 0; i < this.replacement.Count; i++) {
-            result += this.replacement[i].ToString();
+        for (int i = 0; i < replacement.Count; i++) {
+            result += replacement[i].ToString();
         }
-        return Utils.WrapName(this.GetType().Name, result);
+        return Utils.WrapName(GetType().Name, result);
     }
 }

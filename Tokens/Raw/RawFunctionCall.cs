@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class RawFunctionCall : IParentToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     HashSet<Function> matchingFunctions = new HashSet<Function>();
     List<IPatternSegment> segments;

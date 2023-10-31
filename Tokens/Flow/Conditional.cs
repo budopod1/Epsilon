@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class Conditional : IFlowControl {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     List<Condition> conditions;
     CodeBlock elseBlock;

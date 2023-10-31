@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class ValueList : IParentToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     public int Count {
         get { return values.Count; }

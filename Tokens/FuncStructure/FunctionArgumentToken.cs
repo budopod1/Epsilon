@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class FunctionArgumentToken : IToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     string name;
     Type_ type_;

@@ -2,6 +2,7 @@ using System;
 
 public class Variable : IValueToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
 
     string name;
     int id;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class FunctionCall : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     Function function;
     List<IValueToken> arguments;

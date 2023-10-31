@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     List<IToken> tokens;
     

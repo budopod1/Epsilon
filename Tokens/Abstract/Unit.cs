@@ -2,6 +2,7 @@ using System;
 
 public abstract class Unit<T> : IToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     T value;
     

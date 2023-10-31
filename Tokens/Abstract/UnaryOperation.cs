@@ -2,6 +2,7 @@ using System;
 
 public abstract class UnaryOperation<T> : IParentToken where T : IToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     protected T o;
     

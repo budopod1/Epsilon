@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class FuncSignature : IParentToken, IBarMatchingInto {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     Type_ returnType_;
     FuncTemplate template;

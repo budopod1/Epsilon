@@ -45,8 +45,12 @@ public class Compiler {
         Step("Compiling...");
 
         Program program = new Program(new List<IToken>(), new Constants());
+        int i = 0;
         foreach (char chr in text) {
-            program.Add(new TextToken(chr.ToString()));
+            TextToken token = new TextToken(chr.ToString());
+            token.span = new CodeSpan(i);
+            program.Add(token);
+            i++;
         }
 
         watch = new Stopwatch();

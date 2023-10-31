@@ -2,6 +2,7 @@ using System;
 
 public abstract class TrinaryOperation<T1, T2, T3> : IParentToken where T1 : IToken where T2 : IToken where T3 : IToken {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     protected T1 o1;
     protected T2 o2;

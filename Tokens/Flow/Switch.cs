@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class Switch : IFlowControl {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     IValueToken value;
     List<SwitchArm> arms;

@@ -2,6 +2,7 @@ using System;
 
 public class ReturnVoid : IVerifier, ICompleteLine {
     public IParentToken parent { get; set; }
+    public CodeSpan span { get; set; }
     
     public void Verify() {
         Function func = TokenUtils.GetParentOfType<Function>(this);
