@@ -62,22 +62,27 @@ public class Compiler {
         Console.Write("compilation error: ");
         Console.ResetColor();
         Console.WriteLine(e.Message);
+        
+        Console.Write(startLine == endLine ? "Line " : "Lines ");
+        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.Write(startLine);
+        Console.ResetColor();
+        
         if (startLine == endLine) {
+            Console.WriteLine();
+            
             string linenum = startLine.ToString();
-            int prefixLen = linenum.Length+1;
             string line = lines[startLine-1];
             while (line.Length > 0 && Utils.Whitespace.Contains(line[0])) {
                 line = line.Substring(1);
                 startIndex--;
             }
-            Console.WriteLine(linenum + " " + line);
-            Console.Write(new string(' ', startIndex+prefixLen));
+            Console.WriteLine(line);
+            Console.Write(new string(' ', startIndex));
+            Console.ForegroundColor = ConsoleColor.Green;
             if (span.Size() == 1) {
-                Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write("^");
-                Console.ResetColor();
             } else {
-                Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write("┗");
                 for (int i = 0; i < span.Size()-2; i++)
                     Console.Write("━");
@@ -86,10 +91,6 @@ public class Compiler {
             Console.ResetColor();
             Console.WriteLine();
         } else {
-            Console.Write("Lines ");
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.Write(startLine);
-            Console.ResetColor();
             Console.Write("–");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine(endLine);
