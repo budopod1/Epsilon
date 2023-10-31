@@ -1,4 +1,4 @@
-run = "bash run.sh"
+run = "bash run.bash"
 
 hidden = [".git", "App.exe", "App.pdb", "output.mlpd", "blank.py", ".config", ".gitignore"]
 
