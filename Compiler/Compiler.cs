@@ -45,6 +45,7 @@ public class Compiler {
         Step("Compiling...");
 
         Program program = new Program(new List<IToken>(), new Constants());
+        program.span = new CodeSpan(0, text.Length-1);
         int i = 0;
         foreach (char chr in text) {
             TextToken token = new TextToken(chr.ToString());
@@ -651,7 +652,9 @@ public class Compiler {
         }
         List<IToken> lines = new List<IToken>();
         foreach(List<IToken> section in rawLines) {
-            lines.Add(new Line(section));
+            Line line = new Line(section);
+            line.span = TokenUtils.MergeSpans(section);
+            lines.Add(line);
         }
         return (CodeBlock)block.Copy(lines);
     }

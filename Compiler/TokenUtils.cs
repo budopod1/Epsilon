@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class TokenUtils {
@@ -61,5 +62,13 @@ public class TokenUtils {
                 yield return (T)sub;
             }
         }
+    }
+
+    public static CodeSpan MergeSpans(List<IToken> tokens) {
+        return CodeSpan.Merge(tokens.Select(token => token.span));
+    }
+
+    public static CodeSpan MergeSpans(IToken a, IToken b) {
+        return MergeSpans(new List<IToken> {a, b});
     }
 }

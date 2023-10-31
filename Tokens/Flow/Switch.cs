@@ -45,10 +45,12 @@ public class Switch : IFlowControl {
             default_ = (CodeBlock)rest[rest.Length-1];
         }
         for (int i = 0; i < max; i+=2) {
-            arms.Add(new SwitchArm(
+            SwitchArm arm = new SwitchArm(
                 (IValueToken)rest[i],
                 (CodeBlock)rest[i+1]
-            ));
+            );
+            arm.span = TokenUtils.MergeSpans(rest[i], rest[i+1]);
+            arms.Add(arm);
         }
     }
 

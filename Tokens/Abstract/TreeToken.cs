@@ -39,6 +39,7 @@ public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
     public TreeToken Copy(List<IToken> tokens) {
         TreeToken copy = _Copy(tokens);
         copy.parent = parent;
+        copy.span = span;
         return copy;
     }
 

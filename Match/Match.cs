@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -18,9 +17,7 @@ public class Match {
     }
 
     void UpdateSpans(List<IToken> tokens) {
-        CodeSpan span = CodeSpan.Merge(
-            tokens.Select(token => token.span)
-        );
+        CodeSpan span = TokenUtils.MergeSpans(tokens);
         foreach (IToken token in replacement) {
             token.span = span;
         }

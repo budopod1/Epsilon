@@ -2,3 +2,4 @@ TODO:
 * replace some usage of Activator with direct instantiation
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * add better SyntaxError messages
+* make the verification loop use depth first search

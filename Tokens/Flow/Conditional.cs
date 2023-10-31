@@ -27,14 +27,16 @@ public class Conditional : IFlowControl {
     }
 
     public Conditional(IValueToken condition, CodeBlock block) {
-        conditions = new List<Condition> {new Condition(
-            condition, block
-        )};
+        Condition cond = new Condition(condition, block);
+        cond.span = TokenUtils.MergeSpans(condition, block);
+        conditions = new List<Condition> {cond};
     }
 
     public Conditional(Conditional conditional, IValueToken condition, CodeBlock block) {
         conditions = new List<Condition>(conditional.GetConditions());
-        conditions.Add(new Condition(condition, block));
+        Condition cond = new Condition(condition, block);
+        cond.span = TokenUtils.MergeSpans(condition, block);
+        conditions.Add(cond);
     }
 
     public Conditional(Conditional conditional, CodeBlock elseBlock) {
