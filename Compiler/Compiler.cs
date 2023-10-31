@@ -71,10 +71,19 @@ public class Compiler {
                 startIndex--;
             }
             Console.WriteLine(linenum + " " + line);
-            for (int j = 0; j < startIndex+prefixLen; j++)
-                Console.Write(" ");
-            for (int j = 0; j < span.Size(); j++)
+            Console.Write(new string(' ', startIndex+prefixLen));
+            if (span.Size() == 1) {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write("^");
+                Console.ResetColor();
+            } else {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("┗");
+                for (int i = 0; i < span.Size()-2; i++)
+                    Console.Write("━");
+                Console.Write("┛");
+            }
+            Console.ResetColor();
             Console.WriteLine();
         } else {
             Console.Write("Lines ");
@@ -108,26 +117,6 @@ public class Compiler {
                 Console.ResetColor();
                 Console.WriteLine(lines[line-1]);
             }
-            /*
-            int j = 0;
-            for (int line = firstLine; line <= finalLine; line++) {
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.Write(line.ToString().PadRight(prefixLen));
-                Console.ResetColor();
-                string prefix = "  ";
-                if (line == startLine) {
-                    prefix = "┏╸";
-                } else if (line == endLine) {
-                    prefix = "┗╸";
-                } else if (line > startLine && line < endLine) {
-                    prefix = "┃ ";
-                }
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write(prefix);
-                Console.ResetColor();
-                Console.WriteLine(lines[j]);
-                j++;
-            }*/
         }
     }
 

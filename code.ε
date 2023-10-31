@@ -7,7 +7,7 @@ Array<W>#h {
     r = 5 + 8.5;
     g = ((8+1) / 2) * 4 - r;
     a;
-    7 % 8;
+    7 % 8;fsdfs;
     1 / 2 * 4;
     Bool:b = v == r;
     Bool:b2 = 0 < b ^ b & b | b;
