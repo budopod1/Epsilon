@@ -7,7 +7,7 @@ Array<W>#h {
     r = 5 + 8.5;
     g = ((8+1) / 2) * 4 - r;
     a;
-    7 % 8;fsdfs;
+    7 % 8;
     1 / 2 * 4;
     Bool:b = v == r;
     Bool:b2 = 0 < b ^ b & b | b;
@@ -26,7 +26,7 @@ Z#r<Array<F>:val> {
     Array<Q>:av = Array<Q> [1, 2, 3];
     G:bv = G [true];
     bv.g;
-    bv.g = falser;
+    bv.g = false;
     W:v = 3;
     v>>2<<3;
     return 4;

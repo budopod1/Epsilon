@@ -615,7 +615,30 @@ public class Compiler {
                 })
             }, new DisposePatternProcessor()
         );
-        IMatcher argumentConverterMatcher = new ArgumentConverterMatcher();
+        List<IPatternSegment> functionArgumentSegments = new List<IPatternSegment> {
+            new TypePatternSegment(typeof(Type_Token)),
+            new TextPatternSegment(":"),
+            new TypePatternSegment(typeof(Name))
+        };
+        IMatcher argumentConverterMatcher = new PatternMatcher(
+            new List<IPatternSegment> {
+                new ConditionPatternSegment<RawFunctionArgument>(arg => {
+                    if (!TokenUtils.FullMatch(functionArgumentSegments, arg.GetTokens())) {
+                        throw new SyntaxErrorException(
+                            "Malformed function argument", arg
+                        );
+                    }
+                    return true;
+                })
+            }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                RawFunctionArgument arg = (RawFunctionArgument)tokens[0];
+                return new List<IToken> {
+                    new FunctionArgumentToken(
+                        ((Name)arg[2]).GetValue(), ((Type_Token)arg[0]).GetValue()
+                    )
+                };
+            })
+        );
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
             if (!(token is FunctionHolder)) continue;

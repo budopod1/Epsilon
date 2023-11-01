@@ -71,4 +71,13 @@ public class TokenUtils {
     public static CodeSpan MergeSpans(IToken a, IToken b) {
         return MergeSpans(new List<IToken> {a, b});
     }
+
+    public static bool FullMatch(List<IPatternSegment> segs, 
+                                 List<IToken> tokens) {
+        if (segs.Count != tokens.Count) return false;
+        for (int i = 0; i < segs.Count; i++) {
+            if (!segs[i].Matches(tokens[i])) return false;
+        }
+        return true;
+    }
 }

@@ -3,6 +3,5 @@ TODO:
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * make the verification loop use depth first search
 * move files in Tokens directory to subdirectories
-* catch BaseType_BitsException where it could be thrown by used error and throw a SyntaxErrorException appropriately
-* make sense of ArgumentConverterMatcher
 * consolidate IntMatcher and FloatMatcher into one NumberMatcher
+* add cast operator
