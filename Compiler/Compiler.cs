@@ -226,8 +226,8 @@ public class Compiler {
         program = ObjectifyingStructs(program);
         TimingStep();
 
-        Step("Tokenize template features...");
-        program = TokenizeTemplateFeatures(program);
+        Step("Converting template arguments...");
+        program = ConvertTemplateArguments(program);
         TimingStep();
 
         Step("Parsing templates...");
@@ -618,7 +618,7 @@ public class Compiler {
         );
     }
 
-    Program TokenizeTemplateFeatures(Program program) {
+    Program ConvertTemplateArguments(Program program) {
         List<IPatternSegment> functionArgumentSegments = new List<IPatternSegment> {
             new TypePatternSegment(typeof(Type_Token)),
             new TextPatternSegment(":"),

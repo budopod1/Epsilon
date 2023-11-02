@@ -5,4 +5,3 @@ TODO:
 * move files in Tokens directory to subdirectories
 * add cast operator
 * remove unneccisary "this."
-* rename TokenizeTemplateFeatures, as it now only tokenizes one feature
