@@ -162,10 +162,6 @@ public class Compiler {
         program = TokenizeFuncSignatures(program);
         TimingStep();
 
-        Step("Tokenizing function arguments...");
-        program = TokenizeFuncArguments(program);
-        TimingStep();
-
         Step("Tokenizing names...");
         program = TokenizeNames(program);
         TimingStep();
@@ -174,12 +170,8 @@ public class Compiler {
         program = TokenizeKeywords(program);
         TimingStep();
 
-        Step("Tokenizing floats...");
-        program = TokenizeFloats(program);
-        TimingStep();
-
-        Step("Tokenizing ints...");
-        program = TokenizeInts(program);
+        Step("Tokenizing numbers...");
+        program = TokenizeNumbers(program);
         TimingStep();
 
         Step("Removing whitespace...");
@@ -188,6 +180,10 @@ public class Compiler {
 
         Step("Tokenizing blocks...");
         program = TokenizeBlocks(program);
+        TimingStep();
+
+        Step("Tokenizing function arguments...");
+        program = TokenizeFuncArguments(program);
         TimingStep();
 
         Step("Tokenizing functions...");
@@ -321,26 +317,13 @@ public class Compiler {
         return (Program)PerformMatching(program, new RawFuncSignatureMatcher());
     }
 
-    Program TokenizeFuncArguments(Program program) {
-        IMatcher matcher = new FunctionArgumentMatcher();
-        for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
-            if (!(token is RawFuncSignature)) continue;
-            RawFuncSignature sig = ((RawFuncSignature)token);
-            RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
-            sig.SetTemplate(PerformMatching(template, matcher));
-        }
-        return program;
-    }
-
     Program TokenizeNames(Program program) {
         IMatcher matcher = new NameMatcher();
-        for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
+        foreach (IToken token in program) {
             if (!(token is RawFuncSignature)) continue;
             RawFuncSignature sig = ((RawFuncSignature)token);
             sig.SetReturnType_(PerformMatching((TreeToken)sig.GetReturnType_(), matcher));
-            sig.SetTemplate(PerformTreeMatching((TreeToken)sig.GetTemplate(), matcher));
+            sig.SetTemplate(PerformMatching((TreeToken)sig.GetTemplate(), matcher));
         }
         return (Program)PerformMatching(program, matcher);
     }
@@ -373,16 +356,12 @@ public class Compiler {
         );
     }
 
-    Program TokenizeFloats(Program program) {
-        return (Program)PerformMatching(program, new FloatMatcher(program));
+    Program TokenizeNumbers(Program program) {
+        return (Program)PerformMatching(program, new NumberMatcher(program));
     }
 
-    Program TokenizeInts(Program program) {
-        return (Program)PerformMatching(program, new IntMatcher(program));
-    }
-
-    Program RemoveWhitespace(Program program) {
-        return (Program)program.Copy(program.GetTokens().Where(
+    List<IToken> RemoveWhiteSpaceFilter(List<IToken> tokens) {
+        return tokens.Where(
             token => {
                 if (token is TextToken) {
                     TextToken text = ((TextToken)token);
@@ -390,7 +369,27 @@ public class Compiler {
                 }
                 return true;
             }
-        ).ToList());
+        ).ToList();
+    }
+
+    Program RemoveWhitespace(Program program) {
+        foreach (IToken token in program) {
+            if (!(token is RawFuncSignature)) continue;
+            RawFuncSignature sig = ((RawFuncSignature)token);
+            RawFuncReturnType_ ret = (RawFuncReturnType_)sig.GetReturnType_();
+            sig.SetReturnType_(
+                (RawFuncReturnType_)ret.Copy(RemoveWhiteSpaceFilter(
+                    ret.GetTokens()
+                ))
+            );
+            RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
+            sig.SetTemplate(
+                (RawFuncTemplate)template.Copy(RemoveWhiteSpaceFilter(
+                    template.GetTokens()
+                ))
+            );
+        }
+        return (Program)program.Copy(RemoveWhiteSpaceFilter(program.GetTokens()));
     }
 
     Program TokenizeBlocks(Program program) {
@@ -398,6 +397,18 @@ public class Compiler {
             new TextPatternSegment("{"), new TextPatternSegment("}"),
             typeof(Block)
         ));
+    }
+
+    Program TokenizeFuncArguments(Program program) {
+        IMatcher matcher = new FunctionArgumentMatcher();
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is RawFuncSignature)) continue;
+            RawFuncSignature sig = ((RawFuncSignature)token);
+            RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
+            sig.SetTemplate(PerformMatching(template, matcher));
+        }
+        return program;
     }
 
     Program TokenizeFunctionHolders(Program program) {
@@ -608,13 +619,6 @@ public class Compiler {
     }
 
     Program TokenizeTemplateFeatures(Program program) {
-        IMatcher whitespaceMatcher = new PatternMatcher(
-            new List<IPatternSegment> {
-                new TextsPatternSegment(new List<string> {
-                    " ", "\n", "\r", "\t"
-                })
-            }, new DisposePatternProcessor()
-        );
         List<IPatternSegment> functionArgumentSegments = new List<IPatternSegment> {
             new TypePatternSegment(typeof(Type_Token)),
             new TextPatternSegment(":"),
@@ -645,7 +649,6 @@ public class Compiler {
             FunctionHolder holder = ((FunctionHolder)token);
             RawFuncSignature sig = holder.GetRawSignature();
             TreeToken template = (TreeToken)sig.GetTemplate();
-            template = PerformMatching(template, whitespaceMatcher);
             template = PerformMatching(template, argumentConverterMatcher);
             sig.SetTemplate(template);
         }

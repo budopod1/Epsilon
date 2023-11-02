@@ -3,5 +3,6 @@ TODO:
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
 * make the verification loop use depth first search
 * move files in Tokens directory to subdirectories
-* consolidate IntMatcher and FloatMatcher into one NumberMatcher
 * add cast operator
+* remove unneccisary "this."
+* rename TokenizeTemplateFeatures, as it now only tokenizes one feature

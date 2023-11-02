@@ -10,17 +10,18 @@ public class FunctionArgumentMatcher : IMatcher {
             List<IToken> replacementTokens = new List<IToken>();
             for (int j = i; j < tokens.Count; j++) {
                 IToken token = tokens[j];
-                if (!(token is TextToken)) break;
-                TextToken ttoken = ((TextToken)token);
-                string text = ttoken.GetText();
-                if ((text != "<") && first) break;
-                if (text == "<") indentCount++;
-                if (text == ">") indentCount--;
-                if (indentCount == 0) {
-                    return new Match(i, j, new List<IToken> {
-                        new RawFunctionArgument(replacementTokens)
-                    }, replaced);
-                }
+                if (token is TextToken) {
+                    TextToken ttoken = ((TextToken)token);
+                    string text = ttoken.GetText();
+                    if ((text != "<") && first) break;
+                    if (text == "<") indentCount++;
+                    if (text == ">") indentCount--;
+                    if (indentCount == 0) {
+                        return new Match(i, j, new List<IToken> {
+                            new RawFunctionArgument(replacementTokens)
+                        }, replaced);
+                    }
+                } else if (first) break;
                 if (!first) replacementTokens.Add(token);
                 first = false;
             }
