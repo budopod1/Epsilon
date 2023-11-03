@@ -5,11 +5,9 @@ using System.Collections.Generic;
 public class FunctionRuleMatcher : IMatcher {
     PatternExtractor<List<IToken>> extractor;
     Function func;
-    Type functionCall;
     
-    public FunctionRuleMatcher(Function func, Type functionCall) {
+    public FunctionRuleMatcher(Function func) {
         this.extractor = func.GetPattern();
-        this.functionCall = functionCall;
         this.func = func;
     }
     
@@ -24,9 +22,8 @@ public class FunctionRuleMatcher : IMatcher {
         });
         List<IToken> arguments = extractor.Extract(tokens);
         if (arguments == null) return null;
-        IToken call = (IToken)Activator.CreateInstance(
-            functionCall, new object[] {extractor.GetSegments(), arguments}
-        );
-        return new Match(start, end, new List<IToken> {call}, replaced);
+        return new Match(start, end, new List<IToken> {
+            new RawFunctionCall(extractor.GetSegments(), arguments)
+        }, replaced);
     }
 }

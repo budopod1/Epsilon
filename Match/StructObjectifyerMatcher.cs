@@ -3,21 +3,14 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class StructObjectifyerMatcher : IMatcher {
-    Type structHolderType;
-    Type structCompiledType;
-    ListTokenParser<Field> listParser;
-    
-    public StructObjectifyerMatcher(Type structHolderType, Type structCompiledType,
-                               ListTokenParser<Field> listParser) {
-        this.structHolderType = structHolderType;
-        this.structCompiledType = structCompiledType;
-        this.listParser = listParser;
-    }
-    
     public Match Match(IParentToken tokens) {
+        ListTokenParser<Field> listParser = new ListTokenParser<Field>(
+            new TextPatternSegment(","), typeof(VarDeclaration), 
+            (token) => new Field((VarDeclaration)token)
+        );
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
-            if (Utils.IsInstance(token, structHolderType)) {
+            if (token is StructHolder) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
                 if (block == null) continue;
@@ -31,13 +24,10 @@ public class StructObjectifyerMatcher : IMatcher {
                         "Malformed struct", token
                     );
                 }
-                IToken compiled = (IToken)Activator.CreateInstance(
-                    structCompiledType, new object[] {
-                        nameStr, fields
-                    }
-                );
                 List<IToken> replaced = new List<IToken> {token};
-                return new Match(i, i, new List<IToken> {compiled}, replaced);
+                return new Match(i, i, new List<IToken> {
+                    new Struct(nameStr, fields)
+                }, replaced);
             }
         }
         return null;

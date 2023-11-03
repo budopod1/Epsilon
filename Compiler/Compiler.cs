@@ -607,15 +607,7 @@ public class Compiler {
     }
 
     Program ObjectifyingStructs(Program program) {
-        return (Program)PerformMatching(
-            program, new StructObjectifyerMatcher(
-                typeof(StructHolder), typeof(Struct), 
-                new ListTokenParser<Field>(
-                    new TextPatternSegment(","), typeof(VarDeclaration), 
-                    (token) => new Field((VarDeclaration)token)
-                )
-            )
-        );
+        return (Program)PerformMatching(program, new StructObjectifyerMatcher());
     }
 
     Program ConvertTemplateArguments(Program program) {
@@ -809,7 +801,7 @@ public class Compiler {
 
         foreach (Function function in functions) {
             functionRules.Add(
-                new FunctionRuleMatcher(function, typeof(RawFunctionCall))
+                new FunctionRuleMatcher(function)
             );
             addMatchingFunctionRules.Add(
                 new AddMatchingFunctionMatcher(function)
