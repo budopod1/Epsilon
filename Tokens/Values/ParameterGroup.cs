@@ -25,6 +25,6 @@ public class ParameterGroup : IParentToken, IValueToken {
     }
 
     public override string ToString() {
-        return Utils.WrapName(this.GetType().Name, child.ToString());
+        return Utils.WrapName(GetType().Name, child.ToString());
     }
 }

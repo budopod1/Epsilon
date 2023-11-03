@@ -8,7 +8,7 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
     }
 
     public MemberAssignment(MemberAccess access, IValueToken o2) : base(access.Sub(), o2) {
-        this.member = access.GetMember();
+        member = access.GetMember();
     }
 
     public void Verify() {
@@ -33,7 +33,7 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
 
     public override string ToString() {
         return Utils.WrapName(
-            this.GetType().Name, 
+            GetType().Name, 
             $"{o1.ToString()}, {member}, {o2.ToString()}"
         );
     }

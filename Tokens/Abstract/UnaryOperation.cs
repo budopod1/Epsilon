@@ -24,7 +24,7 @@ public abstract class UnaryOperation<T> : IParentToken where T : IToken {
     }
 
     public override string ToString() {
-        return Utils.WrapName(this.GetType().Name, o.ToString());
+        return Utils.WrapName(GetType().Name, o.ToString());
     }
 
     public T Sub() {

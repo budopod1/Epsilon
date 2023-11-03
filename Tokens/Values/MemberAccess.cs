@@ -29,8 +29,7 @@ public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier 
 
     public override string ToString() {
         return Utils.WrapName(
-            this.GetType().Name, 
-            o.ToString() + ", " + member
+            GetType().Name,  o.ToString() + ", " + member
         );
     }
 

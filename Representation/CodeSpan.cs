@@ -44,7 +44,7 @@ public class CodeSpan {
 
     public override string ToString() {
         return Utils.WrapName(
-            this.GetType().Name,
+            GetType().Name,
             $"{start}–{end}"
         );
     }

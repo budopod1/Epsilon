@@ -46,7 +46,7 @@ public class RawFunctionCall : IParentToken {
     }
 
     public override string ToString() {
-        return Utils.WrapName(this.GetType().Name, String.Join(
+        return Utils.WrapName(GetType().Name, String.Join(
             ", ", arguments.ConvertAll<string>(obj => obj.ToString())
         )) + $"(M: {matchingFunctions.Count})";
     }

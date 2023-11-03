@@ -62,6 +62,6 @@ public class Conditional : IFlowControl {
         if (elseBlock != null) {
             result += ", Else: " + elseBlock.ToString();
         }
-        return Utils.WrapName(this.GetType().Name, result);
+        return Utils.WrapName(GetType().Name, result);
     }
 }

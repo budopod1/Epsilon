@@ -6,12 +6,12 @@ public abstract class Symbolic : IVerifier {
     public CodeSpan span { get; set; }
     
     public override string ToString() {
-        return "(" + this.GetType().Name + ")";
+        return "(" + GetType().Name + ")";
     }
 
     public void Verify() {
         throw new SyntaxErrorException(
-            "Unmatched "+this.GetType().Name, this
+            "Unmatched "+GetType().Name, this
         );
     }
 }

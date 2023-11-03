@@ -14,7 +14,7 @@ public class ConfigurablePatternExtractor<T> : PatternExtractor<T> {
             (IPatternSegment segment) => segment.ToString()
         );
         return Utils.WrapName(
-            this.GetType().Name,
+            GetType().Name,
             String.Join(", ", segmentsStrings)
         );
     }

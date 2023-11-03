@@ -16,6 +16,6 @@ public class Continue : IVerifier, ICompleteLine {
     }
 
     public override string ToString() {
-        return this.GetType().Name + "()";
+        return GetType().Name + "()";
     }
 }

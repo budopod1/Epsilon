@@ -32,7 +32,7 @@ public abstract class BinaryOperation<T1, T2> : IParentToken where T1 : IToken w
 
     public override string ToString() {
         return Utils.WrapName(
-            this.GetType().Name, $"{o1.ToString()}, {o2.ToString()}"
+            GetType().Name, $"{o1.ToString()}, {o2.ToString()}"
         );
     }
 }

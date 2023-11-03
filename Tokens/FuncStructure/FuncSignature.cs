@@ -36,7 +36,7 @@ public class FuncSignature : IParentToken, IBarMatchingInto {
 
     public override string ToString() {
         return Utils.WrapName(
-            this.GetType().Name, $"{returnType_.ToString()}, {template.ToString()}"
+            GetType().Name, $"{returnType_.ToString()}, {template.ToString()}"
         );
     }
 }

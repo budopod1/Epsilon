@@ -15,6 +15,6 @@ public abstract class Unit<T> : IToken {
     }
 
     public override string ToString() {
-        return Utils.WrapName(this.GetType().Name, this.value.ToString());
+        return Utils.WrapName(GetType().Name, value.ToString());
     }
 }

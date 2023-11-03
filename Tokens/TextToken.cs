@@ -19,12 +19,12 @@ public class TextToken : IVerifier {
     }
 
     public override string ToString() {
-        return this.text;
+        return text;
     }
 
     public void Verify() {
         throw new SyntaxErrorException(
-            $"Invalid char '{this.text}'", this
+            $"Invalid char '{text}'", this
         );
     }
 }

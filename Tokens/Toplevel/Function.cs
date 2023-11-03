@@ -70,7 +70,7 @@ public class Function : IParentToken, ITopLevel {
 
     public override string ToString() {
         string title = Utils.WrapName(
-            this.GetType().Name, String.Join(", ", arguments), "<", ">"
+            GetType().Name, String.Join(", ", arguments), "<", ">"
         );
         return Utils.WrapName(title, block.ToString());
     }

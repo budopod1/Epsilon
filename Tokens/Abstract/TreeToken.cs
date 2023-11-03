@@ -21,16 +21,16 @@ public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
     }
 
     public void Add(IToken token) {
-        this.tokens.Add(token);
+        tokens.Add(token);
     }
 
     public IToken this[int i] {
         get {
-            return this.tokens[i];
+            return tokens[i];
         }
 
         set {
-            this.tokens[i] = value;
+            tokens[i] = value;
         }
     }
 
@@ -44,23 +44,23 @@ public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
     }
 
     public TreeToken Copy() {
-        TreeToken copy = _Copy(new List<IToken>(this.tokens));
+        TreeToken copy = _Copy(new List<IToken>(tokens));
         copy.parent = parent;
         return copy;
     }
 
     public int Count {
         get {
-            return this.tokens.Count;
+            return tokens.Count;
         }
     }
 
     public IEnumerator<IToken> GetEnumerator() {
-        return new TokenList(this.tokens);
+        return new TokenList(tokens);
     }
     
     IEnumerator IEnumerable.GetEnumerator() {
-        return this.GetEnumerator();
+        return GetEnumerator();
     }
 
     public override string ToString() {
@@ -81,6 +81,6 @@ public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
             result = Utils.Indent(result);
             result = Utils.WrapNewline(result);
         }
-        return Utils.WrapName(this.GetType().Name, result);
+        return Utils.WrapName(GetType().Name, result);
     }
 }

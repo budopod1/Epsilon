@@ -9,6 +9,6 @@ public class PatternMatcher : PatternExtractor<Match>, IMatcher {
     }
 
     public Match Match(IParentToken tokens) {
-        return this.Extract(tokens);
+        return Extract(tokens);
     }
 }

@@ -34,7 +34,7 @@ public class FunctionCall : IParentToken, IValueToken {
 
     public override string ToString() {
         string title = Utils.WrapName(
-            this.GetType().Name, String.Join(
+            GetType().Name, String.Join(
                 ", ", function.GetArguments().ConvertAll<string>(
                     obj => obj.ToString()
                 )

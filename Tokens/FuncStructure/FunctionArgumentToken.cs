@@ -22,6 +22,6 @@ public class FunctionArgumentToken : IToken {
     }
 
     public override string ToString() {
-        return Utils.WrapName(this.GetType().Name, type_.ToString() + ":" + name);
+        return Utils.WrapName(GetType().Name, type_.ToString() + ":" + name);
     }
 }

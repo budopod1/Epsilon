@@ -4,4 +4,3 @@ TODO:
 * make the verification loop use depth first search
 * move files in Tokens directory to subdirectories
 * add cast operator
-* remove unneccisary "this."

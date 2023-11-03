@@ -37,7 +37,7 @@ public abstract class TrinaryOperation<T1, T2, T3> : IParentToken where T1 : ITo
 
     public override string ToString() {
         return Utils.WrapName(
-            this.GetType().Name, $"{o1.ToString()}, {o2.ToString()}, {o3.ToString()}"
+            GetType().Name, $"{o1.ToString()}, {o2.ToString()}, {o3.ToString()}"
         );
     }
 }

@@ -35,7 +35,7 @@ public class ValueList : IParentToken {
             result += value.ToString() + ",";
         }
         return Utils.WrapName(
-            this.GetType().Name, result
+            GetType().Name, result
         );
     }
 }

@@ -21,7 +21,7 @@ public class TokenList : IEnumerator<IToken> {
 
     public IToken Current {
         get {
-            return this.tokens[i];
+            return tokens[i];
         }
     }
 
@@ -29,7 +29,7 @@ public class TokenList : IEnumerator<IToken> {
 
     object IEnumerator.Current {
         get {
-            return this.Current;
+            return Current;
         }
     }
 }

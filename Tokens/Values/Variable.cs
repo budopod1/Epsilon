@@ -34,6 +34,6 @@ public class Variable : IValueToken {
     }
 
     public override string ToString() {
-        return Utils.WrapName(this.GetType().Name, this.name);
+        return Utils.WrapName(GetType().Name, name);
     }
 }

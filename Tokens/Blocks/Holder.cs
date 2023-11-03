@@ -9,14 +9,14 @@ public class Holder : TreeToken {
     }
 
     public Block GetBlock() {
-        if (this.Count < 2) return null;
+        if (Count < 2) return null;
         IToken token = this[1];
         if (!(token is Block)) return null;
         return (Block)token;
     }
 
     public void SetBlock(Block block) {
-        if (this.Count < 2)
+        if (Count < 2)
             throw new InvalidOperationException("Holder does not have block already set");
         this[1] = block;
     }

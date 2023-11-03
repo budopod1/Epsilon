@@ -48,7 +48,7 @@ public class ArrayCreation : IParentToken, IValueToken {
     public override string ToString() {
         return Utils.WrapName(
             Utils.WrapName(
-                this.GetType().Name,
+                GetType().Name,
                 type_.ToString(),
                 "<", ">"
             ), 
