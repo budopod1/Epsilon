@@ -799,10 +799,20 @@ public class Compiler {
             }
         }
 
+        List<PatternExtractor<List<IToken>>> extractors = new List<PatternExtractor<List<IToken>>>();
         foreach (Function function in functions) {
-            functionRules.Add(
-                new FunctionRuleMatcher(function)
-            );
+            PatternExtractor<List<IToken>> extractor = function.GetPattern();
+            bool unique = true;
+            foreach (PatternExtractor<List<IToken>> oextractor in extractors) {
+                if (oextractor.Equals(extractor)) unique = false;
+            }
+            if (unique) {
+                extractors.Add(extractor);
+                functionRules.Add(new FunctionRuleMatcher(extractor));
+            }
+        }
+
+        foreach (Function function in functions) {
             addMatchingFunctionRules.Add(
                 new AddMatchingFunctionMatcher(function)
             );

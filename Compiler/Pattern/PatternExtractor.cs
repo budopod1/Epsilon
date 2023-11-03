@@ -1,7 +1,8 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
-abstract public class PatternExtractor<T> : ITokenExtractor<T> {
+abstract public class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<PatternExtractor<T>> {
     protected List<IPatternSegment> segments;
     protected IPatternProcessor<T> processor;
     
@@ -40,5 +41,9 @@ abstract public class PatternExtractor<T> : ITokenExtractor<T> {
         }
         callback = null;
         return default(T);
+    }
+    
+    public bool Equals(PatternExtractor<T> other) {
+        return Enumerable.SequenceEqual(segments, other.GetSegments());
     }
 }

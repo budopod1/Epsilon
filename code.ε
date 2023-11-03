@@ -22,6 +22,8 @@ f
 sdafdfs
 */
 
+#r<Array<G>:val> {}
+
 Z#r<Array<F>:val> {
     Array<Q>:av = Array<Q> [1, 2, 3];
     G:bv = G [true];
