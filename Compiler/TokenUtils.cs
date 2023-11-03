@@ -37,7 +37,6 @@ public class TokenUtils {
     }
 
     public static IEnumerable<IToken> Traverse(IParentToken token) {
-        yield return token;
         for (int i = 0; i < token.Count; i++) {
             IToken sub = token[i];
             if (sub is IParentToken) {
@@ -48,10 +47,10 @@ public class TokenUtils {
                 yield return sub;
             }
         }
+        yield return token;
     }
 
     public static IEnumerable<T> TraverseFind<T>(IParentToken token) {
-        if (token is T) yield return (T)token;
         for (int i = 0; i < token.Count; i++) {
             IToken sub = token[i];
             if (sub is IParentToken) {
@@ -62,6 +61,7 @@ public class TokenUtils {
                 yield return (T)sub;
             }
         }
+        if (token is T) yield return (T)token;
     }
 
     public static CodeSpan MergeSpans(List<IToken> tokens) {

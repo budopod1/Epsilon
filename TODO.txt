@@ -1,6 +1,5 @@
 TODO:
 * replace some usage of Activator with direct instantiation
 * filter to prevent FunctionRuleMatchers with duplicate IPatternSegments
-* make the verification loop use depth first search
 * move files in Tokens directory to subdirectories
 * add cast operator
