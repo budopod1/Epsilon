@@ -14,7 +14,7 @@ public class Type_ : IEquatable<Type_> {
         return new Type_("Void");
     }
     
-    BaseType_ baseType_; // null signifies Any
+    BaseType_ baseType_;
     List<Type_> generics;
 
     public static Type_ Any() {
@@ -29,7 +29,7 @@ public class Type_ : IEquatable<Type_> {
             return true;
         if (bbt.IsAny() && !abt.IsNon()) 
             return true;
-        if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
+        if (a.HasGenerics() || b.HasGenerics()) 
             return false;
         bool aToB = abt.IsConvertibleTo(bbt);
         bool bToA = bbt.IsConvertibleTo(abt);
@@ -38,7 +38,7 @@ public class Type_ : IEquatable<Type_> {
 
     public static Type_ Common(Type_ a, Type_ b) {
         if (a.Equals(b)) return a;
-        if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
+        if (a.HasGenerics() || b.HasGenerics()) 
             return Unknown();
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
@@ -62,7 +62,7 @@ public class Type_ : IEquatable<Type_> {
     public static Type_ CommonSpecific(Type_ a, Type_ b,
                                             string name) {
         if (a.Equals(b) && a.GetBaseType_().GetName()==name) return a;
-        if (a.GetGenerics().Count>0 || b.GetGenerics().Count>0) 
+        if (a.HasGenerics() || b.HasGenerics()) 
             return Unknown();
         int? abits = a.GetBaseType_().GetBits();
         int? bbits = b.GetBaseType_().GetBits();
@@ -117,15 +117,35 @@ public class Type_ : IEquatable<Type_> {
         return generics[i];
     }
 
+    public bool HasGenerics() {
+        return generics.Count > 0;
+    }
+
     public bool IsConvertibleTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsConvertibleTo(otherBaseType_)) {
-            if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
-                return true;
-            if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
-                return true;
-            return GenericsEqual(other);
-        }
+        if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
+            return true;
+        if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
+            return true;
+        if (HasGenerics())
+            return Equals(other);
+        if (other.HasGenerics()) return false;
+        if (baseType_.IsConvertibleTo(otherBaseType_))
+            return true;
+        return false;
+    }
+
+    public bool IsCastableTo(Type_ other) {
+        BaseType_ otherBaseType_ = other.GetBaseType_();
+        if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
+            return true;
+        if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
+            return true;
+        if (HasGenerics())
+            return Equals(other);
+        if (other.HasGenerics()) return false;
+        if (baseType_.IsCastableTo(otherBaseType_))
+            return true;
         return false;
     }
 

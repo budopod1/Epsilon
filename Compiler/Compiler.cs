@@ -820,6 +820,16 @@ public class Compiler {
 
         List<List<IMatcher>> rules = new List<List<IMatcher>> {
             new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TextPatternSegment("("),
+                        new TypePatternSegment(typeof(Type_Token)),
+                        new TextPatternSegment(")")
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(UnmatchedCast)
+                    )
+                ),
                 new BlockMatcher(
                     new TextPatternSegment("("), new TextPatternSegment(")"),
                     typeof(RawGroup)
@@ -913,7 +923,7 @@ public class Compiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(IValueToken)),
+                        new Type_PatternSegment(Type_.Any()),
                         new TextPatternSegment("."),
                         new TypePatternSegment(typeof(Name))
                     }, new Wrapper2PatternProcessor(
@@ -1263,6 +1273,12 @@ public class Compiler {
                         )
                     ),
                 }),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(UnmatchedCast)),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(typeof(Cast))
+                ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Variable)),

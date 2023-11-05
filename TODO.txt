@@ -1,2 +1,4 @@
 TODO:
 * add cast operator
+* stop implicit conversions of types_ with a higher number of bits to those with a lower number of bits
+* switch TokenUtils to use a single configureable tree traversal algorithm
