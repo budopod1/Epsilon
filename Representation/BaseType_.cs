@@ -47,6 +47,10 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"Z", new List<string> {"Bool", "Byte", "W", "Q"}},
     };
 
+    public static List<string> BitsImportant = new List<string> {
+        "W", "Z"
+    };
+
     public static int DefaultBits = 32;
 
     string name;
@@ -90,6 +94,10 @@ public class BaseType_ : IEquatable<BaseType_> {
         return bits;
     }
 
+    public int GetBitsOrDefault() {
+        return bits.GetValueOrDefault(DefaultBits);
+    }
+
     public bool IsNumber() {
         return NumberTypes_.Contains(name);
     }
@@ -100,11 +108,15 @@ public class BaseType_ : IEquatable<BaseType_> {
 
     public bool IsConvertibleTo(BaseType_ other) {
         string oName = other.GetName();
-        if (name == oName) return true;
         if (IsAny() && !other.IsNon()) 
             return true;
         if (other.IsAny() && !IsNon()) 
             return true;
+        if (BitsImportant.Contains(name) && BitsImportant.Contains(oName)) {
+            if (other.GetBitsOrDefault() < GetBitsOrDefault())
+                return false;
+        }
+        if (name == oName) return true;
         if (ConvertibleTo.ContainsKey(name))
             return ConvertibleTo[name].Contains(oName);
         return false;
