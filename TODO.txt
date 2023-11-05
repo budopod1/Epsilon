@@ -1,1 +1,6 @@
 TODO:
+* add Serialization to JSON
+* add python client to read JSON
+* add conversion to LLVM IR
+* add compilation to machine code
+* add CLI
