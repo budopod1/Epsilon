@@ -1458,7 +1458,8 @@ public class Compiler {
     }
 
     void VerifyCode(Program program) {
-        foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program)) {
+        TraverseConfig config = new TraverseConfig(TraverseMode.DEPTH, true);
+        foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program, config)) {
             token.Verify();
         }
     }

@@ -36,8 +36,9 @@ public class TokenUtils {
         return (T)current;
     }
 
-    public static IEnumerable<IToken> Traverse(IParentToken token) {
-        for (int i = 0; i < token.Count; i++) {
+    public static IEnumerable<IToken> Traverse(IParentToken token, TraverseConfig config) {
+        int i = config.Invert ? token.Count-1 : 0;
+        while (0 <= i && i < token.Count) {
             IToken sub = token[i];
             if (sub is IParentToken) {
                 foreach (IToken subsub in Traverse((IParentToken)sub)) {
@@ -46,22 +47,27 @@ public class TokenUtils {
             } else {
                 yield return sub;
             }
+            i += config.Invert ? -1 : 1;
         }
         yield return token;
     }
 
-    public static IEnumerable<T> TraverseFind<T>(IParentToken token) {
-        for (int i = 0; i < token.Count; i++) {
-            IToken sub = token[i];
-            if (sub is IParentToken) {
-                foreach (T subsub in TraverseFind<T>((IParentToken)sub)) {
-                    yield return subsub;
-                }
-            } else if (sub is T) {
-                yield return (T)sub;
-            }
+    public static IEnumerable<IToken> Traverse(IParentToken token) {
+        foreach (IToken sub in Traverse(token, new TraverseConfig())) {
+            yield return sub;
         }
-        if (token is T) yield return (T)token;
+    }
+
+    public static IEnumerable<T> TraverseFind<T>(IParentToken token, TraverseConfig config) {
+        foreach (IToken sub in Traverse(token, config)) {
+            if (sub is T) yield return (T)sub;
+        }
+    }
+    
+    public static IEnumerable<T> TraverseFind<T>(IParentToken token) {
+        foreach (T sub in TraverseFind<T>(token, new TraverseConfig())) {
+            yield return sub;
+        }
     }
 
     public static CodeSpan MergeSpans(List<IToken> tokens) {
