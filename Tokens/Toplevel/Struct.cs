@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class Struct : IMultiLineToken, ITopLevel {
@@ -38,5 +39,14 @@ public class Struct : IMultiLineToken, ITopLevel {
             "Struct", 
             Utils.WrapNewline(Utils.Indent(result))
         );
+    }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["name"] = new JSONString(name);
+        obj["fields"] = new JSONList(fields.Select(
+            field => field.GetJSON()
+        ));
+        return obj;
     }
 }

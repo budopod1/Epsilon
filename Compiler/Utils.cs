@@ -50,4 +50,34 @@ public class Utils {
         }
         return true;
     }
+
+    public static Dictionary<char, string> LiteralReplacements = new Dictionary<char, string> {
+        {'\n', "\\n"},
+        {'\t', "\\t"},
+        {'\r', "\\r"},
+        {'\\', "\\\\"},
+    };
+
+    public static string EscapeStringToLiteral(string str) {
+        string result = "\"";
+        foreach (char chr in str) {
+            if (LiteralReplacements.ContainsKey(chr)) {
+                result += LiteralReplacements[chr];
+            } else {
+                result += chr;
+            }
+        }
+        return result + "\"";
+    }
+
+    public static string CammelToSnake(string str) {
+        string result = "";
+        bool first = true;
+        foreach (char chr in str) {
+            if (Char.IsUpper(chr) && !first) result += "_";
+            result += Char.ToLower(chr);
+            first = false;
+        }
+        return result;
+    }
 }

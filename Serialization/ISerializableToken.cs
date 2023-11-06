@@ -1,5 +1,5 @@
 using System;
 
 public interface ISerializableToken : IToken {
-    IJSONValue Serialize();
+    int Serialize(SerializationContext context);
 }

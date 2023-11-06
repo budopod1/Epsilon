@@ -25,4 +25,11 @@ public class Field {
     public override string ToString() {
         return $"{type_}:{name}";
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["name"] = new JSONString(name);
+        obj["type_"] = type_.GetJSON();
+        return obj;
+    }
 }

@@ -174,4 +174,12 @@ public class Type_ : IEquatable<Type_> {
             baseType_.ToString(), genericStr, "<", ">"
         );
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["name"] = new JSONString(baseType_.GetName());
+        obj["bits"] = new JSONInt(baseType_.GetBitsOrDefaultIfImportant());
+        obj["generics"] = new JSONList(generics.Select(generic=>generic.GetJSON()));
+        return obj;
+    }
 }

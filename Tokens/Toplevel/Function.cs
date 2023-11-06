@@ -1,9 +1,12 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class Function : IParentToken, ITopLevel {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
+
+    static int id_ = 0;
     
     public int Count {
         get { return 1 + arguments.Count; }
@@ -31,6 +34,7 @@ public class Function : IParentToken, ITopLevel {
     CodeBlock block;
     Scope scope = new Scope();
     Type_ returnType_;
+    int id;
     
     public Function(PatternExtractor<List<IToken>> pattern, 
                     List<FunctionArgumentToken> arguments, CodeBlock block,
@@ -42,6 +46,7 @@ public class Function : IParentToken, ITopLevel {
         foreach (FunctionArgumentToken argument in arguments) {
             scope.AddVar(argument.GetName(), argument.GetType_());
         }
+        id = id_++;
     }
 
     public PatternExtractor<List<IToken>> GetPattern() {
@@ -68,10 +73,33 @@ public class Function : IParentToken, ITopLevel {
         return returnType_;
     }
 
+    public int GetID() {
+        return id;
+    }
+
     public override string ToString() {
         string title = Utils.WrapName(
             GetType().Name, String.Join(", ", arguments), "<", ">"
         );
         return Utils.WrapName(title, block.ToString());
+    }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["id"] = new JSONInt(id);
+        obj["arguments"] = new JSONList(arguments.Select(
+            argument => argument.GetJSON()
+        ));
+        obj["return_type_"] = returnType_.GetJSON();
+        SerializationContext context = new SerializationContext(this);
+        foreach (IToken token in block) {
+            if (token is Line) {
+                Line line = ((Line)token);
+                ICompleteLine instruction = (ICompleteLine)line[0];
+                instruction.Serialize(context);
+            }
+        }
+        obj["instructions"] = context.GetInstructions();
+        return obj;
     }
 }

@@ -58,4 +58,20 @@ public class Program : TreeToken, IVerifier {
         }
         return null;
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        JSONList functions = new JSONList();
+        JSONList structs = new JSONList();
+        foreach (IToken token in this) {
+            if (token is Function) {
+                functions.Add(((Function)token).GetJSON());
+            } else if (token is Struct) {
+                structs.Add(((Struct)token).GetJSON());
+            }
+        }
+        obj["functions"] = functions;
+        obj["structs"] = structs;
+        return obj;
+    }
 }

@@ -64,4 +64,8 @@ public class Conditional : IFlowControl {
         }
         return Utils.WrapName(GetType().Name, result);
     }
+
+    public int Serialize(SerializationContext context) {
+        return -1;
+    }
 }

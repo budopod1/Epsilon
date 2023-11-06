@@ -6,7 +6,6 @@ using System.Collections.Generic;
 
 public class Compiler {
     public bool DEBUG = false;
-    public bool PRINT_RESULT = true;
     public bool PRINT_STEPS = false;
 
     Stopwatch watch;
@@ -258,7 +257,11 @@ public class Compiler {
         VerifyCode(program);
         TimingStep();
 
-        if (PRINT_RESULT) Console.WriteLine(program);
+        Step("Getting JSON...");
+        string json = GetJSON(program);
+        TimingStep();
+
+        Console.WriteLine(json);
     }
 
     Program TokenizeStrings(Program program) {
@@ -1329,15 +1332,14 @@ public class Compiler {
             },
         };
 
-        foreach (Function function in functions) {
-            CodeBlock block = function.GetBlock();
-            function.SetBlock(DoBlockCodeRules(block, rules));
+        foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(program)) {
+            DoBlockCodeRules(block, rules);
         }
 
         return program;
     }
 
-    CodeBlock DoBlockCodeRules(CodeBlock block, List<List<IMatcher>> rules) {
+    void DoBlockCodeRules(CodeBlock block, List<List<IMatcher>> rules) {
         for (int i = 0; i < block.Count; i++) {
             IToken token = block[i];
             if (token is Line) {
@@ -1348,7 +1350,6 @@ public class Compiler {
                 block[i] = line;
             } // TODO: else if (token is Block) {
         }
-        return block;
     }
 
     IParentToken DoTreeCodeRules(IParentToken parent_, List<IMatcher> ruleset) {
@@ -1358,7 +1359,7 @@ public class Compiler {
             changed = false;
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
-                if (sub is IParentToken && !(sub is IBarMatchingInto)) {
+                if (sub is IParentToken && !(sub is IBarMatchingInto || sub is CodeBlock)) {
                     IParentToken subparent = ((IParentToken)sub);
                     parent[i] = DoTreeCodeRules(subparent, ruleset);
                 }
@@ -1462,5 +1463,9 @@ public class Compiler {
         foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program, config)) {
             token.Verify();
         }
+    }
+
+    string GetJSON(Program program) {
+        return program.GetJSON().ToJSON();
     }
 }

@@ -8,4 +8,10 @@ public class Division : BinaryOperation<IValueToken, IValueToken>, IValueToken {
             o1.GetType_(), o2.GetType_(), "Q"
         );
     }
+
+    public int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction(this, context)
+        );
+    }
 }

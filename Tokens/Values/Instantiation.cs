@@ -58,4 +58,10 @@ public class Instantiation : IParentToken, IValueToken {
             )
         );
     }
+
+    public int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction(this, context)
+        );
+    }
 }

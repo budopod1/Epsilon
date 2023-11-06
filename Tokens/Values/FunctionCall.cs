@@ -44,4 +44,11 @@ public class FunctionCall : IParentToken, IValueToken {
             ", ", arguments.ConvertAll<string>(obj => obj.ToString())
         ));
     }
+
+    public int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction(this, context)
+                .AddData("function", new JSONInt(function.GetID()))
+        );
+    }
 }

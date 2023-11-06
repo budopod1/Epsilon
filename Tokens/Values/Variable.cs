@@ -36,4 +36,11 @@ public class Variable : IValueToken {
     public override string ToString() {
         return Utils.WrapName(GetType().Name, name);
     }
+
+    public int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction("variable")
+                .AddData("variable", new JSONInt(GetID()))
+        );
+    }
 }

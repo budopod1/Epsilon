@@ -1,3 +1,3 @@
 using System;
 
-public interface ICompleteLine : IToken {}
+public interface ICompleteLine : ISerializableToken {}

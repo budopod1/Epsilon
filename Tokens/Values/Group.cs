@@ -7,4 +7,8 @@ public class Group : UnaryOperation<IValueToken>, IValueToken {
     public Type_ GetType_() {
         return o.GetType_();
     }
+
+    public int Serialize(SerializationContext context) {
+        return o.Serialize(context);
+    }
 }

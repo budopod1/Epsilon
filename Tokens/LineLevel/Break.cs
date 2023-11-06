@@ -18,4 +18,8 @@ public class Break : IVerifier, ICompleteLine {
     public override string ToString() {
         return GetType().Name + "()";
     }
+
+    public int Serialize(SerializationContext context) {
+        return context.AddInstruction(new SerializableInstruction(this));
+    }
 }

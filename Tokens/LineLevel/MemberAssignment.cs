@@ -37,4 +37,11 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
             $"{o1.ToString()}, {member}, {o2.ToString()}"
         );
     }
+
+    public int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction(this, context)
+                .AddData("member", new JSONString(member))
+        );
+    }
 }

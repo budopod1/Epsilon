@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier {
     string member;
@@ -35,5 +36,13 @@ public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier 
 
     public void Verify() {
         GetType_();
+    }
+
+    public int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction(
+                this, context
+            ).AddData("member", new JSONString(member))
+        );
     }
 }

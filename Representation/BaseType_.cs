@@ -98,6 +98,14 @@ public class BaseType_ : IEquatable<BaseType_> {
         return bits.GetValueOrDefault(DefaultBits);
     }
 
+    public int? GetBitsOrDefaultIfImportant() {
+        if (BitsImportant.Contains(name)) {
+            return GetBitsOrDefault();
+        } else {
+            return null;
+        }
+    }
+
     public bool IsNumber() {
         return NumberTypes_.Contains(name);
     }

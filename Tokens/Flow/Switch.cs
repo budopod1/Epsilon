@@ -76,4 +76,8 @@ public class Switch : IFlowControl {
         }
         return Utils.WrapName("Switch", result);
     }
+
+    public int Serialize(SerializationContext context) {
+        return -1;
+    }
 }

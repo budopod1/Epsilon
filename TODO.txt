@@ -1,5 +1,15 @@
 TODO:
 * add Serialization to JSON
+* convert ParameterGroup to UnaryOperation
+* add code:
+    public int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction(this, context)
+        );
+    }
+    to Binary, Unary, and TrinaryOperation classes
+* make SerializableInstruction names consistent (snake vs uppercammel)
+* make constants store their own value
 * add python client to read JSON
 * add conversion to LLVM IR
 * add compilation to machine code

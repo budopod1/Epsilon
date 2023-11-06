@@ -24,4 +24,11 @@ public class FunctionArgumentToken : IToken {
     public override string ToString() {
         return Utils.WrapName(GetType().Name, type_.ToString() + ":" + name);
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["name"] = new JSONString(name);
+        obj["type_"] = type_.GetJSON();
+        return obj;
+    }
 }

@@ -27,4 +27,8 @@ public class ParameterGroup : IParentToken, IValueToken {
     public override string ToString() {
         return Utils.WrapName(GetType().Name, child.ToString());
     }
+
+    public int Serialize(SerializationContext context) {
+        return child.Serialize(context);
+    }
 }
