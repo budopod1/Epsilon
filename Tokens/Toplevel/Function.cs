@@ -44,7 +44,9 @@ public class Function : IParentToken, ITopLevel {
         this.block = block;
         this.returnType_ = returnType_;
         foreach (FunctionArgumentToken argument in arguments) {
-            scope.AddVar(argument.GetName(), argument.GetType_());
+            argument.SetID(scope.AddVar(
+                argument.GetName(), argument.GetType_()
+            ));
         }
         id = id_++;
     }

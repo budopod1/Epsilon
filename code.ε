@@ -52,6 +52,8 @@ Z#<Q: a> + <Z: b> {
 }
 
 #test<Bool: val>, <Bool: val2>, <Z: val3> {
+    val + val3;
+
     if (val3 < 5 && val3 > 3) {
         1+1;
     } elif (val2) {

@@ -7,6 +7,7 @@ public class FunctionArgumentToken : IToken {
     
     string name;
     Type_ type_;
+    int id;
     
     public FunctionArgumentToken(string name, Type_ type_) {
         this.name = name;
@@ -21,6 +22,14 @@ public class FunctionArgumentToken : IToken {
         return type_;
     }
 
+    public int GetID() {
+        return id;
+    }
+
+    public void SetID(int id) {
+        this.id = id;
+    }
+
     public override string ToString() {
         return Utils.WrapName(GetType().Name, type_.ToString() + ":" + name);
     }
@@ -29,6 +38,7 @@ public class FunctionArgumentToken : IToken {
         JSONObject obj = new JSONObject();
         obj["name"] = new JSONString(name);
         obj["type_"] = type_.GetJSON();
+        obj["variable"] = new JSONInt(id);
         return obj;
     }
 }
