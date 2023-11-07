@@ -1,5 +1,5 @@
 TODO:
-* add Serialization to JSON
+* make blocks serialize
 * add code:
     public int Serialize(SerializationContext context) {
         return context.AddInstruction(
