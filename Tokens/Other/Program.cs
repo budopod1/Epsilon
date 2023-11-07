@@ -2,22 +2,12 @@ using System;
 using System.Collections.Generic;
 
 public class Program : TreeToken, IVerifier { 
-    Constants constants;
     List<string> baseType_Names = null;
     
-    public Program(List<IToken> tokens,
-                    Constants constants) : base(tokens) {
-        this.constants = constants;
-    }
+    public Program(List<IToken> tokens) : base(tokens) {}
     
-    public Program(List<IToken> tokens, Constants constants,
-                   List<string> baseType_Names) : base(tokens) {
-        this.constants = constants;
+    public Program(List<IToken> tokens, List<string> baseType_Names) : base(tokens) {
         this.baseType_Names = baseType_Names;
-    }
-
-    public Constants GetConstants() {
-        return constants;
     }
 
     public List<string> GetBaseType_Names() {
@@ -34,7 +24,7 @@ public class Program : TreeToken, IVerifier {
     }
     
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return new Program(tokens, constants, baseType_Names);
+        return new Program(tokens, baseType_Names);
     }
 
     public void Verify() {

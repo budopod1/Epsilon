@@ -38,11 +38,10 @@ public class StringMatcher : IMatcher {
                                 (IToken sub) => ((TextToken)sub).GetText()
                             )
                         );
-                        int constant = program.GetConstants().AddConstant(
-                            StringConstant.FromString(matchedString)
-                        );
                         List<IToken> replacement = new List<IToken> {
-                            new ConstantValue(constant)
+                            new ConstantValue(
+                                StringConstant.FromString(matchedString)
+                            )
                         };
                         
                         return new Match(i, j, replacement, matched);

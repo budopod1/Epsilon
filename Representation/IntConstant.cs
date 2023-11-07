@@ -17,4 +17,11 @@ public class IntConstant : IConstant {
     public Type_ GetType_() {
         return new Type_("Z");
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["type"] = new JSONString("int");
+        obj["value"] = new JSONInt(value);
+        return obj;
+    }
 }

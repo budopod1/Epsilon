@@ -17,4 +17,11 @@ public class UnsignedIntConstant : IConstant {
     public Type_ GetType_() {
         return new Type_("W");
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["type"] = new JSONString("uint");
+        obj["value"] = new JSONInt((int)value);
+        return obj;
+    }
 }

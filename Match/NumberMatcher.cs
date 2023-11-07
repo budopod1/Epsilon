@@ -55,12 +55,9 @@ public class NumberMatcher : IMatcher {
                 } else {
                     constant = UnsignedIntConstant.FromString(matchedString);
                 }
-                int constantID = program.GetConstants().AddConstant(
-                    constant
-                );
                 
                 List<IToken> replacement = new List<IToken> {
-                    new ConstantValue(constantID)
+                    new ConstantValue(constant)
                 };
 
                 return new Match(i, j-1, replacement, replaced);

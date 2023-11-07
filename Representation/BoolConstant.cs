@@ -23,4 +23,11 @@ public class BoolConstant : IConstant {
     public Type_ GetType_() {
         return new Type_("Bool");
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["type"] = new JSONString("bool");
+        obj["value"] = new JSONBool(value);
+        return obj;
+    }
 }

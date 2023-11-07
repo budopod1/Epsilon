@@ -37,4 +37,11 @@ public class StringConstant : IConstant {
     public Type_ GetType_() {
         throw new NotImplementedException("GetType_ is not implemented for StringConstant yet.");
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["type"] = new JSONString("string");
+        obj["value"] = new JSONString(value);
+        return obj;
+    }
 }

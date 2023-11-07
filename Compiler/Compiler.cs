@@ -136,7 +136,7 @@ public class Compiler {
     void _Compile(string text) {
         Console.Write("Epsilon Compiler\n\n");
 
-        Program program = new Program(new List<IToken>(), new Constants());
+        Program program = new Program(new List<IToken>());
         program.span = new CodeSpan(0, text.Length-1);
         int i = 0;
         foreach (char chr in text) {
@@ -499,7 +499,6 @@ public class Compiler {
     }
 
     Program TokenizeConstantKeywordValues(Program program) {
-        Constants constants = program.GetConstants();
         Dictionary<string, Func<IConstant>> values = new Dictionary<string, Func<IConstant>> {
             {"true", () => new BoolConstant(true)},
             {"false", () => new BoolConstant(false)},
@@ -515,10 +514,9 @@ public class Compiler {
                 )
             }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
                 Name name = ((Name)tokens[0]);
-                int constant = constants.AddConstant(
-                    values[name.GetValue()]()
-                );
-                return new List<IToken> {new ConstantValue(constant)};
+                return new List<IToken> {
+                    new ConstantValue(values[name.GetValue()]())
+                };
             })
         );
         foreach (IToken token in program) {

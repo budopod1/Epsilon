@@ -17,4 +17,21 @@ public class FloatConstant : IConstant {
     public Type_ GetType_() {
         return new Type_("Q");
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["type"] = new JSONString("float");
+        IJSONValue json;
+        if (Double.IsNaN(value)) {
+            json = new JSONString("NaN");
+        } else if (Double.IsPositiveInfinity(value)) {
+            json = new JSONString("+Infinity");
+        } else if (Double.IsNegativeInfinity(value)) {
+            json = new JSONString("-Infinity");
+        } else {
+            json = new JSONDouble(value);
+        }
+        obj["value"] = json;
+        return obj;
+    }
 }
