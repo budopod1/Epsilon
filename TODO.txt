@@ -8,8 +8,6 @@ TODO:
         );
     }
     to Binary, Unary, and TrinaryOperation classes
-* make SerializableInstruction names consistent (snake vs uppercammel)
-* make constants store their own value
 * add python client to read JSON
 * add conversion to LLVM IR
 * add compilation to machine code
