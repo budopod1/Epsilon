@@ -1,6 +1,5 @@
 TODO:
 * add Serialization to JSON
-* convert ParameterGroup to UnaryOperation
 * add code:
     public int Serialize(SerializationContext context) {
         return context.AddInstruction(
