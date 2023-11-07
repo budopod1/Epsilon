@@ -73,9 +73,12 @@ public class Utils {
     public static string CammelToSnake(string str) {
         string result = "";
         bool first = true;
+        bool wasUpper = false;
         foreach (char chr in str) {
-            if (Char.IsUpper(chr) && !first) result += "_";
+            bool isUpper = Char.IsUpper(chr);
+            if (isUpper && !wasUpper && !first) result += "_";
             result += Char.ToLower(chr);
+            wasUpper = isUpper;
             first = false;
         }
         return result;
