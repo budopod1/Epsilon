@@ -178,7 +178,7 @@ public class Type_ : IEquatable<Type_> {
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["name"] = new JSONString(baseType_.GetName());
-        obj["bits"] = new JSONInt(baseType_.GetBitsOrDefaultIfImportant());
+        obj["bits"] = new JSONInt(baseType_.GetBitsOrDefaultIfMeaningful());
         obj["generics"] = new JSONList(generics.Select(generic=>generic.GetJSON()));
         return obj;
     }
