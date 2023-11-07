@@ -39,7 +39,7 @@ public class Variable : IValueToken {
 
     public int Serialize(SerializationContext context) {
         return context.AddInstruction(
-            new SerializableInstruction("variable")
+            new SerializableInstruction(this)
                 .AddData("variable", new JSONInt(GetID()))
         );
     }
