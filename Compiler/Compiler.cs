@@ -265,6 +265,10 @@ public class Compiler {
         Step("Saving JSON...");
         SaveJSON(json);
         TimingStep();
+
+        Step("Creating LLVM IR...");
+        CreateLLVMIR();
+        TimingStep();
     }
 
     Program TokenizeStrings(Program program) {
@@ -1473,5 +1477,26 @@ public class Compiler {
         using (StreamWriter file = new StreamWriter("temp.json")) {
             file.Write(json);
         }
+    }
+
+    string RunCommand(string command) {
+        // I know this isn't the right way to do this
+        // (and I know it won't work on non-linux systems)
+        ProcessStartInfo procStartInfo = new ProcessStartInfo(
+            "/bin/bash", "-c " + Utils.EscapeStringToLiteral(command, '\'')
+        );
+        procStartInfo.RedirectStandardOutput = true;
+        procStartInfo.UseShellExecute = false;
+        procStartInfo.CreateNoWindow = true;
+
+        System.Diagnostics.Process proc = new System.Diagnostics.Process();
+        proc.StartInfo = procStartInfo;
+        proc.Start();
+
+        return proc.StandardOutput.ReadToEnd();
+    }
+
+    void CreateLLVMIR() {
+        RunCommand("python LLVMIR/create_ir.py");
     }
 }

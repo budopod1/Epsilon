@@ -1,4 +1,5 @@
 TODO:
+* move StringConstant string decoding logic into a new Utils static method
 * add python client to read JSON
 * convert from naive blocks to LLVM compatible blocks
 * add conversion to LLVM IR

@@ -52,14 +52,16 @@ public class Utils {
     }
 
     public static Dictionary<char, string> LiteralReplacements = new Dictionary<char, string> {
+        {'\'', "\\'"},
+        {'"', "\\\""},
         {'\n', "\\n"},
         {'\t', "\\t"},
         {'\r', "\\r"},
         {'\\', "\\\\"},
     };
 
-    public static string EscapeStringToLiteral(string str) {
-        string result = "\"";
+    public static string EscapeStringToLiteral(string str, char quote='"') {
+        string result = quote.ToString();
         foreach (char chr in str) {
             if (LiteralReplacements.ContainsKey(chr)) {
                 result += LiteralReplacements[chr];
@@ -67,7 +69,7 @@ public class Utils {
                 result += chr;
             }
         }
-        return result + "\"";
+        return result + quote;
     }
 
     public static string CammelToSnake(string str) {
