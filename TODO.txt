@@ -1,12 +1,5 @@
 TODO:
 * make blocks serialize
-* add code:
-    public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-        );
-    }
-    to Binary, Unary, and TrinaryOperation classes
 * add python client to read JSON
 * add conversion to LLVM IR
 * add compilation to machine code

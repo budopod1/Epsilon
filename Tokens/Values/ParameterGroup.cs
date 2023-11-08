@@ -8,7 +8,7 @@ public class ParameterGroup : UnaryOperation<IValueToken>, IValueToken {
         return o.GetType_();
     }
 
-    public int Serialize(SerializationContext context) {
+    public override int Serialize(SerializationContext context) {
         return o.Serialize(context);
     }
 }

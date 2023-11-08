@@ -6,10 +6,4 @@ public class BitwiseOR : BinaryOperation<IValueToken, IValueToken>, IValueToken 
     public Type_ GetType_() {
         return o1.GetType_();
     }
-
-    public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-        );
-    }
 }

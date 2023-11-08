@@ -38,7 +38,7 @@ public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier 
         GetType_();
     }
 
-    public int Serialize(SerializationContext context) {
+    public override int Serialize(SerializationContext context) {
         return context.AddInstruction(
             new SerializableInstruction(
                 this, context

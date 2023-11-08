@@ -38,7 +38,7 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
         );
     }
 
-    public int Serialize(SerializationContext context) {
+    public override int Serialize(SerializationContext context) {
         return context.AddInstruction(
             new SerializableInstruction(this, context)
                 .AddData("member", new JSONString(member))

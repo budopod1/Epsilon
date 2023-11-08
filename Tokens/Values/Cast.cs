@@ -33,10 +33,4 @@ public class Cast : UnaryOperation<IValueToken>, IValueToken, IVerifier {
             );
         }
     }
-
-    public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-        );
-    }
 }

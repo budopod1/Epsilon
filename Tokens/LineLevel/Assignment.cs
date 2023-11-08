@@ -12,9 +12,9 @@ public class Assignment : BinaryOperation<Variable, IValueToken>, IVerifier, ICo
         }
     }
 
-    public int Serialize(SerializationContext context) {
+    public override int Serialize(SerializationContext context) {
         return context.AddInstruction(
-            new SerializableInstruction("assign", new List<int> {o2.Serialize(context)})
+            new SerializableInstruction(this, context)
                 .AddData("variable", new JSONInt(o1.GetID()))
         );
     }

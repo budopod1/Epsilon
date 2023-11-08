@@ -1,6 +1,6 @@
 using System;
 
-public abstract class UnaryOperation<T> : IParentToken where T : IToken {
+public abstract class UnaryOperation<T> : IParentToken, ISerializableToken where T : IToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
@@ -29,5 +29,11 @@ public abstract class UnaryOperation<T> : IParentToken where T : IToken {
 
     public T Sub() {
         return o;
+    }
+
+    public virtual int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction(this, context)
+        );
     }
 }

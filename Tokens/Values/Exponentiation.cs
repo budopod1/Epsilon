@@ -6,10 +6,4 @@ public class Exponentiation : BinaryOperation<IValueToken, IValueToken>, IValueT
     public Type_ GetType_() {
         return Type_.Common(o1.GetType_(), o2.GetType_());
     }
-
-    public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-        );
-    }
 }

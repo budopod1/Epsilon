@@ -6,10 +6,4 @@ public class Xor : BinaryOperation<IValueToken, IValueToken>, IValueToken {
     public Type_ GetType_() {
         return new Type_("Bool");
     }
-
-    public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-        );
-    }
 }
