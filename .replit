@@ -1,6 +1,6 @@
 run = "bash run.bash"
 
-hidden = [".git", "App.exe", "App.pdb", "output.mlpd", "blank.py", ".config", ".gitignore"]
+hidden = [".git", "App.exe", "App.pdb", "output.mlpd", "blank.py", ".config", ".gitignore", "pylog.txt", "temp.json"]
 
 [nix]
 channel = "stable-22_11"
