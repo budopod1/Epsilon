@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Reflection;
@@ -261,7 +262,9 @@ public class Compiler {
         string json = GetJSON(program);
         TimingStep();
 
-        Console.WriteLine(json);
+        Step("Saving JSON...");
+        SaveJSON(json);
+        TimingStep();
     }
 
     Program TokenizeStrings(Program program) {
@@ -1464,5 +1467,11 @@ public class Compiler {
 
     string GetJSON(Program program) {
         return program.GetJSON().ToJSON();
+    }
+
+    void SaveJSON(string json) {
+        using (StreamWriter file = new StreamWriter("temp.json")) {
+            file.Write(json);
+        }
     }
 }
