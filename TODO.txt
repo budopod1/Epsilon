@@ -1,6 +1,6 @@
 TODO:
-* figure out how continue should work (given that LLVM only allows flow control at the end of blocks)
 * add python client to read JSON
+* convert from naive blocks to LLVM compatible blocks
 * add conversion to LLVM IR
 * add compilation to machine code
 * add CLI
