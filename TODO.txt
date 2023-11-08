@@ -1,5 +1,6 @@
 TODO:
-* make blocks serialize
+* stop returns not at block end
+* figure out how continue should work (given that LLVM only allows flow control at the end of blocks)
 * add python client to read JSON
 * add conversion to LLVM IR
 * add compilation to machine code

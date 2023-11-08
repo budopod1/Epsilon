@@ -35,6 +35,7 @@ public class Function : IParentToken, ITopLevel {
     Scope scope = new Scope();
     Type_ returnType_;
     int id;
+    List<SerializationContext> contexts = new List<SerializationContext>();
     
     public Function(PatternExtractor<List<IToken>> pattern, 
                     List<FunctionArgumentToken> arguments, CodeBlock block,
@@ -86,6 +87,11 @@ public class Function : IParentToken, ITopLevel {
         return Utils.WrapName(title, block.ToString());
     }
 
+    public int RegisterContext(SerializationContext context) {
+        contexts.Add(context);
+        return contexts.Count-1;
+    }
+
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["id"] = new JSONInt(id);
@@ -93,15 +99,10 @@ public class Function : IParentToken, ITopLevel {
             argument => argument.GetJSON()
         ));
         obj["return_type_"] = returnType_.GetJSON();
-        SerializationContext context = new SerializationContext(this);
-        foreach (IToken token in block) {
-            if (token is Line) {
-                Line line = ((Line)token);
-                ICompleteLine instruction = (ICompleteLine)line[0];
-                instruction.Serialize(context);
-            }
-        }
-        obj["instructions"] = context.GetInstructions();
+        new SerializationContext(this).Serialize(block);
+        obj["instructions"] = new JSONList(contexts.Select(
+            context=>context.GetInstructions()
+        ));
         return obj;
     }
 }

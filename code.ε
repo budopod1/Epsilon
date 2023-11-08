@@ -62,15 +62,20 @@ Z#<Q: a> + <Z: b> {
         3+1;
     };
 
+    if (3) {};
+
     while (val) {
         4+1;
-        break;
+        val = false;
         continue;
     };
 
     switch (val3)
         (1) {
             5+1;
+            while (1) {
+                break;
+            };
         };
 
     switch (val3)

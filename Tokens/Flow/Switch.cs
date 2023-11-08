@@ -78,6 +78,27 @@ public class Switch : IFlowControl {
     }
 
     public int Serialize(SerializationContext context) {
-        return -1;
+        JSONList armsJSON = new JSONList();
+        foreach (SwitchArm arm in arms) {
+            SerializationContext sub = context.AddSubContext();
+            sub.Serialize(arm.GetBlock());
+            JSONObject armObj = new JSONObject();
+            armObj["block"] = new JSONInt(sub.GetIndex());
+            armObj["target"] = new JSONInt(
+                arm.GetTarget().Serialize(context)
+            );
+            armsJSON.Add(armObj);
+        }
+        IJSONValue defaultJSON = new JSONNull();
+        if (default_ != null) {
+            SerializationContext sub = context.AddSubContext();
+            sub.Serialize(default_);
+            defaultJSON = new JSONInt(sub.GetIndex());
+        }
+        return context.AddInstruction(
+            new SerializableInstruction(
+                "switch", new List<int> {value.Serialize(context)}
+            ).AddData("arms", armsJSON).AddData("default", defaultJSON)
+        );
     }
 }
