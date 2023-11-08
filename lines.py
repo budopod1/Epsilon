@@ -1,15 +1,25 @@
 from pathlib import Path
 
 
+FILE_EXTENSIONS = ["py", "nix", "cs", "ε", "ep", "eps", "epsilon", "bash"]
+IGNORE_NAMES = []
+IGNORE_FOLDERS = ["venv"]
+
+
 def main():
-    cs_files = Path.cwd().glob("**/*.cs")
+    files = sum([
+        list(Path.cwd().glob("**/*."+FILE_EXTENSION))
+        for FILE_EXTENSION in FILE_EXTENSIONS
+    ], [])
     lines = 0
-    for cs_file in cs_files:
-        if cs_file.name in ["Combined.cs"]:
+    for file in files:
+        if file.name in IGNORE_NAMES:
             continue
-        txt = cs_file.read_text()
+        if any(folder in file.parts for folder in IGNORE_FOLDERS):
+            continue
+        txt = file.read_text()
         file_lines = 1 + txt.count("\n")
-        print(cs_file, file_lines, lines)
+        print(file, file_lines)
         lines += file_lines
     print("The code has", lines, "lines")
 
