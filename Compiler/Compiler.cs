@@ -505,7 +505,6 @@ public class Compiler {
             {"infinity", () => new FloatConstant(Double.NegativeInfinity)},
             {"NaN", () => new FloatConstant(Double.NaN)},
             {"pi", () => new FloatConstant(MathF.PI)},
-            {"e", () => new FloatConstant(MathF.E)},
         };
         IMatcher matcher = new PatternMatcher(
             new List<IPatternSegment> {

@@ -46,7 +46,7 @@ Z#<Q: a> + <Z: b> {
 
 #dhffg {
     Bool:b3 = true | false;
-    e ** pi;
+    2 ** pi;
     NaN + infinity;
     return;
 }
