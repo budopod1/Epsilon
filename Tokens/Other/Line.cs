@@ -21,5 +21,14 @@ public class Line : TreeToken, IVerifier {
                 "Incomplete line", token
             );
         }
+        if (token is IBlockEndOnly) {
+            CodeBlock block = (CodeBlock)parent;
+            int index = block.GetTokens().FindIndex(line=>line==this);
+            if (index != block.Count-1) {
+                throw new SyntaxErrorException(
+                    $"{token.GetType().Name} is only valid at the end of a block", token
+                );
+            }
+        }
     }
 }

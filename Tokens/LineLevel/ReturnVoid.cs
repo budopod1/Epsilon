@@ -1,6 +1,6 @@
 using System;
 
-public class ReturnVoid : IVerifier, ICompleteLine {
+public class ReturnVoid : IVerifier, ICompleteLine, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     

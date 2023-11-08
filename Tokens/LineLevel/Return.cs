@@ -1,6 +1,6 @@
 using System;
 
-public class Return : UnaryOperation<IValueToken>, IVerifier, ICompleteLine {
+public class Return : UnaryOperation<IValueToken>, IVerifier, ICompleteLine, IBlockEndOnly {
     public Return(IValueToken o) : base(o) {}
 
     public void Verify() {
