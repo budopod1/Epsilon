@@ -2,3 +2,4 @@ App.pdb
 App.exe
 output.mlpd
 temp.json
+*.pyc

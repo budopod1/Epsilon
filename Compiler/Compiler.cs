@@ -23,6 +23,9 @@ public class Compiler {
             } else {
                 throw inner;
             }
+        } catch (PythonExceptionException e) {
+            Console.WriteLine("Error in Python code:");
+            Console.WriteLine(e.Message);
         }
     }
     
@@ -1497,6 +1500,13 @@ public class Compiler {
     }
 
     void CreateLLVMIR() {
-        RunCommand("python LLVMIR/create_ir.py");
+        System.IO.File.WriteAllText("pylog.txt", "");
+        RunCommand("source venv/bin/activate;python LLVMIR/create_ir.py");
+        using (StreamReader file = new StreamReader("pylog.txt")) {
+            string log = file.ReadToEnd();
+            if (log.Length > 0) {
+                throw new PythonExceptionException(log);
+            }
+        }
     }
 }
