@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "/home/runner/P1/LLVMIR/create_ir.py", line 9, in <module>
-    _create_ir.main()
-  File "/home/runner/P1/LLVMIR/_create_ir.py", line 6, in main
-    0/0
-ZeroDivisionError: division by zero

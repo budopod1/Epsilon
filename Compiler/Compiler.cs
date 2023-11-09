@@ -1501,7 +1501,9 @@ public class Compiler {
 
     void CreateLLVMIR() {
         System.IO.File.WriteAllText("pylog.txt", "");
-        RunCommand("source venv/bin/activate;python LLVMIR/create_ir.py");
+        Console.Write(
+            RunCommand("source venv/bin/activate;python LLVMIR/create_ir.py")
+        );
         using (StreamReader file = new StreamReader("pylog.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {

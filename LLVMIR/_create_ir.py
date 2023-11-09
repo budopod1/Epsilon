@@ -3,4 +3,6 @@ import orjson
 
 
 def main():
-    0/0
+    with open("temp.json") as file:
+        data = orjson.loads(file.read())
+    print(data)
