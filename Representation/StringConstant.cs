@@ -16,22 +16,7 @@ public class StringConstant : IConstant {
     }
 
     public static StringConstant FromString(string value) {
-        string quoteless = value.Substring(1, value.Length-2);
-        string result = "";
-        bool wbs = false;
-        foreach (char chr in quoteless) {
-            if (wbs) {
-                result += BackslashReplacements[chr];
-                wbs = false;
-            } else {
-                if (chr == '\\') {
-                    wbs = true;
-                } else {
-                    result += chr;
-                }
-            }
-        }
-        return new StringConstant(result);
+        return new StringConstant(Utils.UnescapeStringFromLiteral(value));
     }
 
     public Type_ GetType_() {

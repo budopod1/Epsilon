@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class Utils {
@@ -51,7 +52,11 @@ public class Utils {
         return true;
     }
 
-    public static Dictionary<char, string> LiteralReplacements = new Dictionary<char, string> {
+    public static Dictionary<TValue, TKey> InvertDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary) {
+        return dictionary.ToDictionary(val => val.Value, val => val.Key);
+    }
+
+    public static Dictionary<char, string> EscapeReplacements = new Dictionary<char, string> {
         {'\'', "\\'"},
         {'"', "\\\""},
         {'\n', "\\n"},
@@ -60,16 +65,43 @@ public class Utils {
         {'\\', "\\\\"},
     };
 
+    public static Dictionary<char, char> UnescapeReplacements = InvertDictionary(
+        EscapeReplacements
+    ).ToDictionary(val=>val.Key[1], val=>val.Value);
+
     public static string EscapeStringToLiteral(string str, char quote='"') {
         string result = quote.ToString();
         foreach (char chr in str) {
-            if (LiteralReplacements.ContainsKey(chr)) {
-                result += LiteralReplacements[chr];
+            if (EscapeReplacements.ContainsKey(chr)) {
+                result += EscapeReplacements[chr];
             } else {
                 result += chr;
             }
         }
         return result + quote;
+    }
+
+    public static string UnescapeStringFromLiteral(string str) {
+        string quoteless = str.Substring(1, str.Length-2);
+        string result = "";
+        bool wbs = false;
+        foreach (char chr in quoteless) {
+            if (wbs) {
+                if (UnescapeReplacements.ContainsKey(chr)) {
+                    result += UnescapeReplacements[chr];
+                } else {
+                    result += chr;
+                }
+                wbs = false;
+            } else {
+                if (chr == '\\') {
+                    wbs = true;
+                } else {
+                    result += chr;
+                }
+            }
+        }
+        return result;
     }
 
     public static string CammelToSnake(string str) {
