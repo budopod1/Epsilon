@@ -1,6 +1,6 @@
 using System;
 
-public class Continue : IVerifier, ICompleteLine {
+public class Continue : IVerifier, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
