@@ -1477,7 +1477,7 @@ public class Compiler {
     }
 
     void SaveJSON(string json) {
-        using (StreamWriter file = new StreamWriter("temp.json")) {
+        using (StreamWriter file = new StreamWriter("code.json")) {
             file.Write(json);
         }
     }

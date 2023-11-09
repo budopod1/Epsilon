@@ -11,5 +11,6 @@
         pkgs.mono5
         pkgs.coreutils
         pkgs.git
+        pkgs.llvmPackages_14.libllvm
     ];
 }
