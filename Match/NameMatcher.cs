@@ -29,6 +29,12 @@ public class NameMatcher : IMatcher {
                 break;
             }
             List<IToken> replacement = new List<IToken>();
+            if (name.StartsWith("___")) {
+                throw new SyntaxErrorException(
+                    "Names starting with '___' are reserved", 
+                    TokenUtils.MergeSpans(replaced)
+                );
+            }
             replacement.Add(new Name(name));
             return new Match(i, j-1, replacement, replaced);
         }
