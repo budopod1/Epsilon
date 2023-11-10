@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class Program : TreeToken, IVerifier { 
@@ -60,8 +61,26 @@ public class Program : TreeToken, IVerifier {
                 structs.Add(((Struct)token).GetJSON());
             }
         }
+        List<Type_> uniqueArrayTypes_ = new List<Type_>();
+        List<Type_> arrayTypes_ = Type_.FinalTypes_.Where(
+            type_=>type_.GetBaseType_().GetName()=="Array"
+        ).ToList();
+        foreach (Type_ type_ in arrayTypes_) {
+            bool unique = true;
+            foreach (Type_ otype_ in uniqueArrayTypes_) {
+                if (type_.Equals(otype_)) {
+                    unique = false;
+                    break;
+                }
+            }
+            if (unique) uniqueArrayTypes_.Add(type_);
+        }
+        Type_.FinalTypes_ = new List<Type_>();
         obj["functions"] = functions;
         obj["structs"] = structs;
+        obj["arrays"] = new JSONList(uniqueArrayTypes_.Select(
+            type_=>type_.GetJSON(false)
+        ));
         return obj;
     }
 }

@@ -16,6 +16,7 @@ public class Type_ : IEquatable<Type_> {
     
     BaseType_ baseType_;
     List<Type_> generics;
+    public static List<Type_> FinalTypes_ = new List<Type_>();
 
     public static Type_ Any() {
         return new Type_("Any");
@@ -175,7 +176,8 @@ public class Type_ : IEquatable<Type_> {
         );
     }
 
-    public IJSONValue GetJSON() {
+    public IJSONValue GetJSON(bool isFinalType_=true) {
+        if (isFinalType_) FinalTypes_.Add(this);
         JSONObject obj = new JSONObject();
         obj["name"] = new JSONString(baseType_.GetName());
         obj["bits"] = new JSONInt(baseType_.GetBitsOrDefaultIfMeaningful());
