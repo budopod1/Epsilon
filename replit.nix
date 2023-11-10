@@ -5,7 +5,7 @@
         ];
     };
     deps = [
-        pkgs.python39Packages.virtualenv
+        pkgs.python310Packages.virtualenv
         pkgs.ack
         pkgs.python310
         pkgs.mono5
