@@ -272,6 +272,10 @@ public class Compiler {
         Step("Creating LLVM IR...");
         CreateLLVMIR();
         TimingStep();
+
+        Step("Optimizing IR...");
+        OptimizeIR();
+        TimingStep();
     }
 
     Program TokenizeStrings(Program program) {
@@ -1510,5 +1514,9 @@ public class Compiler {
                 throw new PythonExceptionException(log);
             }
         }
+    }
+
+    void OptimizeIR() {
+        RunCommand("opt -o code.bc code.ll");
     }
 }
