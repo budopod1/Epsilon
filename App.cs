@@ -8,7 +8,7 @@ public class App {
         string filename = "code.ε";
         using (StreamReader file = new StreamReader(filename)) {
             Compiler compiler = new Compiler();
-            compiler.Compile(file.ReadToEnd());
+            compiler.Compile(filename, file.ReadToEnd());
         }
     }
 }

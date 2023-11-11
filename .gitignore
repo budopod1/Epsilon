@@ -2,8 +2,11 @@ App.pdb
 App.exe
 output.mlpd
 *.pyc
-pylog.txt
+pyerr.txt
+basherr.txt
 code.json
 code.ll
 code.bc
+code.o
+code.s
 .replit

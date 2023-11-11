@@ -11,9 +11,9 @@ public class Compiler {
 
     Stopwatch watch;
 
-    public void Compile(string text) {
+    public void Compile(string file, string text) {
         try {
-            _Compile(text);
+            _Compile(file, text);
         } catch (SyntaxErrorException e) {
             ShowCompilationError(e, text);
         } catch (TargetInvocationException e) {
@@ -25,6 +25,9 @@ public class Compiler {
             }
         } catch (PythonExceptionException e) {
             Console.WriteLine("Error in Python code:");
+            Console.WriteLine(e.Message);
+        } catch (BashExceptionException e) {
+            Console.WriteLine("Error in Bash code:");
             Console.WriteLine(e.Message);
         }
     }
@@ -137,10 +140,12 @@ public class Compiler {
         }
     }
 
-    void _Compile(string text) {
+    void _Compile(string path, string text) {
         Console.Write("Epsilon Compiler\n\n");
 
-        Program program = new Program(new List<IToken>());
+        Program program = new Program(
+            Path.GetFullPath(path), new List<IToken>()
+        );
         program.span = new CodeSpan(0, text.Length-1);
         int i = 0;
         foreach (char chr in text) {
@@ -273,8 +278,8 @@ public class Compiler {
         CreateLLVMIR();
         TimingStep();
 
-        Step("Optimizing IR...");
-        OptimizeIR();
+        Step("Optimizing and compiling IR...");
+        OptimizeAndCompileIR();
         TimingStep();
     }
 
@@ -1504,11 +1509,11 @@ public class Compiler {
     }
 
     void CreateLLVMIR() {
-        System.IO.File.WriteAllText("pylog.txt", "");
+        System.IO.File.WriteAllText("pyerr.txt", "");
         Console.Write(
             RunCommand("source venv/bin/activate;python LLVMIR/create_ir.py")
         );
-        using (StreamReader file = new StreamReader("pylog.txt")) {
+        using (StreamReader file = new StreamReader("pyerr.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
                 throw new PythonExceptionException(log);
@@ -1516,7 +1521,16 @@ public class Compiler {
         }
     }
 
-    void OptimizeIR() {
-        RunCommand("opt -o code.bc code.ll");
+    void OptimizeAndCompileIR() {
+        System.IO.File.WriteAllText("basherr.txt", "");
+        Console.Write(
+            RunCommand("bash compileir.bash 2> basherr.txt")
+        );
+        using (StreamReader file = new StreamReader("basherr.txt")) {
+            string log = file.ReadToEnd();
+            if (log.Length > 0) {
+                throw new BashExceptionException(log);
+            }
+        }
     }
 }

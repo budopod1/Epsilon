@@ -1,6 +1,7 @@
 import llvmlite.binding as llvm
 from llvmlite import ir
 import orjson
+from pathlib import Path
 
 
 REF_COUNTER_FIELD = ir.IntType(32)
@@ -144,6 +145,9 @@ def freeze_json(json):
 
 def create_ir(data):
     module = ir.Module(name="main")
+    
+    module.triple = llvm.get_default_triple()
+    
     program = Program(module)
 
     program.array_ids = dict(map(

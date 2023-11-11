@@ -2,12 +2,16 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Program : TreeToken, IVerifier { 
+public class Program : TreeToken, IVerifier {
+    string path;
     List<string> baseType_Names = null;
     
-    public Program(List<IToken> tokens) : base(tokens) {}
+    public Program(string path, List<IToken> tokens) : base(tokens) {
+        this.path = path;
+    }
     
-    public Program(List<IToken> tokens, List<string> baseType_Names) : base(tokens) {
+    public Program(string path, List<IToken> tokens, List<string> baseType_Names) : base(tokens) {
+        this.path = path;
         this.baseType_Names = baseType_Names;
     }
 
@@ -25,7 +29,7 @@ public class Program : TreeToken, IVerifier {
     }
     
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return new Program(tokens, baseType_Names);
+        return new Program(path, tokens, baseType_Names);
     }
 
     public void Verify() {
@@ -81,6 +85,7 @@ public class Program : TreeToken, IVerifier {
         obj["arrays"] = new JSONList(uniqueArrayTypes_.Select(
             type_=>type_.GetJSON(false)
         ));
+        obj["path"] = new JSONString(path);
         return obj;
     }
 }
