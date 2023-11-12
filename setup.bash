@@ -1,4 +1,4 @@
-rm -rd venv 2> /dev/null
+rm -rdf venv
 virtualenv venv
 source venv/bin/activate
 pip install --upgrade pip
