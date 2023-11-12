@@ -1,9 +1,9 @@
 using System;
 
-public class SwitchArm : BinaryOperation<IValueToken, CodeBlock> {
-    public SwitchArm(IValueToken o1, CodeBlock o2) : base(o1, o2) {}
+public class SwitchArm : BinaryOperation<ConstantValue, CodeBlock> {
+    public SwitchArm(ConstantValue o1, CodeBlock o2) : base(o1, o2) {}
 
-    public IValueToken GetTarget() {
+    public ConstantValue GetTarget() {
         return o1;
     }
 

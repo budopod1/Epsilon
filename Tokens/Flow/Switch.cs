@@ -45,9 +45,15 @@ public class Switch : IFlowControl {
             default_ = (CodeBlock)rest[rest.Length-1];
         }
         for (int i = 0; i < max; i+=2) {
+            Group group = ((Group)rest[i]);
+            ConstantValue constant = group.Sub() as ConstantValue;
+            if (constant == null) {
+                throw new SyntaxErrorException(
+                    "Switch arm values can only be constants", group
+                );
+            }
             SwitchArm arm = new SwitchArm(
-                (IValueToken)rest[i],
-                (CodeBlock)rest[i+1]
+                constant, (CodeBlock)rest[i+1]
             );
             arm.span = TokenUtils.MergeSpans(rest[i], rest[i+1]);
             arms.Add(arm);
@@ -84,9 +90,7 @@ public class Switch : IFlowControl {
             sub.Serialize(arm.GetBlock());
             JSONObject armObj = new JSONObject();
             armObj["block"] = new JSONInt(sub.GetIndex());
-            armObj["target"] = new JSONInt(
-                arm.GetTarget().Serialize(context)
-            );
+            armObj["target"] = arm.GetTarget().GetValue().GetJSON();
             armsJSON.Add(armObj);
         }
         IJSONValue defaultJSON = new JSONNull();
