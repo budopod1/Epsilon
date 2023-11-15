@@ -16,4 +16,11 @@ public class ScopeVar {
     public Type_ GetType_() {
         return type_;
     }
+
+    public IJSONValue GetJSON() {
+        JSONObject obj = new JSONObject();
+        obj["name"] = new JSONString(name);
+        obj["type_"] = type_.GetJSON();
+        return obj;
+    }
 }

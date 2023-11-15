@@ -103,6 +103,7 @@ public class Function : IParentToken, ITopLevel {
         obj["instructions"] = new JSONList(contexts.Select(
             context=>context.GetInstructions()
         ));
+        obj["scope"] = scope.GetJSON();
         return obj;
     }
 }
