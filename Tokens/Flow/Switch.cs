@@ -103,6 +103,7 @@ public class Switch : IFlowControl {
             new SerializableInstruction(
                 "switch", new List<int> {value.Serialize(context)}
             ).AddData("arms", armsJSON).AddData("default", defaultJSON)
+             .AddData("value_type_", value.GetType_().GetJSON())
         );
     }
 }
