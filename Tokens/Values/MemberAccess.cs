@@ -40,9 +40,9 @@ public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier 
 
     public override int Serialize(SerializationContext context) {
         return context.AddInstruction(
-            new SerializableInstruction(
-                this, context
-            ).AddData("member", new JSONString(member))
+            new SerializableInstruction(this, context)
+                .AddData("member", new JSONString(member))
+                .AddData("struct_type_", o.GetType_().GetJSON())
         );
     }
 }

@@ -42,6 +42,7 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
         return context.AddInstruction(
             new SerializableInstruction(this, context)
                 .AddData("member", new JSONString(member))
+                .AddData("struct_type_", o1.GetType_().GetJSON())
         );
     }
 }
