@@ -29,6 +29,15 @@ public class BaseType_ : IEquatable<BaseType_> {
         "W", "Z", "Q"
     };
 
+    public static List<string> BitMeaningfulTypes_ = new List<string> {
+        "W", "Z", "Q", "Bool", "Byte"
+    };
+
+    public static Dictionary<string, int> SpecialDefaultBits = new Dictionary<string, int> {
+        {"Bool", 1},
+        {"Byte", 8}
+    };
+
     public static List<string> GenericsTypes_ = new List<string> {
         "Array"
     };
@@ -95,11 +104,15 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public int GetBitsOrDefault() {
-        return bits.GetValueOrDefault(DefaultBits);
+        int defaultBits = DefaultBits;
+        if (SpecialDefaultBits.ContainsKey(name)) {
+            defaultBits = SpecialDefaultBits[name];
+        }
+        return bits.GetValueOrDefault(defaultBits);
     }
 
     public int? GetBitsOrDefaultIfMeaningful() {
-        if (BitTypes_.Contains(name)) {
+        if (BitMeaningfulTypes_.Contains(name)) {
             return GetBitsOrDefault();
         } else {
             return null;
