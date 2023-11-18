@@ -14,4 +14,11 @@ public abstract class Comparison : BinaryOperation<IValueToken, IValueToken>, IV
             );
         }
     }
+
+    public override int Serialize(SerializationContext context) {
+        return context.AddInstruction(
+            new SerializableInstruction(this, context)
+                .AddData("common_type_", Type_.Common(o1.GetType_(), o2.GetType_()).GetJSON())
+        );
+    }
 }
