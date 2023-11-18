@@ -6,7 +6,7 @@ public class Break : IVerifier, ICompleteLine, IBlockEndOnly {
 
     public void Verify() {
         IToken parent = TokenUtils.GetParentWithCond(
-            this, (IToken token) => (token is While)
+            this, (IToken token) => (token is ILoop)
         );
         if (parent == null) {
             throw new SyntaxErrorException(
@@ -20,6 +20,12 @@ public class Break : IVerifier, ICompleteLine, IBlockEndOnly {
     }
 
     public int Serialize(SerializationContext context) {
-        return context.AddInstruction(new SerializableInstruction(this));
+        ILoop loop = (ILoop)TokenUtils.GetParentWithCond(
+            this, (IToken token) => (token is ILoop)
+        );
+        int? id = context.GetFunction().GetContextIdByBlock(loop.GetBlock());
+        return context.AddInstruction(
+            new SerializableInstruction(this).AddData("block", new JSONInt(id))
+        );
     }
 }

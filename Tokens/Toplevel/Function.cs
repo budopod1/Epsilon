@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Function : IParentToken, ITopLevel {
+public class Function : IParentToken, ITopLevel, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
@@ -92,6 +92,17 @@ public class Function : IParentToken, ITopLevel {
         return contexts.Count-1;
     }
 
+    public int? GetContextIdByBlock(CodeBlock block) {
+        int i = 0;
+        foreach (SerializationContext context in contexts) {
+            if (context.GetBlock() == block) {
+                return i;
+            }
+            i++;
+        }
+        return null;
+    }
+
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["id"] = new JSONInt(id);
@@ -105,5 +116,24 @@ public class Function : IParentToken, ITopLevel {
         ));
         obj["scope"] = scope.GetJSON();
         return obj;
+    }
+
+    public void Verify() {
+        if (!returnType_.GetBaseType_().IsVoid()) {
+            if (block.Count == 0) {
+                throw new SyntaxErrorException(
+                    "Functions with a non-void return value cannot be empty", block
+                );
+            }
+            IToken token = block[block.Count-1];
+            Line line = token as Line;
+            if (line == null) return;
+            line.Verify(); // make sure line.Count == 1
+            if (!(line[0] is Return)) {
+                throw new SyntaxErrorException(
+                    "Functions with a non-void return value must end with a return statement", line
+                );
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ using System;
 public class SerializationContext {
     Function function;
     JSONList instructions = new JSONList();
+    CodeBlock block;
     int index;
 
     public SerializationContext(Function function) {
@@ -16,6 +17,7 @@ public class SerializationContext {
     }
 
     public void Serialize(CodeBlock block) {
+        this.block = block;
         foreach (IToken token in block) {
             if (token is Line) {
                 Line line = ((Line)token);
@@ -35,5 +37,13 @@ public class SerializationContext {
 
     public IJSONValue GetInstructions() {
         return instructions;
+    }
+
+    public CodeBlock GetBlock() {
+        return block;
+    }
+
+    public Function GetFunction() {
+        return function;
     }
 }
