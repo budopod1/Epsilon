@@ -14,8 +14,9 @@ public class Assignment : BinaryOperation<Variable, IValueToken>, IVerifier, ICo
 
     public override int Serialize(SerializationContext context) {
         return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("variable", new JSONInt(o1.GetID()))
+            new SerializableInstruction(
+                "assignment", new List<int> {o2.Serialize(context)}
+            ).AddData("variable", new JSONInt(o1.GetID()))
         );
     }
 }
