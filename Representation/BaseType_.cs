@@ -29,6 +29,14 @@ public class BaseType_ : IEquatable<BaseType_> {
         "W", "Z", "Q"
     };
 
+    public static List<string> IntTypes_ = new List<string> {
+        "W", "Z", "Bool", "Byte"
+    };
+
+    public static List<string> FloatTypes_ = new List<string> {
+        "Q"
+    };
+
     public static List<string> BitMeaningfulTypes_ = new List<string> {
         "W", "Z", "Q", "Bool", "Byte"
     };
@@ -165,6 +173,14 @@ public class BaseType_ : IEquatable<BaseType_> {
 
     public bool IsVoid() {
         return name == "Void";
+    }
+
+    public bool IsInt() {
+        return IntTypes_.Contains(name);
+    }
+
+    public bool IsFloat() {
+        return FloatTypes_.Contains(name);
     }
 
     public override string ToString() {

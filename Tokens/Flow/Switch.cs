@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Switch : IFlowControl {
+public class Switch : IFlowControl, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
@@ -105,5 +105,34 @@ public class Switch : IFlowControl {
             ).AddData("arms", armsJSON).AddData("default", defaultJSON)
              .AddData("value_type_", value.GetType_().GetJSON())
         );
+    }
+
+    public void Verify() {
+        Type_ valueType_ = value.GetType_();
+        BaseType_ baseValueType_ = valueType_.GetBaseType_();
+        bool isInt = baseValueType_.IsInt();
+        bool isFloat = baseValueType_.IsFloat();
+        if (!isInt && !isFloat) {
+            throw new SyntaxErrorException(
+                $"Cannot switch on type {valueType_}", value
+            );
+        }
+        foreach (SwitchArm arm in arms) {
+            BaseType_ targetBaseType_ = arm.GetTarget().GetType_().GetBaseType_();
+            if (isInt) {
+                if (!targetBaseType_.IsInt()) {
+                    throw new SyntaxErrorException(
+                        $"Switches on an integer type must have integer targets", arm.GetTarget()
+                    );
+                }
+            }
+            if (isFloat) {
+                if (!targetBaseType_.IsFloat()) {
+                    throw new SyntaxErrorException(
+                        $"Switches on an float type must have float targets", arm.GetTarget()
+                    );
+                }
+            }
+        }
     }
 }
