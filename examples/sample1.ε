@@ -1,4 +1,4 @@
-Array<W>#h {
+W#h {
     W:v = 3;
     Array<Array<W>>:n;
     Q:r;
@@ -14,7 +14,7 @@ Array<W>#h {
     Z:h = (Z)b;
     ~b2 | b;
     !2; // h
-    true || false ^^ 1 && 1.2;
+    return true || false ^^ 1 && 1.2;
 }
 
 /*
@@ -36,7 +36,7 @@ Z#r<Array<F>:val> {
 }
 
 Q#example<Q: a><Array<Array<Q>>: b> {
-    [1.2] + [1] + 5;
+    return [1.2] + [1] + 5;
 }
 
 Z#<Q: a> + <Z: b> {
@@ -46,7 +46,7 @@ Z#<Q: a> + <Z: b> {
 
 #dhffg {
     Bool:b3 = true | false;
-    2 ** pi;
+    // 2 ** pi;
     NaN + infinity;
     return;
 }
@@ -62,7 +62,7 @@ Z#<Q: a> + <Z: b> {
         3+1;
     };
 
-    if (3) {};
+    if (3!=3) {};
 
     while (val) {
         4+1;
