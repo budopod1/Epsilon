@@ -14,7 +14,6 @@ public class NumberMatcher : IMatcher {
             List<IToken> replaced = new List<IToken>();
             bool dot = false;
             bool anyMatch = false;
-            bool isNegative = false;
             bool content = false;
             int j;
             for (j = i; j < tokens.Count; j++) {
@@ -24,10 +23,7 @@ public class NumberMatcher : IMatcher {
                 }
                 string digit = ((TextToken)token).GetText();
                 bool foundMatch = false;
-                if (digit == "-" && !anyMatch) {
-                    foundMatch = true;
-                    isNegative = true;
-                } else if ("1234567890".Contains(digit)) {
+                if ("1234567890".Contains(digit)) {
                     foundMatch = true;
                     content = true;
                 } else if (digit == "." && !dot) {
@@ -50,8 +46,6 @@ public class NumberMatcher : IMatcher {
                 IConstant constant;
                 if (dot) {
                     constant = FloatConstant.FromString(matchedString);
-                } else if (isNegative) {
-                    constant = IntConstant.FromString(matchedString);
                 } else {
                     constant = UnsignedIntConstant.FromString(matchedString);
                 }

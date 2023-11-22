@@ -1,6 +1,5 @@
 TODO:
 * add README.md
-* make i-1 parse correctly
 * convert from naive blocks to LLVM compatible blocks
 * add conversion to LLVM IR
 * add compilation to machine code
