@@ -72,9 +72,9 @@ public class Conditional : IFlowControl {
             sub.Serialize(condition.GetBlock());
             JSONObject conditionObj = new JSONObject();
             conditionObj["block"] = new JSONInt(sub.GetIndex());
-            conditionObj["condition"] = new JSONInt(
-                condition.GetCondition().Serialize(context)
-            );
+            SerializationContext conditionCtx = context.AddSubContext(true);
+            condition.GetCondition().Serialize(conditionCtx);
+            conditionObj["condition"] = conditionCtx.GetInstructions();
             conditionsJSON.Add(conditionObj);
         }
         IJSONValue elseJSON = new JSONNull();

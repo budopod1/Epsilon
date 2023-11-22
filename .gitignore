@@ -11,3 +11,4 @@ code.o
 code.s
 .replit
 profile.txt
+code-opt.ll

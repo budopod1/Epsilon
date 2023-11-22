@@ -5,10 +5,14 @@ public class SerializationContext {
     JSONList instructions = new JSONList();
     CodeBlock block;
     int index;
+    bool hidden;
 
-    public SerializationContext(Function function) {
+    public SerializationContext(Function function, bool hidden=false) {
         this.function = function;
-        index = function.RegisterContext(this);
+        this.hidden = hidden;
+        if (!hidden) {
+            index = function.RegisterContext(this);
+        }
     }
 
     public int AddInstruction(SerializableInstruction instruction) {
@@ -27,8 +31,8 @@ public class SerializationContext {
         }
     }
 
-    public SerializationContext AddSubContext() {
-        return new SerializationContext(function);
+    public SerializationContext AddSubContext(bool hidden=false) {
+        return new SerializationContext(function, hidden);
     }
 
     public int GetIndex() {
@@ -45,5 +49,9 @@ public class SerializationContext {
 
     public Function GetFunction() {
         return function;
+    }
+
+    public bool IsHidden() {
+        return hidden;
     }
 }

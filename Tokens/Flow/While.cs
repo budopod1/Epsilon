@@ -11,10 +11,13 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop {
     public override int Serialize(SerializationContext context) {
         SerializationContext sub = context.AddSubContext();
         sub.Serialize(o2);
+        SerializationContext conditionCtx = context.AddSubContext(true);
+        o1.Serialize(conditionCtx);
         return context.AddInstruction(
             new SerializableInstruction(
-                "while", new List<int> {o1.Serialize(context)}
+                "while"
             ).AddData("block", new JSONInt(sub.GetIndex()))
+             .AddData("condition", conditionCtx.GetInstructions())
         );
     }
 }

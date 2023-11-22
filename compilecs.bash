@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+# Compile C#
+
 # required, so we don't run anything if compilation fails
 rm -f App.exe
 

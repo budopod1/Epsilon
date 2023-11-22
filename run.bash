@@ -1,2 +1,3 @@
-bash compile.bash
-bash execute.bash
+#!/usr/bin/env bash
+set -e
+mono App.exe
