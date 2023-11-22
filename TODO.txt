@@ -1,6 +1,4 @@
 TODO:
 * add README.md
-* convert from naive blocks to LLVM compatible blocks
-* add conversion to LLVM IR
 * add compilation to machine code
 * add CLI
