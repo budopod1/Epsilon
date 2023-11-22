@@ -12,3 +12,5 @@ code.s
 .replit
 profile.txt
 code-opt.ll
+.cache
+code

@@ -1,7 +1,6 @@
 TODO:
 * add README.md
 * make i-1 parse correctly
-* split _create_ir.py into multiple files
 * convert from naive blocks to LLVM compatible blocks
 * add conversion to LLVM IR
 * add compilation to machine code
