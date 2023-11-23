@@ -1,5 +1,5 @@
-App.pdb
-App.exe
+Epsilon.pdb
+Epsilon.exe
 output.mlpd
 *.pyc
 pyerr.txt
@@ -14,3 +14,4 @@ profile.txt
 code-opt.ll
 .cache
 code
+replit.nix

@@ -1,5 +1,4 @@
 TODO:
-* add README.md
 * make exponentiation work
 * make arrays work
 * make structs work
