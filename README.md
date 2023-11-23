@@ -1,6 +1,6 @@
 # Epsilon
 
-Epsilon is a compiled, statically typed, semi-memory safe, garbage collected programming language.
+Epsilon is a compiled, statically typed, semi-memory safe programming language with automatic refrence counting.
 
 # Dependencies
 
