@@ -6,25 +6,6 @@ from common import *
 from instructions import make_instruction, BaseInstruction, FlowInstruction
 
 
-def iter_block_chain(block_chain):
-    block = block_chain
-    while block is not None:
-        yield block
-        block = block.next_block
-
-
-def last_block_chain_block(block_chain):
-    result = None
-    for block in iter_block_chain(block_chain):
-        result = block
-    return result
-
-
-def set_return_block(block_chain, return_block):
-    for block in iter_block_chain(block_chain):
-        block.return_block = return_block
-
-
 class Block:
     def __init__(self, program, function, id_, instructions, param_offset=0, real_instructions=False):
         self.id_ = id_

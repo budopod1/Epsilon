@@ -165,3 +165,22 @@ def untruth_value(program, builder, value, type_):
         return builder.icmp_signed("==", value, ir.Constant(make_type_(program, type_), 0))
     else:
         return builder.icmp_unsigned("==", value, ir.Constant(make_type_(program, type_), 0))
+
+
+def iter_block_chain(block_chain):
+    block = block_chain
+    while block is not None:
+        yield block
+        block = block.next_block
+
+
+def last_block_chain_block(block_chain):
+    result = None
+    for block in iter_block_chain(block_chain):
+        result = block
+    return result
+
+
+def set_return_block(block_chain, return_block):
+    for block in iter_block_chain(block_chain):
+        block.return_block = return_block
