@@ -1070,6 +1070,15 @@ public class Compiler {
                         typeof(Exponentiation)
                     )
                 ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TextPatternSegment("-"),
+                        new Type_PatternSegment(new Type_("Q"))
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(Negation)
+                    )
+                ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
@@ -1123,16 +1132,17 @@ public class Compiler {
                             typeof(Subtraction)
                         )
                     ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Q")),
+                            new TypePatternSegment(typeof(Negation))
+                        }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                            new Subtraction(
+                                (IValueToken)tokens[0], ((Negation)tokens[1]).Sub()
+                            )
+                        })
+                    ),
                 }),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TextPatternSegment("-"),
-                        new Type_PatternSegment(new Type_("Q"))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
-                        typeof(Negation)
-                    )
-                ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
