@@ -128,4 +128,8 @@ public class Utils {
         }
         return $"{result}{joiner} {list[list.Count-1]}";
     }
+
+    public static string ProjectAbsolutePath() {
+        return AppDomain.CurrentDomain.BaseDirectory;
+    }
 }

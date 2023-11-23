@@ -1511,9 +1511,9 @@ public class Compiler {
     void CreateLLVMIR() {
         System.IO.File.WriteAllText("pyerr.txt", "");
         Console.Write(
-            RunCommand("source venv/bin/activate;python LLVMIR/create_ir.py")
+            RunCommand($"cd {Utils.ProjectAbsolutePath()};source venv/bin/activate;python LLVMIR/create_ir.py 2> pyerr.txt")
         );
-        using (StreamReader file = new StreamReader("pyerr.txt")) {
+        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/pyerr.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
                 throw new PythonExceptionException(log);
@@ -1524,9 +1524,9 @@ public class Compiler {
     void OptimizeAndCompileIR() {
         System.IO.File.WriteAllText("basherr.txt", "");
         Console.Write(
-            RunCommand("bash compileir.bash 2> basherr.txt")
+            RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir.bash 2> basherr.txt")
         );
-        using (StreamReader file = new StreamReader("basherr.txt")) {
+        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/basherr.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
                 throw new BashExceptionException(log);
