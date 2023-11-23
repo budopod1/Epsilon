@@ -1,4 +1,6 @@
 TODO:
 * add README.md
+* make exponentiation work
+* make arrays work
+* make structs work
 * add compilation to machine code
-* add CLI

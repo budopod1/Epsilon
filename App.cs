@@ -1,14 +1,28 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 public class App {
     public static void Main(string[] args) {
-        // File extension should be:
-        // .ep, .eps, .epsilon, or .ε
-        string filename = "examples/subtest.ε";
-        using (StreamReader file = new StreamReader(filename)) {
+        ArgumentParser parser = new ArgumentParser();
+        
+        parser.AddBranch("compile");
+        parser.AddBranch("*input file");
+        parser.AddLeaf("*output file");
+        
+        ParserResults parseResults = parser.Parse(args);
+        List<string> mode = parseResults.GetMode();
+        List<string> values = parseResults.GetValues();
+        
+        if (mode[0] == "compile") {
             Compiler compiler = new Compiler();
-            compiler.Compile(filename, file.ReadToEnd());
+            string input = values[0];
+            string output = values[1];
+            string content;
+            using (StreamReader file = new StreamReader(input)) {
+                content = file.ReadToEnd();
+            }
+            compiler.Compile(input, content);
         }
     }
 }
