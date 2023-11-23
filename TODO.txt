@@ -1,4 +1,5 @@
 TODO:
+* move negation to the correct position in the order of operations
 * make exponentiation work
 * make arrays work
 * make structs work

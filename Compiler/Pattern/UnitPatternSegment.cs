@@ -14,8 +14,11 @@ public class UnitPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
     }
 
     public bool Matches(IToken token) {
-        return (token is Unit<T> && Utils.IsInstance(token, unit)
-            && ((Unit<T>)token).GetValue().Equals(value));
+        return (
+            token is Unit<T> 
+            && Utils.IsInstance(token, unit)
+            && ((Unit<T>)token).GetValue().Equals(value)
+        );
     }
 
     public bool Equals(IPatternSegment obj) {

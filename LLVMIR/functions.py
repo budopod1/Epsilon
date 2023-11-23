@@ -14,6 +14,7 @@ class Function:
         self.return_type_= data["return_type_"]
         self.arguments = data["arguments"]
         self.scope = data["scope"]
+        self.is_main = data["is_main"]
         self.ir_type = ir.FunctionType(
             make_type_(program, self.return_type_),
             [
@@ -21,8 +22,10 @@ class Function:
                 for argument in self.arguments
             ]
         )
-        self.ir = ir.Function(program.module, self.ir_type,
-                              name="___f"+str(id_))
+        self.ir = ir.Function(
+            program.module, self.ir_type,
+            name=("main" if self.is_main else "___f"+str(id_))
+        )
         self.blocks = [
             Block(program, self, i, block)
             for i, block in enumerate(data["instructions"])

@@ -33,11 +33,23 @@ public class Program : TreeToken, IVerifier {
     }
 
     public void Verify() {
+        bool foundMain = false;
         foreach (IToken token in this) {
             if (!(token is ITopLevel)) {
                 throw new SyntaxErrorException(
                     "Invalid toplevel syntax", token
                 );
+            }
+            Function func = token as Function;
+            if (func != null) {
+                if (func.IsMain()) {
+                    if (foundMain) {
+                        throw new SyntaxErrorException(
+                            "Only one main function can be defined", func
+                        );
+                    }
+                    foundMain = true;
+                }
             }
         }
     }

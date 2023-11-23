@@ -7,6 +7,9 @@ public class Function : IParentToken, ITopLevel, IVerifier {
     public CodeSpan span { get; set; }
 
     static int id_ = 0;
+    static List<IPatternSegment> mainPattern = new List<IPatternSegment> {
+        new UnitPatternSegment<string>(typeof(Name), "main")
+    };
     
     public int Count {
         get { return 1 + arguments.Count; }
@@ -36,6 +39,7 @@ public class Function : IParentToken, ITopLevel, IVerifier {
     Type_ returnType_;
     int id;
     List<SerializationContext> contexts = new List<SerializationContext>();
+    bool isMain;
     
     public Function(PatternExtractor<List<IToken>> pattern, 
                     List<FunctionArgumentToken> arguments, CodeBlock block,
@@ -44,6 +48,7 @@ public class Function : IParentToken, ITopLevel, IVerifier {
         this.arguments = arguments;
         this.block = block;
         this.returnType_ = returnType_;
+        isMain = Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments());
         foreach (FunctionArgumentToken argument in arguments) {
             argument.SetID(scope.AddVar(
                 argument.GetName(), argument.GetType_()
@@ -115,10 +120,18 @@ public class Function : IParentToken, ITopLevel, IVerifier {
             context=>context.GetInstructions()
         ));
         obj["scope"] = scope.GetJSON();
+        obj["is_main"] = new JSONBool(isMain);
         return obj;
     }
 
     public void Verify() {
+        if (isMain) {
+            if (!returnType_.Equals(new Type_("Z"))) {
+                throw new SyntaxErrorException(
+                    "The main function must return type Z", this
+                );
+            }
+        }
         if (!returnType_.GetBaseType_().IsVoid()) {
             if (block.Count == 0) {
                 throw new SyntaxErrorException(
@@ -135,5 +148,9 @@ public class Function : IParentToken, ITopLevel, IVerifier {
                 );
             }
         }
+    }
+
+    public bool IsMain() {
+        return isMain;
     }
 }
