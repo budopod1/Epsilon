@@ -197,6 +197,53 @@ class MemberAssignmentInstruction(BaseInstruction):
         )
 
 
+def do_chain_power(program, builder, type_, value, pow):
+    mul = builder.fmul if is_floating_type_(type_) else builder.mul
+    if pow == 0:
+        return ir.Constant(make_type_(program, type_), 1)
+    elif pow % 2 == 0:
+        half = do_chain_power(
+            program, builder, type_, value, pow/2
+        )
+        return mul(half, half)
+    else:
+        return mul(value, do_chain_power(
+            program, builder, type_, value, pow - 1
+        ))
+
+
+class ExponentiationInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.mode = self.data["mode"]
+        self.exponent_value = self.data["exponent_value"]
+
+    def _build(self, builder, params, param_types_):
+        base, _ = params
+        base_type_, _ = param_types_
+        if self.mode == "chain":
+            return convert_type_(self.program, builder, do_chain_power(
+                self.program, builder, base_type_, base,
+                int(self.exponent_value)
+            ), base_type_, self.type_)
+        else:
+            if self.mode == "pow":
+                return self.program.call_stdlib(
+                    builder, "pow", params, param_types_,
+                    self.type_
+                )
+            elif self.mode == "sqrt":
+                return self.program.call_stdlib(
+                    builder, "sqrt", [base], [base_type_],
+                    self.type_
+                )
+            elif self.mode == "cbrt":
+                return self.program.call_stdlib(
+                    builder, "cbrt", [base], [base_type_],
+                    self.type_
+                )
+
+
 class DirectIRInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
@@ -460,7 +507,7 @@ def make_instruction(program, function, data):
         "and": LogicalInstruction,
         "xor": LogicalInstruction,
         "negation": ArithmeticInstruction,
-        # "exponentiation": ,
+        "exponentiation": ExponentiationInstruction,
         # "array_creation": ,
         "assignment": AssignmentInstruction,
         "variable": VariableInstruction,

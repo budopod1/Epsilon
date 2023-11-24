@@ -33,10 +33,10 @@ def freeze_json(json):
 def make_type_(program, data):
     generics = [
         make_type_(program, generic)
-        for generic in data["generics"]
+        for generic in data.get("generics", [])
     ]
 
-    bits = data["bits"]
+    bits = data.get("bits", None)
     match data["name"], generics:
         case "Q", []:
             return {
@@ -184,3 +184,13 @@ def last_block_chain_block(block_chain):
 def set_return_block(block_chain, return_block):
     for block in iter_block_chain(block_chain):
         block.return_block = return_block
+
+
+def make_function_type_(program, return_type_, arguments):
+    return ir.FunctionType(
+        make_type_(program, return_type_),
+        [
+            make_type_(program, argument) 
+            for argument in arguments
+        ]
+    )

@@ -132,4 +132,8 @@ public class Utils {
     public static string ProjectAbsolutePath() {
         return AppDomain.CurrentDomain.BaseDirectory;
     }
+
+    public static bool ApproxEquals(double a, double b) {
+        return Math.Abs(a-b)/(a+b) < 0.01;
+    }
 }

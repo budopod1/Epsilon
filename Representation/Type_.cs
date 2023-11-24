@@ -60,8 +60,7 @@ public class Type_ : IEquatable<Type_> {
         }
     }
 
-    public static Type_ CommonSpecific(Type_ a, Type_ b,
-                                            string name) {
+    public static Type_ CommonSpecific(Type_ a, Type_ b, string name) {
         if (a.Equals(b) && a.GetBaseType_().GetName()==name) return a;
         if (a.HasGenerics() || b.HasGenerics()) 
             return Unknown();

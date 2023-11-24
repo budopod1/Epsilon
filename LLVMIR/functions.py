@@ -1,7 +1,4 @@
-import llvmlite.binding as llvm
 from llvmlite import ir
-import orjson
-from pathlib import Path
 from common import *
 from blocks import Block
 from instructions import BaseInstruction, FlowInstruction
@@ -15,12 +12,9 @@ class Function:
         self.arguments = data["arguments"]
         self.scope = data["scope"]
         self.is_main = data["is_main"]
-        self.ir_type = ir.FunctionType(
-            make_type_(program, self.return_type_),
-            [
-                make_type_(program, argument["type_"]) 
-                for argument in self.arguments
-            ]
+        self.ir_type = make_function_type_(
+            program, self.return_type_, 
+            (argument["type_"] for argument in self.arguments)
         )
         self.ir = ir.Function(
             program.module, self.ir_type,

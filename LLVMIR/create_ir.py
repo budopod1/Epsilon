@@ -6,6 +6,7 @@ from common import *
 from structs import Struct, Array
 from functions import Function
 from program import Program
+from stdlib import STDLIB
 
 
 def create_ir(data):
@@ -14,6 +15,9 @@ def create_ir(data):
     module.triple = llvm.get_default_triple()
     
     program = Program(module)
+
+    for func_name, func_data in STDLIB.items():
+        program.add_stdlib_func(func_name, func_data)
 
     program.array_ids = dict(map(
         lambda pair: (freeze_json(pair[1]), pair[0]), 

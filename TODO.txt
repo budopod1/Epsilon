@@ -1,8 +1,6 @@
 TODO:
 * handle IO exception when loading file
 * Improve "Incomplete command" message, and tell the user what is expected next
-* make exponentiation work
-* make raising to the one half and one third special operations that call specialized sqrt and cube root functions
 * make arrays work
 * make structs work
 * add compilation to machine code
