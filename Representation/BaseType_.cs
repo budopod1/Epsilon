@@ -62,6 +62,7 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"Byte", new List<string> {"Bool", "W", "Z", "Q"}},
         {"W", new List<string> {"Bool", "Byte", "Z", "Q"}},
         {"Z", new List<string> {"Bool", "Byte", "W", "Q"}},
+        {"Q", new List<string> {"Bool", "Byte", "W", "Z"}},
     };
 
     public static List<string> BitsImportant = new List<string> {
