@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public class FloatConstant : IConstant {
+public class FloatConstant : INumberConstant {
     double value;
 
     public FloatConstant(double value) {
@@ -16,6 +16,10 @@ public class FloatConstant : IConstant {
 
     public Type_ GetType_() {
         return new Type_("Q");
+    }
+
+    public double GetDoubleValue() {
+        return value;
     }
 
     public IJSONValue GetJSON() {

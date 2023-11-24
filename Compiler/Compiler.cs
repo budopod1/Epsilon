@@ -1332,6 +1332,36 @@ public class Compiler {
             new List<IMatcher> {
                 new PatternMatcher(
                     new List<IPatternSegment> {
+                        new FuncPatternSegment<Division>(division => (
+                            (division[0] is ConstantValue)
+                            && (division[1] is ConstantValue)
+                            && (((ConstantValue)division[0]).GetValue() is INumberConstant)
+                            && (((ConstantValue)division[1]).GetValue() is INumberConstant)
+                        ))
+                    }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                        new ConstantValue(
+                            new FloatConstant(
+                                (
+                                    ((INumberConstant)
+                                        ((ConstantValue)
+                                            ((Division)tokens[0])[0]
+                                        ).GetValue()
+                                    ).GetDoubleValue()
+                                ) / (
+                                    ((INumberConstant)
+                                        ((ConstantValue)
+                                            ((Division)tokens[0])[1]
+                                        ).GetValue()
+                                    ).GetDoubleValue()
+                                )
+                            )
+                        )
+                    })
+                )
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
                         new TypePatternSegment(typeof(ReturnKeyword)),
                         new Type_PatternSegment(Type_.Any())
                     }, new Wrapper2PatternProcessor(

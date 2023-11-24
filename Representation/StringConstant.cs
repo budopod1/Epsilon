@@ -23,6 +23,10 @@ public class StringConstant : IConstant {
         throw new NotImplementedException("GetType_ is not implemented for StringConstant yet.");
     }
 
+    public string GetValue() {
+        return value;
+    }
+
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["type"] = new JSONString("string");
