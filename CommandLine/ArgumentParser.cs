@@ -34,7 +34,7 @@ public class ArgumentParser {
     }
 
     public void DisplayProblem(string problem) {
-        Console.WriteLine(problem);
+        Console.WriteLine("Epsilon: "+problem);
         Console.WriteLine("Use '-h' to view usage");
         Environment.Exit(0);
     }
@@ -63,7 +63,7 @@ public class ArgumentParser {
     }
 
     public void ShowHelp() {
-        Console.WriteLine("Usage:");
+        Console.WriteLine("Epsilon usage:");
         ShowUsage(tree, "");
         Console.WriteLine();
         Console.WriteLine("Options:");
@@ -71,6 +71,12 @@ public class ArgumentParser {
             Console.WriteLine(pair.Key + ": " + pair.Value);
         }
         Environment.Exit(0);
+    }
+
+    string ShowTreeOptions(ParserTree t) {
+        return Utils.ENList(t.GetNodes().Select(node=>node.GetContent()).Select(
+            txt=>txt[0]=='*'?txt.Substring(1):txt
+        ).ToList(), "or");
     }
     
     public ParserResults Parse(string[] args) {
@@ -134,11 +140,11 @@ public class ArgumentParser {
             }
             
             if (!foundMatch) {
-                DisplayProblem($"Invalid argument {arg}, expected {Utils.ENList(ctree.GetNodes().Select(node=>node.GetContent()).ToList(), "or")}");
+                DisplayProblem($"Invalid argument {arg}, expected {ShowTreeOptions(ctree)}");
             }
         }
         if (!finished)
-            DisplayProblem("Incomplete command");
+            DisplayProblem($"Incomplete command, expected {ShowTreeOptions(ctree)}");
         return new ParserResults(usedOptions, mode, values);
     }
 }

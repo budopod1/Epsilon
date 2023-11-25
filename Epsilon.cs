@@ -18,11 +18,16 @@ public class App {
             Compiler compiler = new Compiler();
             string input = values[0];
             string output = values[1];
-            string content;
-            using (StreamReader file = new StreamReader(input)) {
-                content = file.ReadToEnd();
+            string content = null;
+            try {
+                using (StreamReader file = new StreamReader(input)) {
+                    content = file.ReadToEnd();
+                }
+            } catch (IOException) {
+                parser.DisplayProblem("Could not read specified input file");
             }
-            compiler.Compile(input, content);
+            if (content != null)
+                compiler.Compile(input, content);
         }
     }
 }

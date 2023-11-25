@@ -1,6 +1,4 @@
 TODO:
-* handle IO exception when loading file
-* Improve "Incomplete command" message, and tell the user what is expected next
 * make arrays work
 * make structs work
 * add compilation to machine code
