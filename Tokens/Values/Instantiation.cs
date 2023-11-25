@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Instantiation : IParentToken, IValueToken {
+public class Instantiation : IParentToken, IValueToken, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
@@ -31,7 +31,7 @@ public class Instantiation : IParentToken, IValueToken {
     
     public Instantiation(Type_Token type_token, ValueList list) {
         this.type_ = type_token.GetValue();
-        this.values = list.GetValues().Select(
+        this.values = list.GetValues().Where(token=>token.Count>0).Select(
             (ValueListItem token) => (IValueToken)token[0]
         ).ToList();
     }
@@ -63,5 +63,26 @@ public class Instantiation : IParentToken, IValueToken {
         return context.AddInstruction(
             new SerializableInstruction(this, context)
         );
+    }
+
+    public void Verify() {
+        Program program = TokenUtils.GetParentOfType<Program>(this);
+        Struct struct_ = program.GetStructFromType_(type_);
+        List<Field> fields = struct_.GetFields();
+        if (fields.Count != values.Count) {
+            throw new SyntaxErrorException(
+                $"{values.Count} values were supplied to an instantiation of struct {type_}, while {fields.Count} values are required.", this
+            );
+        }
+        for (int i = 0; i < fields.Count; i++) {
+            IValueToken value = values[i];
+            Type_ valueType_ = value.GetType_();
+            Type_ fieldType_ = fields[i].GetType_();
+            if (!valueType_.IsConvertibleTo(fieldType_)) {
+                throw new SyntaxErrorException(
+                    $"Expected value of type {fieldType_} in instantiation, got value of type {valueType_}", value
+                );
+            }
+        }
     }
 }
