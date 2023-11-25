@@ -1,4 +1,5 @@
 TODO:
+* make Instantiation instruction verify that it has the correct number and types_ of inputs
 * make arrays work
-* make structs work
+* add automatic refrencing counting
 * add compilation to machine code

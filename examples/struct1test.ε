@@ -1,0 +1,13 @@
+G {
+    Q:f
+}
+
+Q#test<Q:v> {
+    G:s = G [v];
+    s.f = s.f + 1;
+    return ref[s];
+}
+
+Q#ref<G:r> {
+    return r.f % 4;
+}

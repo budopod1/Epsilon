@@ -194,3 +194,11 @@ def make_function_type_(program, return_type_, arguments):
             for argument in arguments
         ]
     )
+
+
+def i64_of(val):
+    return ir.IntType(64)(val)
+
+
+def i32_of(val):
+    return ir.IntType(32)(val)

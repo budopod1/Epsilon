@@ -31,7 +31,7 @@ def compile_ir(module):
 def main():
     print("Running...")
 
-    with open("code-opt.ll") as file:
+    with open("code.ll") as file:
         module = file.read()
 
     engine = compile_ir(module)
@@ -39,7 +39,7 @@ def main():
     main_ptr = engine.get_function_address("___f0")
     main = CFUNCTYPE(c_float, c_float)(main_ptr)
 
-    print(main(5))
+    print(main(5.5))
 
 
 if __name__ == "__main__":

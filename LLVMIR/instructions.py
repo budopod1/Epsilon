@@ -173,7 +173,9 @@ class MemberAccessInstruction(Typed_Instruction):
         obj, = params
         struct = self.program.structs[self.struct_type_["name"]]
         return builder.load(
-            builder.gep(obj, [0, struct.get_index_of_member(self.member)])
+            builder.gep(obj, [
+                i64_of(0), i32_of(1+struct.get_index_of_member(self.member))
+            ])
         )
 
 
@@ -193,8 +195,25 @@ class MemberAssignmentInstruction(BaseInstruction):
             struct.get_type__by_index(idx)
         )
         return builder.store(
-            converted_value, builder.gep(obj, [0, idx])
+            converted_value, builder.gep(obj, [i64_of(0), i32_of(1+idx)])
         )
+
+
+class InstantiationInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        result = self.program.malloc(builder, make_type_(self.program, self.type_))
+        struct = self.program.structs[self.type_["name"]]
+        casted_fields = [
+            convert_type_(
+                self.program, builder, param, param_type_,
+                struct.get_type__by_index(idx)
+            )
+            for idx, (param, param_type_) in enumerate(zip(params, param_types_))
+        ]
+        for idx, casted_field in enumerate(casted_fields):
+            builder.store(casted_field, builder.gep(result, [i64_of(0), i32_of(1+idx)]))
+        return result
+        
 
 
 def do_chain_power(program, builder, type_, value, pow):
@@ -511,7 +530,7 @@ def make_instruction(program, function, data):
         # "array_creation": ,
         "assignment": AssignmentInstruction,
         "variable": VariableInstruction,
-        # "instantiation": ,
+        "instantiation": InstantiationInstruction,
         "member_access": MemberAccessInstruction,
         "member_assignment": MemberAssignmentInstruction,
         "return": ReturnInstruction,
