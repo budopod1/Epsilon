@@ -5,6 +5,13 @@ using System.Collections.Generic;
 public class App {
     public static void Main(string[] args) {
         ArgumentParser parser = new ArgumentParser();
+
+        parser.AddOption("p", "Print the AST");
+        parser.AddOption("print-ast", "Print the AST");
+        parser.AddOption("s", "Print the AST");
+        parser.AddOption("print-steps", "Print the compilation steps");
+        parser.AddOption("t", "Show step timings");
+        parser.AddOption("timings", "Show step timings");
         
         parser.AddBranch("compile");
         parser.AddBranch("*input file");
@@ -16,6 +23,10 @@ public class App {
         
         if (mode[0] == "compile") {
             Compiler compiler = new Compiler();
+            compiler.PRINT_AST = parseResults.HasOption("p", "print-ast");
+            compiler.PRINT_STEPS = parseResults.HasOption("s", "print-steps");
+            compiler.SHOW_TIMINGS = parseResults.HasOption("t", "timings");
+            
             string input = values[0];
             string output = values[1];
             string content = null;

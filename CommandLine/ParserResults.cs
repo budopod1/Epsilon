@@ -12,8 +12,12 @@ public class ParserResults {
         this.values = values;
     }
 
-    public bool HasOption(string option) {
-        return options.Contains(option);
+    public bool HasOption(params string[] option) {
+        foreach (string repr in option) {
+            if (options.Contains(repr))
+                return true;
+        }
+        return false;
     }
 
     public List<string> GetOptions() {

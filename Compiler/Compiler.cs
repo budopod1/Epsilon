@@ -6,8 +6,9 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class Compiler {
-    public bool DEBUG = false;
+    public bool PRINT_AST = false;
     public bool PRINT_STEPS = false;
+    public bool SHOW_TIMINGS = false;
 
     Stopwatch watch;
 
@@ -128,7 +129,7 @@ public class Compiler {
     }
 
     void TimingStep() {
-        if (DEBUG) {
+        if (SHOW_TIMINGS) {
             Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());
             watch.Restart();
         }
@@ -156,7 +157,7 @@ public class Compiler {
         }
 
         watch = new Stopwatch();
-        if (DEBUG) watch.Start();
+        if (SHOW_TIMINGS) watch.Start();
 
         Step("Tokenizing strings...");
         program = TokenizeStrings(program);
@@ -261,6 +262,8 @@ public class Compiler {
         Step("Parsing function code...");
         program = ParseFunctionCode(program);
         TimingStep();
+
+        if (PRINT_AST) Console.WriteLine(program);
 
         Step("Verifying code...");
         VerifyCode(program);

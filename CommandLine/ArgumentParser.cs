@@ -108,6 +108,14 @@ public class ArgumentParser {
                     continue;
                 }
             }
+
+            if (finished) {
+                if (i == args.Length-1) {
+                    break;
+                } else {
+                    DisplayProblem("To many arguments");
+                }
+            }
             
             bool foundMatch = false;
             foreach (IParserNode node in ctree.GetNodes()) {
@@ -128,14 +136,6 @@ public class ArgumentParser {
                         ctree = tree;
                     }
                     break;
-                }
-            }
-            
-            if (finished) {
-                if (i == args.Length-1) {
-                    break;
-                } else {
-                    DisplayProblem("To many arguments");
                 }
             }
             
