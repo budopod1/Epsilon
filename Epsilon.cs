@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-public class App {
+public class Epsilon {
     public static void Main(string[] args) {
         ArgumentParser parser = new ArgumentParser();
 
