@@ -1,15 +1,16 @@
 # Epsilon
 
-Epsilon is a compiled, statically typed, semi-memory safe programming language with automatic refrence counting.
+Epsilon is an **in development**, compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning it can be ran on almost any system.
 
 # Dependencies
 
 Epsilon depends on:
 
-* Python
+* Python (3.10 or greater)
     * The `virtualenv` package
-* Mono
-* LLVM
+* Mono 5
+* LLVM 14
+* libstdc++
 
 # Setup
 
