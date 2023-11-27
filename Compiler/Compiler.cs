@@ -640,7 +640,7 @@ public class Compiler {
         };
         IMatcher argumentConverterMatcher = new PatternMatcher(
             new List<IPatternSegment> {
-                new ConditionPatternSegment<RawFunctionArgument>(arg => {
+                new FuncPatternSegment<RawFunctionArgument>(arg => {
                     if (!TokenUtils.FullMatch(functionArgumentSegments, arg.GetTokens())) {
                         throw new SyntaxErrorException(
                             "Malformed function argument", arg
@@ -914,7 +914,7 @@ public class Compiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new ConditionPatternSegment<RawSquareGroup>(
+                        new FuncPatternSegment<RawSquareGroup>(
                             (RawSquareGroup group) => !(group.parent is RawFunctionCall)
                         )
                     }, new WrapperPatternProcessor(
@@ -936,7 +936,7 @@ public class Compiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new ConditionPatternSegment<Instantiation>(
+                        new FuncPatternSegment<Instantiation>(
                             i => i.GetType_().GetBaseType_().GetName() == "Array"
                         )
                     }, new Wrapper2PatternProcessor(
@@ -963,7 +963,7 @@ public class Compiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new ConditionPatternSegment<Name>(
+                        new FuncPatternSegment<Name>(
                             (Name name) => Scope.GetEnclosing(name)
                                                 .ContainsVar(name.GetValue())
                         ),

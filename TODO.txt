@@ -1,5 +1,4 @@
 TODO:
 * add automatic refrencing counting
 * add compilation to machine code
-* remove ConditionPatternSegment (it's identical to FuncPatternSegment)
 * sort instructions in instructions.py (both the classes and in make_instruction)
