@@ -209,3 +209,18 @@ def init_ref_counter(builder, val):
         REF_COUNTER_FIELD(0),
         builder.gep(val, [i32_of(0), i32_of(0)])
     )
+
+
+def do_chain_power(program, builder, type_, value, pow):
+    mul = builder.fmul if is_floating_type_(type_) else builder.mul
+    if pow == 0:
+        return ir.Constant(make_type_(program, type_), 1)
+    elif pow % 2 == 0:
+        half = do_chain_power(
+            program, builder, type_, value, pow/2
+        )
+        return mul(half, half)
+    else:
+        return mul(value, do_chain_power(
+            program, builder, type_, value, pow - 1
+        ))

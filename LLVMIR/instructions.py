@@ -42,6 +42,20 @@ class CastToResultType_Instruction:
         return self._build(builder, typed_params)
 
 
+class DirectIRInstruction(BaseInstruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self._build = self.data["function"]
+
+
+class FlowInstruction(BaseInstruction):
+    def set_return_block(self):
+        pass
+
+    def create_sub_blocks(self):
+        pass
+
+
 class ArithmeticInstruction(CastToResultType_Instruction, Typed_Instruction):
     def _build(self, builder, params):
         return {
@@ -57,218 +71,57 @@ class ArithmeticInstruction(CastToResultType_Instruction, Typed_Instruction):
         ](*params)
 
 
-class CastInstruction(CastToResultType_Instruction, Typed_Instruction):
-    def _build(self, builder, params):
-        param, = params
-        return param
-
-
-class BitwiseInstruction(CastToResultType_Instruction, Typed_Instruction):
-    def _build(self, builder, params):
-        return {
-            "bitwise_or": builder.or_,
-            "bitwise_and": builder.and_,
-            "bitwise_xor": builder.xor,
-            "bitwise_not": builder.not_,
-        }[self.name](*params)
-
-
-class BitshiftInstruction(CastToResultType_Instruction, Typed_Instruction):
-    def _build(self, builder, params):
-        return {
-            "bitshift_left": {True: builder.shl, False: builder.shl},
-            "bitshift_right": {True: builder.lshr, False: builder.lshr},
-        }[self.name][is_signed_integer_type_(self.type_)](*params)
-
-
-class NotInstruction(Typed_Instruction):
+class ArrayAccessInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
-        param, = params
-        param_type_, = param_types_
-        if param_type_["name"] == "Bool":
-            return builder.not_(param)
-        else:
-            return untruth_value(self.program, builder, param, param_type_)
-
-
-class LogicalInstruction(Typed_Instruction):
-    def _build(self, builder, params, param_types_):
-        return {
-            "or": builder.or_,
-            "and": builder.and_,
-            "xor": builder.xor
-        }[self.name](*[
-            truth_value(self.program, builder, param, param_type_)
-            for param, param_type_ in zip(params, param_types_)
-        ])
-
-
-class ComparisonInstruction(Typed_Instruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.common_type_ = self.data["common_type_"]
-
-    def _build(self, builder, params, param_types_):
-        v1, v2 = [
-            convert_type_(self.program, builder, param, param_type_, self.common_type_)
-            for param, param_type_ in zip(params, param_types_)
-        ]
-        return compare_values(builder, {
-            "equals": "==",
-            "not_equals": "!=",
-            "greater": ">",
-            "less": "<",
-            "greater_equal": ">=",
-            "less_equal": "<="
-        }[self.name], v1, v2, self.common_type_)
-
-
-class AssignmentInstruction(BaseInstruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.variable = self.data["variable"]
-
-    def _build(self, builder, params, param_types):
-        value, = params
-        value_type_, = param_types
-        converted_value = convert_type_(
-            self.program, builder, value, value_type_, 
-            self.function.get_var(self.variable)["type_"]
+        array, index = params
+        _, index_type_ = param_types_
+        # array should always already be the correct type_
+        # this could change, and if it does, type_ casting would be
+        # required here
+        casted_index = convert_type_(
+            self.program, builder, index, index_type_,
+            {"name": "W", "bits": 32}
         )
-        return builder.store(
-            converted_value, 
-            self.function.get_variable_declaration(self.variable)
-        )
-
-
-class VariableInstruction(Typed_Instruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.variable = self.data["variable"]
-
-    def _build(self, builder, params, param_types):
-        return builder.load(
-            self.function.get_variable_declaration(self.variable)
-        )
-
-
-class ConstantInstruction(Typed_Instruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.constant = make_constant(
-            self.data["constant"], self.ir_type
-        )
-
-    def _build(self, builder, params, param_types):
-        return self.constant
-
-
-class MemberAccessInstruction(Typed_Instruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.member = self.data["member"]
-        self.struct_type_ = self.data["struct_type_"]
-
-    def _build(self, builder, params, param_types):
-        obj, = params
-        struct = self.program.structs[self.struct_type_["name"]]
-        return builder.load(
-            builder.gep(obj, [
-                i32_of(0), i32_of(1+struct.get_index_of_member(self.member))
-            ])
-        )
-
-
-class MemberAssignmentInstruction(BaseInstruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.member = self.data["member"]
-        self.struct_type_ = self.data["struct_type_"]
-
-    def _build(self, builder, params, param_types_):
-        obj, value = params
-        _, value_type_ = param_types_
-        struct = self.program.structs[self.struct_type_["name"]]
-        idx = struct.get_index_of_member(self.member)
-        converted_value = convert_type_(
-            self.program, builder, value, value_type_,
-            struct.get_type__by_index(idx)
-        )
-        return builder.store(
-            converted_value, builder.gep(obj, [i32_of(0), i32_of(1+idx)])
-        )
-
-
-class InstantiationInstruction(Typed_Instruction):
-    def _build(self, builder, params, param_types_):
-        result = self.program.malloc(builder, make_type_(self.program, self.type_))
-        struct = self.program.structs[self.type_["name"]]
-        casted_fields = [
-            convert_type_(
-                self.program, builder, param, param_type_,
-                struct.get_type__by_index(idx)
-            )
-            for idx, (param, param_type_) in enumerate(zip(params, param_types_))
-        ]
-        init_ref_counter(builder, result)
-        for idx, casted_field in enumerate(casted_fields):
-            builder.store(casted_field, builder.gep(result, [i32_of(0), i32_of(1+idx)]))
-        return result
-        
-
-
-def do_chain_power(program, builder, type_, value, pow):
-    mul = builder.fmul if is_floating_type_(type_) else builder.mul
-    if pow == 0:
-        return ir.Constant(make_type_(program, type_), 1)
-    elif pow % 2 == 0:
-        half = do_chain_power(
-            program, builder, type_, value, pow/2
-        )
-        return mul(half, half)
-    else:
-        return mul(value, do_chain_power(
-            program, builder, type_, value, pow - 1
+        result_ptr = builder.load(builder.gep(
+            array, [i32_of(0), i32_of(3)]
+        ))
+        return builder.load(builder.gep(
+            result_ptr, [casted_index]
         ))
 
 
-class ExponentiationInstruction(Typed_Instruction):
+class ArrayAssignmentInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
-        self.mode = self.data["mode"]
-        self.exponent_value = self.data["exponent_value"]
+        self.elem_type_ = self.data["elem_type_"]
 
     def _build(self, builder, params, param_types_):
-        base, _ = params
-        base_type_, _ = param_types_
-        if self.mode == "chain":
-            return convert_type_(self.program, builder, do_chain_power(
-                self.program, builder, base_type_, base,
-                int(self.exponent_value)
-            ), base_type_, self.type_)
-        else:
-            if self.mode == "pow":
-                return self.program.call_stdlib(
-                    builder, "pow", params, param_types_,
-                    self.type_
-                )
-            elif self.mode == "sqrt":
-                return self.program.call_stdlib(
-                    builder, "sqrt", [base], [base_type_],
-                    self.type_
-                )
-            elif self.mode == "cbrt":
-                return self.program.call_stdlib(
-                    builder, "cbrt", [base], [base_type_],
-                    self.type_
-                )
+        array, index, value = params
+        _, index_type_, value_type_ = param_types_
+        # array should always already be the correct type_
+        # this could change, and if it does, type_ casting would be
+        # required here
+        casted_index = convert_type_(
+            self.program, builder, index, index_type_,
+            {"name": "W", "bits": 32}
+        )
+        casted_value = convert_type_(
+            self.program, builder, value, value_type_,
+            self.elem_type_
+        )
+        result_ptr = builder.load(builder.gep(
+            array, [i32_of(0), i32_of(3)]
+        ))
+        builder.store(casted_value, builder.gep(
+            result_ptr, [casted_index]
+        ))
 
 
 class ArrayCreationInstruction(Typed_Instruction):
     def __init__(self, *args):
         super().__init__(*args)
         self.elem_type_ = self.data["elem_type_"]
-        
+
     def _build(self, builder, elems, elem_types_):
         converted_elems = [
             convert_type_(
@@ -304,65 +157,76 @@ class ArrayCreationInstruction(Typed_Instruction):
         return struct_mem
 
 
-class ArrayAccessInstruction(Typed_Instruction):
-    def _build(self, builder, params, param_types_):
-        array, index = params
-        _, index_type_ = param_types_
-        # array should always already be the correct type_
-        # this could change, and if it does, type_ casting would be
-        # required here
-        casted_index = convert_type_(
-            self.program, builder, index, index_type_,
-            {"name": "W", "bits": 32}
-        )
-        result_ptr = builder.load(builder.gep(
-            array, [i32_of(0), i32_of(3)]
-        ))
-        return builder.load(builder.gep(
-            result_ptr, [casted_index]
-        ))
-
-
-class ArrayAssignmentInstruction(BaseInstruction):
+class AssignmentInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
-        self.elem_type_ = self.data["elem_type_"]
-    
-    def _build(self, builder, params, param_types_):
-        array, index, value = params
-        _, index_type_, value_type_ = param_types_
-        # array should always already be the correct type_
-        # this could change, and if it does, type_ casting would be
-        # required here
-        casted_index = convert_type_(
-            self.program, builder, index, index_type_,
-            {"name": "W", "bits": 32}
+        self.variable = self.data["variable"]
+
+    def _build(self, builder, params, param_types):
+        value, = params
+        value_type_, = param_types
+        converted_value = convert_type_(
+            self.program, builder, value, value_type_, 
+            self.function.get_var(self.variable)["type_"]
         )
-        casted_value = convert_type_(
-            self.program, builder, value, value_type_,
-            self.elem_type_
+        return builder.store(
+            converted_value, 
+            self.function.get_variable_declaration(self.variable)
         )
-        result_ptr = builder.load(builder.gep(
-            array, [i32_of(0), i32_of(3)]
-        ))
-        builder.store(casted_value, builder.gep(
-            result_ptr, [casted_index]
-        ))
-        
 
 
-class DirectIRInstruction(BaseInstruction):
+class BitshiftInstruction(CastToResultType_Instruction, Typed_Instruction):
+    def _build(self, builder, params):
+        return {
+            "bitshift_left": {True: builder.shl, False: builder.shl},
+            "bitshift_right": {True: builder.lshr, False: builder.lshr},
+        }[self.name][is_signed_integer_type_(self.type_)](*params)
+
+
+class BitwiseInstruction(CastToResultType_Instruction, Typed_Instruction):
+    def _build(self, builder, params):
+        return {
+            "bitwise_or": builder.or_,
+            "bitwise_and": builder.and_,
+            "bitwise_xor": builder.xor,
+            "bitwise_not": builder.not_,
+        }[self.name](*params)
+
+
+class BreakInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
-        self._build = self.data["function"]
+        self.block_num = self.data["block"]
+        self.block = self.function.blocks[self.block_num]
+
+    def _build(self, builder, params, param_types_):
+        return builder.branch(self.block.next_block.block)
 
 
-class FlowInstruction(BaseInstruction):
-    def set_return_block(self):
-        pass
+class CastInstruction(CastToResultType_Instruction, Typed_Instruction):
+    def _build(self, builder, params):
+        param, = params
+        return param
 
-    def create_sub_blocks(self):
-        pass
+
+class ComparisonInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.common_type_ = self.data["common_type_"]
+
+    def _build(self, builder, params, param_types_):
+        v1, v2 = [
+            convert_type_(self.program, builder, param, param_type_, self.common_type_)
+            for param, param_type_ in zip(params, param_types_)
+        ]
+        return compare_values(builder, {
+            "equals": "==",
+            "not_equals": "!=",
+            "greater": ">",
+            "less": "<",
+            "greater_equal": ">=",
+            "less_equal": "<="
+        }[self.name], v1, v2, self.common_type_)
 
 
 class Condition:
@@ -454,44 +318,160 @@ class ConditionalInstruction(FlowInstruction):
         builder.branch(self.conditions[0].eval_block.block)
 
 
-class WhileInstruction(FlowInstruction):
+class ConstantInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.constant = make_constant(
+            self.data["constant"], self.ir_type
+        )
+
+    def _build(self, builder, params, param_types):
+        return self.constant
+
+
+class ContinueInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
         self.block_num = self.data["block"]
         self.block = self.function.blocks[self.block_num]
-        self.condition = self.data["condition"]
-        self.eval_block = None
-
-    def set_return_block(self):
-        set_return_block(self.block, self.eval_block)
-
-    def create_sub_blocks(self):
-        self.eval_block = self.function.add_block(
-            self.program, self.function, self.function.next_block_id(), self.condition
-        )
-        self.eval_block.create_instructions()
-
-    def finish(self, block):
-        super().finish(block)
-        final_block = last_block_chain_block(self.eval_block)
-        def _build(builder, params, param_types_):
-            param, = params
-            param_type_, = param_types_
-            builder.cbranch(
-                truth_value(self.program, builder, param, param_type_),
-                self.block.block, self.this_block.next_block.block
-            )
-        final_block.instructions.append(DirectIRInstruction(
-            self.program, self.function, 
-            {
-                "name": "direct_ir", 
-                "parameters": [final_block.last_instruction_idx()], 
-                "function": _build
-            }
-        ))
 
     def _build(self, builder, params, param_types_):
-        builder.branch(self.eval_block.block)
+        return builder.branch(self.block.block)
+
+
+class ExponentiationInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.mode = self.data["mode"]
+        self.exponent_value = self.data["exponent_value"]
+
+    def _build(self, builder, params, param_types_):
+        base, _ = params
+        base_type_, _ = param_types_
+        if self.mode == "chain":
+            return convert_type_(self.program, builder, do_chain_power(
+                self.program, builder, base_type_, base,
+                int(self.exponent_value)
+            ), base_type_, self.type_)
+        else:
+            if self.mode == "pow":
+                return self.program.call_stdlib(
+                    builder, "pow", params, param_types_,
+                    self.type_
+                )
+            elif self.mode == "sqrt":
+                return self.program.call_stdlib(
+                    builder, "sqrt", [base], [base_type_],
+                    self.type_
+                )
+            elif self.mode == "cbrt":
+                return self.program.call_stdlib(
+                    builder, "cbrt", [base], [base_type_],
+                    self.type_
+                )
+
+
+class FunctionCallInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.callee = self.data["function"]
+
+    def _build(self, builder, params, param_types_):
+        func = self.program.functions[self.callee]
+        converted_params = [
+            convert_type_(self.program, builder, param, param_type_, argument["type_"])
+            for param, param_type_, argument in zip(params, param_types_, func.arguments)
+        ]
+        return builder.call(func.ir, converted_params)
+
+
+class InstantiationInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        result = self.program.malloc(builder, make_type_(self.program, self.type_))
+        struct = self.program.structs[self.type_["name"]]
+        casted_fields = [
+            convert_type_(
+                self.program, builder, param, param_type_,
+                struct.get_type__by_index(idx)
+            )
+            for idx, (param, param_type_) in enumerate(zip(params, param_types_))
+        ]
+        init_ref_counter(builder, result)
+        for idx, casted_field in enumerate(casted_fields):
+            builder.store(casted_field, builder.gep(result, [i32_of(0), i32_of(1+idx)]))
+        return result
+
+
+class LogicalInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        return {
+            "or": builder.or_,
+            "and": builder.and_,
+            "xor": builder.xor
+        }[self.name](*[
+            truth_value(self.program, builder, param, param_type_)
+            for param, param_type_ in zip(params, param_types_)
+        ])
+
+
+class MemberAccessInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.member = self.data["member"]
+        self.struct_type_ = self.data["struct_type_"]
+
+    def _build(self, builder, params, param_types):
+        obj, = params
+        struct = self.program.structs[self.struct_type_["name"]]
+        return builder.load(
+            builder.gep(obj, [
+                i32_of(0), i32_of(1+struct.get_index_of_member(self.member))
+            ])
+        )
+
+
+class MemberAssignmentInstruction(BaseInstruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.member = self.data["member"]
+        self.struct_type_ = self.data["struct_type_"]
+
+    def _build(self, builder, params, param_types_):
+        obj, value = params
+        _, value_type_ = param_types_
+        struct = self.program.structs[self.struct_type_["name"]]
+        idx = struct.get_index_of_member(self.member)
+        converted_value = convert_type_(
+            self.program, builder, value, value_type_,
+            struct.get_type__by_index(idx)
+        )
+        return builder.store(
+            converted_value, builder.gep(obj, [i32_of(0), i32_of(1+idx)])
+        )
+
+
+class NotInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        param, = params
+        param_type_, = param_types_
+        if param_type_["name"] == "Bool":
+            return builder.not_(param)
+        else:
+            return untruth_value(self.program, builder, param, param_type_)
+
+
+class ReturnInstruction(BaseInstruction):
+    def _build(self, builder, params, param_types_):
+        param, = params
+        param_type_, = param_types_
+        return builder.ret(convert_type_(
+            self.program, builder, param, param_type_, self.function.return_type_
+        ))
+
+
+class ReturnVoidInstruction(BaseInstruction):
+    def _build(self, builder, params, param_types_):
+        return builder.ret_void()
 
 
 class SwitchArm:
@@ -540,95 +520,98 @@ class SwitchInstruction(FlowInstruction):
             arm.set_return_block(self.this_block.next_block)
 
 
-class FunctionCallInstruction(Typed_Instruction):
+class VariableInstruction(Typed_Instruction):
     def __init__(self, *args):
         super().__init__(*args)
-        self.callee = self.data["function"]
+        self.variable = self.data["variable"]
 
-    def _build(self, builder, params, param_types_):
-        func = self.program.functions[self.callee]
-        converted_params = [
-            convert_type_(self.program, builder, param, param_type_, argument["type_"])
-            for param, param_type_, argument in zip(params, param_types_, func.arguments)
-        ]
-        return builder.call(func.ir, converted_params)
+    def _build(self, builder, params, param_types):
+        return builder.load(
+            self.function.get_variable_declaration(self.variable)
+        )
 
 
-class ReturnVoidInstruction(BaseInstruction):
-    def _build(self, builder, params, param_types_):
-        return builder.ret_void()
+class WhileInstruction(FlowInstruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.block_num = self.data["block"]
+        self.block = self.function.blocks[self.block_num]
+        self.condition = self.data["condition"]
+        self.eval_block = None
 
+    def set_return_block(self):
+        set_return_block(self.block, self.eval_block)
 
-class ReturnInstruction(BaseInstruction):
-    def _build(self, builder, params, param_types_):
-        param, = params
-        param_type_, = param_types_
-        return builder.ret(convert_type_(
-            self.program, builder, param, param_type_, self.function.return_type_
+    def create_sub_blocks(self):
+        self.eval_block = self.function.add_block(
+            self.program, self.function, self.function.next_block_id(), self.condition
+        )
+        self.eval_block.create_instructions()
+
+    def finish(self, block):
+        super().finish(block)
+        final_block = last_block_chain_block(self.eval_block)
+        def _build(builder, params, param_types_):
+            param, = params
+            param_type_, = param_types_
+            builder.cbranch(
+                truth_value(self.program, builder, param, param_type_),
+                self.block.block, self.this_block.next_block.block
+            )
+        final_block.instructions.append(DirectIRInstruction(
+            self.program, self.function, 
+            {
+                "name": "direct_ir", 
+                "parameters": [final_block.last_instruction_idx()], 
+                "function": _build
+            }
         ))
 
-
-class ContinueInstruction(BaseInstruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.block_num = self.data["block"]
-        self.block = self.function.blocks[self.block_num]
-
     def _build(self, builder, params, param_types_):
-        return builder.branch(self.block.block)
-
-
-class BreakInstruction(BaseInstruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.block_num = self.data["block"]
-        self.block = self.function.blocks[self.block_num]
-
-    def _build(self, builder, params, param_types_):
-        return builder.branch(self.block.next_block.block)
+        builder.branch(self.eval_block.block)
 
 
 def make_instruction(program, function, data):
     return {
-        "constant_value": ConstantInstruction,
         "addition": ArithmeticInstruction,
-        "subtraction": ArithmeticInstruction,
-        "multiplication": ArithmeticInstruction,
-        "division": ArithmeticInstruction,
-        "modulo": ArithmeticInstruction,
-        "bitwise_not": BitwiseInstruction,
-        "bitwise_and": BitwiseInstruction,
-        "bitwise_xor": BitwiseInstruction,
-        "bitwise_or": BitwiseInstruction,
-        "bitshift_right": BitshiftInstruction,
-        "bitshift_left": BitshiftInstruction,
-        "not_equals": ComparisonInstruction,
-        "equals": ComparisonInstruction,
-        "less": ComparisonInstruction,
-        "greater": ComparisonInstruction,
-        "less_equal": ComparisonInstruction,
-        "greater_equal": ComparisonInstruction,
-        "cast": CastInstruction,
-        "not": NotInstruction,
-        "or": LogicalInstruction,
         "and": LogicalInstruction,
-        "xor": LogicalInstruction,
-        "negation": ArithmeticInstruction,
-        "exponentiation": ExponentiationInstruction,
-        "array_creation": ArrayCreationInstruction,
         "array_access": ArrayAccessInstruction,
         "array_assignment": ArrayAssignmentInstruction,
+        "array_creation": ArrayCreationInstruction,
         "assignment": AssignmentInstruction,
-        "variable": VariableInstruction,
+        "bitshift_left": BitshiftInstruction,
+        "bitshift_right": BitshiftInstruction,
+        "bitwise_and": BitwiseInstruction,
+        "bitwise_not": BitwiseInstruction,
+        "bitwise_or": BitwiseInstruction,
+        "bitwise_xor": BitwiseInstruction,
+        "break": BreakInstruction,
+        "cast": CastInstruction,
+        "conditional": ConditionalInstruction,
+        "constant_value": ConstantInstruction,
+        "continue": ContinueInstruction,
+        "division": ArithmeticInstruction,
+        "equals": ComparisonInstruction,
+        "exponentiation": ExponentiationInstruction,
+        "function_call": FunctionCallInstruction,
+        "greater": ComparisonInstruction,
+        "greater_equal": ComparisonInstruction,
         "instantiation": InstantiationInstruction,
+        "less": ComparisonInstruction,
+        "less_equal": ComparisonInstruction,
         "member_access": MemberAccessInstruction,
         "member_assignment": MemberAssignmentInstruction,
+        "modulo": ArithmeticInstruction,
+        "multiplication": ArithmeticInstruction,
+        "negation": ArithmeticInstruction,
+        "not": NotInstruction,
+        "not_equals": ComparisonInstruction,
+        "or": LogicalInstruction,
         "return": ReturnInstruction,
         "return_void": ReturnVoidInstruction,
-        "continue": ContinueInstruction,
-        "break": BreakInstruction,
-        "conditional": ConditionalInstruction,
-        "while": WhileInstruction,
+        "subtraction": ArithmeticInstruction,
         "switch": SwitchInstruction,
-        "function_call": FunctionCallInstruction,
+        "variable": VariableInstruction,
+        "while": WhileInstruction,
+        "xor": LogicalInstruction,
     }[data["name"]](program, function, data)
