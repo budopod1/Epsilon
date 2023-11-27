@@ -4,7 +4,7 @@ import orjson
 from pathlib import Path
 
 
-REF_COUNTER_FIELD = ir.IntType(32)
+REF_COUNTER_FIELD = ir.IntType(64)
 
 
 def traverse(json):
@@ -207,7 +207,7 @@ def i32_of(val):
 def init_ref_counter(builder, val):
     builder.store(
         REF_COUNTER_FIELD(0),
-        builder.gep(val, [i32_of(0), i32_of(0)])
+        builder.gep(val, [i64_of(0), i32_of(0)])
     )
 
 

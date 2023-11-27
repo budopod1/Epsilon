@@ -83,7 +83,7 @@ class ArrayAccessInstruction(Typed_Instruction):
             {"name": "W", "bits": 32}
         )
         result_ptr = builder.load(builder.gep(
-            array, [i32_of(0), i32_of(3)]
+            array, [i64_of(0), i32_of(3)]
         ))
         return builder.load(builder.gep(
             result_ptr, [casted_index]
@@ -103,14 +103,14 @@ class ArrayAssignmentInstruction(BaseInstruction):
         # required here
         casted_index = convert_type_(
             self.program, builder, index, index_type_,
-            {"name": "W", "bits": 32}
+            {"name": "W", "bits": 64}
         )
         casted_value = convert_type_(
             self.program, builder, value, value_type_,
             self.elem_type_
         )
         result_ptr = builder.load(builder.gep(
-            array, [i32_of(0), i32_of(3)]
+            array, [i64_of(0), i32_of(3)]
         ))
         builder.store(casted_value, builder.gep(
             result_ptr, [casted_index]
@@ -136,12 +136,12 @@ class ArrayCreationInstruction(Typed_Instruction):
         init_ref_counter(builder, struct_mem)
         capacity = max(10, len(elems))
         builder.store(
-            i32_of(capacity),
-            builder.gep(struct_mem, [i32_of(0), i32_of(1)]),
+            i64_of(capacity),
+            builder.gep(struct_mem, [i64_of(0), i32_of(1)]),
         )
         builder.store(
-            i32_of(len(elems)),
-            builder.gep(struct_mem, [i32_of(0), i32_of(2)]),
+            i64_of(len(elems)),
+            builder.gep(struct_mem, [i64_of(0), i32_of(2)]),
         )
         array_mem = self.program.malloc(
             builder, make_type_(
@@ -150,10 +150,10 @@ class ArrayCreationInstruction(Typed_Instruction):
         )
         builder.store(
             array_mem,
-            builder.gep(struct_mem, [i32_of(0), i32_of(3)])
+            builder.gep(struct_mem, [i64_of(0), i32_of(3)])
         )
         for i, elem in enumerate(converted_elems):
-            builder.store(elem, builder.gep(array_mem, [i32_of(i)]))
+            builder.store(elem, builder.gep(array_mem, [i64_of(i)]))
         return struct_mem
 
 
@@ -398,7 +398,7 @@ class InstantiationInstruction(Typed_Instruction):
         ]
         init_ref_counter(builder, result)
         for idx, casted_field in enumerate(casted_fields):
-            builder.store(casted_field, builder.gep(result, [i32_of(0), i32_of(1+idx)]))
+            builder.store(casted_field, builder.gep(result, [i64_of(0), i32_of(1+idx)]))
         return result
 
 
@@ -425,7 +425,7 @@ class MemberAccessInstruction(Typed_Instruction):
         struct = self.program.structs[self.struct_type_["name"]]
         return builder.load(
             builder.gep(obj, [
-                i32_of(0), i32_of(1+struct.get_index_of_member(self.member))
+                i64_of(0), i32_of(1+struct.get_index_of_member(self.member))
             ])
         )
 
@@ -446,7 +446,7 @@ class MemberAssignmentInstruction(BaseInstruction):
             struct.get_type__by_index(idx)
         )
         return builder.store(
-            converted_value, builder.gep(obj, [i32_of(0), i32_of(1+idx)])
+            converted_value, builder.gep(obj, [i64_of(0), i32_of(1+idx)])
         )
 
 

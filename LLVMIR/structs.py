@@ -13,8 +13,8 @@ class Array:
         self.generic = type_["generics"][0]
         field_ir_types = [
             REF_COUNTER_FIELD, 
-            ir.IntType(32), # capacity
-            ir.IntType(32), # element count
+            ir.IntType(64), # capacity
+            ir.IntType(64), # element count
             ir.PointerType(make_type_(program, self.generic))
         ]
         self.ir_type = ir.LiteralStructType(field_ir_types).as_pointer()
