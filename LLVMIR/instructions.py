@@ -355,17 +355,17 @@ class ExponentiationInstruction(Typed_Instruction):
             ), base_type_, self.type_)
         else:
             if self.mode == "pow":
-                return self.program.call_stdlib(
+                return self.program.call_extern(
                     builder, "pow", params, param_types_,
                     self.type_
                 )
             elif self.mode == "sqrt":
-                return self.program.call_stdlib(
+                return self.program.call_extern(
                     builder, "sqrt", [base], [base_type_],
                     self.type_
                 )
             elif self.mode == "cbrt":
-                return self.program.call_stdlib(
+                return self.program.call_extern(
                     builder, "cbrt", [base], [base_type_],
                     self.type_
                 )

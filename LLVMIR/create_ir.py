@@ -6,7 +6,7 @@ from common import *
 from structs import Struct, Array
 from functions import Function
 from program import Program
-from stdlib import STDLIB
+from extern_funcs import EXTERN_FUNCS
 
 
 def create_ir(data):
@@ -16,8 +16,8 @@ def create_ir(data):
     
     program = Program(module)
 
-    for func_name, func_data in STDLIB.items():
-        program.add_stdlib_func(func_name, func_data)
+    for func_name, func_data in EXTERN_FUNCS.items():
+        program.add_extern_func(func_name, func_data)
 
     program.array_ids = dict(map(
         lambda pair: (freeze_json(pair[1]), pair[0]), 

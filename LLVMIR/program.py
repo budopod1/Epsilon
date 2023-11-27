@@ -9,25 +9,25 @@ class Program:
         self.structs = {}
         self.array_ids = {}
         self.arrays = {}
-        self.stdlib = {}
-        self.stdlib_funcs = {}
+        self.externs = {}
+        self.extern_funcs = {}
 
-    def add_stdlib_func(self, name, data):
-        self.stdlib[name] = data
-        self.stdlib_funcs[name] = ir.Function(
+    def add_extern_func(self, name, data):
+        self.externs[name] = data
+        self.extern_funcs[name] = ir.Function(
             self.module, make_function_type_(
                 self, data["return_type_"], data["arguments"]
             ), name=name
         )
 
-    def call_stdlib(self, builder, name, params, param_types_, result_type_):
-        func = self.stdlib[name]
+    def call_extern(self, builder, name, params, param_types_, result_type_):
+        func = self.externs[name]
         converted_params = [
             convert_type_(self, builder, param, param_type_, argument)
             for param, param_type_, argument in zip(params, param_types_, func["arguments"])
         ]
         return convert_type_(
-            self, builder, builder.call(self.stdlib_funcs[name], converted_params),
+            self, builder, builder.call(self.extern_funcs[name], converted_params),
             func["return_type_"], result_type_
         )
 
@@ -36,7 +36,7 @@ class Program:
         size = builder.ptrtoint(size_ptr, ir.IntType(64))
         if count > 1:
             size = builder.mul(size, i64_of(count))
-        location_i8 = builder.call(self.stdlib_funcs["malloc"], [size])
+        location_i8 = builder.call(self.extern_funcs["malloc"], [size])
         return builder.bitcast(location_i8, ir_type)
 
     def add_function(self, function):

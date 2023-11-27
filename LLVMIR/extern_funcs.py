@@ -1,4 +1,4 @@
-STDLIB = {
+EXTERN_FUNCS = {
     "pow": {
         "name": "pow", "return_type_": {"name": "Q", "bits": 64}, 
         "arguments": [{"name": "Q", "bits": 64}, {"name": "Q", "bits": 64}]

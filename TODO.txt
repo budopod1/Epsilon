@@ -1,3 +1,4 @@
 TODO:
+* add builtins
 * add automatic refrencing counting
 * add compilation to machine code
