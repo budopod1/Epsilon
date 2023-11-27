@@ -1,0 +1,11 @@
+Z#test<Z:v> {
+    Array<Z>:a = Array<Z> [v, v + 1, v + 2, v + 3];
+    a[1] = -1;
+    Z:total = 0;
+    Z:i = 0;
+    while (i < 4) {
+        total = total + a[i];
+        i = i + 1;
+    };
+    return total;
+}

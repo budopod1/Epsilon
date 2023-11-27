@@ -31,9 +31,13 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
     
     public Instantiation(Type_Token type_token, ValueList list) {
         this.type_ = type_token.GetValue();
-        this.values = list.GetValues().Where(token=>token.Count>0).Select(
-            (ValueListItem token) => (IValueToken)token[0]
-        ).ToList();
+        values = new List<IValueToken>();
+        foreach (ValueListItem listItem in list.GetValues()) {
+            if (listItem.Count != 1 || !(listItem[0] is IValueToken)) {
+                throw new SyntaxErrorException("Malformed instantiation parameter", listItem);
+            }
+            values.Add((IValueToken)listItem[0]);
+        }
     }
 
     public Type_ GetType_() {

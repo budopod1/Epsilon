@@ -31,9 +31,11 @@ public class SplitTokensProcessor : IPatternProcessor<List<IToken>> {
         List<List<IToken>> split = parser.Parse(tokens);
         List<IToken> result = new List<IToken>();
         foreach (List<IToken> section in split) {
-            result.Add((IToken)Activator.CreateInstance(
+            IToken token = (IToken)Activator.CreateInstance(
                 wrapper, new object[] {section}
-            ));
+            );
+            token.span = TokenUtils.MergeSpans(section);
+            result.Add(token);
         }
         return result;
     }

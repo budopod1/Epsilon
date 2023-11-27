@@ -133,6 +133,8 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool Equals(BaseType_ other) {
+        if (IsAny() && !other.IsNon()) return true;
+        if (other.IsAny() && !IsNon()) return true;
         return name == other.GetName() && bits == other.GetBits();
     }
 

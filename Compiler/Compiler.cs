@@ -945,6 +945,14 @@ public class Compiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
+                        new Type_PatternSegment(new Type_("Array", new List<Type_> {Type_.Any()})),
+                        new TypePatternSegment(typeof(ValueList))
+                    }, new Wrapper2PatternProcessor(
+                        typeof(ArrayAccess)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
                         new Type_PatternSegment(Type_.Any()),
                         new TextPatternSegment("."),
                         new TypePatternSegment(typeof(Name))
@@ -1311,6 +1319,8 @@ public class Compiler {
                         new Type_PatternSegment(Type_.Any())
                     }, new Wrapper2PatternProcessor(typeof(Cast))
                 ),
+            },
+            new List<IMatcher> {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Variable)),
@@ -1320,7 +1330,9 @@ public class Compiler {
                         new SlotPatternProcessor(new List<int> {0, 2}),
                         typeof(Assignment)
                     )
-                ),
+                )
+            },
+            new List<IMatcher> {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(MemberAccess)),
@@ -1329,6 +1341,18 @@ public class Compiler {
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}),
                         typeof(MemberAssignment)
+                    )
+                )
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(ArrayAccess)),
+                        new TextPatternSegment("="),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(ArrayAssignment)
                     )
                 )
             },

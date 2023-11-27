@@ -31,9 +31,11 @@ class Program:
             func["return_type_"], result_type_
         )
 
-    def malloc(self, builder, ir_type):
+    def malloc(self, builder, ir_type, count=1):
         size_ptr = builder.gep(builder.inttoptr(i64_of(0), ir_type), [i64_of(1)])
         size = builder.ptrtoint(size_ptr, ir.IntType(64))
+        if count > 1:
+            size = builder.mul(size, i64_of(count))
         location_i8 = builder.call(self.stdlib_funcs["malloc"], [size])
         return builder.bitcast(location_i8, ir_type)
 

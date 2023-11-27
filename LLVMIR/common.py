@@ -202,3 +202,10 @@ def i64_of(val):
 
 def i32_of(val):
     return ir.IntType(32)(val)
+
+
+def init_ref_counter(builder, val):
+    builder.store(
+        REF_COUNTER_FIELD(0),
+        builder.gep(val, [i32_of(0), i32_of(0)])
+    )

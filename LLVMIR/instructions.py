@@ -174,7 +174,7 @@ class MemberAccessInstruction(Typed_Instruction):
         struct = self.program.structs[self.struct_type_["name"]]
         return builder.load(
             builder.gep(obj, [
-                i64_of(0), i32_of(1+struct.get_index_of_member(self.member))
+                i32_of(0), i32_of(1+struct.get_index_of_member(self.member))
             ])
         )
 
@@ -195,7 +195,7 @@ class MemberAssignmentInstruction(BaseInstruction):
             struct.get_type__by_index(idx)
         )
         return builder.store(
-            converted_value, builder.gep(obj, [i64_of(0), i32_of(1+idx)])
+            converted_value, builder.gep(obj, [i32_of(0), i32_of(1+idx)])
         )
 
 
@@ -210,8 +210,9 @@ class InstantiationInstruction(Typed_Instruction):
             )
             for idx, (param, param_type_) in enumerate(zip(params, param_types_))
         ]
+        init_ref_counter(builder, result)
         for idx, casted_field in enumerate(casted_fields):
-            builder.store(casted_field, builder.gep(result, [i64_of(0), i32_of(1+idx)]))
+            builder.store(casted_field, builder.gep(result, [i32_of(0), i32_of(1+idx)]))
         return result
         
 
@@ -261,6 +262,93 @@ class ExponentiationInstruction(Typed_Instruction):
                     builder, "cbrt", [base], [base_type_],
                     self.type_
                 )
+
+
+class ArrayCreationInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.elem_type_ = self.data["elem_type_"]
+        
+    def _build(self, builder, elems, elem_types_):
+        converted_elems = [
+            convert_type_(
+                self.program, builder, elem, elem_type_,
+                self.elem_type_
+            )
+            for elem, elem_type_ in zip(elems, elem_types_)
+        ]
+        struct_mem = self.program.malloc(
+            builder, make_type_(self.program, self.type_)
+        )
+        init_ref_counter(builder, struct_mem)
+        capacity = max(10, len(elems))
+        builder.store(
+            i32_of(capacity),
+            builder.gep(struct_mem, [i32_of(0), i32_of(1)]),
+        )
+        builder.store(
+            i32_of(len(elems)),
+            builder.gep(struct_mem, [i32_of(0), i32_of(2)]),
+        )
+        array_mem = self.program.malloc(
+            builder, make_type_(
+                self.program, self.elem_type_
+            ).as_pointer(), capacity
+        )
+        builder.store(
+            array_mem,
+            builder.gep(struct_mem, [i32_of(0), i32_of(3)])
+        )
+        for i, elem in enumerate(converted_elems):
+            builder.store(elem, builder.gep(array_mem, [i32_of(i)]))
+        return struct_mem
+
+
+class ArrayAccessInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        array, index = params
+        _, index_type_ = param_types_
+        # array should always already be the correct type_
+        # this could change, and if it does, type_ casting would be
+        # required here
+        casted_index = convert_type_(
+            self.program, builder, index, index_type_,
+            {"name": "W", "bits": 32}
+        )
+        result_ptr = builder.load(builder.gep(
+            array, [i32_of(0), i32_of(3)]
+        ))
+        return builder.load(builder.gep(
+            result_ptr, [casted_index]
+        ))
+
+
+class ArrayAssignmentInstruction(BaseInstruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.elem_type_ = self.data["elem_type_"]
+    
+    def _build(self, builder, params, param_types_):
+        array, index, value = params
+        _, index_type_, value_type_ = param_types_
+        # array should always already be the correct type_
+        # this could change, and if it does, type_ casting would be
+        # required here
+        casted_index = convert_type_(
+            self.program, builder, index, index_type_,
+            {"name": "W", "bits": 32}
+        )
+        casted_value = convert_type_(
+            self.program, builder, value, value_type_,
+            self.elem_type_
+        )
+        result_ptr = builder.load(builder.gep(
+            array, [i32_of(0), i32_of(3)]
+        ))
+        builder.store(casted_value, builder.gep(
+            result_ptr, [casted_index]
+        ))
+        
 
 
 class DirectIRInstruction(BaseInstruction):
@@ -527,7 +615,9 @@ def make_instruction(program, function, data):
         "xor": LogicalInstruction,
         "negation": ArithmeticInstruction,
         "exponentiation": ExponentiationInstruction,
-        # "array_creation": ,
+        "array_creation": ArrayCreationInstruction,
+        "array_access": ArrayAccessInstruction,
+        "array_assignment": ArrayAssignmentInstruction,
         "assignment": AssignmentInstruction,
         "variable": VariableInstruction,
         "instantiation": InstantiationInstruction,
