@@ -16,3 +16,7 @@ code-opt.ll
 .cache
 code
 replit.nix
+builtins.ll
+builtins.bc
+code-opt.bc
+code-linked.bc
