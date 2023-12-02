@@ -11,6 +11,7 @@ Epsilon depends on:
 * Mono 5
 * LLVM 14
 * libstdc++
+* Clang
 
 # Setup
 
@@ -25,3 +26,7 @@ To setup and build Epsilon, run:
 The file extention of an Epsilon file should be .ep, .eps, .epsilon, or .ε. To compile an Epsilon file, run the command:
 
     mono Epsilon.exe compile <input file path> <output file path>
+
+# Building
+
+After changes are made to the C#, the C# must be rebuilt with `./build.bash`. After `builtins.c` is editted, the builtins can be rebuilt with `./buildbuiltins.bash`.

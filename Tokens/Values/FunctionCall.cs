@@ -5,7 +5,7 @@ public class FunctionCall : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
-    Function function;
+    IFunctionDeclaration function;
     List<IValueToken> arguments;
     
     public int Count {
@@ -23,24 +23,17 @@ public class FunctionCall : IParentToken, IValueToken {
         }
     }
     
-    public FunctionCall(Function function, List<IValueToken> arguments) {
+    public FunctionCall(IFunctionDeclaration function, List<IValueToken> arguments) {
         this.function = function;
         this.arguments = arguments;
     }
 
     public Type_ GetType_() {
-        return function.GetReturnType_();
+        return function.GetReturnType_(arguments);
     }
 
     public override string ToString() {
-        string title = Utils.WrapName(
-            GetType().Name, String.Join(
-                ", ", function.GetArguments().ConvertAll<string>(
-                    obj => obj.ToString()
-                )
-            )
-        );
-        return Utils.WrapName(title, String.Join(
+        return Utils.WrapName(GetType().Name, String.Join(
             ", ", arguments.ConvertAll<string>(obj => obj.ToString())
         ));
     }

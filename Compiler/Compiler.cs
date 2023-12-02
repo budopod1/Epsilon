@@ -813,7 +813,8 @@ public class Compiler {
         List<IMatcher> functionRules = new List<IMatcher>();
         List<IMatcher> addMatchingFunctionRules = new List<IMatcher>();
 
-        List<Function> functions = new List<Function>();
+        List<IFunctionDeclaration> functions = new List<IFunctionDeclaration>();
+        functions.AddRange(BuiltinsList.Builtins);
 
         foreach (IToken token in program) {
             if (token is Function) {
@@ -821,8 +822,14 @@ public class Compiler {
             }
         }
 
+        // TODO: check sorting is correct
+        functions.Sort(
+            (Comparison<IFunctionDeclaration>)((IFunctionDeclaration a, IFunctionDeclaration b) 
+                => TokenUtils.OrderFunctions(b, a))
+        );
+
         List<PatternExtractor<List<IToken>>> extractors = new List<PatternExtractor<List<IToken>>>();
-        foreach (Function function in functions) {
+        foreach (IFunctionDeclaration function in functions) {
             PatternExtractor<List<IToken>> extractor = function.GetPattern();
             bool unique = true;
             foreach (PatternExtractor<List<IToken>> oextractor in extractors) {
@@ -834,7 +841,7 @@ public class Compiler {
             }
         }
 
-        foreach (Function function in functions) {
+        foreach (IFunctionDeclaration function in functions) {
             addMatchingFunctionRules.Add(
                 new AddMatchingFunctionMatcher(function)
             );
@@ -883,9 +890,9 @@ public class Compiler {
                             parameters.Add(parameter);
                         }
 
-                        foreach (Function function in call.GetMatchingFunctions()) {
+                        foreach (IFunctionDeclaration function in call.GetMatchingFunctions()) {
                             List<Type_> argTypes_ = function.GetArguments().ConvertAll<Type_>(
-                                (FunctionArgumentToken arg) => arg.GetType_()
+                                (FunctionArgument arg) => arg.GetType_()
                             );
                             if (paramTypes_.Count != argTypes_.Count) continue;
 

@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Utils {
+public static class Utils {
     public static string Tab = "    ";
     public static string Whitespace = "\r\n\t ";
     public static string Numbers = "1234567890";

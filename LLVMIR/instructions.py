@@ -1,7 +1,4 @@
-import llvmlite.binding as llvm
 from llvmlite import ir
-import orjson
-from pathlib import Path
 from common import *
 
 
@@ -154,6 +151,13 @@ class ArrayCreationInstruction(Typed_Instruction):
         )
         for i, elem in enumerate(converted_elems):
             builder.store(elem, builder.gep(array_mem, [i64_of(i)]))
+        if not is_value_type_(self.elem_type_):
+            program.call_extern(
+                builder, "alwaysIncrementArrayRefCounts", 
+                [struct_mem, program.sizeof(builder, self.elem_type_)],
+                [self.type_, {"name": "W", "bits": 64, "generics": []}],
+                {"name": "Void"}
+            )
         return struct_mem
 
 
@@ -349,10 +353,22 @@ class ExponentiationInstruction(Typed_Instruction):
         base, _ = params
         base_type_, _ = param_types_
         if self.mode == "chain":
-            return convert_type_(self.program, builder, do_chain_power(
-                self.program, builder, base_type_, base,
-                int(self.exponent_value)
-            ), base_type_, self.type_)
+            # TODO: new chain power system needs testing
+            if self.exponent_value == 0:
+                return make_type_(self.program, self.type_)(1)
+            elif self.exponent_value > 0:
+                return convert_type_(self.program, builder, do_chain_power(
+                    self.program, builder, base_type_, base,
+                    int(self.exponent_value)
+                ), base_type_, self.type_)
+            elif self.exponent_value < 0:
+                return builder.fdiv(
+                    1,
+                    convert_type_(self.program, builder, do_chain_power(
+                        self.program, builder, base_type_, base,
+                        abs(int(self.exponent_value))
+                    ), base_type_, self.type_)
+                )
         else:
             if self.mode == "pow":
                 return self.program.call_extern(
@@ -377,25 +393,33 @@ class FunctionCallInstruction(Typed_Instruction):
         self.callee = self.data["function"]
 
     def _build(self, builder, params, param_types_):
-        func = self.program.functions[self.callee]
-        converted_params = [
-            convert_type_(self.program, builder, param, param_type_, argument["type_"])
-            for param, param_type_, argument in zip(params, param_types_, func.arguments)
-        ]
-        return builder.call(func.ir, converted_params)
+        if self.program.is_builtin(self.callee):
+            return self.program.call_builtin(
+                self.callee, builder, params, param_types_, self.type_
+            )
+        else:
+            func = self.program.functions[self.callee]
+            converted_params = [
+                convert_type_(self.program, builder, param, param_type_, argument["type_"])
+                for param, param_type_, argument in zip(params, param_types_, func.arguments)
+            ]
+            return builder.call(func.ir, converted_params)
 
 
 class InstantiationInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
         result = self.program.malloc(builder, make_type_(self.program, self.type_))
         struct = self.program.structs[self.type_["name"]]
-        casted_fields = [
-            convert_type_(
+        casted_fields = []
+        for idx, (param, param_type_) in enumerate(zip(params, param_types_)):
+            proper_type_ = struct.get_type__by_index(idx)
+            converted = convert_type_(
                 self.program, builder, param, param_type_,
-                struct.get_type__by_index(idx)
+                proper_type_
             )
-            for idx, (param, param_type_) in enumerate(zip(params, param_types_))
-        ]
+            if not is_value_type_(proper_type_):
+                incr_ref_counter(builder, converted)
+            casted_fields.append(converted)
         init_ref_counter(builder, result)
         for idx, casted_field in enumerate(casted_fields):
             builder.store(casted_field, builder.gep(result, [i64_of(0), i32_of(1+idx)]))

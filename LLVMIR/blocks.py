@@ -45,7 +45,7 @@ class Block:
             instruction.finish(self)
         self.set_return_blocks()
         self.block = self.function.ir.append_basic_block(
-            name=("___b"+str(self.id_) if self.id_ > 0 else "entry")
+            name=("b"+str(self.id_) if self.id_ > 0 else "entry")
         )
         self.builder = ir.IRBuilder(self.block)
 

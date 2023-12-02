@@ -1,18 +1,21 @@
 using System;
 using System.Collections.Generic;
 
-public class FunctionArgumentToken : IToken {
-    public IParentToken parent { get; set; }
-    public CodeSpan span { get; set; }
-    
+public class FunctionArgument {
     string name;
     Type_ type_;
     int id;
-
-    public FunctionArgumentToken(string name, Type_ type_, int id = -1) {
+    
+    public FunctionArgument(string name, Type_ type_, int id = -1) {
         this.name = name;
         this.type_ = type_;
         this.id = id;
+    }
+
+    public FunctionArgument(FunctionArgumentToken token) {
+        this.name = token.GetName();
+        this.type_ = token.GetType_();
+        this.id = token.GetID();
     }
 
     public string GetName() {

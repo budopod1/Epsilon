@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 FILE_EXTENSIONS = ["py", "nix", "cs", "ε", "ep", "eps", "epsilon", "bash"]
-IGNORE = ["venv"]
+IGNORE = ["venv", ".local"]
 
 
 def main(*, verbosity, extentions, ignore):

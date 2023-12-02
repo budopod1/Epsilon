@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class TokenUtils {
+public static class TokenUtils {
     public static void UpdateParents(IParentToken token) {
         for (int i = 0; i < token.Count; i++) {
             IToken sub = token[i];
@@ -85,5 +85,29 @@ public class TokenUtils {
             if (!segs[i].Matches(tokens[i])) return false;
         }
         return true;
+    }
+
+    // TODO: make IFunctionDeclaration into abstract class, move OrderFunctions to FunctionDeclaration class 
+    public static int OrderFunctions(IFunctionDeclaration a, IFunctionDeclaration b) {
+        int apsc = a.GetPattern().GetSegments().Count;
+        int bpsc = b.GetPattern().GetSegments().Count;
+        if (apsc < bpsc) return -1;
+        if (apsc > bpsc) return 1;
+        List<FunctionArgument> aa = a.GetArguments();
+        List<FunctionArgument> ba = b.GetArguments();
+        int aac = aa.Count;
+        int bac = ba.Count;
+        if (aac < bac) return -1;
+        if (aac > bac) return 1;
+        for (int i = 0; i < aac; i++) {
+            Type_ argaType_ = aa[i].GetType_();
+            Type_ argbType_ = ba[i].GetType_();
+            bool aToB = argaType_.IsConvertibleTo(argbType_);
+            bool bToA = argbType_.IsConvertibleTo(argaType_);
+            if (aToB && bToA) continue;
+            if (aToB) return -1;
+            if (bToA) return 1;
+        }
+        return a.GetID() - b.GetID();
     }
 }

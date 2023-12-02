@@ -18,7 +18,7 @@ class Function:
         )
         self.ir = ir.Function(
             program.module, self.ir_type,
-            name=("main" if self.is_main else "___f"+str(id_))
+            name=("main" if self.is_main else "f"+str(id_))
         )
         self.blocks = [
             Block(program, self, i, block)

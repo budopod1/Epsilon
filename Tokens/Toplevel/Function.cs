@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Function : IParentToken, ITopLevel, IVerifier {
+public class Function : IParentToken, ITopLevel, IVerifier, IFunctionDeclaration {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
@@ -12,28 +12,20 @@ public class Function : IParentToken, ITopLevel, IVerifier {
     };
     
     public int Count {
-        get { return 1 + arguments.Count; }
+        get { return 1; }
     }
     
     public IToken this[int i] {
         get {
-            if (i == 0) {
-                return block;
-            } else {
-                return arguments[i-1];
-            }
+            return block;
         }
         set {
-            if (i == 0) {
-                block = ((CodeBlock)value);
-            } else {
-                arguments[i-1] = (FunctionArgumentToken)value;
-            }
+            block = ((CodeBlock)value);
         }
     }
     
     PatternExtractor<List<IToken>> pattern;
-    List<FunctionArgumentToken> arguments;
+    List<FunctionArgument> arguments;
     CodeBlock block;
     Scope scope = new Scope();
     Type_ returnType_;
@@ -45,7 +37,6 @@ public class Function : IParentToken, ITopLevel, IVerifier {
                     List<FunctionArgumentToken> arguments, CodeBlock block,
                     Type_ returnType_) {
         this.pattern = pattern;
-        this.arguments = arguments;
         this.block = block;
         this.returnType_ = returnType_;
         isMain = Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments());
@@ -54,6 +45,9 @@ public class Function : IParentToken, ITopLevel, IVerifier {
                 argument.GetName(), argument.GetType_()
             ));
         }
+        this.arguments = arguments.Select(
+            argument=>new FunctionArgument(argument)
+        ).ToList();
         id = id_++;
     }
 
@@ -61,7 +55,7 @@ public class Function : IParentToken, ITopLevel, IVerifier {
         return pattern;
     }
 
-    public List<FunctionArgumentToken> GetArguments() {
+    public List<FunctionArgument> GetArguments() {
         return arguments;
     }
 
@@ -79,6 +73,10 @@ public class Function : IParentToken, ITopLevel, IVerifier {
 
     public Type_ GetReturnType_() {
         return returnType_;
+    }
+
+    public Type_ GetReturnType_(List<IValueToken> tokens) {
+        return GetReturnType_();
     }
 
     public int GetID() {

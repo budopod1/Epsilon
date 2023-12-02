@@ -1,4 +1,5 @@
 TODO:
-* add builtins
+* make all struct types in the IR identified
+* Do ack TODO | completetodo
 * add automatic refrencing counting
 * add compilation to machine code

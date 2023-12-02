@@ -19,7 +19,7 @@ class Array:
         ]
         self.ir_type = ir.LiteralStructType(field_ir_types).as_pointer()
         ir.global_context.get_identified_type(
-            "___a"+str(id_)
+            "a"+str(id_)
         ).set_body(*field_ir_types)
 
 
@@ -34,7 +34,7 @@ class Struct:
         ]
         self.ir_type = ir.LiteralStructType(field_ir_types).as_pointer()
         ir.global_context.get_identified_type(
-            name
+            "___"+name
         ).set_body(*field_ir_types)
 
     def get_index_of_member(self, member):
@@ -45,3 +45,6 @@ class Struct:
 
     def get_type__by_index(self, index):
         return self.fields[index]["type_"]
+
+    def get_field_types_(self):
+        return (field["type_"] for field in self.fields)

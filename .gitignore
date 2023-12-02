@@ -10,6 +10,7 @@ code.bc
 code.o
 code.s
 .replit
+.local
 profile.txt
 code-opt.ll
 .cache

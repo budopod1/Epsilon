@@ -3,10 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class AddMatchingFunctionMatcher : IMatcher {
-    Function func;
+    IFunctionDeclaration func;
     List<IPatternSegment> segments;
     
-    public AddMatchingFunctionMatcher(Function func) {
+    public AddMatchingFunctionMatcher(IFunctionDeclaration func) {
         this.func = func;
         segments = func.GetPattern().GetSegments();
     }

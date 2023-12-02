@@ -6,7 +6,8 @@ from common import *
 from structs import Struct, Array
 from functions import Function
 from program import Program
-from extern_funcs import EXTERN_FUNCS
+from extern_funcs import EXTERN_FUNCS, EXTERN_ARRAYS
+from builtins_ import BUILTINS
 
 
 def create_ir(data):
@@ -16,15 +17,17 @@ def create_ir(data):
     
     program = Program(module)
 
-    for func_name, func_data in EXTERN_FUNCS.items():
-        program.add_extern_func(func_name, func_data)
+    all_arrays = data["arrays"] + [
+        fill_type_(array)
+        for array in EXTERN_ARRAYS
+    ]
 
     program.array_ids = dict(map(
         lambda pair: (freeze_json(pair[1]), pair[0]), 
-        enumerate(data["arrays"])
+        enumerate(all_arrays)
     ))
     
-    for i, array in enumerate(data["arrays"]):
+    for i, array in enumerate(all_arrays):
         program.add_array(Array(
             program, i, array
         ))
@@ -33,6 +36,11 @@ def create_ir(data):
         program.add_struct(Struct(
             program, struct["name"], struct["fields"]
         ))
+
+    for func_name, func_data in EXTERN_FUNCS.items():
+        program.add_extern_func(func_name, func_data)
+
+    program.builtins = BUILTINS
 
     functions = []
     for function_data in data["functions"]:
