@@ -46,7 +46,6 @@ void removeAt(struct Array *array, uint64_t idx, uint64_t elemSize) {
     char* content = array->content;
     char* deststart = content+idx*elemSize;
     char* srcstart = deststart+elemSize;
-    // TODO: test
     memmove((void*)deststart, (void*)srcstart, elemSize*(length-idx-1));
 }
 
@@ -56,7 +55,6 @@ void insertSpace(struct Array *array, uint64_t idx, uint64_t elemSize) {
     char* content = array->content;
     char* srcstart = content+idx*elemSize;
     char* deststart = srcstart+elemSize;
-    // TODO: test
     memmove((void*)deststart, (void*)srcstart, elemSize*(length-idx));
 }
 
@@ -66,8 +64,7 @@ void incrementArrayRefCounts(struct Array *array, uint64_t elem) {
     uint64_t length = array->length;
     char *content = array->content;
     for (uint64_t i = 0; i < length; i++) {
-         // TODO: test
-        (*(uint64_t*)(content+i*elem))++;
+        (**(uint64_t**)(content+i*elemSize))++;
     }
 }
 
@@ -75,8 +72,7 @@ void alwaysIncrementArrayRefCounts(struct Array *array, uint64_t elemSize) {
     uint64_t length = array->length;
     char *content = array->content;
     for (uint64_t i = 0; i < length; i++) {
-         // TODO: test
-        (*(uint64_t*)(content+i*elemSize))++;
+        (**(uint64_t**)(content+i*elemSize))++;
     }
 }
 
