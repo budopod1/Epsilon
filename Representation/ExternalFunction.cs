@@ -44,4 +44,8 @@ public class ExternalFunction : FunctionDeclaration {
     public override int GetID() {
         return id;
     }
+
+    public override string ToString() {
+        return Utils.WrapName(GetType().Name, id.ToString());
+    }
 }
