@@ -14,7 +14,16 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Q", // floats
         "Array",
         "Struct",
+        "String"
     };
+
+    public static Dictionary<string, Type_> SpecialFullBaseTypes_;
+
+    static BaseType_() {
+        SpecialFullBaseTypes_ = new Dictionary<string, Type_> {
+            {"String", new Type_("Array", new List<Type_> {new Type_("Byte")})}
+        };
+    }
 
     public static List<string> SpecialTypes_ = new List<string> {
         "Any", // matches any type_ except Unkown and Void
@@ -74,8 +83,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     string name;
     int? bits;
 
-    public static BaseType_ ParseString(string source,
-                                        List<string> type_Names) {
+    public static BaseType_ ParseString(string source, List<string> type_Names) {
         if (type_Names.Contains(source) || BuiltInTypes_.Contains(source)) {
             return new BaseType_(source);
         }
@@ -102,6 +110,12 @@ public class BaseType_ : IEquatable<BaseType_> {
         }
         this.name = name;
         this.bits = bits;
+    }
+
+    public Type_ GetSpecialFullType_() {
+        if (SpecialFullBaseTypes_.ContainsKey(name))
+            return SpecialFullBaseTypes_[name];
+        return null;
     }
 
     public string GetName() {

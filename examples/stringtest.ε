@@ -1,0 +1,4 @@
+Byte#test<Byte:j> {
+    String:h = String [1, j, 3];
+    return h[1]+1;
+}

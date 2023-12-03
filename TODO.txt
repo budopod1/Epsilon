@@ -1,4 +1,4 @@
 TODO:
 * add automatic refrencing counting
-* add strings
+* add support for literal strings
 * add compilation to machine code

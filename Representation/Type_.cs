@@ -77,7 +77,7 @@ public class Type_ : IEquatable<Type_> {
         return new Type_(name, bits);
     }
 
-    public Type_(BaseType_ baseType_, List<Type_> generics = null) {
+    Type_(BaseType_ baseType_, List<Type_> generics = null) {
         this.baseType_ = baseType_;
         if (generics == null) {
             generics = new List<Type_>();
@@ -99,6 +99,12 @@ public class Type_ : IEquatable<Type_> {
             generics = new List<Type_>();
         }
         this.generics = generics;
+    }
+
+    public static Type_ FromBaseType_(BaseType_ baseType_, List<Type_> generics = null) {
+        Type_ specialType_ = baseType_.GetSpecialFullType_();
+        if (specialType_ != null) return specialType_;
+        return new Type_(baseType_, generics);
     }
 
     public Type_ WithGenerics(List<Type_> generics) {

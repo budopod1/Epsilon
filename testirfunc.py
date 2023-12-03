@@ -2,7 +2,7 @@ import llvmlite.binding as llvm
 from llvmlite import ir
 import json
 import subprocess
-from ctypes import CFUNCTYPE, c_double, c_float, c_int, c_uint, c_ushort, c_ulong, c_long
+from ctypes import CFUNCTYPE, c_double, c_float, c_int, c_uint, c_ushort, c_ulong, c_long, c_char
 import re
 from pathlib import Path
 import stat
@@ -31,15 +31,15 @@ def compile_ir(module):
 def main():
     print("Running...")
 
-    with open("code.ll") as file:
+    with open("code-opt.ll") as file:
         module = file.read()
 
     engine = compile_ir(module)
 
     main_ptr = engine.get_function_address("f0")
-    main = CFUNCTYPE(c_float, c_float)(main_ptr)
+    main = CFUNCTYPE(c_char, c_char)(main_ptr)
 
-    print(main(3))
+    print(main(10))
 
 
 if __name__ == "__main__":
