@@ -125,8 +125,17 @@ struct Array *join(struct Array *array1, struct Array *array2, uint64_t elem) {
     return newArray;
 }
 
-// TODO: test all range arrays
+struct Array *emptyArray(uint64_t elemSize) {
+    struct Array *array = malloc(sizeof(struct Array));
+    array->refCounter = 0;
+    array->length = 0;
+    array->capacity = 1;
+    array->content = malloc(elemSize);
+    return array;
+}
+
 struct Array *rangeArray1(int32_t end) {
+    if (end <= 0) return emptyArray(sizeof(int32_t));
     struct Array *array = malloc(sizeof(struct Array));
     array->refCounter = 0;
     array->length = end;
@@ -143,6 +152,7 @@ struct Array *rangeArray1(int32_t end) {
 
 struct Array *rangeArray2(int32_t start, int32_t end) {
     int32_t length = end - start;
+    if (length <= 0) return emptyArray(sizeof(int32_t));
     struct Array *array = malloc(sizeof(struct Array));
     array->refCounter = 0;
     array->length = length;
@@ -158,8 +168,10 @@ struct Array *rangeArray2(int32_t start, int32_t end) {
 }
 
 struct Array *rangeArray3(int32_t start, int32_t end, int32_t step) {
+    if (step == 0) return emptyArray(sizeof(int32_t));
     int32_t absstep = abs(step);
     int32_t dif = end - start;
+    if (dif <= 0) return emptyArray(sizeof(int32_t));
     int32_t length = dif/absstep + (dif%absstep > 0);
     struct Array *array = malloc(sizeof(struct Array));
     array->refCounter = 0;
