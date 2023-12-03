@@ -16,8 +16,16 @@ public class Exponentiation : BinaryOperation<IValueToken, IValueToken>, IValueT
         string mode = "pow";
         double? exponentValue = null;
         IValueToken value = o2;
-        while (value is Group) {
-            value = ((Group)value).Sub();
+        bool negate = false;
+        while (true) {
+            if (value is Group) {
+                value = ((Group)value).Sub();
+            } else if (value is Negation) {
+                value = ((Negation)value).Sub();
+                negate = !negate;
+            } else {
+                break;
+            }
         }
         ConstantValue expo = value as ConstantValue;
         if (expo != null) {
@@ -25,6 +33,7 @@ public class Exponentiation : BinaryOperation<IValueToken, IValueToken>, IValueT
             INumberConstant inumconst = iconst as INumberConstant;
             if (inumconst != null) {
                 double dv = inumconst.GetDoubleValue();
+                if (negate) dv = -dv;
                 exponentValue = dv;
                 if (Math.Ceiling(dv) == dv) {
                     mode = "chain";

@@ -353,20 +353,18 @@ class ExponentiationInstruction(Typed_Instruction):
         base, _ = params
         base_type_, _ = param_types_
         if self.mode == "chain":
-            # TODO: new chain power system needs testing
-            if self.exponent_value == 0:
+            ev = round(self.exponent_value)
+            if ev == 0:
                 return make_type_(self.program, self.type_)(1)
-            elif self.exponent_value > 0:
+            elif ev > 0:
                 return convert_type_(self.program, builder, do_chain_power(
-                    self.program, builder, base_type_, base,
-                    int(self.exponent_value)
+                    self.program, builder, base_type_, base, ev
                 ), base_type_, self.type_)
-            elif self.exponent_value < 0:
+            elif ev < 0:
                 return builder.fdiv(
-                    1,
+                    make_type_(self.program, self.type_)(1),
                     convert_type_(self.program, builder, do_chain_power(
-                        self.program, builder, base_type_, base,
-                        abs(int(self.exponent_value))
+                        self.program, builder, base_type_, base, abs(ev)
                     ), base_type_, self.type_)
                 )
         else:

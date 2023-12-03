@@ -813,7 +813,7 @@ public class Compiler {
         List<IMatcher> functionRules = new List<IMatcher>();
         List<IMatcher> addMatchingFunctionRules = new List<IMatcher>();
 
-        List<IFunctionDeclaration> functions = new List<IFunctionDeclaration>();
+        List<FunctionDeclaration> functions = new List<FunctionDeclaration>();
         functions.AddRange(BuiltinsList.Builtins);
 
         foreach (IToken token in program) {
@@ -822,14 +822,10 @@ public class Compiler {
             }
         }
 
-        // TODO: check sorting is correct
-        functions.Sort(
-            (Comparison<IFunctionDeclaration>)((IFunctionDeclaration a, IFunctionDeclaration b) 
-                => TokenUtils.OrderFunctions(b, a))
-        );
+        functions.Sort();
 
         List<PatternExtractor<List<IToken>>> extractors = new List<PatternExtractor<List<IToken>>>();
-        foreach (IFunctionDeclaration function in functions) {
+        foreach (FunctionDeclaration function in functions) {
             PatternExtractor<List<IToken>> extractor = function.GetPattern();
             bool unique = true;
             foreach (PatternExtractor<List<IToken>> oextractor in extractors) {
@@ -841,7 +837,7 @@ public class Compiler {
             }
         }
 
-        foreach (IFunctionDeclaration function in functions) {
+        foreach (FunctionDeclaration function in functions) {
             addMatchingFunctionRules.Add(
                 new AddMatchingFunctionMatcher(function)
             );
@@ -890,7 +886,7 @@ public class Compiler {
                             parameters.Add(parameter);
                         }
 
-                        foreach (IFunctionDeclaration function in call.GetMatchingFunctions()) {
+                        foreach (FunctionDeclaration function in call.GetMatchingFunctions()) {
                             List<Type_> argTypes_ = function.GetArguments().ConvertAll<Type_>(
                                 (FunctionArgument arg) => arg.GetType_()
                             );
@@ -1438,7 +1434,7 @@ public class Compiler {
                     line = (Line)DoTreeCodeRules(line, ruleset);
                 }
                 block[i] = line;
-            } // TODO: else if (token is Block) {
+            }
         }
     }
 

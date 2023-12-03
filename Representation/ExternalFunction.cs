@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class ExternalFunction : IFunctionDeclaration {
+public class ExternalFunction : FunctionDeclaration {
     PatternExtractor<List<IToken>> pattern;
     List<FunctionArgument> arguments;
     int id;
@@ -22,15 +22,15 @@ public class ExternalFunction : IFunctionDeclaration {
         this.returnType_ = (List<Type_> types_) => returnType_;
     }
     
-    public PatternExtractor<List<IToken>> GetPattern() {
+    public override PatternExtractor<List<IToken>> GetPattern() {
         return pattern;
     }
     
-    public List<FunctionArgument> GetArguments() {
+    public override List<FunctionArgument> GetArguments() {
         return arguments;
     }
 
-    public Type_ GetReturnType_(List<IValueToken> tokens) {
+    public override Type_ GetReturnType_(List<IValueToken> tokens) {
         List<Type_> types_ = tokens.Select(token=>token.GetType_()).ToList();
         try {
             return returnType_(types_);
@@ -41,7 +41,7 @@ public class ExternalFunction : IFunctionDeclaration {
         }
     }
     
-    public int GetID() {
+    public override int GetID() {
         return id;
     }
 }

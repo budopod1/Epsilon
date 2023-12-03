@@ -5,7 +5,7 @@ public class FunctionCall : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
-    IFunctionDeclaration function;
+    FunctionDeclaration function;
     List<IValueToken> arguments;
     
     public int Count {
@@ -23,7 +23,7 @@ public class FunctionCall : IParentToken, IValueToken {
         }
     }
     
-    public FunctionCall(IFunctionDeclaration function, List<IValueToken> arguments) {
+    public FunctionCall(FunctionDeclaration function, List<IValueToken> arguments) {
         this.function = function;
         this.arguments = arguments;
     }

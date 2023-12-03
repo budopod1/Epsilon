@@ -5,7 +5,7 @@ public class RawFunctionCall : IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
-    HashSet<IFunctionDeclaration> matchingFunctions = new HashSet<IFunctionDeclaration>();
+    HashSet<FunctionDeclaration> matchingFunctions = new HashSet<FunctionDeclaration>();
     List<IPatternSegment> segments;
     List<IToken> arguments;
     
@@ -29,11 +29,11 @@ public class RawFunctionCall : IParentToken {
         this.arguments = arguments;
     }
 
-    public HashSet<IFunctionDeclaration> GetMatchingFunctions() {
+    public HashSet<FunctionDeclaration> GetMatchingFunctions() {
         return matchingFunctions;
     }
 
-    public void AddMatchingFunction(IFunctionDeclaration function) {
+    public void AddMatchingFunction(FunctionDeclaration function) {
         matchingFunctions.Add(function);
     }
 

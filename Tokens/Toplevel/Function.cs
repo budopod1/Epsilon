@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Function : IParentToken, ITopLevel, IVerifier, IFunctionDeclaration {
+public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
@@ -51,11 +51,11 @@ public class Function : IParentToken, ITopLevel, IVerifier, IFunctionDeclaration
         id = id_++;
     }
 
-    public PatternExtractor<List<IToken>> GetPattern() {
+    public override PatternExtractor<List<IToken>> GetPattern() {
         return pattern;
     }
 
-    public List<FunctionArgument> GetArguments() {
+    public override List<FunctionArgument> GetArguments() {
         return arguments;
     }
 
@@ -75,11 +75,11 @@ public class Function : IParentToken, ITopLevel, IVerifier, IFunctionDeclaration
         return returnType_;
     }
 
-    public Type_ GetReturnType_(List<IValueToken> tokens) {
+    public override Type_ GetReturnType_(List<IValueToken> tokens) {
         return GetReturnType_();
     }
 
-    public int GetID() {
+    public override int GetID() {
         return id;
     }
 
