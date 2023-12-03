@@ -20,7 +20,7 @@ void incrementLength(struct Array *array, uint64_t elemSize) {
     array->length = length+1;
     if (capacity == length) {
         // Current growth factor: 1.5
-        uint64_t newCapacity = (capacity*3)/2;
+        uint64_t newCapacity = 1+(capacity*3)/2;
         array->capacity = newCapacity;
         array->content = realloc(array->content, elemSize*newCapacity);
     }
@@ -34,9 +34,10 @@ void requireCapacity(struct Array *array, uint64_t capacity, uint64_t elemSize) 
 }
 
 void shrinkMem(struct Array *array, uint64_t elemSize) {
-    uint64_t length = array->length;
-    array->content = realloc(array->content, elemSize*length);
-    array->capacity = length;
+    uint64_t newCapacity = array->length;
+    if (newCapacity < 1) newCapacity = 1;
+    array->content = realloc(array->content, elemSize*newCapacity);
+    array->capacity = newCapacity;
 }
 
 void removeAt(struct Array *array, uint64_t idx, uint64_t elemSize) {
@@ -112,9 +113,11 @@ struct Array *join(struct Array *array1, struct Array *array2, uint64_t elem) {
     uint64_t len2 = array2->length;
     uint64_t newLen = len1 + len2;
     newArray->length = newLen;
-    newArray->capacity = newLen;
+    uint64_t newCap = newLen;
+    if (newCap < 1) newCap = 1;
+    newArray->capacity = newCap;
     uint64_t elemSize = elem >> 1;
-    void *content = malloc(elemSize*newLen);
+    void *content = malloc(elemSize*newCap);
     memcpy(content, array1->content, len1*elemSize);
     memcpy(content+len1, array2->content, len2*elemSize);
     newArray->content = content;
@@ -122,12 +125,15 @@ struct Array *join(struct Array *array1, struct Array *array2, uint64_t elem) {
     return newArray;
 }
 
+// TODO: test all range arrays
 struct Array *rangeArray1(int32_t end) {
     struct Array *array = malloc(sizeof(struct Array));
     array->refCounter = 0;
     array->length = end;
-    array->capacity = end;
-    int32_t *content = malloc(sizeof(int32_t)*end);
+    int32_t capacity = end;
+    if (capacity < 1) capacity = 1;
+    array->capacity = capacity;
+    int32_t *content = malloc(sizeof(int32_t)*capacity);
     array->content = content;
     for (int32_t i = 0; i < end; i++) {
         content[i] = i;
@@ -140,8 +146,10 @@ struct Array *rangeArray2(int32_t start, int32_t end) {
     struct Array *array = malloc(sizeof(struct Array));
     array->refCounter = 0;
     array->length = length;
-    array->capacity = length;
-    int32_t *content = malloc(sizeof(int32_t)*length);
+    int32_t capacity = length;
+    if (capacity < 1) capacity = 1;
+    array->capacity = capacity;
+    int32_t *content = malloc(sizeof(int32_t)*capacity);
     array->content = content;
     for (int32_t i = 0; i < length; i++) {
         content[i] = start + i;
@@ -150,20 +158,19 @@ struct Array *rangeArray2(int32_t start, int32_t end) {
 }
 
 struct Array *rangeArray3(int32_t start, int32_t end, int32_t step) {
+    int32_t absstep = abs(step);
     int32_t dif = end - start;
-    int32_t length = dif/step + (dif%step > 0);
+    int32_t length = dif/absstep + (dif%absstep > 0);
     struct Array *array = malloc(sizeof(struct Array));
     array->refCounter = 0;
     array->length = length;
-    array->capacity = length;
-    int32_t *content = malloc(sizeof(int32_t)*length);
+    int32_t capacity = length;
+    if (capacity < 1) capacity = 1;
+    array->capacity = capacity;
+    int32_t *content = malloc(sizeof(int32_t)*capacity);
     array->content = content;
-    if (step > 0) {
-        for (int32_t i = start; i < end; i += step) {
-            content[i] = i;
-        }
-    } else {
-        // TODO: implement
+    for (int i = 0; i < length; i++) {
+        content[i] = (step>0?start:end) + step*i;
     }
     return array;
 }
