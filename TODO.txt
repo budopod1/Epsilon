@@ -1,5 +1,4 @@
 TODO:
-* test more builtins
 * add automatic refrencing counting
 * add strings
 * add compilation to machine code
