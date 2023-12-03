@@ -1,5 +1,4 @@
 TODO:
-* make all struct types in the IR identified
 * test stdlib
 * add automatic refrencing counting
 * add compilation to machine code

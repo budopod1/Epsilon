@@ -56,19 +56,13 @@ def make_type_(program, data):
             return pointee.as_pointer()
         case "Array", [sub]:
             id_ = program.array_ids[freeze_json(data)]
-            for id_ in program.arrays:
-                return program.arrays[id_].ir_type
-            else:
-                return ir.global_context.get_identified_type(
-                    "a"+str(id_)
-                ).as_pointer()
+            return ir.global_context.get_identified_type(
+                "a"+str(id_)
+            ).as_pointer()
         case name, []:
-            if name in program.structs:
-                return program.structs[name].ir_type
-            else:
-                return ir.global_context.get_identified_type(
-                    "___"+name
-                ).as_pointer()
+            return ir.global_context.get_identified_type(
+                "___"+name
+            ).as_pointer()
 
     assert False, f"Invalid type {data}"
 
