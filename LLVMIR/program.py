@@ -20,7 +20,10 @@ class Program:
     def call_builtin(self, id, builder, params, param_types_, result_type_):
         builtin = self.builtins[id]
         casted_params = [
-            param if target_type_ is None else convert_type_(self, builder, param, param_type_, target_type_)
+            (
+               param if target_type_ is None else 
+               convert_type_(self, builder, param, param_type_, target_type_)
+            )
             for param, param_type_, target_type_ in zip(params, param_types_, builtin["params"])
         ]
         result, type_ = builtin["func"](
@@ -55,7 +58,8 @@ class Program:
         )
 
     def sizeof(self, builder, ir_type):
-        size_ptr = builder.gep(builder.inttoptr(i64_of(0), ir_type), [i64_of(1)])
+        null_ptr = builder.inttoptr(i64_of(0), ir_type.as_pointer())
+        size_ptr = builder.gep(null_ptr, [i64_of(1)])
         return builder.ptrtoint(size_ptr, ir.IntType(64))
 
     def malloc(self, builder, ir_type, count=1):
@@ -63,7 +67,7 @@ class Program:
         if count > 1:
             size = builder.mul(size, i64_of(count))
         location_i8 = builder.call(self.extern_funcs["malloc"], [size])
-        return builder.bitcast(location_i8, ir_type)
+        return builder.bitcast(location_i8, ir_type.as_pointer())
 
     def free(self, builder, value):
         casted = builder.bitcast(value, ir.IntType(8).as_pointer())

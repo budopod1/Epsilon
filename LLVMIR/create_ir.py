@@ -17,17 +17,25 @@ def create_ir(data):
     
     program = Program(module)
 
+    unique_arrays = []
+    frozen_arrays = set()
     all_arrays = data["arrays"] + [
         fill_type_(array)
         for array in EXTERN_ARRAYS
     ]
+    for array in all_arrays:
+        frozen = freeze_json(array)
+        if frozen in frozen_arrays:
+            continue
+        frozen_arrays.add(frozen)
+        unique_arrays.append(array)
 
     program.array_ids = dict(map(
         lambda pair: (freeze_json(pair[1]), pair[0]), 
-        enumerate(all_arrays)
+        enumerate(unique_arrays)
     ))
     
-    for i, array in enumerate(all_arrays):
+    for i, array in enumerate(unique_arrays):
         program.add_array(Array(
             program, i, array
         ))

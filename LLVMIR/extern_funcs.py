@@ -1,95 +1,98 @@
+from common import *
+
+
 EXTERN_FUNCS = {
     "pow": {
-        "name": "pow", "return_type_": {"name": "Q", "bits": 64}, 
-        "arguments": [{"name": "Q", "bits": 64}, {"name": "Q", "bits": 64}]
+        "name": "pow", "return_type_": Q64, 
+        "arguments": [Q64, Q64]
     },
     "sqrt": {
-        "name": "sqrt", "return_type_": {"name": "Q", "bits": 64}, 
-        "arguments": [{"name": "Q", "bits": 64}]
+        "name": "sqrt", "return_type_": Q64, 
+        "arguments": [Q64]
     },
     "cbrt": {
-        "name": "cbrt", "return_type_": {"name": "Q", "bits": 64}, 
-        "arguments": [{"name": "Q", "bits": 64}]
+        "name": "cbrt", "return_type_": Q64, 
+        "arguments": [Q64]
     },
     "malloc": {
-        "name": "malloc", "return_type_": {"name": "Pointer", "generics": [{"name": "W", "bits": 8}]},
-        "arguments": [{"name": "W", "bits": 64}]
+        "name": "malloc", "return_type_": PointerW8,
+        "arguments": [W64]
     },
     "free": {
-        "name": "free", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Pointer", "generics": [{"name": "W", "bits": 8}]}]
+        "name": "free", "return_type_": VOID,
+        "arguments": [PointerW8]
     },
     "len": {
-        "name": "len", "return_type_": {"name": "W", "bits": 64},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}]
+        "name": "len", "return_type_": W64,
+        "arguments": [ArrayW8]
     },
     "capacity": {
-        "name": "capacity", "return_type_": {"name": "W", "bits": 64},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}]
+        "name": "capacity", "return_type_": W64,
+        "arguments": [ArrayW8]
     },
     "incrementLength": {
-        "name": "incrementLength", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}]
+        "name": "incrementLength", "return_type_": VOID,
+        "arguments": [ArrayW8, W64]
     },
     "requireCapacity": {
-        "name": "requireCapacity", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}, {"name": "W", "bits": 64}]
+        "name": "requireCapacity", "return_type_": VOID,
+        "arguments": [ArrayW8, W64, W64]
     },
     "shrinkMem": {
-        "name": "shrinkMem", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}]
+        "name": "shrinkMem", "return_type_": VOID,
+        "arguments": [ArrayW8, W64]
     },
     "removeAt": {
-        "name": "removeAt", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}, {"name": "W", "bits": 64}]
+        "name": "removeAt", "return_type_": VOID,
+        "arguments": [ArrayW8, W64, W64]
     },
     "insertSpace": {
-        "name": "insertSpace", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}, {"name": "W", "bits": 64}]
+        "name": "insertSpace", "return_type_": VOID,
+        "arguments": [ArrayW8, W64, W64]
     },
     "incrementArrayRefCounts": {
-        "name": "incrementArrayRefCounts", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}]
+        "name": "incrementArrayRefCounts", "return_type_": VOID,
+        "arguments": [ArrayW8, W64]
     },
     "clone": {
-        "name": "clone", "return_type_": {"name": "Array", "generics": [{"name": "W", "bits": 8}]},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}]
+        "name": "clone", "return_type_": ArrayW8,
+        "arguments": [ArrayW8, W64]
     },
     "extend": {
-        "name": "extend", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}]
+        "name": "extend", "return_type_": VOID,
+        "arguments": [ArrayW8, ArrayW8, W64]
     },
     "join": {
-        "name": "join", "return_type_": {"name": "Array", "generics": [{"name": "W", "bits": 8}]},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}]
+        "name": "join", "return_type_": ArrayW8,
+        "arguments": [ArrayW8, ArrayW8, W64]
     },
     "rangeArray1": {
-        "name": "rangeArray1", "return_type_": {"name": "Array", "generics": [{"name": "Z", "bits": 32}]},
-        "arguments": [{"name": "Z", "bits": 32}]
+        "name": "rangeArray1", "return_type_": ArrayZ32,
+        "arguments": [Z32]
     },
     "rangeArray2": {
-        "name": "rangeArray1", "return_type_": {"name": "Array", "generics": [{"name": "Z", "bits": 32}]},
-        "arguments": [{"name": "Z", "bits": 32}, {"name": "Z", "bits": 32}]
+        "name": "rangeArray1", "return_type_": ArrayZ32,
+        "arguments": [Z32, Z32]
     },
     "rangeArray3": {
-        "name": "rangeArray1", "return_type_": {"name": "Array", "generics": [{"name": "Z", "bits": 32}]},
-        "arguments": [{"name": "Z", "bits": 32}, {"name": "Z", "bits": 32}, {"name": "Z", "bits": 32}]
+        "name": "rangeArray1", "return_type_": ArrayZ32,
+        "arguments": [Z32, Z32, Z32]
     },
     "alwaysIncrementArrayRefCounts": {
-        "name": "alwaysIncrementArrayRefCounts", "return_type_": {"name": "Void"},
-        "arguments": [{"name": "Array", "generics": [{"name": "W", "bits": 8}]}, {"name": "W", "bits": 64}]
+        "name": "alwaysIncrementArrayRefCounts", "return_type_": VOID,
+        "arguments": [ArrayW8, W64]
     },
     "abs": {
-        "name": "abs", "return_type_": {"name": "W", "bits": 32},
-        "arguments": [{"name": "Z", "bits": 32}]
+        "name": "abs", "return_type_": W32,
+        "arguments": [Z32]
     },
     "fabs": {
-        "name": "fabs", "return_type_": {"name": "Q", "bits": 64},
-        "arguments": [{"name": "Q", "bits": 64}]
+        "name": "fabs", "return_type_": Q64,
+        "arguments": [Q64]
     }
 }
 
 EXTERN_ARRAYS = [
-    {"name": "Array", "generics": [{"name": "W", "bits": 8}]},
-    {"name": "Array", "generics": [{"name": "Z", "bits": 32}]}
+    ArrayW8,
+    ArrayZ32
 ]

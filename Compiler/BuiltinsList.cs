@@ -192,6 +192,21 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", new Type_("Q", 64))
             }, -15, new Type_("Q", 64)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("+"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 2})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("array1", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
+            }, -16, types_ => {
+                if (!types_[0].Equals(types_[1]))
+                    throw new FunctionCallTypes_Exception($"Cannot join array of type {types_[0]} with an array of type {types_[1]}", 1);
+                return types_[0];
+            }
         )
     };
 }

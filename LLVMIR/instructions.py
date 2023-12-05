@@ -77,7 +77,7 @@ class ArrayAccessInstruction(Typed_Instruction):
         # required here
         casted_index = convert_type_(
             self.program, builder, index, index_type_,
-            {"name": "W", "bits": 32}
+            W32
         )
         result_ptr = builder.load(builder.gep(
             array, [i64_of(0), i32_of(3)]
@@ -100,7 +100,7 @@ class ArrayAssignmentInstruction(BaseInstruction):
         # required here
         casted_index = convert_type_(
             self.program, builder, index, index_type_,
-            {"name": "W", "bits": 64}
+            W64
         )
         casted_value = convert_type_(
             self.program, builder, value, value_type_,
@@ -128,7 +128,7 @@ class ArrayCreationInstruction(Typed_Instruction):
             for elem, elem_type_ in zip(elems, elem_types_)
         ]
         struct_mem = self.program.malloc(
-            builder, make_type_(self.program, self.type_)
+            builder, make_type_(self.program, self.type_).pointee
         )
         init_ref_counter(builder, struct_mem)
         capacity = max(10, len(elems))
@@ -143,7 +143,7 @@ class ArrayCreationInstruction(Typed_Instruction):
         array_mem = self.program.malloc(
             builder, make_type_(
                 self.program, self.elem_type_
-            ).as_pointer(), capacity
+            ), capacity
         )
         builder.store(
             array_mem,
@@ -155,8 +155,8 @@ class ArrayCreationInstruction(Typed_Instruction):
             program.call_extern(
                 builder, "alwaysIncrementArrayRefCounts", 
                 [struct_mem, program.sizeof(builder, self.elem_type_)],
-                [self.type_, {"name": "W", "bits": 64, "generics": []}],
-                {"name": "Void"}
+                [self.type_, W64],
+                VOID
             )
         return struct_mem
 
@@ -406,7 +406,7 @@ class FunctionCallInstruction(Typed_Instruction):
 
 class InstantiationInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
-        result = self.program.malloc(builder, make_type_(self.program, self.type_))
+        result = self.program.malloc(builder, make_type_(self.program, self.type_).pointee)
         struct = self.program.structs[self.type_["name"]]
         casted_fields = []
         for idx, (param, param_type_) in enumerate(zip(params, param_types_)):

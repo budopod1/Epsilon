@@ -33,10 +33,10 @@ def freeze_json(json):
 def make_type_(program, data):
     generics = [
         make_type_(program, generic)
-        for generic in data.get("generics", [])
+        for generic in data["generics"]
     ]
 
-    bits = data.get("bits", None)
+    bits = data["bits"]
     match data["name"], generics:
         case "Q", []:
             return {
@@ -126,14 +126,14 @@ def is_void_pointer(type_):
 def types__equal(type_1, type_2):
     if type_1["name"] != type_2["name"]:
         return False
-    if type_1.get("bits", None) != type_2.get("bits", None):
+    if type_1["bits"] != type_2["bits"]:
         return False
-    t1_generics = type_1.get("generics", [])
-    t2_generics = type_2.get("generics", [])
+    t1_generics = type_1["generics"]
+    t2_generics = type_2["generics"]
     if len(t1_generics) != len(t2_generics):
         return False
     generic_equality = [
-        types__equal(t2, t2)
+        types__equal(t1, t2)
         for t1, t2 in zip(t1_generics, t2_generics)
     ]
     return all(generic_equality)
@@ -257,4 +257,22 @@ def do_chain_power(program, builder, type_, value, pow):
 
 
 def fill_type_(type_):
-    return {"name": type_["name"], "bits": type_.get("bits", None), "generics": [fill_type_(generic) for generic in type_.get("generics", [])]}
+    return {
+        "name": type_["name"], 
+        "bits": type_.get("bits", None), 
+        "generics": [
+            fill_type_(generic) 
+            for generic in type_.get("generics", [])
+        ]
+    }
+
+
+VOID = {"name": "Void", "bits": None, "generics": []}
+Z32 = {"name": "Z", "bits": 32, "generics": []}
+W64 = {"name": "W", "bits": 64, "generics": []}
+W32 = {"name": "W", "bits": 32, "generics": []}
+W8 = {"name": "W", "bits": 8, "generics": []}
+ArrayW8 = {"name": "Array", "bits": None, "generics": [W8]}
+ArrayZ32 = {"name": "Array", "bits": None, "generics": [Z32]}
+PointerW8 = {"name": "Pointer", "bits": None, "generics": [W8]}
+Q64 = {"name": "Q", "bits": 64, "generics": []}
