@@ -573,14 +573,7 @@ public class Compiler {
     }
 
     Program TokenizeTypes_(Program program) {
-        // TODO: move these typeof specifications into Type_Matcher
-        IMatcher matcher = new Type_Matcher(
-            typeof(UserBaseType_Token), typeof(Generics), typeof(Type_Token),
-            new ListTokenParser<Type_>(
-                new TextPatternSegment(","), typeof(Type_Token), 
-                (IToken generic) => ((Type_Token)generic).GetValue()
-            )
-        );
+        IMatcher matcher = new Type_Matcher();
         foreach (IToken token in program) {
             if (token is Holder) {
                 Holder holder = ((Holder)token);

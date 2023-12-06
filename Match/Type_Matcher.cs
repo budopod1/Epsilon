@@ -3,58 +3,33 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class Type_Matcher : IMatcher {
-    Type baseType;
-    Type genericsType;
-    Type replaceType;
-    ListTokenParser<Type_> listParser;
-    
-    public Type_Matcher(Type baseType, Type genericsType, Type replaceType, 
-                        ListTokenParser<Type_> listParser) {
-        this.baseType = baseType;
-        this.genericsType = genericsType;
-        this.replaceType = replaceType;
-        this.listParser = listParser;
-    }
+    ListTokenParser<Type_> listParser = new ListTokenParser<Type_>(
+        new TextPatternSegment(","), typeof(Type_Token), 
+        (IToken generic) => ((Type_Token)generic).GetValue()
+    );
     
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken name = tokens[i];
             
-            if (Utils.IsInstance(name, baseType)) {
-                try {
-                    Unit<UserBaseType_> nameUnit = ((Unit<UserBaseType_>)name);
-                    Type_ type_;
-                    List<IToken> replacement;
-                    List<IToken> replaced;
-                    if (i + 1 < tokens.Count) {
-                        IToken next = tokens[i + 1];
-                        if (Utils.IsInstance(next, genericsType)) {
-                            IParentToken generics = ((IParentToken)next);
-                            List<Type_> genericTypes_ = listParser.Parse(generics);
-                            if (genericTypes_ == null) continue;
-                            type_ = Type_.FromUserBaseType_(nameUnit.GetValue(), genericTypes_);
-                            replacement = new List<IToken> {
-                                (IToken)Activator.CreateInstance(
-                                    replaceType, new object[] {type_}
-                                )
-                            };
-                            replaced = new List<IToken> {
-                                name, generics
-                            };
-                            return new Match(i, i+1, replacement, replaced);
-                        }
+            if (name is UserBaseType_Token) {
+                UserBaseType_Token nameUnit = ((UserBaseType_Token)name);
+                Type_ type_ = Type_.FromUserBaseType_(nameUnit.GetValue());
+                int j = i;
+                List<IToken> replaced = new List<IToken> {name};
+                if (i + 1 < tokens.Count) {
+                    IToken next = tokens[i + 1];
+                    if (next is Generics) {
+                        Generics generics = ((Generics)next);
+                        List<Type_> genericTypes_ = listParser.Parse(generics);
+                        if (genericTypes_ == null) continue;
+                        type_ = Type_.FromUserBaseType_(nameUnit.GetValue(), genericTypes_);
+                        replaced.Add(generics);
+                        j++;
                     }
-                    type_ = Type_.FromUserBaseType_(nameUnit.GetValue());
-                    replacement = new List<IToken> {
-                        (IToken)Activator.CreateInstance(
-                            replaceType, new object[] {type_}
-                        )
-                    };
-                    replaced = new List<IToken> {name};
-                    return new Match(i, i, replacement, replaced);
-                } catch (BaseType_BitsException e) {
-                    throw new SyntaxErrorException(e.Message, name);
                 }
+                List<IToken> replacement = new List<IToken> {new Type_Token(type_)};
+                return new Match(i, j, replacement, replaced);
             }
         }
         return null;
