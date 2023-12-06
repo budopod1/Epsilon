@@ -38,9 +38,6 @@ def main():
 
     main_ptr = engine.get_function_address("f0")
     main = CFUNCTYPE(c_char, c_char)(main_ptr)
-
-    for i in range(10000):
-        main(10)
     
     print(main(10))
 

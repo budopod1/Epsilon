@@ -13,17 +13,8 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Z", // integers (signed ints)
         "Q", // floats
         "Array",
-        "Struct",
-        "String"
+        "Struct"
     };
-
-    public static Dictionary<string, Type_> SpecialFullBaseTypes_;
-
-    static BaseType_() {
-        SpecialFullBaseTypes_ = new Dictionary<string, Type_> {
-            {"String", new Type_("Array", new List<Type_> {new Type_("Byte")})}
-        };
-    }
 
     public static List<string> SpecialTypes_ = new List<string> {
         "Any", // matches any type_ except Unkown and Void
@@ -83,23 +74,6 @@ public class BaseType_ : IEquatable<BaseType_> {
     string name;
     int? bits;
 
-    public static BaseType_ ParseString(string source, List<string> type_Names) {
-        if (type_Names.Contains(source) || BuiltInTypes_.Contains(source)) {
-            return new BaseType_(source);
-        }
-        System.Text.RegularExpressions.Match match = Regex.Match(
-            source, $@"({String.Join('|', BitTypes_)})(\d+)"
-        );
-        if (match.Success) {
-            string name = match.Groups[1].Value;
-            if (BitTypes_.Contains(name)) {
-                int bits = Int32.Parse(match.Groups[2].Value);
-                return new BaseType_(name, bits);
-            }
-        }
-        return null;
-    }
-
     public BaseType_(string name, int? bits = null) {
         if (BitTypes_.Contains(name)) {
             if (bits == null) bits = DefaultBits;
@@ -110,12 +84,6 @@ public class BaseType_ : IEquatable<BaseType_> {
         }
         this.name = name;
         this.bits = bits;
-    }
-
-    public Type_ GetSpecialFullType_() {
-        if (SpecialFullBaseTypes_.ContainsKey(name))
-            return SpecialFullBaseTypes_[name];
-        return null;
     }
 
     public string GetName() {

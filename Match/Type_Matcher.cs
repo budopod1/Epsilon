@@ -22,7 +22,7 @@ public class Type_Matcher : IMatcher {
             
             if (Utils.IsInstance(name, baseType)) {
                 try {
-                    Unit<BaseType_> nameUnit = ((Unit<BaseType_>)name);
+                    Unit<UserBaseType_> nameUnit = ((Unit<UserBaseType_>)name);
                     Type_ type_;
                     List<IToken> replacement;
                     List<IToken> replaced;
@@ -32,7 +32,7 @@ public class Type_Matcher : IMatcher {
                             IParentToken generics = ((IParentToken)next);
                             List<Type_> genericTypes_ = listParser.Parse(generics);
                             if (genericTypes_ == null) continue;
-                            type_ = Type_.FromBaseType_(nameUnit.GetValue(), genericTypes_);
+                            type_ = Type_.FromUserBaseType_(nameUnit.GetValue(), genericTypes_);
                             replacement = new List<IToken> {
                                 (IToken)Activator.CreateInstance(
                                     replaceType, new object[] {type_}
@@ -44,7 +44,7 @@ public class Type_Matcher : IMatcher {
                             return new Match(i, i+1, replacement, replaced);
                         }
                     }
-                    type_ = Type_.FromBaseType_(nameUnit.GetValue());
+                    type_ = Type_.FromUserBaseType_(nameUnit.GetValue());
                     replacement = new List<IToken> {
                         (IToken)Activator.CreateInstance(
                             replaceType, new object[] {type_}

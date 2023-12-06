@@ -490,10 +490,10 @@ public class Compiler {
 
     Program TokenizeBaseTypes_(Program program) {
         List<string> baseType_Names = program.GetBaseType_Names();
-        Func<string, BaseType_> converter = (string source) => 
-            BaseType_.ParseString(source, baseType_Names);
-        IMatcher matcher = new UnitSwitcherMatcher<string, BaseType_>(
-            typeof(Name), converter, typeof(BaseTokenType_)
+        Func<string, UserBaseType_> converter = (string source) => 
+            UserBaseType_.ParseString(source, baseType_Names);
+        IMatcher matcher = new UnitSwitcherMatcher<string, UserBaseType_>(
+            typeof(Name), converter, typeof(UserBaseType_Token)
         );
         foreach (IToken token in program) {
             if (token is Holder) {
@@ -554,7 +554,7 @@ public class Compiler {
 
     Program TokenizeGenerics(Program program) {
         IMatcher matcher = new BlockMatcher(
-            new TypePatternSegment(typeof(BaseTokenType_)),
+            new TypePatternSegment(typeof(UserBaseType_Token)),
             new TextPatternSegment("<"), new TextPatternSegment(">"),
             typeof(Generics)
         );
@@ -573,8 +573,9 @@ public class Compiler {
     }
 
     Program TokenizeTypes_(Program program) {
+        // TODO: move these typeof specifications into Type_Matcher
         IMatcher matcher = new Type_Matcher(
-            typeof(BaseTokenType_), typeof(Generics), typeof(Type_Token),
+            typeof(UserBaseType_Token), typeof(Generics), typeof(Type_Token),
             new ListTokenParser<Type_>(
                 new TextPatternSegment(","), typeof(Type_Token), 
                 (IToken generic) => ((Type_Token)generic).GetValue()
