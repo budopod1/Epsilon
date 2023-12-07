@@ -1,12 +1,13 @@
 import argparse
 from pathlib import Path
+import re
 
 
 FILE_EXTENSIONS = ["py", "nix", "cs", "ε", "ep", "eps", "epsilon", "bash"]
 IGNORE = ["venv", ".local"]
 
 
-def main(*, verbosity, extentions, ignore):
+def main(*, verbosity, extentions, ignore, ignore_blank):
     files = sum([
         list(Path.cwd().glob("**/*."+FILE_EXTENSION))
         for FILE_EXTENSION in extentions
@@ -22,7 +23,10 @@ def main(*, verbosity, extentions, ignore):
                 print(f"Skipping file {file}, it is in an ignored folder")
             continue
         txt = file.read_text()
+        blank_lines = len(re.findall("(?=\n\s*?\n)", txt))
         file_lines = 1 + txt.count("\n")
+        if ignore_blank:
+            file_lines -= blank_lines
         if verbosity >= 1:
             print(file, "has", file_lines, "lines")
         lines += file_lines
@@ -47,12 +51,16 @@ def cmdline():
     parser.add_argument("-v", "--verbosity", type=int, default=0, choices=range(0, 3))
     parser.add_argument("-e", "--extensions", help="override file extentions to include", action="extend", type=str, nargs="*")
     parser.add_argument("-i", "--ignore", help="override files and folders to ignore", action="extend", type=str, nargs="*")
+    parser.add_argument("-b", "--ignore-blank", help="ignore blank lines", action="store_true")
 
     args = parser.parse_args()
 
     extentions = args.extensions or FILE_EXTENSIONS
     ignore = args.ignore or IGNORE
-    main(verbosity=args.verbosity, extentions=extentions, ignore=ignore)
+    main(
+        verbosity=args.verbosity, extentions=extentions, ignore=ignore,
+        ignore_blank=args.ignore_blank
+    )
 
 
 if __name__ == "__main__":
