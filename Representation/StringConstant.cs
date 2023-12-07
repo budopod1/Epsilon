@@ -20,7 +20,7 @@ public class StringConstant : IConstant {
     }
 
     public Type_ GetType_() {
-        throw new NotImplementedException("GetType_ is not implemented for StringConstant yet.");
+        return Type_.String();
     }
 
     public string GetValue() {
@@ -28,9 +28,6 @@ public class StringConstant : IConstant {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["type"] = new JSONString("string");
-        obj["value"] = new JSONString(value);
-        return obj;
+        throw new InvalidOperationException("String constants cannot appear in the final IR");
     }
 }

@@ -13,6 +13,10 @@ public class Type_ : IEquatable<Type_> {
     public static Type_ Void() {
         return new Type_("Void");
     }
+
+    public static Type_ String() {
+        return new Type_("Array", new List<Type_> {new Type_("Byte")});
+    }
     
     BaseType_ baseType_;
     List<Type_> generics;

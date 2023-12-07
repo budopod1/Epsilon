@@ -34,7 +34,7 @@ public class UserBaseType_ {
     }
 
     static Dictionary<string, Type_> SpecialFullBaseTypes_ = new Dictionary<string, Type_> {
-        {"Str", new Type_("Array", new List<Type_> {new Type_("Byte")})}
+        {"Str", Type_.String()}
     };
 
     public Type_ ToType_(List<Type_> generics) {

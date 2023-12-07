@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
@@ -253,6 +254,10 @@ public class Compiler {
 
         Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
+        TimingStep();
+
+        Step("Converting string literals...");
+        program = ConvertStringLiterals(program);
         TimingStep();
 
         Step("Getting scope variables...");
@@ -773,6 +778,31 @@ public class Compiler {
             lines.Add(line);
         }
         return (CodeBlock)block.Copy(lines);
+    }
+
+    Program ConvertStringLiterals(Program program) {
+        return (Program)PerformTreeMatching(
+            program, new PatternMatcher(
+                new List<IPatternSegment> {
+                    new FuncPatternSegment<ConstantValue>(
+                        constant => constant.GetValue() is StringConstant
+                    )
+                }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                    ConstantValue sval = (ConstantValue)tokens[0];
+                    string text = ((StringConstant)sval.GetValue()).GetValue();
+                    return new List<IToken> {new ArrayCreation(
+                        new Type_("Byte"),
+                        Encoding.ASCII.GetBytes(text).Select(
+                            val => {
+                                ConstantValue bval = new ConstantValue(new ByteConstant(val));
+                                bval.span = sval.span;
+                                return (IValueToken)bval;
+                            }
+                        ).ToList()
+                    )};
+                })
+            )
+        );
     }
 
     Program GetScopeVariables(Program program) {
