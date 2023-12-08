@@ -1,3 +1,5 @@
 TODO:
+* add more tests
+* make LLVM IR func calls tail
 * add automatic refrencing counting
 * add compilation to machine code

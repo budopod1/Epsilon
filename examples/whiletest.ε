@@ -1,8 +1,0 @@
-Z#factorial<Z:i> {
-    Z:b = 1;
-    while (i > 1) {
-        b = b * i;
-        i = i - 1;
-    };
-    return b;
-}

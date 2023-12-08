@@ -1,3 +1,0 @@
-Z#main {
-    return "Hello, world!"[5];
-}

@@ -1,6 +1,0 @@
-Z#main {
-    return sub[2]+1;
-}
-Z#sub<Z:v> {
-    return v+1;
-}
