@@ -8,7 +8,7 @@ public class Epsilon {
 
         parser.AddOption("p", "Print the AST");
         parser.AddOption("print-ast", "Print the AST");
-        parser.AddOption("s", "Print the AST");
+        parser.AddOption("s", "Print the compilation steps");
         parser.AddOption("print-steps", "Print the compilation steps");
         parser.AddOption("t", "Show step timings");
         parser.AddOption("timings", "Show step timings");
