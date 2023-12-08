@@ -1,0 +1,3 @@
+Byte#string<Z:i> {
+    return "abcdefghijklmnopqrstuvwxyz"[i];
+}

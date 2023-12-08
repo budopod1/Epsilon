@@ -152,9 +152,11 @@ class ArrayCreationInstruction(Typed_Instruction):
         for i, elem in enumerate(converted_elems):
             builder.store(elem, builder.gep(array_mem, [i64_of(i)]))
         if not is_value_type_(self.elem_type_):
-            program.call_extern(
+            self.program.call_extern(
                 builder, "alwaysIncrementArrayRefCounts", 
-                [struct_mem, program.sizeof(builder, self.elem_type_)],
+                [struct_mem, self.program.sizeof(
+                    builder, make_type_(self.program, self.elem_type_)
+                )],
                 [self.type_, W64],
                 VOID
             )

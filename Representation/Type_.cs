@@ -159,7 +159,12 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool Equals(Type_ other) {
-        if (baseType_.Equals(other.GetBaseType_())) {
+        BaseType_ otherBaseType_ = other.GetBaseType_();
+        if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
+            return true;
+        if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
+            return true;
+        if (baseType_.Equals(otherBaseType_)) {
             return GenericsEqual(other);
         }
         return false;

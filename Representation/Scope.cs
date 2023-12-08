@@ -53,4 +53,8 @@ public class Scope {
         }
         return obj;
     }
+
+    public override string ToString() {
+        return GetJSON().ToJSON();
+    }
 }

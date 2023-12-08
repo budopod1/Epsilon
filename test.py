@@ -24,6 +24,43 @@ TESTS = [
         "tests": [
             {"arguments": [3], "compare": "float", "expect": 35.54}
         ]
+    },
+    {
+        "file": "if.ε",
+        "func": "f0",
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [6], "compare": "exact", "expect": 1},
+            {"arguments": [5], "compare": "exact", "expect": 0},
+            {"arguments": [4], "compare": "exact", "expect": -1}
+        ]
+    },
+    {
+        "file": "while.ε",
+        "func": "f0",
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [4], "compare": "exact", "expect": 10},
+            {"arguments": [6], "compare": "exact", "expect": 21},
+        ]
+    },
+    {
+        "file": "string.ε",
+        "func": "f0",
+        "sig": CFUNCTYPE(c_char, c_int),
+        "tests": [
+            {"arguments": [0], "compare": "exact", "expect": b"a"},
+            {"arguments": [14], "compare": "exact", "expect": b"o"},
+        ]
+    },
+    {
+        "file": "array.ε",
+        "func": "f0",
+        "sig": CFUNCTYPE(c_int, c_int, c_int),
+        "tests": [
+            {"arguments": [0, 0], "compare": "exact", "expect": 1},
+            {"arguments": [2, 1], "compare": "exact", "expect": 6},
+        ]
     }
 ]
 

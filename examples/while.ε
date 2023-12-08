@@ -1,0 +1,24 @@
+Z#triangle<Z:v> {
+    Z:i = 1;
+    Z:t = 0;
+    while (i <= v) {
+        t = t + i;
+        i = i + 1;
+    };
+    return t;
+}
+
+/*
+Epsilon takes your brain
+Theta is g
+your sanity is earthbound
+While Theta is as low as your brain
+Let your sanity be with Theta
+Let Theta be with 1
+
+Give back your sanity
+
+The Question is 15
+Put Epsilon taking The Question into The Answer
+Shout The Answer
+*/

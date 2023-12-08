@@ -1,0 +1,10 @@
+Z#test<Z:b> {
+    if (b > 5) {
+        return 1;
+    } elif (b == 5) {
+        return 0;
+    } else {
+        return -1;
+    };
+    return 5;
+}
