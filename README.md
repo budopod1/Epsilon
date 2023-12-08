@@ -1,6 +1,6 @@
 # Epsilon
 
-Epsilon is an **in development**, compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning it can be ran on almost any system.
+Epsilon is an **in development**, compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning Epsilon code can be ran on almost any system. Currently, however, only linux is supported, although this is likely to change soon.
 
 # Dependencies
 
