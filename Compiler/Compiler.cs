@@ -368,6 +368,7 @@ public class Compiler {
             {"switch", typeof(SwitchKeyword)},
             {"break", typeof(BreakKeyword)},
             {"continue", typeof(ContinueKeyword)},
+            {"uninit", typeof(UninitKeyword)},
         };
         return (Program)PerformMatching(
             program,
@@ -810,22 +811,13 @@ public class Compiler {
             if (token is Function) {
                 Function function = ((Function)token);
                 Scope scope = function.GetScope();
-                function.SetBlock((CodeBlock)PerformTreeMatching(
-                    function.GetBlock(), new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new TypePatternSegment(typeof(VarDeclaration)),
-                        }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
-                            VarDeclaration declaration = ((VarDeclaration)tokens[0]);
-                            string name = declaration.GetName().GetValue();
-                            int id = scope.AddVar(
-                                name, declaration.GetType_()
-                            );
-                            return new List<IToken> {
-                                new Variable(name, id)
-                            };
-                        })
-                    )
-                ));
+                foreach (VarDeclaration declaration 
+                        in TokenUtils.TraverseFind<VarDeclaration>(function)) {
+                    string name = declaration.GetName().GetValue();
+                    declaration.SetID(scope.AddVar(
+                        name, declaration.GetType_()
+                    ));
+                }
             }
         }
         return program;
@@ -1346,6 +1338,42 @@ public class Compiler {
                         new Type_PatternSegment(Type_.Any())
                     }, new Wrapper2PatternProcessor(typeof(Cast))
                 ),
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(VarDeclaration)),
+                        new TextPatternSegment("="),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(InitialAssignment)
+                    )
+                )
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(UninitKeyword)),
+                        new TypePatternSegment(typeof(VarDeclaration))
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(UninitVarDeclaration)
+                    )
+                )
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(UninitKeyword)),
+                        new TypePatternSegment(typeof(Variable)),
+                        new TextPatternSegment("="),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1, 3}),
+                        typeof(InitialAssignment)
+                    )
+                )
             },
             new List<IMatcher> {
                 new PatternMatcher(

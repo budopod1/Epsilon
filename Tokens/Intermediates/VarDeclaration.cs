@@ -1,24 +1,12 @@
 using System;
 
-public class VarDeclaration : IParentToken {
+public class VarDeclaration : IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
     Type_ type_;
     Name name;
-    
-    public int Count {
-        get { return 1; }
-    }
-    
-    public IToken this[int i] {
-        get {
-            return name;
-        }
-        set {
-            name = (Name)value;
-        }
-    }
+    int id;
     
     public VarDeclaration(Type_ type_, Name name) {
         this.type_ = type_;
@@ -36,5 +24,19 @@ public class VarDeclaration : IParentToken {
 
     public Type_ GetType_() {
         return type_;
+    }
+
+    public void SetID(int id) {
+        this.id = id;
+    }
+
+    public int GetID() {
+        return id;
+    }
+
+    public void Verify() {
+        throw new SyntaxErrorException(
+            "Unmatched variable declaration", this
+        );
     }
 }

@@ -148,6 +148,10 @@ public class BaseType_ : IEquatable<BaseType_> {
         return false;
     }
 
+    public bool IsValue() {
+        return BuiltInTypes_.Contains(name);
+    }
+
     public bool IsAny() {
         return name == "Any";
     }

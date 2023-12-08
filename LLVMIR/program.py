@@ -69,9 +69,9 @@ class Program:
         location_i8 = builder.call(self.extern_funcs["malloc"], [size])
         return builder.bitcast(location_i8, ir_type.as_pointer())
 
-    def free(self, builder, value):
+    def _free(self, builder, value):
         casted = builder.bitcast(value, ir.IntType(8).as_pointer())
-        builder.call(self.extern_funcs["call"], [casted])
+        builder.call(self.extern_funcs["free"], [casted])
 
     def add_function(self, function):
         self.functions[function.id_] = function
@@ -93,8 +93,8 @@ class Program:
         content_ptr_ptr = builder.gep(val, [i64_of(0), i32_of(3)])
         content_ptr = builder.load(content_ptr_ptr)
         if is_value_type_(type_):
-            self.free(builder, val)
-            self.free(builder, content_ptr)
+            self._free(builder, val)
+            self._free(builder, content_ptr)
             builder.ret_void()
         else:
             cont_branch = builder.append_basic_block("cont")
@@ -117,8 +117,8 @@ class Program:
             cont_builder.cbranch(should_continue, cont_branch, final_branch)
             
             final_builder = ir.IRBuilder(final_branch)
-            self.free(final_builder, val)
-            self.free(final_builder, content_ptr)
+            self._free(final_builder, val)
+            self._free(final_builder, content_ptr)
             final_builder.ret_void()
 
     def _free_struct(self, entry, builder, val, type_):
@@ -128,14 +128,17 @@ class Program:
                 elem_ptr = builder.gep(val, [i64_of(0), i32_of(i+1)])
                 elem = builder.load(elem_ptr)
                 decr_ref(builder, elem, field_type_)
-        self.free(builder, val)
+        self._free(builder, val)
         builder.ret_void()
 
     def make_decr_ref_func(self, type_):
         if is_value_type_(type_):
             return
-        ir_type = make_type_(program, type_)
-        func = ir.Function(self.module, ir.FunctionType(ir.VoidType(), [ir_type]))
+        ir_type = make_type_(self, type_)
+        func = ir.Function(
+            self.module, ir.FunctionType(ir.VoidType(), [ir_type]),
+            name=f"d{len(self.decr_funcs)}"
+        )
         entry = func.append_basic_block(name="entry")
         builder = ir.IRBuilder(entry)
         val, = func.args
@@ -145,9 +148,10 @@ class Program:
         no_refs = builder.icmp_unsigned("==", decred, REF_COUNTER_FIELD(0))
         with builder.if_then(no_refs):
             if type_["name"] == "Array":
-                _free_array(entry, builder, val, type_["generics"][0])
+                self._free_array(entry, builder, val, type_["generics"][0])
             else:
-                _free_struct(entry, builder, val, type_)
+                self._free_struct(entry, builder, val, type_)
+        builder.ret_void()
         return func
 
     def decr_ref(self, builder, value, type_):
@@ -157,6 +161,6 @@ class Program:
         if frozen in self.decr_funcs:
             func = self.decr_funcs[frozen]
         else:
-            func = make_decr_ref_func(type_)
+            func = self.make_decr_ref_func(type_)
             self.decr_funcs[frozen] = func
         builder.call(func, [value])

@@ -1,0 +1,10 @@
+Z#main {
+    uninit Str:t;
+    if (2 ** 5 < 31) {
+        uninit t = "T";
+    } else {
+        uninit t = "G";
+        t = "H";
+    };
+    return t[0];
+}

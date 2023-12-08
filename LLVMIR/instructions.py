@@ -169,14 +169,20 @@ class AssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types):
         value, = params
         value_type_, = param_types
+        var_type_ = self.function.get_var(self.variable)["type_"]
         converted_value = convert_type_(
             self.program, builder, value, value_type_, 
-            self.function.get_var(self.variable)["type_"]
+            var_type_
         )
-        return builder.store(
-            converted_value, 
-            self.function.get_variable_declaration(self.variable)
+        declaration = self.function.get_variable_declaration(
+            self.variable
         )
+        self.program.decr_ref(
+            builder, builder.load(declaration), var_type_
+        )
+        if not is_value_type_(var_type_):
+            incr_ref_counter(builder, converted_value)
+        return builder.store(converted_value, declaration)
 
 
 class BitshiftInstruction(CastToResultType_Instruction, Typed_Instruction):
@@ -404,6 +410,27 @@ class FunctionCallInstruction(Typed_Instruction):
             return builder.call(func.ir, converted_params)
 
 
+class InitialAssignment(BaseInstruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.variable = self.data["variable"]
+
+    def _build(self, builder, params, param_types_):
+        value, = params
+        value_type_, = param_types_
+        var_type_ = self.function.get_var(self.variable)["type_"]
+        converted_value = convert_type_(
+            self.program, builder, value, value_type_, 
+            var_type_
+        )
+        if not is_value_type_(var_type_):
+            incr_ref_counter(builder, converted_value)
+        return builder.store(
+            converted_value, 
+            self.function.get_variable_declaration(self.variable)
+        )
+
+
 class InstantiationInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
         result = self.program.malloc(builder, make_type_(self.program, self.type_).pointee)
@@ -470,6 +497,11 @@ class MemberAssignmentInstruction(BaseInstruction):
         return builder.store(
             converted_value, builder.gep(obj, [i64_of(0), i32_of(1+idx)])
         )
+
+
+class NoopInstruction(BaseInstruction):
+    def _build(self, *arg):
+        pass
 
 
 class NotInstruction(Typed_Instruction):
@@ -618,6 +650,7 @@ def make_instruction(program, function, data):
         "function_call": FunctionCallInstruction,
         "greater": ComparisonInstruction,
         "greater_equal": ComparisonInstruction,
+        "initial_assignment": InitialAssignment,
         "instantiation": InstantiationInstruction,
         "less": ComparisonInstruction,
         "less_equal": ComparisonInstruction,
@@ -633,6 +666,7 @@ def make_instruction(program, function, data):
         "return_void": ReturnVoidInstruction,
         "subtraction": ArithmeticInstruction,
         "switch": SwitchInstruction,
+        "uninit_var_declaration": NoopInstruction,
         "variable": VariableInstruction,
         "while": WhileInstruction,
         "xor": LogicalInstruction,
