@@ -61,6 +61,25 @@ TESTS = [
             {"arguments": [0, 0], "compare": "exact", "expect": 1},
             {"arguments": [2, 1], "compare": "exact", "expect": 6},
         ]
+    },
+    {
+        "file": "struct.ε",
+        "func": "f0",
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [0], "compare": "exact", "expect": 5},
+            {"arguments": [1], "compare": "exact", "expect": 3},
+        ]
+    },
+    {
+        "file": "switch.ε",
+        "func": "f0",
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "exact", "expect": 2},
+            {"arguments": [2], "compare": "exact", "expect": -2},
+            {"arguments": [3], "compare": "exact", "expect": 5},
+        ]
     }
 ]
 

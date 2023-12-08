@@ -1,0 +1,13 @@
+Z#switch<Z:i> {
+    switch (i)
+        (1) {
+            return 2;
+        }
+        (2) {
+            return -2;
+        }
+        {
+            return 5;
+        };
+    return 0;
+}
