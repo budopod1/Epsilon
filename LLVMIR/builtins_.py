@@ -186,6 +186,28 @@ def fabs(program, builder, params, param_types_):
     ), Q64
 
 
+def stringify(program, builder, params, param_types_):
+    param, = params
+    param_type_, = param_types_
+    return program.stringify(builder, param, param_type_), String
+
+
+def print_(program, builder, params, param_types_):
+    param, = params
+    param_type_, = param_types_
+    string = program.stringify(builder, param, param_type_)
+    program.call_extern(builder, "print", [string], [String], VOID)
+    return None, VOID
+
+
+def println(program, builder, params, param_types_):
+    param, = params
+    param_type_, = param_types_
+    string = program.stringify(builder, param, param_type_)
+    program.call_extern(builder, "println", [string], [String], VOID)
+    return None, VOID
+
+
 BUILTINS = {
     -1: {
         "func": length,
@@ -272,5 +294,17 @@ BUILTINS = {
         "params": [
             ArrayW8, ArrayW8
         ]
+    },
+    -17: {
+        "func": stringify,
+        "params": [None]
+    },
+    -18: {
+        "func": print_,
+        "params": [None]
+    },
+    -19: {
+        "func": println,
+        "params": [None]
     }
 }

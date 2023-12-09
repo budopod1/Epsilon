@@ -182,3 +182,23 @@ struct Array *rangeArray3(int32_t start, int32_t end, int32_t step) {
     }
     return array;
 }
+
+void print(struct Array *string) {
+    // this assumes that the string is an array of chars
+    uint64_t len = string->length;
+    incrementLength(string, 1);
+    char* content = string->content;
+    content[len] = '\0';
+    printf("%s", content);
+    string->length = len;
+}
+
+void println(struct Array *string) {
+    // this assumes that the string is an array of chars
+    uint64_t len = string->length;
+    incrementLength(string, 1);
+    char* content = string->content;
+    content[len] = '\0';
+    puts(content);
+    string->length = len;
+}

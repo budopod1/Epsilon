@@ -31,9 +31,9 @@ def main():
     engine = compile_ir(module)
 
     main_ptr = engine.get_function_address("f0")
-    main = CFUNCTYPE(c_int)(main_ptr)
+    main = CFUNCTYPE(None, c_int)(main_ptr)
     
-    print(main(10))
+    main(10)
 
 
 if __name__ == "__main__":

@@ -78,20 +78,24 @@ def is_value_type_(type_):
     return type_["name"] in ["W", "Z", "Bool", "Byte", "Q"]
 
 
-def is_integer_type_(type_):
-    return type_["name"] in ["W", "Z", "Bool", "Byte"]
-
-
-def is_floating_type_(type_):
-    return type_["name"] in ["Q"]
-
-
 def is_signed_integer_type_(type_):
     return type_["name"] in ["Z"]
 
 
 def is_unsigned_integer_type_(type_):
     return type_["name"] in ["W", "Bool", "Byte"]
+
+
+def is_integer_type_(type_):
+    return is_signed_integer_type_(type_) or is_unsigned_integer_type_(type_)
+
+
+def is_floating_type_(type_):
+    return type_["name"] in ["Q"]
+
+
+def is_number_type_(type_):
+    return is_integer_type_(type_) or is_floating_type_(type_)
 
 
 def convert_floating_type__bits(builder, val, old, new, new_type):
@@ -210,13 +214,13 @@ def set_return_block(block_chain, return_block):
         block.return_block = return_block
 
 
-def make_function_type_(program, return_type_, arguments):
+def make_function_type_(program, return_type_, arguments, vargs=False):
     return ir.FunctionType(
         make_type_(program, return_type_),
         [
             make_type_(program, argument) 
             for argument in arguments
-        ]
+        ], vargs
     )
 
 
@@ -226,6 +230,10 @@ def i64_of(val):
 
 def i32_of(val):
     return ir.IntType(32)(val)
+
+
+def i8_of(val):
+    return ir.IntType(8)(val)
 
 
 def init_ref_counter(builder, val):
@@ -276,3 +284,7 @@ ArrayW8 = {"name": "Array", "bits": None, "generics": [W8]}
 ArrayZ32 = {"name": "Array", "bits": None, "generics": [Z32]}
 PointerW8 = {"name": "Pointer", "bits": None, "generics": [W8]}
 Q64 = {"name": "Q", "bits": 64, "generics": []}
+Q32 = {"name": "Q", "bits": 32, "generics": []}
+Byte = {"name": "Byte", "bits": 8, "generics": []}
+String = {"name": "Array", "bits": None, "generics": [Byte]}
+Bool = {"name": "Bool", "bits": None, "generics": []}

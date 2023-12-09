@@ -89,10 +89,22 @@ EXTERN_FUNCS = {
     "fabs": {
         "name": "fabs", "return_type_": Q64,
         "arguments": [Q64]
-    }
+    },
+    "print": {
+        "name": "print", "return_type_": VOID,
+        "arguments": [String]
+    },
+    "println": {
+        "name": "print", "return_type_": VOID,
+        "arguments": [String]
+    },
+    "snprintf": {
+        "name": "print", "return_type_": W64,
+        "arguments": [PointerW8, W64, PointerW8],
+        "vargs": True
+    },
 }
 
 EXTERN_ARRAYS = [
-    ArrayW8,
-    ArrayZ32
+    ArrayW8, ArrayZ32, String
 ]

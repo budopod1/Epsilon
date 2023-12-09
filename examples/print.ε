@@ -1,0 +1,5 @@
+#printtest<Z:v> {
+    print["The number is "];
+    print[v];
+    println["!"];
+}

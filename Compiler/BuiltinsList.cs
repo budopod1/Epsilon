@@ -207,6 +207,34 @@ public static class BuiltinsList {
                     throw new FunctionCallTypes_Exception($"Cannot join array of type {types_[0]} with an array of type {types_[1]}", 1);
                 return types_[0];
             }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "stringify")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("value", Type_.Any()),
+            }, -17, Type_.String()
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "print"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {1})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("value", Type_.Any()),
+            }, -18, Type_.Void()
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "println"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {1})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("value", Type_.Any()),
+            }, -19, Type_.Void()
         )
     };
 }

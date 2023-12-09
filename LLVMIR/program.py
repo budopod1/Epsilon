@@ -1,5 +1,6 @@
 from llvmlite import ir
 from common import *
+from stringify import make_stringify_func
 
 
 class Program:
@@ -13,6 +14,7 @@ class Program:
         self.extern_funcs = {}
         self.decr_funcs = {}
         self.builtins = {}
+        self.stringifiers = {}
 
     def is_builtin(self, id):
         return id in self.builtins
@@ -40,25 +42,30 @@ class Program:
                 self, fill_type_(data["return_type_"]), [
                     fill_type_(argument)
                     for argument in data["arguments"]
-                ]
+                ], data.get("vargs", False)
             ), name=name
         )
 
-    def call_extern(self, builder, name, params, param_types_, result_type_):
+    def call_extern(self, builder, name, params, param_types_, result_type_, vargs=None):
+        if vargs is None:
+            vargs = []
         func = self.externs[name]
         converted_params = [
             convert_type_(self, builder, param, param_type_, argument)
             for param, param_type_, argument in zip(params, param_types_, func["arguments"])
         ]
-        result = builder.call(self.extern_funcs[name], converted_params)
+        result = builder.call(self.extern_funcs[name], converted_params+vargs)
         if result_type_["name"] == "Void":
             return
         return convert_type_(
             self, builder, result, func["return_type_"], result_type_
         )
 
+    def nullptr(self, builder, ir_type):
+        return builder.inttoptr(i64_of(0), ir_type)
+
     def sizeof(self, builder, ir_type):
-        null_ptr = builder.inttoptr(i64_of(0), ir_type.as_pointer())
+        null_ptr = self.nullptr(builder, ir_type.as_pointer())
         size_ptr = builder.gep(null_ptr, [i64_of(1)])
         return builder.ptrtoint(size_ptr, ir.IntType(64))
 
@@ -66,6 +73,12 @@ class Program:
         size = self.sizeof(builder, ir_type)
         if count > 1:
             size = builder.mul(size, i64_of(count))
+        location_i8 = builder.call(self.extern_funcs["malloc"], [size])
+        return builder.bitcast(location_i8, ir_type.as_pointer())
+
+    def mallocv(self, builder, ir_type, count):
+        size = self.sizeof(builder, ir_type)
+        size = builder.mul(size, count)
         location_i8 = builder.call(self.extern_funcs["malloc"], [size])
         return builder.bitcast(location_i8, ir_type.as_pointer())
 
@@ -164,3 +177,14 @@ class Program:
             func = self.make_decr_ref_func(type_)
             self.decr_funcs[frozen] = func
         builder.call(func, [value])
+
+    def stringify(self, builder, value, type_):
+        if type_ == String or type_ == ArrayW8:
+            return value
+        frozen = freeze_json(type_)
+        if frozen in self.stringifiers:
+            func = self.stringifiers[frozen]
+        else:
+            func = make_stringify_func(self, type_, len(self.stringifiers))
+            self.stringifiers[frozen] = func
+        return builder.call(func, [value])
