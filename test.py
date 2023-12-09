@@ -10,7 +10,7 @@ engine = None
 
 TESTS = [
     {
-        "file": "basic.ε",
+        "file": "basic.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_int),
         "tests": [
@@ -18,7 +18,7 @@ TESTS = [
         ]
     },
     {
-        "file": "math.ε",
+        "file": "math.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_float, c_float),
         "tests": [
@@ -26,7 +26,7 @@ TESTS = [
         ]
     },
     {
-        "file": "if.ε",
+        "file": "if.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -36,7 +36,7 @@ TESTS = [
         ]
     },
     {
-        "file": "while.ε",
+        "file": "while.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -45,7 +45,7 @@ TESTS = [
         ]
     },
     {
-        "file": "string.ε",
+        "file": "string.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_char, c_int),
         "tests": [
@@ -54,7 +54,7 @@ TESTS = [
         ]
     },
     {
-        "file": "array.ε",
+        "file": "array.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int, c_int),
         "tests": [
@@ -63,7 +63,7 @@ TESTS = [
         ]
     },
     {
-        "file": "struct.ε",
+        "file": "struct.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -72,7 +72,7 @@ TESTS = [
         ]
     },
     {
-        "file": "switch.ε",
+        "file": "switch.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -82,7 +82,7 @@ TESTS = [
         ]
     },
     {
-        "file": "builtin.ε",
+        "file": "builtin.eps",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
