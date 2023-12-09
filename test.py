@@ -80,6 +80,16 @@ TESTS = [
             {"arguments": [2], "compare": "exact", "expect": -2},
             {"arguments": [3], "compare": "exact", "expect": 5},
         ]
+    },
+    {
+        "file": "builtin.ε",
+        "func": "f0",
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [4], "compare": "exact", "expect": 2},
+            {"arguments": [5], "compare": "exact", "expect": 6},
+            {"arguments": [17], "compare": "exact", "expect": 72},
+        ]
     }
 ]
 
@@ -113,7 +123,7 @@ def compile_file(file):
     proccess = subprocess.run(
         ["mono", "Epsilon.exe", "compile", str(file), "_"], capture_output=True
     )
-    if b"compilation error" in proccess.stdout:
+    if b"compilation error" in proccess.stdout or b"Error in" in proccess.stdout:
         return False, proccess.stdout.decode('utf-8')
     subprocess.run(["llvm-dis", "-o", "code-opt.ll", "code-opt.bc"])
     return True, ""
@@ -129,7 +139,7 @@ def equal(mode, a, b):
 def main():
     base_dir = Path("examples")
     
-    print("Running tests...")
+    print("🔬 Running tests...")
 
     test_count = sum(map(lambda v: len(v["tests"]), TESTS))
     i = 1
@@ -139,7 +149,7 @@ def main():
     for group in TESTS:
         file = group["file"]
         func = group["func"]
-        print(f"\nTesting function {func} from file {file}...")
+        print(f"\n🧪 Testing function {func} from file {file}...")
         compiled, msg = compile_file(base_dir/file)
 
         if not compiled:
@@ -152,7 +162,7 @@ def main():
         func = group["sig"](func_ptr)
         
         for test in group["tests"]:
-            print(f"🧪 Running test {i}/{test_count}...")
+            print(f"Running test {i}/{test_count}...")
             result = func(*test["arguments"])
             expect = test["expect"]
             

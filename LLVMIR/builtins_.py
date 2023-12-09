@@ -4,13 +4,13 @@ from common import *
 
 def length(program, builder, params, param_types_):
     param, = params
-    result_ptr = builder.gep(param, [i64_of(0), i32_if(2)])
+    result_ptr = builder.gep(param, [i64_of(0), i32_of(2)])
     return builder.load(result_ptr), W64
 
 
 def capacity(program, builder, params, param_types_):
     param, = params
-    result_ptr = builder.gep(param, [i64_of(0), i32_if(1)])
+    result_ptr = builder.gep(param, [i64_of(0), i32_of(1)])
     return builder.load(result_ptr), W64
 
 
@@ -154,7 +154,7 @@ def make_range_array_1(program, builder, params, param_types_):
 def make_range_array_2(program, builder, params, param_types_):
     start, end, = params
     return program.call_extern(
-        builder, "rangeArray1", [start, end], [
+        builder, "rangeArray2", [start, end], [
             Z32, Z32
         ], ArrayW8
     ), ArrayW8
@@ -163,7 +163,7 @@ def make_range_array_2(program, builder, params, param_types_):
 def make_range_array_3(program, builder, params, param_types_):
     start, end, step = params
     return program.call_extern(
-        builder, "rangeArray1", [start, end, step], [
+        builder, "rangeArray3", [start, end, step], [
             Z32, Z32,
             Z32
         ], ArrayW8
