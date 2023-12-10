@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Diagnostics;
 using System.Reflection;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ public class Compiler {
             if (inner is SyntaxErrorException) {
                 ShowCompilationError((SyntaxErrorException)inner, text);
             } else {
-                throw inner;
+                ExceptionDispatchInfo.Capture(inner).Throw();
             }
         } catch (PythonExceptionException e) {
             Console.WriteLine("Error in Python code:");

@@ -103,6 +103,19 @@ EXTERN_FUNCS = {
         "arguments": [PointerW8, W64, PointerW8],
         "vargs": True
     },
+    "realloc": {
+        "name": "realloc", "return_type_": PointerW8,
+        "arguments": [PointerW8, W64]
+    },
+    "memcpy": {
+        "name": "memmove", "return_type_": VOID,
+        "arguments": [PointerW8, PointerW8, W64]
+    },
+    "sprintf": {
+        "name": "print", "return_type_": W64,
+        "arguments": [PointerW8, PointerW8],
+        "vargs": True
+    },
 }
 
 EXTERN_ARRAYS = [

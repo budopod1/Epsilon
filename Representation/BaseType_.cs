@@ -126,10 +126,12 @@ public class BaseType_ : IEquatable<BaseType_> {
             return true;
         if (other.IsAny() && !IsNon()) 
             return true;
+        /*
         if (BitsImportant.Contains(name) && BitsImportant.Contains(oName)) {
             if (other.GetBitsOrDefault() < GetBitsOrDefault())
                 return false;
         }
+        */
         if (name == oName) return true;
         if (ConvertibleTo.ContainsKey(name))
             return ConvertibleTo[name].Contains(oName);

@@ -275,6 +275,10 @@ def fill_type_(type_):
     }
 
 
+bool_true = ir.IntType(1)(1)
+bool_false = ir.IntType(1)(0)
+
+
 VOID = {"name": "Void", "bits": None, "generics": []}
 Z32 = {"name": "Z", "bits": 32, "generics": []}
 W64 = {"name": "W", "bits": 64, "generics": []}

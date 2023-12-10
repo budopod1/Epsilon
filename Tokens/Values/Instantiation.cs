@@ -33,7 +33,9 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
         this.type_ = type_token.GetValue();
         values = new List<IValueToken>();
         foreach (ValueListItem listItem in list.GetValues()) {
+            if (listItem.Count == 0) continue;
             if (listItem.Count != 1 || !(listItem[0] is IValueToken)) {
+                // TODO: listItem.span is null
                 throw new SyntaxErrorException("Malformed instantiation parameter", listItem);
             }
             values.Add((IValueToken)listItem[0]);

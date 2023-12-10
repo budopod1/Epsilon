@@ -69,20 +69,20 @@ class Program:
         size_ptr = builder.gep(null_ptr, [i64_of(1)])
         return builder.ptrtoint(size_ptr, ir.IntType(64))
 
-    def malloc(self, builder, ir_type, count=1):
+    def malloc(self, builder, ir_type, count=1, name=""):
         size = self.sizeof(builder, ir_type)
         if count > 1:
             size = builder.mul(size, i64_of(count))
-        location_i8 = builder.call(self.extern_funcs["malloc"], [size])
+        location_i8 = builder.call(self.extern_funcs["malloc"], [size], name=name)
         return builder.bitcast(location_i8, ir_type.as_pointer())
 
-    def mallocv(self, builder, ir_type, count):
+    def mallocv(self, builder, ir_type, count, name=""):
         size = self.sizeof(builder, ir_type)
         size = builder.mul(size, count)
-        location_i8 = builder.call(self.extern_funcs["malloc"], [size])
+        location_i8 = builder.call(self.extern_funcs["malloc"], [size], name=name)
         return builder.bitcast(location_i8, ir_type.as_pointer())
 
-    def _free(self, builder, value):
+    def dumb_free(self, builder, value):
         casted = builder.bitcast(value, ir.IntType(8).as_pointer())
         builder.call(self.extern_funcs["free"], [casted])
 
@@ -106,8 +106,8 @@ class Program:
         content_ptr_ptr = builder.gep(val, [i64_of(0), i32_of(3)])
         content_ptr = builder.load(content_ptr_ptr)
         if is_value_type_(type_):
-            self._free(builder, val)
-            self._free(builder, content_ptr)
+            self.dumb_free(builder, val)
+            self.dumb_free(builder, content_ptr)
             builder.ret_void()
         else:
             cont_branch = builder.append_basic_block("cont")
@@ -130,8 +130,8 @@ class Program:
             cont_builder.cbranch(should_continue, cont_branch, final_branch)
             
             final_builder = ir.IRBuilder(final_branch)
-            self._free(final_builder, val)
-            self._free(final_builder, content_ptr)
+            self.dumb_free(final_builder, val)
+            self.dumb_free(final_builder, content_ptr)
             final_builder.ret_void()
 
     def _free_struct(self, entry, builder, val, type_):
@@ -141,7 +141,7 @@ class Program:
                 elem_ptr = builder.gep(val, [i64_of(0), i32_of(i+1)])
                 elem = builder.load(elem_ptr)
                 decr_ref(builder, elem, field_type_)
-        self._free(builder, val)
+        self.dumb_free(builder, val)
         builder.ret_void()
 
     def make_decr_ref_func(self, type_):
@@ -185,6 +185,24 @@ class Program:
         if frozen in self.stringifiers:
             func = self.stringifiers[frozen]
         else:
+            self.stringifiers[frozen] = None
             func = make_stringify_func(self, type_, len(self.stringifiers))
             self.stringifiers[frozen] = func
         return builder.call(func, [value])
+
+    def string_literal_array(self, builder, value, size=None, unique=False, name=""):
+        # TODO: use a string literal here
+        # Usage guidelines:
+        # if unique is true, then a unique pointer will be returned, so
+        # the caller is responsible for cleaning up the pointer
+        # otherwise, a pointer to a global string constant will be returned
+        # This is how it WILL work, not how it DOES work
+        if size is None:
+            size = len(value)
+        mem = self.malloc(builder, make_type_(self, Byte), size, name=name)
+        for i, char in enumerate(value):
+            builder.store(i8_of(ord(char)), builder.gep(
+                mem, [i64_of(i)], name=("" if name == "" else f"{name}idx{i}")
+            ))
+        return mem
+        

@@ -12,7 +12,7 @@ public class UserBaseType_ {
     }
 
     public static List<string> SpecialFullBaseType_Names = new List<string> {
-        "Str"
+        "Str", "L"
     };
 
     public static UserBaseType_ ParseString(string content, List<string> structNames) {
@@ -34,7 +34,7 @@ public class UserBaseType_ {
     }
 
     static Dictionary<string, Type_> SpecialFullBaseTypes_ = new Dictionary<string, Type_> {
-        {"Str", Type_.String()}
+        {"Str", Type_.String()}, {"L", new Type_("W", 64)}
     };
 
     public Type_ ToType_(List<Type_> generics) {

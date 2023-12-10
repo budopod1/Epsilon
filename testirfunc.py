@@ -30,10 +30,11 @@ def main():
 
     engine = compile_ir(module)
 
-    main_ptr = engine.get_function_address("f0")
-    main = CFUNCTYPE(None, c_int)(main_ptr)
-    
-    main(10)
+    main_ptr = engine.get_function_address("main")
+    main = CFUNCTYPE(c_int)(main_ptr)
+
+    for i in range(1):
+        print(main())
 
 
 if __name__ == "__main__":

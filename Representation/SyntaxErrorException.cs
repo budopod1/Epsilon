@@ -4,6 +4,9 @@ public class SyntaxErrorException : Exception {
     public CodeSpan span;
     
     public SyntaxErrorException(string message, IToken token) : base(message) {
+        if (token.span == null) {
+            throw new NullReferenceException("IToken.span should never be null");
+        }
         span = token.span;
     }
 

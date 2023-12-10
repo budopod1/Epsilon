@@ -90,6 +90,14 @@ TESTS = [
             {"arguments": [5], "compare": "exact", "expect": 6},
             {"arguments": [17], "compare": "exact", "expect": 72},
         ]
+    },
+    {
+        "file": "stringify.eps",
+        "func": "f0",
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [10], "compare": "exact", "expect": 2851}
+        ]
     }
 ]
 

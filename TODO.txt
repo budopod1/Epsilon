@@ -1,5 +1,4 @@
 TODO:
-* try to enable optimization by function inlining
 * make strings use llvm strings instead of manually setting each byte
 * add automatic refrencing counting
 * add compilation to machine code
