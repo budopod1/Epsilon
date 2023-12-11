@@ -792,16 +792,7 @@ public class Compiler {
                 }, new FuncPatternProcessor<List<IToken>>(tokens => {
                     ConstantValue sval = (ConstantValue)tokens[0];
                     string text = (((StringConstant)sval.GetValue()).GetValue());
-                    return new List<IToken> {new ArrayCreation(
-                        new Type_("Byte"),
-                        Encoding.ASCII.GetBytes(text).Select(
-                            val => {
-                                ConstantValue bval = new ConstantValue(new ByteConstant(val));
-                                bval.span = sval.span;
-                                return (IValueToken)bval;
-                            }
-                        ).ToList()
-                    )};
+                    return new List<IToken> {new StringLiteral(text)};
                 })
             )
         );

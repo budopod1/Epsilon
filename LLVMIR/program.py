@@ -15,6 +15,7 @@ class Program:
         self.decr_funcs = {}
         self.builtins = {}
         self.stringifiers = {}
+        self.const_counter = 0
 
     def is_builtin(self, id):
         return id in self.builtins
@@ -190,19 +191,35 @@ class Program:
             self.stringifiers[frozen] = func
         return builder.call(func, [value])
 
+    def const_id(self):
+        result = self.const_counter
+        self.const_counter += 1
+        return result
+
     def string_literal_array(self, builder, value, size=None, unique=False, name=""):
-        # TODO: use a string literal here
-        # Usage guidelines:
-        # if unique is true, then a unique pointer will be returned, so
-        # the caller is responsible for cleaning up the pointer
-        # otherwise, a pointer to a global string constant will be returned
-        # This is how it WILL work, not how it DOES work
-        if size is None:
-            size = len(value)
-        mem = self.malloc(builder, make_type_(self, Byte), size, name=name)
-        for i, char in enumerate(value):
-            builder.store(i8_of(ord(char)), builder.gep(
-                mem, [i64_of(i)], name=("" if name == "" else f"{name}idx{i}")
-            ))
-        return mem
+        # the unique argument, if false, means that the pointer returned is not unique
+        # nor is it writable, and it needn't be freed. if true the pointer is a unique
+        # pointer allocated during this call
+        # the size argument is only meaningfulu if unique is true, and will be the size
+        # of the returned buffer. the size argument should never be lower than len(value)
+        # if ommited, the len(value) will be used instead
+        size = size or len(value)
+        if unique:
+            constant_str = self.string_literal_array(builder, value, size, name=name)
+            mem = self.malloc(builder, make_type_(self, Byte), size)
+            self.call_extern(
+                builder, "memcpy", [mem, constant_str, i64_of(len(value))],
+                [PointerW8, PointerW8, W64], VOID
+            )
+            return mem
+        else:
+            ir_type = ir.ArrayType(make_type_(self, Byte), len(value))
+            constant = ir.Constant(ir_type, bytearray(value, "utf-8"))
+            global_var = ir.GlobalVariable(
+                self.module, ir_type, f"c{self.const_id()}"
+            )
+            global_var.global_constant = True
+            global_var.unnamed_addr = True
+            global_var.initializer = constant
+            return builder.gep(global_var, [i64_of(0), i64_of(0)])
         

@@ -530,6 +530,35 @@ class ReturnVoidInstruction(BaseInstruction):
         return builder.ret_void()
 
 
+class StringLiteralInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.string = self.data["string"]
+
+    def _build(self, builder, _1, _2):
+        str_len = len(self.string)
+        array_mem = self.program.string_literal_array(
+            builder, self.string, str_len, unique=True
+        )
+        struct_mem = self.program.malloc(
+            builder, make_type_(self.program, String).pointee
+        )
+        init_ref_counter(builder, struct_mem)
+        builder.store(
+            i64_of(str_len),
+            builder.gep(struct_mem, [i64_of(0), i32_of(1)]),
+        )
+        builder.store(
+            i64_of(str_len),
+            builder.gep(struct_mem, [i64_of(0), i32_of(2)]),
+        )
+        builder.store(
+            array_mem,
+            builder.gep(struct_mem, [i64_of(0), i32_of(3)])
+        )
+        return struct_mem
+
+
 class SwitchArm:
     def __init__(self, function, data, ir_type):
         self.function = function
@@ -666,6 +695,7 @@ def make_instruction(program, function, data):
         "or": LogicalInstruction,
         "return": ReturnInstruction,
         "return_void": ReturnVoidInstruction,
+        "string_literal": StringLiteralInstruction,
         "subtraction": ArithmeticInstruction,
         "switch": SwitchInstruction,
         "uninit_var_declaration": NoopInstruction,

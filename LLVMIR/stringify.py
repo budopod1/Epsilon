@@ -211,7 +211,7 @@ def make_stringify_func(program, type_, i):
             start_str = f"{name} ["
             start_len = len(start_str)
             start_str_mem = program.string_literal_array(
-                builder, start_str, start_len, name="start_str"
+                builder, start_str, name="start_str"
             )
             item_strs = []
             item_lens = []
