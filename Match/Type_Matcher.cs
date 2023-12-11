@@ -10,26 +10,36 @@ public class Type_Matcher : IMatcher {
     
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            IToken name = tokens[i];
+            IToken token = tokens[i];
             
-            if (name is UserBaseType_Token) {
-                UserBaseType_Token nameUnit = ((UserBaseType_Token)name);
-                Type_ type_ = Type_.FromUserBaseType_(nameUnit.GetValue());
-                int j = i;
-                List<IToken> replaced = new List<IToken> {name};
+            UserBaseType_Token baseType_Token = token as UserBaseType_Token;
+            if (baseType_Token == null) continue;
+            
+            int j = i;
+            List<IToken> replaced = new List<IToken> {token};
+            
+            try {
+                Type_ type_ = Type_.FromUserBaseType_(baseType_Token.GetValue());
                 if (i + 1 < tokens.Count) {
                     IToken next = tokens[i + 1];
-                    if (next is Generics) {
-                        Generics generics = ((Generics)next);
+                    Generics generics = next as Generics;
+                    if (generics != null) {
                         List<Type_> genericTypes_ = listParser.Parse(generics);
                         if (genericTypes_ == null) continue;
-                        type_ = Type_.FromUserBaseType_(nameUnit.GetValue(), genericTypes_);
                         replaced.Add(generics);
+                        type_ = Type_.FromUserBaseType_(
+                            baseType_Token.GetValue(), genericTypes_
+                        );
                         j++;
                     }
                 }
+
                 List<IToken> replacement = new List<IToken> {new Type_Token(type_)};
                 return new Match(i, j, replacement, replaced);
+            } catch (IllegalType_GenericsException e) {
+                throw new SyntaxErrorException(
+                    e.Message, TokenUtils.MergeSpans(replaced)
+                );
             }
         }
         return null;

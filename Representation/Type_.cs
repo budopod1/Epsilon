@@ -86,6 +86,11 @@ public class Type_ : IEquatable<Type_> {
         if (generics == null) {
             generics = new List<Type_>();
         }
+        if (generics.Count > 0 && !baseType_.GenericsAllowed()) {
+            throw new IllegalType_GenericsException(
+                $"Generics are not allowed on base type {baseType_}"
+            );
+        }
         this.generics = generics;
     }
 
@@ -94,6 +99,11 @@ public class Type_ : IEquatable<Type_> {
         if (generics == null) {
             generics = new List<Type_>();
         }
+        if (generics.Count > 0 && !baseType_.GenericsAllowed()) {
+            throw new IllegalType_GenericsException(
+                $"Generics are not allowed on base type {baseType_}"
+            );
+        }
         this.generics = generics;
     }
 
@@ -101,6 +111,11 @@ public class Type_ : IEquatable<Type_> {
         this.baseType_ = new BaseType_(name);
         if (generics == null) {
             generics = new List<Type_>();
+        }
+        if (generics.Count > 0 && !baseType_.GenericsAllowed()) {
+            throw new IllegalType_GenericsException(
+                $"Generics are not allowed on base type {baseType_}"
+            );
         }
         this.generics = generics;
     }

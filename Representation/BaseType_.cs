@@ -174,6 +174,10 @@ public class BaseType_ : IEquatable<BaseType_> {
         return FloatTypes_.Contains(name);
     }
 
+    public bool GenericsAllowed() {
+        return GenericsTypes_.Contains(name);
+    }
+
     public override string ToString() {
         if (bits == null) {
             return name;

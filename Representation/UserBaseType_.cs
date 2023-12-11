@@ -39,7 +39,11 @@ public class UserBaseType_ {
 
     public Type_ ToType_(List<Type_> generics) {
         if (SpecialFullBaseType_Names.Contains(name)) {
-            // TODO: add check that generics must be empty
+            if (generics.Count > 0) {
+                throw new IllegalType_GenericsException(
+                    $"Special type {name} cannot have generics"
+                );
+            }
             return SpecialFullBaseTypes_[name];
         }
         return new Type_(new BaseType_(name, bits), generics);
