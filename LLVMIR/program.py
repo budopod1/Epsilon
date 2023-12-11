@@ -222,4 +222,3 @@ class Program:
             global_var.unnamed_addr = True
             global_var.initializer = constant
             return builder.gep(global_var, [i64_of(0), i64_of(0)])
-        
