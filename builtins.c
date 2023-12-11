@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 
 // elem types are 64 bit unsigned
@@ -201,4 +201,44 @@ void println(struct Array *string) {
     content[len] = '\0';
     puts(content);
     string->length = len;
+}
+
+char *formatW8() {
+    static char *result = "%"PRIu8;
+    return result;
+}
+
+char *formatW16() {
+    static char *result = "%"PRIu16;
+    return result;
+}
+
+char *formatW32() {
+    static char *result = "%"PRIu32;
+    return result;
+}
+
+char *formatW64() {
+    static char *result = "%"PRIu64;
+    return result;
+}
+
+char *formatZ8() {
+    static char *result = "%"PRId8;
+    return result;
+}
+
+char *formatZ16() {
+    static char *result = "%"PRId16;
+    return result;
+}
+
+char *formatZ32() {
+    static char *result = "%"PRId32;
+    return result;
+}
+
+char *formatZ64() {
+    static char *result = "%"PRId64;
+    return result;
 }

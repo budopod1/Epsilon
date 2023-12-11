@@ -8,7 +8,6 @@ def stringify_type_(type_):
     return f"{type_['name']}{type_['bits'] or ''}{generics}"
 
 
-# TODO: so much more testing of this function
 def make_stringify_func(program, type_, i):
     ir_type = make_type_(program, type_)
     func = ir.Function(
@@ -68,39 +67,42 @@ def make_stringify_func(program, type_, i):
         builder.ret(struct_mem)
         
     elif is_number_type_(type_):
-        # TODO: test to make sure specifiers are correct
-        specifier = ""
+        specifier = None
         casted_value = val
         bits = type_["bits"]
         
         if is_floating_type_(type_):
             if bits < 32:
                 casted_value = convert_type_(program, builder, val, type_, Q32)
-                specifier = "%f"
+                specifier_txt = "%f\0"
             else:
                 casted_value = convert_type_(program, builder, val, type_, Q64)
-                specifier = "%lf"
+                specifier_txt = "%lf\0"
+            specifier = program.string_literal_array(
+                builder, specifier_txt, name="specifier"
+            )
                 
         elif is_integer_type_(type_):
             name = type_["name"]
             new_type_ = {"name": name, "bits": 8, "generics": []}
             if bits > 32:
                 new_type_["bits"] = 64
-                specifier += "%l"
             elif bits > 16:
                 new_type_["bits"] = 32
-                specifier = "%"
-            else:
+            elif bits > 8:
                 new_type_["bits"] = 16
-                specifier = "%h"
-            specifier += {"Z": "d", "W": "u"}[name]
+            else:
+                new_type_["bits"] = 8
+            func_name = f"format{name}{new_type_['bits']}"
+            specifier = program.call_extern(
+                builder, func_name, [], [], PointerW8
+            )
             casted_value = convert_type_(program, builder, val, type_, new_type_)
         
-        specifier_mem = program.string_literal_array(builder, specifier+"\0", name="specifier")
         length = program.call_extern(
             builder, "snprintf", [
                 program.nullptr(builder, byte_ir_type.as_pointer()), i64_of(0), 
-                specifier_mem
+                specifier
             ], [PointerW8, W64, PointerW8], W64, [casted_value]
         )
         null_len = builder.add(length, i64_of(1))
@@ -109,7 +111,7 @@ def make_stringify_func(program, type_, i):
         array_mem = program.mallocv(builder, byte_ir_type, null_len)
         program.call_extern(
             builder, "sprintf", [
-                array_mem, specifier_mem
+                array_mem, specifier
             ], [PointerW8, PointerW8], VOID, [casted_value]
         )
         builder.store(array_mem, builder.gep(struct_mem, [i64_of(0), i32_of(3)]))

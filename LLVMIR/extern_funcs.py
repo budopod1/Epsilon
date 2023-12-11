@@ -95,11 +95,11 @@ EXTERN_FUNCS = {
         "arguments": [String]
     },
     "println": {
-        "name": "print", "return_type_": VOID,
+        "name": "println", "return_type_": VOID,
         "arguments": [String]
     },
     "snprintf": {
-        "name": "print", "return_type_": W64,
+        "name": "snprintf", "return_type_": W64,
         "arguments": [PointerW8, W64, PointerW8],
         "vargs": True
     },
@@ -108,13 +108,37 @@ EXTERN_FUNCS = {
         "arguments": [PointerW8, W64]
     },
     "memcpy": {
-        "name": "memmove", "return_type_": VOID,
+        "name": "memcpy", "return_type_": VOID,
         "arguments": [PointerW8, PointerW8, W64]
     },
     "sprintf": {
-        "name": "print", "return_type_": W64,
+        "name": "sprintf", "return_type_": W64,
         "arguments": [PointerW8, PointerW8],
         "vargs": True
+    },
+    "formatW8": {
+        "name": "formatW8", "return_type_": PointerW8, "arguments": []
+    },
+    "formatW16": {
+        "name": "formatW16", "return_type_": PointerW8, "arguments": []
+    },
+    "formatW32": {
+        "name": "formatW32", "return_type_": PointerW8, "arguments": []
+    },
+    "formatW64": {
+        "name": "formatW64", "return_type_": PointerW8, "arguments": []
+    },
+    "formatZ8": {
+        "name": "formatZ8", "return_type_": PointerW8, "arguments": []
+    },
+    "formatZ16": {
+        "name": "formatZ16", "return_type_": PointerW8, "arguments": []
+    },
+    "formatZ32": {
+        "name": "formatZ32", "return_type_": PointerW8, "arguments": []
+    },
+    "formatZ64": {
+        "name": "formatZ64", "return_type_": PointerW8, "arguments": []
     },
 }
 
