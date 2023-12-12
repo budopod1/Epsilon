@@ -19,6 +19,7 @@ class Block:
         self.return_block = None
         self.param_offset = param_offset
         self.registered_values = []
+        self.consumed_values = set()
 
     def create_instructions(self):
         self.instructions = [
@@ -60,8 +61,6 @@ class Block:
             instruction_result_types_.append(result_type_)
             params, param_types_ = [], []
             if instruction.parameters:
-                for parameter in instruction.parameters:
-                    self.consume_value(parameter)
                 params, param_types_ = zip(*[
                     (
                         ir_instructions[parameter-self.param_offset], 
@@ -69,8 +68,10 @@ class Block:
                     )
                     for parameter in instruction.parameters
                 ])
+                for param in params:
+                    self.consume_value(param)
             built = instruction.build(self.builder, params, param_types_)
-            if result_type_ is not None:
+            if result_type_ is not None and instruction.REGISTER_RESULT:
                 self.register_value(built, result_type_)
             ir_instructions.append(built)
 
@@ -97,12 +98,14 @@ class Block:
 
     def perpare_for_termination(self):
         for type_, value in self.registered_values:
+            if value in self.consumed_values:
+                continue
             self.program.check_ref(self.builder, value, type_)
 
     def prepare_for_return(self, ret_val=None, ret_type_=None):
-        self.perpare_for_termination()
         if ret_val is not None and not is_value_type_(ret_type_):
             incr_ref_counter(self.builder, ret_val)
+        self.perpare_for_termination()
         for type_, var in self.function.get_argument_info():
             if not is_value_type_(type_):
                 self.program.decr_ref(
@@ -115,9 +118,7 @@ class Block:
         self.registered_values.append((type_, value))
 
     def consume_value(self, value):
-        self.registered_values = list(filter(
-            (lambda pair: pair[0] is not value), self.registered_values
-        ))
+        self.consumed_values.add(value)
 
     def cut(self, start, id_):
         cut = self.instructions[start:]

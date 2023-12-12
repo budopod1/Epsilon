@@ -3,6 +3,8 @@ from common import *
 
 
 class BaseInstruction:
+    REGISTER_RESULT = True
+    
     def __init__(self, program, function, data):
         self.program = program
         self.function = function
@@ -69,6 +71,8 @@ class ArithmeticInstruction(CastToResultType_Instruction, Typed_Instruction):
 
 
 class ArrayAccessInstruction(Typed_Instruction):
+    REGISTER_RESULT = False
+    
     def _build(self, builder, params, param_types_):
         array, index = params
         _, index_type_ = param_types_
@@ -472,6 +476,8 @@ class LogicalInstruction(Typed_Instruction):
 
 
 class MemberAccessInstruction(Typed_Instruction):
+    REGISTER_RESULT = False
+    
     def __init__(self, *args):
         super().__init__(*args)
         self.member = self.data["member"]
@@ -619,6 +625,8 @@ class SwitchInstruction(FlowInstruction):
 
 
 class VariableInstruction(Typed_Instruction):
+    REGISTER_RESULT = False
+    
     def __init__(self, *args):
         super().__init__(*args)
         self.variable = self.data["variable"]
