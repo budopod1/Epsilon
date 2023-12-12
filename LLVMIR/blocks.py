@@ -56,11 +56,12 @@ class Block:
         for instruction in self.instructions:
             assert not self.builder.block.is_terminated,\
                 "Cannot add instruction to terminated block"
-            instruction_result_types_.append(
-                getattr(instruction, "type_", None)
-            )
+            result_type_ = getattr(instruction, "type_", None)
+            instruction_result_types_.append(result_type_)
             params, param_types_ = [], []
             if instruction.parameters:
+                for parameter in instruction.parameters:
+                    self.consume_value(parameter)
                 params, param_types_ = zip(*[
                     (
                         ir_instructions[parameter-self.param_offset], 
@@ -69,6 +70,8 @@ class Block:
                     for parameter in instruction.parameters
                 ])
             built = instruction.build(self.builder, params, param_types_)
+            if result_type_ is not None:
+                self.register_value(built, result_type_)
             ir_instructions.append(built)
 
         if not self.builder.block.is_terminated:

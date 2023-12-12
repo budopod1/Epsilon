@@ -95,7 +95,6 @@ class ArrayAssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         array, index, value = params
         _, index_type_, value_type_ = param_types_
-        self.this_block.consume_value(value)
         # array should always already be the correct type_
         # this could change, and if it does, type_ casting would be
         # required here
@@ -163,7 +162,6 @@ class ArrayCreationInstruction(Typed_Instruction):
                 [self.type_, W64],
                 VOID
             )
-        self.this_block.register_value(struct_mem, self.type_)
         return struct_mem
 
 
@@ -175,7 +173,6 @@ class AssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types):
         value, = params
         value_type_, = param_types
-        self.this_block.consume_value(value)
         var_type_ = self.function.get_var(self.variable)["type_"]
         converted_value = convert_type_(
             self.program, builder, value, value_type_, 
@@ -408,8 +405,6 @@ class FunctionCallInstruction(Typed_Instruction):
         self.callee = self.data["function"]
 
     def _build(self, builder, params, param_types_):
-        for param in params:
-            self.this_block.consume_value(param)
         if self.program.is_builtin(self.callee):
             return self.program.call_builtin(
                 self.callee, builder, params, param_types_, self.type_
@@ -431,7 +426,6 @@ class InitialAssignment(BaseInstruction):
     def _build(self, builder, params, param_types_):
         value, = params
         value_type_, = param_types_
-        self.this_block.consume_value(value)
         var_type_ = self.function.get_var(self.variable)["type_"]
         converted_value = convert_type_(
             self.program, builder, value, value_type_, 
@@ -462,7 +456,6 @@ class InstantiationInstruction(Typed_Instruction):
         init_ref_counter(builder, result)
         for idx, casted_field in enumerate(casted_fields):
             builder.store(casted_field, builder.gep(result, [i64_of(0), i32_of(1+idx)]))
-        self.this_block.register_value(result, self.type_)
         return result
 
 
@@ -503,7 +496,6 @@ class MemberAssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         obj, value = params
         _, value_type_ = param_types_
-        self.this_block.consume_value(value)
         struct = self.program.structs[self.struct_type_["name"]]
         idx = struct.get_index_of_member(self.member)
         result_type_ = struct.get_type__by_index(idx)
@@ -576,7 +568,6 @@ class StringLiteralInstruction(Typed_Instruction):
             array_mem,
             builder.gep(struct_mem, [i64_of(0), i32_of(3)])
         )
-        self.this_block.register_value(struct_mem, self.type_)
         return struct_mem
 
 
