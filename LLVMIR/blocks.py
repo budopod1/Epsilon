@@ -18,6 +18,7 @@ class Block:
         self.next_block = None
         self.return_block = None
         self.param_offset = param_offset
+        self.registered_values = []
 
     def create_instructions(self):
         self.instructions = [
@@ -72,6 +73,7 @@ class Block:
 
         if not self.builder.block.is_terminated:
             if self.return_block:
+                self.perpare_for_termination()
                 self.builder.branch(self.return_block.block)
             else:
                 self.prepare_for_return()
@@ -90,7 +92,12 @@ class Block:
         if not is_value_type_(type_):
             incr_ref_counter(self.builder, value)
 
+    def perpare_for_termination(self):
+        for type_, value in self.registered_values:
+            self.program.check_ref(self.builder, value, type_)
+
     def prepare_for_return(self, ret_val=None, ret_type_=None):
+        self.perpare_for_termination()
         if ret_val is not None and not is_value_type_(ret_type_):
             incr_ref_counter(self.builder, ret_val)
         for type_, var in self.function.get_argument_info():
@@ -98,6 +105,16 @@ class Block:
                 self.program.decr_ref(
                     self.builder, self.builder.load(var), type_
                 )
+
+    def register_value(self, value, type_):
+        if is_value_type_(type_):
+            return
+        self.registered_values.append((type_, value))
+
+    def consume_value(self, value):
+        self.registered_values = list(filter(
+            (lambda pair: pair[0] is not value), self.registered_values
+        ))
 
     def cut(self, start, id_):
         cut = self.instructions[start:]

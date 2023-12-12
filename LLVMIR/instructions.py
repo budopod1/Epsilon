@@ -95,6 +95,7 @@ class ArrayAssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         array, index, value = params
         _, index_type_, value_type_ = param_types_
+        self.this_block.consume_value(value)
         # array should always already be the correct type_
         # this could change, and if it does, type_ casting would be
         # required here
@@ -109,6 +110,8 @@ class ArrayAssignmentInstruction(BaseInstruction):
         result_ptr = builder.load(builder.gep(
             array, [i64_of(0), i32_of(3)]
         ))
+        if not is_value_type_(self.elem_type_):
+            incr_ref_counter(builder, casted_index)
         builder.store(casted_value, builder.gep(
             result_ptr, [casted_index]
         ))
@@ -160,6 +163,7 @@ class ArrayCreationInstruction(Typed_Instruction):
                 [self.type_, W64],
                 VOID
             )
+        self.this_block.register_value(struct_mem, self.type_)
         return struct_mem
 
 
@@ -171,6 +175,7 @@ class AssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types):
         value, = params
         value_type_, = param_types
+        self.this_block.consume_value(value)
         var_type_ = self.function.get_var(self.variable)["type_"]
         converted_value = convert_type_(
             self.program, builder, value, value_type_, 
@@ -212,6 +217,7 @@ class BreakInstruction(BaseInstruction):
         self.block = self.function.blocks[self.block_num]
 
     def _build(self, builder, params, param_types_):
+        self.this_block.perpare_for_termination()
         return builder.branch(self.block.next_block.block)
 
 
@@ -268,6 +274,7 @@ class Condition:
         def _build(builder, params, param_types_):
             param, = params
             param_type_, = param_types_
+            final_block.perpare_for_termination()
             builder.cbranch(
                 truth_value(self.program, builder, param, param_type_),
                 self.block.block,
@@ -327,6 +334,7 @@ class ConditionalInstruction(FlowInstruction):
             condition.finish()
 
     def _build(self, builder, params, param_types_):
+        self.this_block.perpare_for_termination()
         builder.branch(self.conditions[0].eval_block.block)
 
 
@@ -348,6 +356,7 @@ class ContinueInstruction(BaseInstruction):
         self.block = self.function.blocks[self.block_num]
 
     def _build(self, builder, params, param_types_):
+        self.this_block.perpare_for_termination()
         return builder.branch(self.block.block)
 
 
@@ -399,6 +408,8 @@ class FunctionCallInstruction(Typed_Instruction):
         self.callee = self.data["function"]
 
     def _build(self, builder, params, param_types_):
+        for param in params:
+            self.this_block.consume_value(param)
         if self.program.is_builtin(self.callee):
             return self.program.call_builtin(
                 self.callee, builder, params, param_types_, self.type_
@@ -420,6 +431,7 @@ class InitialAssignment(BaseInstruction):
     def _build(self, builder, params, param_types_):
         value, = params
         value_type_, = param_types_
+        self.this_block.consume_value(value)
         var_type_ = self.function.get_var(self.variable)["type_"]
         converted_value = convert_type_(
             self.program, builder, value, value_type_, 
@@ -450,6 +462,7 @@ class InstantiationInstruction(Typed_Instruction):
         init_ref_counter(builder, result)
         for idx, casted_field in enumerate(casted_fields):
             builder.store(casted_field, builder.gep(result, [i64_of(0), i32_of(1+idx)]))
+        self.this_block.register_value(result, self.type_)
         return result
 
 
@@ -490,12 +503,15 @@ class MemberAssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         obj, value = params
         _, value_type_ = param_types_
+        self.this_block.consume_value(value)
         struct = self.program.structs[self.struct_type_["name"]]
         idx = struct.get_index_of_member(self.member)
+        result_type_ = struct.get_type__by_index(idx)
         converted_value = convert_type_(
-            self.program, builder, value, value_type_,
-            struct.get_type__by_index(idx)
+            self.program, builder, value, value_type_, result_type_
         )
+        if not is_value_type_(result_type_):
+            incr_ref_counter(builder, converted_value)
         return builder.store(
             converted_value, builder.gep(obj, [i64_of(0), i32_of(1+idx)])
         )
@@ -560,6 +576,7 @@ class StringLiteralInstruction(Typed_Instruction):
             array_mem,
             builder.gep(struct_mem, [i64_of(0), i32_of(3)])
         )
+        self.this_block.register_value(struct_mem, self.type_)
         return struct_mem
 
 
@@ -594,6 +611,7 @@ class SwitchInstruction(FlowInstruction):
 
     def _build(self, builder, params, param_types_):
         param, = params
+        self.this_block.perpare_for_termination()
         switch = builder.switch(
             param, (
                 self.this_block.next_block 
@@ -643,6 +661,7 @@ class WhileInstruction(FlowInstruction):
         def _build(builder, params, param_types_):
             param, = params
             param_type_, = param_types_
+            final_block.perpare_for_termination()
             builder.cbranch(
                 truth_value(self.program, builder, param, param_type_),
                 self.block.block, self.this_block.next_block.block
@@ -657,6 +676,7 @@ class WhileInstruction(FlowInstruction):
         ))
 
     def _build(self, builder, params, param_types_):
+        self.this_block.perpare_for_termination()
         builder.branch(self.eval_block.block)
 
 
