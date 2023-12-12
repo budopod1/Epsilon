@@ -7,8 +7,10 @@ public class Negation : UnaryOperation<IValueToken>, IValueToken {
     public Type_ GetType_() {
         Type_ type_ = o.GetType_();
         BaseType_ bt = type_.GetBaseType_();
-        if (bt.GetName() == "W")
+        if (bt.GetName() == "Q") {
+            return type_;
+        } else {
             return new Type_("Z", bt.GetBits());
-        return type_;
+        }
     }
 }
