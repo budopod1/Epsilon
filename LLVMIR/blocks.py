@@ -68,8 +68,6 @@ class Block:
                     )
                     for parameter in instruction.parameters
                 ])
-                for param in params:
-                    self.consume_value(param)
             built = instruction.build(self.builder, params, param_types_)
             if result_type_ is not None and instruction.REGISTER_RESULT:
                 self.register_value(built, result_type_)
