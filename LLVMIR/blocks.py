@@ -74,6 +74,7 @@ class Block:
             if self.return_block:
                 self.builder.branch(self.return_block.block)
             else:
+                self.prepare_for_return()
                 self.builder.ret_void()
 
     def add_variable_declarations(self, scope):
@@ -84,8 +85,19 @@ class Block:
             )
         return variable_declarations
 
-    def add_argument(self, value, var):
+    def add_argument(self, value, var, type_):
         self.builder.store(value, var)
+        if not is_value_type_(type_):
+            incr_ref_counter(self.builder, value)
+
+    def prepare_for_return(self, ret_val=None, ret_type_=None):
+        if ret_val is not None and not is_value_type_(ret_type_):
+            incr_ref_counter(self.builder, ret_val)
+        for type_, var in self.function.get_argument_info():
+            if not is_value_type_(type_):
+                self.program.decr_ref(
+                    self.builder, self.builder.load(var), type_
+                )
 
     def cut(self, start, id_):
         cut = self.instructions[start:]

@@ -520,13 +520,17 @@ class ReturnInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         param, = params
         param_type_, = param_types_
-        return builder.ret(convert_type_(
-            self.program, builder, param, param_type_, self.function.return_type_
-        ))
+        ret_type_ = self.function.return_type_
+        ret_val = convert_type_(
+            self.program, builder, param, param_type_, ret_type_
+        )
+        self.this_block.prepare_for_return(ret_val, ret_type_)
+        return builder.ret(ret_val)
 
 
 class ReturnVoidInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
+        self.this_block.prepare_for_return()
         return builder.ret_void()
 
 

@@ -12,7 +12,7 @@ class Program:
         self.arrays = {}
         self.externs = {}
         self.extern_funcs = {}
-        self.decr_funcs = {}
+        self.check_funcs = {}
         self.builtins = {}
         self.stringifiers = {}
         self.const_counter = 0
@@ -145,21 +145,19 @@ class Program:
         self.dumb_free(builder, val)
         builder.ret_void()
 
-    def make_decr_ref_func(self, type_):
+    def make_check_func(self, type_):
         if is_value_type_(type_):
             return
         ir_type = make_type_(self, type_)
         func = ir.Function(
-            self.module, ir.FunctionType(ir.VoidType(), [ir_type]),
-            name=f"d{len(self.decr_funcs)}"
+            self.module, ir.FunctionType(
+                ir.VoidType(), [ir_type, make_type_(self, W64)]
+            ), name=f"d{len(self.check_funcs)}"
         )
         entry = func.append_basic_block(name="entry")
         builder = ir.IRBuilder(entry)
-        val, = func.args
-        ref_counter = builder.bitcast(val, REF_COUNTER_FIELD.as_pointer())
-        decred = builder.sub(builder.load(ref_counter), REF_COUNTER_FIELD(1))
-        builder.store(decred, ref_counter)
-        no_refs = builder.icmp_unsigned("==", decred, REF_COUNTER_FIELD(0))
+        val, refs = func.args
+        no_refs = builder.icmp_unsigned("==", refs, REF_COUNTER_FIELD(0))
         with builder.if_then(no_refs):
             if type_["name"] == "Array":
                 self._free_array(entry, builder, val, type_["generics"][0])
@@ -168,16 +166,28 @@ class Program:
         builder.ret_void()
         return func
 
-    def decr_ref(self, builder, value, type_):
+    def check_ref(self, builder, value, type_, refs=None):
+        if refs is None:
+            refs = builder.load(builder.bitcast(
+                value, REF_COUNTER_FIELD.as_pointer()
+            ))
         if is_value_type_(type_):
             return
         frozen = freeze_json(type_)
-        if frozen in self.decr_funcs:
-            func = self.decr_funcs[frozen]
+        if frozen in self.check_funcs:
+            func = self.check_funcs[frozen]
         else:
-            func = self.make_decr_ref_func(type_)
-            self.decr_funcs[frozen] = func
-        builder.call(func, [value])
+            func = self.make_check_func(type_)
+            self.check_funcs[frozen] = func
+        builder.call(func, [value, refs])
+
+    def decr_ref(self, builder, value, type_):
+        if is_value_type_(type_):
+            return
+        ref_counter = builder.bitcast(value, REF_COUNTER_FIELD.as_pointer())
+        decred = builder.sub(builder.load(ref_counter), REF_COUNTER_FIELD(1))
+        builder.store(decred, ref_counter)
+        self.check_ref(builder, value, type_, decred)
 
     def stringify(self, builder, value, type_):
         if type_ == String or type_ == ArrayW8:

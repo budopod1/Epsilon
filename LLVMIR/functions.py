@@ -46,7 +46,8 @@ class Function:
         )
         for arg, ir_arg in zip(self.arguments, self.ir.args):
             self.blocks[0].add_argument(
-                ir_arg, self.get_variable_declaration(arg["variable"])
+                ir_arg, self.get_variable_declaration(arg["variable"]),
+                arg["type_"]
             )
 
     def add_block(self, *args):
@@ -60,6 +61,10 @@ class Function:
     def get_variable_declaration(self, id_):
         return self.variable_declarations[id_]
 
+    def get_argument_info(self):
+        for arg in self.arguments:
+            yield arg["type_"], self.get_variable_declaration(arg["variable"])
+    
     def get_var(self, id_):
         return self.scope[str(id_)]
 

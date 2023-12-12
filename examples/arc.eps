@@ -1,0 +1,9 @@
+// Automatic Refrence Counting
+Z#parent<Array<Z>:v><Z:o> {
+    return v[0] + o;
+}
+
+Z#main {
+    Array<Z> [5];
+    return parent[Array<Z> [1]][2];
+}
