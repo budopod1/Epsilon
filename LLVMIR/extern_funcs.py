@@ -140,6 +140,42 @@ EXTERN_FUNCS = {
     "formatZ64": {
         "name": "formatZ64", "return_type_": PointerW8, "arguments": []
     },
+    "leftPad": {
+        "name": "leftPad", "return_type_": VOID, 
+        "arguments": [String, W64, Byte]
+    },
+    "rightPad": {
+        "name": "rightPad", "return_type_": VOID, 
+        "arguments": [String, W64, Byte]
+    },
+    "slice": {
+        "name": "slice", "return_type_": VOID,
+        "arguments": [ArrayW8, W64, W64, W64]
+    },
+    "arrayEqual": {
+        "name": "arrayEqual", "return_type_": Z32,
+        "arguments": [ArrayW8, ArrayW8]
+    },
+    "countChr": {
+        "name": "countChr", "return_type_": W64,
+        "arguments": [ArrayW8, Byte]
+    },
+    "count": {
+        "name": "count", "return_type_": W64,
+        "arguments": [ArrayW8, ArrayW8, W64]
+    },
+    "overlapCount": {
+        "name": "overlapCount", "return_type_": W64,
+        "arguments": [ArrayW8, ArrayW8, W64]
+    },
+    "nest": {
+        "name": "nest", "return_type_": ArrayW8,
+        "arguments": [ArrayW8, W64]
+    },
+    "split": {
+        "name": "split", "return_type_": ArrayW8,
+        "arguments": [ArrayW8, ArrayW8, W64]
+    }
 }
 
 EXTERN_ARRAYS = [

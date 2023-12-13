@@ -274,14 +274,14 @@ void rightPad(struct Array *str, uint64_t length, char chr) {
 struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
     struct Array *slice = malloc(sizeof(struct Array));
     slice->refCounter = 0;
-    uint64_t size = end - start + 1;
-    slice->capacity = size;
-    slice->length = size;
+    uint64_t len = end - start + 1;
+    slice->capacity = len;
+    slice->length = len;
     uint64_t elemSize = elem >> 1;
-    uint64_t memSize = elemSize * size;
-    void *content = malloc(memSize);
+    uint64_t size = elemSize * len;
+    void *content = malloc(size);
     slice->content = content;
-    memcpy(content, ((char*)array->content)+(start*elemSize), memSize);
+    memcpy(content, ((char*)array->content)+(start*elemSize), size);
     incrementArrayRefCounts(slice, elem);
     return slice;
 }
@@ -306,6 +306,7 @@ uint64_t countChr(const struct Array *str, char chr) {
     }
     return counter;
 }
+
 uint64_t count(const struct Array *arr, const struct Array *seg, uint64_t elemSize) {
     uint64_t counter = 0;
     uint64_t arrLen = arr->length;

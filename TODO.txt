@@ -1,3 +1,4 @@
 TODO:
+* fix comparison on non-number types_
 * add automatic refrencing counting
 * add compilation to machine code
