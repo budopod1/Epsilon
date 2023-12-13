@@ -184,9 +184,7 @@ class Program:
     def decr_ref(self, builder, value, type_):
         if is_value_type_(type_):
             return
-        ref_counter = builder.bitcast(value, REF_COUNTER_FIELD.as_pointer())
-        decred = builder.sub(builder.load(ref_counter), REF_COUNTER_FIELD(1))
-        builder.store(decred, ref_counter)
+        decred = dumb_decr_ref_counter(builder, value)
         self.check_ref(builder, value, type_, decred)
 
     def stringify(self, builder, value, type_):

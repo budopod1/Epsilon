@@ -543,6 +543,7 @@ class ReturnInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         param, = params
         param_type_, = param_types_
+        self.this_block.consume_value(param)
         ret_type_ = self.function.return_type_
         ret_val = convert_type_(
             self.program, builder, param, param_type_, ret_type_

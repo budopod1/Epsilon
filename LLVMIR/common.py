@@ -247,6 +247,14 @@ def incr_ref_counter(builder, val):
     ref_counter = builder.bitcast(val, REF_COUNTER_FIELD.as_pointer())
     incred = builder.add(builder.load(ref_counter), REF_COUNTER_FIELD(1))
     builder.store(incred, ref_counter)
+    return incred
+
+
+def dumb_decr_ref_counter(builder, val):
+    ref_counter = builder.bitcast(val, REF_COUNTER_FIELD.as_pointer())
+    decred = builder.sub(builder.load(ref_counter), REF_COUNTER_FIELD(1))
+    builder.store(decred, ref_counter)
+    return decred
 
 
 def do_chain_power(program, builder, type_, value, pow):

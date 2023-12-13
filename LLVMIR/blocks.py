@@ -109,6 +109,8 @@ class Block:
                 self.program.decr_ref(
                     self.builder, self.builder.load(var), type_
                 )
+        if ret_val is not None and not is_value_type_(ret_type_):
+            dumb_decr_ref_counter(self.builder, ret_val)
 
     def register_value(self, value, type_):
         if is_value_type_(type_):
