@@ -271,8 +271,6 @@ void rightPad(struct Array *str, uint64_t length, char chr) {
     }
 }
 
-// ALL SUBSEQUENT FUNCTIONS ARE UNTESTED
-
 struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
     struct Array *slice = malloc(sizeof(struct Array));
     slice->refCounter = 0;
