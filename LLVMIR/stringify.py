@@ -40,6 +40,7 @@ def make_stringify_func(program, type_, i):
                 True: "true"
             }[cond]
             abuilder = true_builder if cond else false_builder
+            capacity = len(text)
             abuilder.store(i64_of(capacity), capacity_field)
             abuilder.store(i64_of(capacity), length_field)
             abuilder.store(program.string_literal_array(

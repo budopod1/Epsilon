@@ -208,6 +208,101 @@ def println(program, builder, params, param_types_):
     return None, VOID
 
 
+def left_pad(program, builder, params, param_types_):
+    arr, len, chr = params
+    program.call_extern(builder, "leftPad", [arr, len, chr], [String, W64, Byte], VOID)
+    return None, VOID
+
+
+def right_pad(program, builder, params, param_types_):
+    arr, len, chr = params
+    program.call_extern(builder, "rightPad", [arr, len, chr], [String, W64, Byte], VOID)
+    return None, VOID
+
+
+def slice_(program, builder, params, param_types_):
+    arr, start, end = params
+    arr_type_, _, _ = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem = program.make_elem(builder, generic_type_)
+    return program.call_extern(
+        builder, "slice", [arr, start, end, elem], 
+        [ArrayW8, W64, W64, W64], ArrayW8
+    ), ArrayW8
+
+
+def countChr(program, builder, params, param_types_):
+    str, chr = params
+    return program.call_extern(
+        builder, "countChr", [str, chr],
+        [String, Byte], W64
+    ), W64
+
+
+def count(program, builder, params, param_types_):
+    arr, sub = params
+    arr_type_, _ = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
+    return program.call_extern(
+        builder, "count", [arr, sub, elem_size], 
+        [ArrayW8, ArrayW8, W64], ArrayW8
+    ), ArrayW8
+
+
+def overlapCount(program, builder, params, param_types_):
+    arr, sub = params
+    arr_type_, _ = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
+    return program.call_extern(
+        builder, "overlapCount", [arr, sub, elem_size], 
+        [ArrayW8, ArrayW8, W64], ArrayW8
+    ), ArrayW8
+
+
+def nest(program, builder, params, param_types_):
+    arr, = params
+    arr_type_, = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem = program.make_elem(builder, generic_type_)
+    return program.call_extern(
+        builder, "nest", [arr, elem], [ArrayW8, W64], ArrayW8
+    ), ArrayW8
+
+
+def split(program, builder, params, param_types_):
+    arr, sub = params
+    arr_type_, _ = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem = program.make_elem(builder, generic_type_)
+    return program.call_extern(
+        builder, "split", [arr, sub, elem], [ArrayW8, ArrayW8, W64], ArrayW8
+    ), ArrayW8
+
+
+def starts_with(program, builder, params, param_types_):
+    arr, sub = params
+    arr_type_, _ = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
+    return program.call_extern(
+        builder, "startsWith", [arr, sub, elem_size], 
+        [ArrayW8, ArrayW8, W64], Bool
+    ), Bool
+
+
+def ends_with(program, builder, params, param_types_):
+    arr, sub = params
+    arr_type_, _ = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
+    return program.call_extern(
+        builder, "endsWith", [arr, sub, elem_size], 
+        [ArrayW8, ArrayW8, W64], Bool
+    ), Bool
+
+
 BUILTINS = {
     -1: {
         "func": length,
@@ -306,5 +401,45 @@ BUILTINS = {
     -19: {
         "func": println,
         "params": [None]
+    },
+    -20: {
+        "func": left_pad,
+        "params": [String, W64, Byte]
+    },
+    -21: {
+        "func": right_pad,
+        "params": [String, W64, Byte]
+    },
+    -22: {
+        "func": slice_,
+        "params": [ArrayW8, W64, W64]
+    },
+    -23: {
+        "func": countChr,
+        "params": [String, Byte]
+    },
+    -24: {
+        "func": count,
+        "params": [ArrayW8, ArrayW8]
+    },
+    -25: {
+        "func": overlapCount,
+        "params": [ArrayW8, ArrayW8]
+    },
+    -26: {
+        "func": nest,
+        "params": [ArrayW8]
+    },
+    -27: {
+        "func": split,
+        "params": [ArrayW8, ArrayW8]
+    },
+    -28: {
+        "func": starts_with,
+        "params": [ArrayW8, ArrayW8]
+    },
+    -29: {
+        "func": ends_with,
+        "params": [ArrayW8, ArrayW8]
     }
 }

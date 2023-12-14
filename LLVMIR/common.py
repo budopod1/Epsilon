@@ -299,4 +299,4 @@ Q64 = {"name": "Q", "bits": 64, "generics": []}
 Q32 = {"name": "Q", "bits": 32, "generics": []}
 Byte = {"name": "Byte", "bits": 8, "generics": []}
 String = {"name": "Array", "bits": None, "generics": [Byte]}
-Bool = {"name": "Bool", "bits": None, "generics": []}
+Bool = {"name": "Bool", "bits": 1, "generics": []}

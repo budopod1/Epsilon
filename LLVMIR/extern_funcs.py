@@ -149,7 +149,7 @@ EXTERN_FUNCS = {
         "arguments": [String, W64, Byte]
     },
     "slice": {
-        "name": "slice", "return_type_": VOID,
+        "name": "slice", "return_type_": ArrayW8,
         "arguments": [ArrayW8, W64, W64, W64]
     },
     "arrayEqual": {
@@ -158,7 +158,7 @@ EXTERN_FUNCS = {
     },
     "countChr": {
         "name": "countChr", "return_type_": W64,
-        "arguments": [ArrayW8, Byte]
+        "arguments": [String, Byte]
     },
     "count": {
         "name": "count", "return_type_": W64,
@@ -174,6 +174,14 @@ EXTERN_FUNCS = {
     },
     "split": {
         "name": "split", "return_type_": ArrayW8,
+        "arguments": [ArrayW8, ArrayW8, W64]
+    },
+    "startsWith": {
+        "name": "startWith", "return_type_": Z32,
+        "arguments": [ArrayW8, ArrayW8, W64]
+    },
+    "endsWith": {
+        "name": "endsWith", "return_type_": Z32,
         "arguments": [ArrayW8, ArrayW8, W64]
     }
 }

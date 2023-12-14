@@ -58,7 +58,7 @@ void insertSpace(struct Array *array, uint64_t idx, uint64_t elemSize) {
     memmove((void*)deststart, (void*)srcstart, elemSize*(length-idx));
 }
 
-void incrementArrayRefCounts(struct Array *array, uint64_t elem) {
+void incrementArrayRefCounts(const struct Array *array, uint64_t elem) {
     if (elem&1) return;
     uint64_t elemSize = elem >> 1;
     uint64_t length = array->length;
@@ -68,7 +68,7 @@ void incrementArrayRefCounts(struct Array *array, uint64_t elem) {
     }
 }
 
-void alwaysIncrementArrayRefCounts(struct Array *array, uint64_t elemSize) {
+void alwaysIncrementArrayRefCounts(const struct Array *array, uint64_t elemSize) {
     uint64_t length = array->length;
     char *content = array->content;
     for (uint64_t i = 0; i < length; i++) {
@@ -76,7 +76,7 @@ void alwaysIncrementArrayRefCounts(struct Array *array, uint64_t elemSize) {
     }
 }
 
-struct Array *clone(struct Array *array, uint64_t elem) {
+struct Array *clone(const struct Array *array, uint64_t elem) {
     struct Array *newArray = malloc(sizeof(struct Array));
     newArray->refCounter = 0;
     uint64_t capacity = array->capacity;
@@ -91,7 +91,7 @@ struct Array *clone(struct Array *array, uint64_t elem) {
     return newArray;
 }
 
-void extend(struct Array *array1, struct Array *array2, uint64_t elem) {
+void extend(struct Array *array1, const struct Array *array2, uint64_t elem) {
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
     uint64_t newLen = len1 + len2;
@@ -102,7 +102,7 @@ void extend(struct Array *array1, struct Array *array2, uint64_t elem) {
     memcpy(array1->content+len1, array2->content, len2*elemSize);
 }
 
-struct Array *join(struct Array *array1, struct Array *array2, uint64_t elem) {
+struct Array *join(const struct Array *array1, const struct Array *array2, uint64_t elem) {
     struct Array *newArray = malloc(sizeof(struct Array));
     newArray->refCounter = 0;
     uint64_t len1 = array1->length;
@@ -427,4 +427,19 @@ struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t e
         ((struct Array**)result->content)[sectionCount] = section;
     }
     return result;
+}
+
+int startsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+    uint64_t subLen = sub->length;
+    if (subLen > arr->length) return 0;
+    return memcmp(arr->content, sub->content, subLen*elemSize) == 0;
+}
+
+int endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+    uint64_t subLen = sub->length;
+    uint64_t arrLen = arr->length;
+    if (subLen > arrLen) return 0;
+    uint64_t startIdx = arrLen - subLen;
+    char *startPtr = ((char*)arr->content)+startIdx*elemSize;
+    return memcmp(startPtr, sub->content, subLen*elemSize) == 0;
 }
