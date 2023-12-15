@@ -22,7 +22,7 @@ class Function:
         )
         self.blocks = [
             Block(program, self, i, block)
-            for i, block in enumerate(data["instructions"])
+            for i, block in enumerate(data["blocks"])
         ]
         for block in self.blocks:
             block.create_instructions()

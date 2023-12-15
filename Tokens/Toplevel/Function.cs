@@ -114,8 +114,8 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         ));
         obj["return_type_"] = returnType_.GetJSON();
         new SerializationContext(this).Serialize(block);
-        obj["instructions"] = new JSONList(contexts.Select(
-            context=>context.GetInstructions()
+        obj["blocks"] = new JSONList(contexts.Select(
+            context=>context.Serialize()
         ));
         obj["scope"] = scope.GetJSON();
         obj["is_main"] = new JSONBool(isMain);

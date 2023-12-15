@@ -25,6 +25,7 @@ public class InitialAssignment : UnaryOperation<IValueToken>, IVerifier, IComple
     }
 
     public override int Serialize(SerializationContext context) {
+        context.AddInitialAssignment(id);
         return context.AddInstruction(
             new SerializableInstruction(this, context)
                 .AddData("variable", new JSONInt(id))

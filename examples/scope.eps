@@ -1,0 +1,12 @@
+G {
+    Z:v
+}
+
+Z#main {
+    Z:i = 1;
+    while (i < 10) {
+        G:g = G [i];
+        i = i + g.v;
+    };
+    return i;
+}

@@ -17,7 +17,7 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop {
             new SerializableInstruction(
                 "while"
             ).AddData("block", new JSONInt(sub.GetIndex()))
-             .AddData("condition", conditionCtx.GetInstructions())
+             .AddData("condition", conditionCtx.Serialize())
         );
     }
 }

@@ -6,8 +6,12 @@ public class SerializationContext {
     CodeBlock block;
     int index;
     bool hidden;
+    JSONList parentAssignments;
+    JSONList initialAssignments = new JSONList();
 
-    public SerializationContext(Function function, bool hidden=false) {
+    public SerializationContext(Function function, bool hidden=false, JSONList parentAssignments=null) {
+        if (parentAssignments == null) parentAssignments = new JSONList();
+        this.parentAssignments = parentAssignments;
         this.function = function;
         this.hidden = hidden;
         if (!hidden) {
@@ -32,15 +36,25 @@ public class SerializationContext {
     }
 
     public SerializationContext AddSubContext(bool hidden=false) {
-        return new SerializationContext(function, hidden);
+        JSONList assignments = new JSONList(parentAssignments);
+        foreach (IJSONValue assignment in initialAssignments) {
+            assignments.Add(assignment);
+        }
+        return new SerializationContext(
+            function, hidden, assignments
+        );
     }
 
     public int GetIndex() {
         return index;
     }
 
-    public IJSONValue GetInstructions() {
-        return instructions;
+    public IJSONValue Serialize() {
+        JSONObject obj = new JSONObject();
+        obj["instructions"] = instructions;
+        obj["initial_assignments"] = initialAssignments;
+        obj["parent_assignments"] = parentAssignments;
+        return obj;
     }
 
     public CodeBlock GetBlock() {
@@ -53,5 +67,9 @@ public class SerializationContext {
 
     public bool IsHidden() {
         return hidden;
+    }
+
+    public void AddInitialAssignment(int varID) {
+        initialAssignments.Add(new JSONInt(varID));
     }
 }

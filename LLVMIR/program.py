@@ -136,9 +136,9 @@ class Program:
             final_builder.ret_void()
 
     def _free_struct(self, entry, builder, val, type_):
-        struct = self.structs[self.type_["name"]]
+        struct = self.structs[type_["name"]]
         for i, field_type_ in enumerate(struct.get_field_types_()):
-            if not is_value_type(field_type_):
+            if not is_value_type_(field_type_):
                 elem_ptr = builder.gep(val, [i64_of(0), i32_of(i+1)])
                 elem = builder.load(elem_ptr)
                 decr_ref(builder, elem, field_type_)

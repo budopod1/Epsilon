@@ -7,7 +7,8 @@ from instructions import make_instruction, BaseInstruction, FlowInstruction
 
 
 class Block:
-    def __init__(self, program, function, id_, instructions, param_offset=0, real_instructions=False):
+    def __init__(self, program, function, id_, block, param_offset=0, real_instructions=False):
+        instructions = block["instructions"]
         self.id_ = id_
         self.program = program
         self.raw_instructions = None if real_instructions else instructions
@@ -20,6 +21,8 @@ class Block:
         self.param_offset = param_offset
         self.registered_values = []
         self.consumed_values = set()
+        self.initial_assignments = block["initial_assignments"]
+        self.parent_assignments = block["parent_assignments"]
 
     def create_instructions(self):
         self.instructions = [
@@ -94,7 +97,18 @@ class Block:
         if not is_value_type_(type_):
             incr_ref_counter(self.builder, value)
 
+    def clean_assignments(self, assignments):
+        for id in assignments:
+            type_ = self.function.scope[str(id)]["type_"]
+            if is_value_type_(type_):
+                continue
+            var = self.function.get_variable_declaration(id)
+            self.program.decr_ref(
+                self.builder, self.builder.load(var), type_
+            )
+
     def perpare_for_termination(self):
+        self.clean_assignments(self.initial_assignments)
         for type_, value in self.registered_values:
             if value in self.consumed_values:
                 continue
@@ -104,6 +118,7 @@ class Block:
         if ret_val is not None and not is_value_type_(ret_type_):
             incr_ref_counter(self.builder, ret_val)
         self.perpare_for_termination()
+        self.clean_assignments(self.parent_assignments)
         for type_, var in self.function.get_argument_info():
             if not is_value_type_(type_):
                 self.program.decr_ref(
@@ -124,8 +139,12 @@ class Block:
         cut = self.instructions[start:]
         self.instructions = self.instructions[:start]
         next_block = self.function.add_block(
-            self.program, self.function, id_, cut,
-            start + self.param_offset, True
+            self.program, self.function, id_, {
+                "instructions": cut, 
+                "initial_assignments": self.initial_assignments,
+                "parent_assignments": self.parent_assignments
+            }, start + self.param_offset, True
         )
+        self.initial_assignments = []
         self.next_block = next_block
         return next_block
