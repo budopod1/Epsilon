@@ -1,4 +1,3 @@
 TODO:
-* do something about initial assignments in hidden SerializationContexts
 * fix comparison on non-number types_
 * add compilation to machine code
