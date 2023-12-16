@@ -1,6 +1,7 @@
 from llvmlite import ir
 from common import *
 from stringify import make_stringify_func
+from equals import refrence_equals, value_equals_depth_1
 
 
 class Program:
@@ -16,6 +17,8 @@ class Program:
         self.builtins = {}
         self.stringifiers = {}
         self.const_counter = 0
+        self.refrence_eq_funcs = {}
+        self.value_eq_funcs = {}
 
     def is_builtin(self, id):
         return id in self.builtins
@@ -124,7 +127,7 @@ class Program:
             i.add_incoming(i64_of(0), entry)
             elem_ptr = cont_builder.gep(content_ptr, [i])
             elem = cont_builder.load(elem_ptr)
-            decr_ref(cont_builder, elem, type_)
+            self.decr_ref(cont_builder, elem, type_)
             i_incr = cont_builder.add(i, i64_of(1))
             i.add_incoming(i_incr, cont_branch)
             should_continue = cont_builder.icmp_unsigned("<", i_incr, length)
@@ -141,7 +144,7 @@ class Program:
             if not is_value_type_(field_type_):
                 elem_ptr = builder.gep(val, [i64_of(0), i32_of(i+1)])
                 elem = builder.load(elem_ptr)
-                decr_ref(builder, elem, field_type_)
+                self.decr_ref(builder, elem, field_type_)
         self.dumb_free(builder, val)
         builder.ret_void()
 
@@ -152,18 +155,22 @@ class Program:
         func = ir.Function(
             self.module, ir.FunctionType(
                 ir.VoidType(), [ir_type, make_type_(self, W64)]
-            ), name=f"d{len(self.check_funcs)}"
+            ), name=f"check{len(self.check_funcs)}"
         )
         entry = func.append_basic_block(name="entry")
         builder = ir.IRBuilder(entry)
         val, refs = func.args
         no_refs = builder.icmp_unsigned("==", refs, REF_COUNTER_FIELD(0))
-        with builder.if_then(no_refs):
-            if type_["name"] == "Array":
-                self._free_array(entry, builder, val, type_["generics"][0])
-            else:
-                self._free_struct(entry, builder, val, type_)
-        builder.ret_void()
+        free_block = func.append_basic_block(name="free")
+        exit_block = func.append_basic_block(name="exit")
+        builder.cbranch(no_refs, free_block, exit_block)
+        fbuilder = ir.IRBuilder(free_block)
+        if type_["name"] == "Array":
+            self._free_array(free_block, fbuilder, val, type_["generics"][0])
+        else:
+            self._free_struct(free_block, fbuilder, val, type_)
+        ebuilder = ir.IRBuilder(exit_block)
+        ebuilder.ret_void()
         return func
 
     def check_ref(self, builder, value, type_, refs=None):
@@ -177,6 +184,7 @@ class Program:
         if frozen in self.check_funcs:
             func = self.check_funcs[frozen]
         else:
+            self.check_funcs[frozen] = None
             func = self.make_check_func(type_)
             self.check_funcs[frozen] = func
         builder.call(func, [value, refs])
@@ -230,3 +238,37 @@ class Program:
             global_var.unnamed_addr = True
             global_var.initializer = constant
             return builder.gep(global_var, [i64_of(0), i64_of(0)])
+
+    def refrence_equals(self, builder, type_, v1, v2, invert=False):
+        if is_number_type_(type_):
+            return compare_values(
+                builder, "!=" if invert else "==", v1, v2, type_
+            )
+        else:
+            frozen = freeze_json(type_)
+            if frozen in self.refrence_eq_funcs:
+                func = self.refrence_eq_funcs[frozen]
+            else:
+                self.refrence_eq_funcs[frozen] = None
+                func = refrence_equals(
+                    self, len(self.refrence_eq_funcs), type_, invert
+                )
+                self.refrence_eq_funcs[frozen] = func
+            return builder.call(func, [v1, v2])
+
+    def value_equals_depth_1(self, builder, type_, v1, v2, invert=False):
+        if is_number_type_(type_):
+            return compare_values(
+                builder, "!=" if invert else "==", v1, v2, type_
+            )
+        else:
+            frozen = freeze_json(type_)
+            if frozen in self.value_eq_funcs:
+                func = self.value_eq_funcs[frozen]
+            else:
+                self.value_eq_funcs[frozen] = None
+                func = value_equals_depth_1(
+                    self, len(self.value_eq_funcs), type_, invert
+                )
+                self.value_eq_funcs[frozen] = func
+            return builder.call(func, [v1, v2])

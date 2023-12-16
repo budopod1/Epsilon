@@ -21,8 +21,8 @@ class Block:
         self.param_offset = param_offset
         self.registered_values = []
         self.consumed_values = set()
-        self.initial_assignments = block["initial_assignments"]
-        self.parent_assignments = block["parent_assignments"]
+        self.initial_declarations = block["initial_declarations"]
+        self.parent_declarations = block["parent_declarations"]
 
     def create_instructions(self):
         self.instructions = [
@@ -97,7 +97,7 @@ class Block:
         if not is_value_type_(type_):
             incr_ref_counter(self.builder, value)
 
-    def clean_assignments(self, assignments):
+    def clean_declarations(self, assignments):
         for id in assignments:
             type_ = self.function.scope[str(id)]["type_"]
             if is_value_type_(type_):
@@ -108,7 +108,7 @@ class Block:
             )
 
     def perpare_for_termination(self):
-        self.clean_assignments(self.initial_assignments)
+        self.clean_declarations(self.initial_declarations)
         for type_, value in self.registered_values:
             if value in self.consumed_values:
                 continue
@@ -118,7 +118,7 @@ class Block:
         if ret_val is not None and not is_value_type_(ret_type_):
             incr_ref_counter(self.builder, ret_val)
         self.perpare_for_termination()
-        self.clean_assignments(self.parent_assignments)
+        self.clean_declarations(self.parent_declarations)
         for type_, var in self.function.get_argument_info():
             if not is_value_type_(type_):
                 self.program.decr_ref(
@@ -141,10 +141,10 @@ class Block:
         next_block = self.function.add_block(
             self.program, self.function, id_, {
                 "instructions": cut, 
-                "initial_assignments": self.initial_assignments,
-                "parent_assignments": self.parent_assignments
+                "initial_declarations": self.initial_declarations,
+                "parent_declarations": self.parent_declarations
             }, start + self.param_offset, True
         )
-        self.initial_assignments = []
+        self.initial_declarations = []
         self.next_block = next_block
         return next_block

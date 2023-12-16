@@ -11,27 +11,32 @@ public class Compiler {
     public bool PRINT_AST = false;
     public bool PRINT_STEPS = false;
     public bool SHOW_TIMINGS = false;
+    public bool CATCH_ERRS = false; // TODO: add command line switch for this
 
     Stopwatch watch;
 
     public void Compile(string file, string text) {
-        try {
-            _Compile(file, text);
-        } catch (SyntaxErrorException e) {
-            ShowCompilationError(e, text);
-        } catch (TargetInvocationException e) {
-            Exception inner = e.InnerException;
-            if (inner is SyntaxErrorException) {
-                ShowCompilationError((SyntaxErrorException)inner, text);
-            } else {
-                ExceptionDispatchInfo.Capture(inner).Throw();
+        if (CATCH_ERRS) {
+            try {
+                _Compile(file, text);
+            } catch (SyntaxErrorException e) {
+                ShowCompilationError(e, text);
+            } catch (TargetInvocationException e) {
+                Exception inner = e.InnerException;
+                if (inner is SyntaxErrorException) {
+                    ShowCompilationError((SyntaxErrorException)inner, text);
+                } else {
+                    ExceptionDispatchInfo.Capture(inner).Throw();
+                }
+            } catch (PythonExceptionException e) {
+                Console.WriteLine("Error in Python code:");
+                Console.WriteLine(e.Message);
+            } catch (BashExceptionException e) {
+                Console.WriteLine("Error in Bash code:");
+                Console.WriteLine(e.Message);
             }
-        } catch (PythonExceptionException e) {
-            Console.WriteLine("Error in Python code:");
-            Console.WriteLine(e.Message);
-        } catch (BashExceptionException e) {
-            Console.WriteLine("Error in Bash code:");
-            Console.WriteLine(e.Message);
+        } else {
+            _Compile(file, text);
         }
     }
     

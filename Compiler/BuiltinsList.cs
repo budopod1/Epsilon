@@ -379,6 +379,37 @@ public static class BuiltinsList {
                     throw new FunctionCallTypes_Exception($"Cannot check if array of type {types_[0]} ends with array of type {types_[1]}", 1);
                 return new Type_("Bool");
             }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new UnitPatternSegment<string>(typeof(Name), "equals"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {0, 2})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("v1", Type_.Any()),
+                new FunctionArgument("v2", Type_.Any()),
+            }, -30, types_ => {
+                if (!types_[0].Equals(types_[1]))
+                    throw new FunctionCallTypes_Exception($"The 'equals' function can only compare equality of values of equal types_", 1);
+                return new Type_("Bool");
+            }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new UnitPatternSegment<string>(typeof(Name), "not"),
+                    new UnitPatternSegment<string>(typeof(Name), "equals"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("v1", Type_.Any()),
+                new FunctionArgument("v2", Type_.Any()),
+            }, -31, types_ => {
+                if (!types_[0].Equals(types_[1]))
+                    throw new FunctionCallTypes_Exception($"The 'not equals' function can only compare equality of values of equal types_", 1);
+                return new Type_("Bool");
+            }
         )
     };
 }

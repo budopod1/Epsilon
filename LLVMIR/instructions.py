@@ -244,8 +244,6 @@ class ComparisonInstruction(Typed_Instruction):
             for param, param_type_ in zip(params, param_types_)
         ]
         return compare_values(builder, {
-            "equals": "==",
-            "not_equals": "!=",
             "greater": ">",
             "less": "<",
             "greater_equal": ">=",
@@ -364,6 +362,22 @@ class ContinueInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         self.this_block.perpare_for_termination()
         return builder.branch(self.block.block)
+
+
+class EqInstruction(Typed_Instruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.common_type_ = self.data["common_type_"]
+
+    def _build(self, builder, params, param_types_):
+        type_ = self.common_type_
+        v1, v2 = [
+            convert_type_(self.program, builder, param, param_type_, type_)
+            for param, param_type_ in zip(params, param_types_)
+        ]
+        return self.program.refrence_equals(
+            builder, type_, v1, v2, self.name=="not_equals"
+        )
 
 
 class ExponentiationInstruction(Typed_Instruction):
@@ -709,7 +723,7 @@ def make_instruction(program, function, data):
         "constant_value": ConstantInstruction,
         "continue": ContinueInstruction,
         "division": ArithmeticInstruction,
-        "equals": ComparisonInstruction,
+        "equals": EqInstruction,
         "exponentiation": ExponentiationInstruction,
         "function_call": FunctionCallInstruction,
         "greater": ComparisonInstruction,
@@ -724,7 +738,7 @@ def make_instruction(program, function, data):
         "multiplication": ArithmeticInstruction,
         "negation": ArithmeticInstruction,
         "not": NotInstruction,
-        "not_equals": ComparisonInstruction,
+        "not_equals": EqInstruction,
         "or": LogicalInstruction,
         "return": ReturnInstruction,
         "return_void": ReturnVoidInstruction,

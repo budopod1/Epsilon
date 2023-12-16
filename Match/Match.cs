@@ -27,7 +27,6 @@ public class Match {
         List<IToken> result = new List<IToken>();
         List<IToken> formerTokens = new List<IToken>();
         for (int j = start; j <= end; j++) {
-            if (j >= tokens.Count) Console.WriteLine(this);
             formerTokens.Add(tokens[j]);
         }
         UpdateSpans(formerTokens);

@@ -3,13 +3,16 @@ using System.Collections.Generic;
 
 public class InitialAssignment : UnaryOperation<IValueToken>, IVerifier, ICompleteLine, ISerializableToken {
     int id;
+    bool fromDeclaration;
     
     public InitialAssignment(VarDeclaration declaration, IValueToken o) : base(o) {
         id = declaration.GetID();
+        fromDeclaration = true;
     }
 
     public InitialAssignment(Variable variable, IValueToken o) : base(o) {
         id = variable.GetID();
+        fromDeclaration = false;
     }
 
     public void Verify() {
@@ -25,7 +28,7 @@ public class InitialAssignment : UnaryOperation<IValueToken>, IVerifier, IComple
     }
 
     public override int Serialize(SerializationContext context) {
-        context.AddInitialAssignment(id);
+        if (fromDeclaration) context.AddDeclaration(id);
         return context.AddInstruction(
             new SerializableInstruction(this, context)
                 .AddData("variable", new JSONInt(id))

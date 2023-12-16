@@ -1,3 +1,5 @@
 TODO:
-* fix comparison on non-number types_
+* add deep array equality
+* make sure generic types_ have the proper number of generics
+* make extern_funcs use instrinsics whenever possible
 * add compilation to machine code

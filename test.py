@@ -98,6 +98,14 @@ TESTS = [
         "tests": [
             {"arguments": [10], "compare": "exact", "expect": 2851}
         ]
+    },
+    {
+        "file": "equals.eps",
+        "func": "main",
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 2}
+        ]
     }
 ]
 

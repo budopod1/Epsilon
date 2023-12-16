@@ -12,6 +12,7 @@ public class UninitVarDeclaration : ICompleteLine, ISerializableToken {
     }
 
     public int Serialize(SerializationContext context) {
+        context.AddDeclaration(id);
         return context.AddInstruction(
             new SerializableInstruction(this).AddData("variable", new JSONInt(id))
         );

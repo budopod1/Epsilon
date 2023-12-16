@@ -48,4 +48,12 @@ public class UserBaseType_ {
         }
         return new Type_(new BaseType_(name, bits), generics);
     }
+
+    public override string ToString() {
+        if (bits == null) {
+            return name;
+        } else {
+            return name + bits.ToString();
+        }
+    }
 }

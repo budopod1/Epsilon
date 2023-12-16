@@ -6,12 +6,12 @@ public class SerializationContext {
     CodeBlock block;
     int index;
     bool hidden;
-    JSONList parentAssignments;
-    JSONList initialAssignments = new JSONList();
+    JSONList parentDeclarations;
+    JSONList initialDeclarations = new JSONList();
 
-    public SerializationContext(Function function, bool hidden=false, JSONList parentAssignments=null) {
-        if (parentAssignments == null) parentAssignments = new JSONList();
-        this.parentAssignments = parentAssignments;
+    public SerializationContext(Function function, bool hidden=false, JSONList parentDeclarations=null) {
+        if (parentDeclarations == null) parentDeclarations = new JSONList();
+        this.parentDeclarations = parentDeclarations;
         this.function = function;
         this.hidden = hidden;
         if (!hidden) {
@@ -36,12 +36,12 @@ public class SerializationContext {
     }
 
     public SerializationContext AddSubContext(bool hidden=false) {
-        JSONList assignments = new JSONList(parentAssignments);
-        foreach (IJSONValue assignment in initialAssignments) {
-            assignments.Add(assignment);
+        JSONList declarations = new JSONList(parentDeclarations);
+        foreach (IJSONValue declaration in initialDeclarations) {
+            declarations.Add(declaration);
         }
         return new SerializationContext(
-            function, hidden, assignments
+            function, hidden, declarations
         );
     }
 
@@ -52,8 +52,8 @@ public class SerializationContext {
     public IJSONValue Serialize() {
         JSONObject obj = new JSONObject();
         obj["instructions"] = instructions;
-        obj["initial_assignments"] = initialAssignments;
-        obj["parent_assignments"] = parentAssignments;
+        obj["initial_declarations"] = initialDeclarations;
+        obj["parent_declarations"] = parentDeclarations;
         return obj;
     }
 
@@ -69,7 +69,7 @@ public class SerializationContext {
         return hidden;
     }
 
-    public void AddInitialAssignment(int varID) {
-        initialAssignments.Add(new JSONInt(varID));
+    public void AddDeclaration(int varID) {
+        initialDeclarations.Add(new JSONInt(varID));
     }
 }

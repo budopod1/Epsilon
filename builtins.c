@@ -286,11 +286,11 @@ struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uin
     return slice;
 }
 
-int arrayEqual(const struct Array *array1, const struct Array *array2) {
+int arrayEqual(const struct Array *array1, const struct Array *array2, uint64_t elemSize) {
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
     if (len1 == len2) {
-        return memcmp(array1->content, array2->content, len1) == 0;
+        return memcmp(array1->content, array2->content, len1*elemSize) == 0;
     } else {
         return 0;
     }

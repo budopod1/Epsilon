@@ -183,6 +183,14 @@ EXTERN_FUNCS = {
     "endsWith": {
         "name": "endsWith", "return_type_": Z32,
         "arguments": [ArrayW8, ArrayW8, W64]
+    },
+    "arrayEqual": {
+        "name": "arrayEqual", "return_type_": Z32,
+        "arguments": [ArrayW8, ArrayW8, W64]
+    },
+    "memcmp": {
+        "name": "memcmp", "return_type_": Z32,
+        "arguments": [PointerW8, PointerW8, W64]
     }
 }
 

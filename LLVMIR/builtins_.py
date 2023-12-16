@@ -303,6 +303,20 @@ def ends_with(program, builder, params, param_types_):
     ), Bool
 
 
+def equals(program, builder, params, param_types_):
+    v1, v2 = params
+    type_1, type_2 = param_types_
+    assert type_1 == type_2
+    return program.value_equals_depth_1(builder, type_1, v1, v2, False), Bool
+
+
+def not_equals(program, builder, params, param_types_):
+    v1, v2 = params
+    type_1, type_2 = param_types_
+    assert type_1 == type_2
+    return program.value_equals_depth_1(builder, type_1, v1, v2, True), Bool
+
+
 BUILTINS = {
     -1: {
         "func": length,
@@ -441,5 +455,13 @@ BUILTINS = {
     -29: {
         "func": ends_with,
         "params": [ArrayW8, ArrayW8]
+    },
+    -30: {
+        "func": equals,
+        "params": [None, None]
+    },
+    -31: {
+        "func": not_equals,
+        "params": [None, None]
     }
 }
