@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -e
 cd "${0%/*}"
+echo "Setting up Epsilon (this can take a bit)..."
+echo "Building executable..."
+./build.bash > /dev/null
+echo "Executable built"
 echo "Setting up builtins..."
 ./buildbuiltins.bash
-echo "Builtins setup complete..."
 echo "Setting up venv..."
 rm -rdf venv
 virtualenv venv
@@ -12,5 +15,5 @@ pip install --upgrade pip
 pip install llvmlite
 pip install orjson
 python -c "import llvmlite;import orjson;"
-echo "venv setup complete..."
+echo "venv setup complete"
 echo "Setup complete"
