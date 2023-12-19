@@ -46,8 +46,8 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"Byte", 8}
     };
 
-    public static List<string> GenericsTypes_ = new List<string> {
-        "Array"
+    public static Dictionary<string, int> GenericsAmounts = new Dictionary<string, int> {
+        {"Array", 1}
     };
 
     public static Dictionary<string, List<string>> ConvertibleTo = new Dictionary<string, List<string>> {
@@ -174,8 +174,12 @@ public class BaseType_ : IEquatable<BaseType_> {
         return FloatTypes_.Contains(name);
     }
 
-    public bool GenericsAllowed() {
-        return GenericsTypes_.Contains(name);
+    public int GenericsAmount() {
+        if (GenericsAmounts.ContainsKey(name)) {
+            return GenericsAmounts[name];
+        } else {
+            return 0;
+        }
     }
 
     public override string ToString() {

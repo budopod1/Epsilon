@@ -19,7 +19,7 @@ public class Type_Matcher : IMatcher {
             List<IToken> replaced = new List<IToken> {token};
             
             try {
-                Type_ type_ = Type_.FromUserBaseType_(baseType_Token.GetValue());
+                Type_ type_ = null;
                 if (i + 1 < tokens.Count) {
                     IToken next = tokens[i + 1];
                     Generics generics = next as Generics;
@@ -32,6 +32,10 @@ public class Type_Matcher : IMatcher {
                         );
                         j++;
                     }
+                }
+
+                if (type_ == null) {
+                    type_ = Type_.FromUserBaseType_(baseType_Token.GetValue());
                 }
 
                 List<IToken> replacement = new List<IToken> {new Type_Token(type_)};

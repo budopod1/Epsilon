@@ -86,38 +86,34 @@ public class Type_ : IEquatable<Type_> {
         if (generics == null) {
             generics = new List<Type_>();
         }
-        if (generics.Count > 0 && !baseType_.GenericsAllowed()) {
-            throw new IllegalType_GenericsException(
-                $"Generics are not allowed on base type {baseType_}"
-            );
-        }
+        CheckGenerics(baseType_, generics);
         this.generics = generics;
     }
 
     public Type_(string name, int? bits, List<Type_> generics = null) {
-        this.baseType_ = new BaseType_(name, bits);
+        baseType_ = new BaseType_(name, bits);
         if (generics == null) {
             generics = new List<Type_>();
         }
-        if (generics.Count > 0 && !baseType_.GenericsAllowed()) {
-            throw new IllegalType_GenericsException(
-                $"Generics are not allowed on base type {baseType_}"
-            );
-        }
+        CheckGenerics(baseType_, generics);
         this.generics = generics;
     }
 
     public Type_(string name, List<Type_> generics = null) {
-        this.baseType_ = new BaseType_(name);
+        baseType_ = new BaseType_(name);
         if (generics == null) {
             generics = new List<Type_>();
         }
-        if (generics.Count > 0 && !baseType_.GenericsAllowed()) {
+        CheckGenerics(baseType_, generics);
+        this.generics = generics;
+    }
+
+    void CheckGenerics(BaseType_ baseType_, List<Type_> generics) {
+        if (generics.Count != baseType_.GenericsAmount()) {
             throw new IllegalType_GenericsException(
-                $"Generics are not allowed on base type {baseType_}"
+                $"Incorrect number of generics on base type {baseType_} (got {generics.Count}, expected {baseType_.GenericsAmount()})"
             );
         }
-        this.generics = generics;
     }
 
     public static Type_ FromUserBaseType_(UserBaseType_ baseType_, List<Type_> generics = null) {
