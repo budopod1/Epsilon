@@ -106,6 +106,14 @@ TESTS = [
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 2}
         ]
+    },
+    {
+        "file": "bool.eps",
+        "func": "main",
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 1}
+        ]
     }
 ]
 
