@@ -29,3 +29,9 @@ The file extention of an Epsilon file should be .ep, .eps, .epsilon, or .ε. To 
 # Building
 
 After changes are made to the C#, the C# must be rebuilt with `./build.bash`. After `builtins.c` is editted, the builtins can be rebuilt with `./buildbuiltins.bash`.
+
+# Testing
+
+Epsilon can be tested with
+
+    ./test.bash
