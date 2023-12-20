@@ -12,6 +12,8 @@ public class Epsilon {
         parser.AddOption("print-steps", "Print the compilation steps");
         parser.AddOption("t", "Show step timings");
         parser.AddOption("timings", "Show step timings");
+        parser.AddOption("c", "Do not catch errors in code");
+        parser.AddOption("catch-errs", "Do not catch errors in code");
         
         parser.AddBranch("compile");
         parser.AddBranch("*input file");
@@ -26,6 +28,7 @@ public class Epsilon {
             compiler.PRINT_AST = parseResults.HasOption("p", "print-ast");
             compiler.PRINT_STEPS = parseResults.HasOption("s", "print-steps");
             compiler.SHOW_TIMINGS = parseResults.HasOption("t", "timings");
+            compiler.CATCH_ERRS = !parseResults.HasOption("c", "catch-errs");
             
             string input = values[0];
             string output = values[1];

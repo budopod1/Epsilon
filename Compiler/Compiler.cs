@@ -11,7 +11,7 @@ public class Compiler {
     public bool PRINT_AST = false;
     public bool PRINT_STEPS = false;
     public bool SHOW_TIMINGS = false;
-    public bool CATCH_ERRS = false; // TODO: add command line switch for this
+    public bool CATCH_ERRS = true;
 
     Stopwatch watch;
 
