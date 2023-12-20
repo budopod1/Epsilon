@@ -317,6 +317,22 @@ def not_equals(program, builder, params, param_types_):
     return program.value_equals_depth_1(builder, type_1, v1, v2, True), Bool
 
 
+def equals_depth(program, builder, params, param_types_):
+    v1, v2, depth_ir_const = params
+    type_1, type_2, _ = param_types_
+    assert type_1 == type_2
+    depth = depth_ir_const.json_const["value"]
+    return program.value_equals(builder, type_1, v1, v2, depth, False), Bool
+
+
+def not_equals_depth(program, builder, params, param_types_):
+    v1, v2, depth_ir_const = params
+    type_1, type_2, _ = param_types_
+    assert type_1 == type_2
+    depth = depth_ir_const.json_const["value"]
+    return program.value_equals(builder, type_1, v1, v2, depth, True), Bool
+
+
 BUILTINS = {
     -1: {
         "func": length,
@@ -463,5 +479,13 @@ BUILTINS = {
     -31: {
         "func": not_equals,
         "params": [None, None]
+    },
+    -32: {
+        "func": equals_depth,
+        "params": [None, None, None]
+    },
+    -33: {
+        "func": not_equals_depth,
+        "params": [None, None, None]
     }
 }

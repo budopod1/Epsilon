@@ -68,10 +68,12 @@ def make_type_(program, data):
 
 
 def make_constant(constant, ir_type):
-    return ir.Constant(
+    ir_const = ir.Constant(
         ir_type,
         constant["value"]
     )
+    ir_const.json_const = constant
+    return ir_const
 
 
 def is_value_type_(type_):
@@ -236,6 +238,10 @@ def i8_of(val):
     return ir.IntType(8)(val)
 
 
+def i1_of(val):
+    return ir.IntType(1)(val)
+
+
 def init_ref_counter(builder, val):
     builder.store(
         REF_COUNTER_FIELD(0),
@@ -272,6 +278,7 @@ def do_chain_power(program, builder, type_, value, pow):
         ))
 
 
+# TODO: remove
 def fill_type_(type_):
     return {
         "name": type_["name"], 

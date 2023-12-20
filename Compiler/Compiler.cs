@@ -892,9 +892,17 @@ public class Compiler {
 
                         for (int i = 0; i < call.Count; i++) {
                             RawSquareGroup rparameter = (call[i]) as RawSquareGroup;
-                            if (rparameter.Count != 1) return null;
+                            if (rparameter.Count != 1) {
+                                throw new SyntaxErrorException(
+                                    "Function parameters cannot be empty", rparameter
+                                );
+                            }
                             IValueToken parameter = (rparameter[0]) as IValueToken;
-                            if (parameter == null) return null;
+                            if (parameter == null) {
+                                throw new SyntaxErrorException(
+                                    "Illegal syntax in function parameter", rparameter
+                                );
+                            }
                             paramTypes_.Add(parameter.GetType_());
                             parameters.Add(parameter);
                         }

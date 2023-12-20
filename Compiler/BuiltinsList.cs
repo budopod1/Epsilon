@@ -34,7 +34,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("value", Type_.Any())
-            }, -3, types_ => {
+            }, -3, (List<Type_> types_) => {
                 Type_ value = types_[1];
                 Type_ generic = types_[0].GetGeneric(0);
                 if (!value.IsConvertibleTo(generic))
@@ -74,7 +74,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("index", new Type_("W", 64)),
-            }, -6, types_ => {
+            }, -6, (List<Type_> types_) => {
                 return types_[0].GetGeneric(0);
             }
         ), new ExternalFunction(
@@ -90,7 +90,7 @@ public static class BuiltinsList {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("index", new Type_("W", 64)),
                 new FunctionArgument("value", Type_.Any()),
-            }, -7, types_ => {
+            }, -7, (List<Type_> types_) => {
                 Type_ value = types_[2];
                 Type_ generic = types_[0].GetGeneric(0);
                 if (!value.IsConvertibleTo(generic))
@@ -106,7 +106,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -8, types_ => types_[0]
+            }, -8, (List<Type_> types_) => types_[0]
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -118,7 +118,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -9, types_ => {
+            }, -9, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot extend array of type {types_[0]} with an array of type {types_[1]}", 1);
                 return Type_.Void();
@@ -134,7 +134,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array1", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -10, types_ => {
+            }, -10, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot join array of type {types_[0]} with an array of type {types_[1]}", 1);
                 return types_[0];
@@ -202,7 +202,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array1", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -16, types_ => {
+            }, -16, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot join array of type {types_[0]} with an array of type {types_[1]}", 1);
                 return types_[0];
@@ -276,7 +276,7 @@ public static class BuiltinsList {
                 new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("start", new Type_("W", 64)),
                 new FunctionArgument("end", new Type_("W", 64)),
-            }, -22, types_ => types_[0]
+            }, -22, (List<Type_> types_) => types_[0]
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -300,7 +300,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -24, types_ => {
+            }, -24, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot count occurrences of array of type {types_[1]} in an array of type {types_[0]}", 1);
                 return new Type_("W", 64);
@@ -316,7 +316,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -25, types_ => {
+            }, -25, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot count occurrences of array of type {types_[1]} in an array of type {types_[0]}", 1);
                 return new Type_("W", 64);
@@ -330,7 +330,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -26, types_ => new Type_("Array", types_)
+            }, -26, (List<Type_> types_) => new Type_("Array", types_)
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -342,7 +342,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -27, types_ => {
+            }, -27, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot split array of type {types_[0]} by an array of type {types_[1]}", 1);
                 return new Type_("Array", new List<Type_> {types_[0]});
@@ -358,7 +358,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -28, types_ => {
+            }, -28, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot check if array of type {types_[0]} starts with array of type {types_[1]}", 1);
                 return new Type_("Bool");
@@ -374,7 +374,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, -29, types_ => {
+            }, -29, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot check if array of type {types_[0]} ends with array of type {types_[1]}", 1);
                 return new Type_("Bool");
@@ -389,7 +389,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("v1", Type_.Any()),
                 new FunctionArgument("v2", Type_.Any()),
-            }, -30, types_ => {
+            }, -30, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"The 'equals' function can only compare equality of values of equal types_", 1);
                 return new Type_("Bool");
@@ -405,9 +405,88 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("v1", Type_.Any()),
                 new FunctionArgument("v2", Type_.Any()),
-            }, -31, types_ => {
+            }, -31, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"The 'not equals' function can only compare equality of values of equal types_", 1);
+                return new Type_("Bool");
+            }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new UnitPatternSegment<string>(typeof(Name), "equals"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new UnitPatternSegment<string>(typeof(Name), "depth"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 2, 4})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("v1", Type_.Any()),
+                new FunctionArgument("v2", Type_.Any()),
+                new FunctionArgument("depth", new Type_("W"))
+            }, -32, (List<IValueToken> tokens) => {
+                Type_ type_1 = tokens[0].GetType_();
+                Type_ type_2 = tokens[1].GetType_();
+                if (!type_1.Equals(type_2))
+                    throw new SyntaxErrorException($"The 'equals' function can only compare equality of values of equal types_", tokens[1]);
+                ConstantValue cv = tokens[2] as ConstantValue;
+                if (cv == null) {
+                    throw new SyntaxErrorException($"The 'equals' function's depth must be a constant", tokens[2]);
+                }
+                UnsignedIntConstant uic = cv.GetValue() as UnsignedIntConstant;
+                if (uic == null) {
+                    throw new SyntaxErrorException($"The 'equals' function's depth must be an unsigned integer", tokens[2]);
+                }
+                int depth = uic.GetIntValue();
+                Type_ type_ = type_1;
+                while (depth > 0) {
+                    if (depth > 1) {
+                        if (!(type_.GetBaseType_().GetName() == "Array")) {
+                            throw new SyntaxErrorException($"The depth given for the 'equals' function is too high for given type", tokens[0]);
+                        }
+                        type_ = type_.GetGeneric(0);
+                    }
+                    depth--;
+                }
+                return new Type_("Bool");
+            }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new UnitPatternSegment<string>(typeof(Name), "not"),
+                    new UnitPatternSegment<string>(typeof(Name), "equals"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new UnitPatternSegment<string>(typeof(Name), "depth"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3, 5})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("v1", Type_.Any()),
+                new FunctionArgument("v2", Type_.Any()),
+                new FunctionArgument("depth", new Type_("W"))
+            }, -33, (List<IValueToken> tokens) => {
+                Type_ type_1 = tokens[0].GetType_();
+                Type_ type_2 = tokens[1].GetType_();
+                if (!type_1.Equals(type_2))
+                    throw new SyntaxErrorException($"The 'not equals' function can only compare equality of values of equal types_", tokens[1]);
+                ConstantValue cv = tokens[2] as ConstantValue;
+                if (cv == null) {
+                    throw new SyntaxErrorException($"The 'not equals' function's depth must be a constant", tokens[2]);
+                }
+                UnsignedIntConstant uic = cv.GetValue() as UnsignedIntConstant;
+                if (uic == null) {
+                    throw new SyntaxErrorException($"The 'not equals' function's depth must be an unsigned integer", tokens[2]);
+                }
+                int depth = uic.GetIntValue();
+                Type_ type_ = type_1;
+                while (depth > 0) {
+                    if (depth > 1) {
+                        if (!(type_.GetBaseType_().GetName() == "Array")) {
+                            throw new SyntaxErrorException($"The depth given for the 'not equals' function is too high for given type", tokens[0]);
+                        }
+                        type_ = type_.GetGeneric(0);
+                    }
+                    depth--;
+                }
                 return new Type_("Bool");
             }
         )

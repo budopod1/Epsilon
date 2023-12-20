@@ -1,0 +1,8 @@
+Z#main {
+    Array<Array<Array<Z>>>:a = Array<Array<Array<Z>>> [Array<Array<Z>> [Array<Z> [1]]];
+    Array<Array<Array<Z>>>:b = Array<Array<Array<Z>>> [Array<Array<Z>> [Array<Z> [1]]];
+    Array<Array<Array<Z>>>:c = Array<Array<Array<Z>>> [Array<Array<Z>> [Array<Z> [2]]];
+    Array<Array<Array<Z>>>:d = Array<Array<Array<Z>>> [Array<Array<Z>> [Array<Z> [1], Array<Z> []]];
+    // expect 10
+    return (a == b) + 2*([a] equals [b] depth [3]) + 4*([a] equals [c] depth [3]) + 8*([a] not equals [d] depth [3]);
+}

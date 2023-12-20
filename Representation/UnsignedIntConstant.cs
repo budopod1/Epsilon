@@ -22,6 +22,10 @@ public class UnsignedIntConstant : INumberConstant {
         return value;
     }
 
+    public int GetIntValue() {
+        return (int)value;
+    }
+
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["type"] = new JSONString("uint");

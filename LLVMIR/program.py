@@ -1,7 +1,7 @@
 from llvmlite import ir
 from common import *
 from stringify import make_stringify_func
-from equals import refrence_equals, value_equals_depth_1
+from equals import refrence_equals, value_equals_depth_1, value_equals
 
 
 class Program:
@@ -18,6 +18,7 @@ class Program:
         self.stringifiers = {}
         self.const_counter = 0
         self.refrence_eq_funcs = {}
+        self.value_eq_d1_funcs = {}
         self.value_eq_funcs = {}
 
     def is_builtin(self, id):
@@ -245,7 +246,7 @@ class Program:
                 builder, "!=" if invert else "==", v1, v2, type_
             )
         else:
-            frozen = freeze_json(type_)
+            frozen = (freeze_json(type_), invert)
             if frozen in self.refrence_eq_funcs:
                 func = self.refrence_eq_funcs[frozen]
             else:
@@ -262,13 +263,28 @@ class Program:
                 builder, "!=" if invert else "==", v1, v2, type_
             )
         else:
-            frozen = freeze_json(type_)
+            frozen = (freeze_json(type_), invert)
+            if frozen in self.value_eq_d1_funcs:
+                func = self.value_eq_d1_funcs[frozen]
+            else:
+                self.value_eq_d1_funcs[frozen] = None
+                func = value_equals_depth_1(
+                    self, len(self.value_eq_d1_funcs), type_, invert
+                )
+                self.value_eq_d1_funcs[frozen] = func
+            return builder.call(func, [v1, v2])
+
+    def value_equals(self, builder, type_, v1, v2, depth, invert=False):
+        if depth == 1:
+            return self.value_equals_depth_1(builder, type_, v1, v2, invert)
+        else:
+            frozen = (freeze_json(type_), invert)
             if frozen in self.value_eq_funcs:
                 func = self.value_eq_funcs[frozen]
             else:
                 self.value_eq_funcs[frozen] = None
-                func = value_equals_depth_1(
-                    self, len(self.value_eq_funcs), type_, invert
+                func = value_equals(
+                    self, len(self.value_eq_funcs), type_, depth, invert
                 )
                 self.value_eq_funcs[frozen] = func
             return builder.call(func, [v1, v2])

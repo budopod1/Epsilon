@@ -31,7 +31,7 @@ def value_equals_depth_1(program, i, type_, invert=False):
     func = ir.Function(
         program.module, ir.FunctionType(
             bool_ir_type, [ir_type, ir_type]
-        ), name=f"val_eq{i}"
+        ), name=f"val_eq_d1{i}"
     )
     entry = func.append_basic_block(name="entry")
     v1, v2 = func.args
@@ -64,5 +64,73 @@ def value_equals_depth_1(program, i, type_, invert=False):
         builder.ret(builder.icmp_signed(
             "!=" if invert else "==", cmp, i32_of(0)
         ))
+
+    return func
+
+
+def value_equals(program, i, type_, depth, invert=False):
+    assert type_["name"] == "Array"
+    generic_type_ = type_["generics"][0]
+    
+    ir_type = make_type_(program, type_)
+    bool_ir_type = make_type_(program, Bool)
+    
+    func = ir.Function(
+        program.module, ir.FunctionType(
+            bool_ir_type, [ir_type, ir_type]
+        ), name=f"val_eq{i}"
+    )
+    v1, v2 = func.args
+    
+    entry = func.append_basic_block(name="entry")
+    builder = ir.IRBuilder(entry)
+    
+    check_block = func.append_basic_block(name="check")
+    cbuilder = ir.IRBuilder(check_block)
+
+    loop_block = func.append_basic_block(name="loop")
+    lbuilder = ir.IRBuilder(loop_block)
+
+    equal_block = func.append_basic_block(name="equal")
+    ebuilder = ir.IRBuilder(equal_block)
+
+    unequal_block = func.append_basic_block(name="unequal")
+    ubuilder = ir.IRBuilder(unequal_block)
+
+    length1 = builder.load(builder.gep(
+        v1, [i64_of(0), i32_of(2)]
+    ))
+    length2 = builder.load(builder.gep(
+        v2, [i64_of(0), i32_of(2)]
+    ))
+
+    content1 = builder.load(builder.gep(
+        v1, [i64_of(0), i32_of(3)]
+    ))
+    content2 = builder.load(builder.gep(
+        v2, [i64_of(0), i32_of(3)]
+    ))
+
+    equal_lens = builder.icmp_unsigned("==", length1, length2)
+    builder.cbranch(equal_lens, check_block, unequal_block)
+
+    index = cbuilder.phi(make_type_(program, W64))
+    finished = cbuilder.icmp_unsigned("==", index, length1)
+    cbuilder.cbranch(finished, equal_block, loop_block)
+
+    item1 = lbuilder.load(lbuilder.gep(content1, [index]))
+    item2 = lbuilder.load(lbuilder.gep(content2, [index]))
+    item_equality = program.value_equals(
+        lbuilder, generic_type_, item1, item2, depth-1
+    )
+    next_index = lbuilder.add(index, i64_of(1))
+    lbuilder.cbranch(item_equality, check_block, unequal_block)
+
+    ebuilder.ret(i1_of(int(not invert)))
+
+    ubuilder.ret(i1_of(int(invert)))
+
+    index.add_incoming(i64_of(0), entry)
+    index.add_incoming(next_index, loop_block)
 
     return func

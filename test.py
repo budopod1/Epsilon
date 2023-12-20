@@ -114,6 +114,14 @@ TESTS = [
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
+    },
+    {
+        "file": "deepequals.eps",
+        "func": "main",
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 10}
+        ]
     }
 ]
 
