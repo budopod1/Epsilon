@@ -165,10 +165,9 @@ def make_stringify_func(program, type_, i):
         decr_cap = lbuilder.sub(capacity, i64_of(1), name="decr_cap")
         program.call_extern(
             lbuilder, "memcpy", [
-                lbuilder.gep(new_array, [decr_cap]), segment_content, segment_len
-            ], [
-                PointerW8, PointerW8, W64
-            ], VOID
+                lbuilder.gep(new_array, [decr_cap]), segment_content,
+                segment_len, i1_of(0)
+            ], [PointerW8, PointerW8, W64, Bool], VOID
         )
         pos1 = shifted_cap
         lbuilder.store(i8_of(ord(",")), lbuilder.gep(new_array, [pos1], name="comma_idx"))
@@ -251,8 +250,9 @@ def make_stringify_func(program, type_, i):
             )
     
             program.call_extern(
-                builder, "memcpy", [array_mem, start_str_mem, i64_of(start_len)],
-                [PointerW8, PointerW8, W64], VOID
+                builder, "memcpy", [
+                    array_mem, start_str_mem, i64_of(start_len), i1_of(0)
+                ],[PointerW8, PointerW8, W64, Bool], VOID
             )
             builder.store(i8_of(ord("]")), builder.gep(
                 array_mem, [last_index], name="closing_square_bracket_ptr"
@@ -261,8 +261,8 @@ def make_stringify_func(program, type_, i):
             for idx, item_len, item_content in zip(starts, item_lens, item_contents):
                 program.call_extern(
                     builder, "memcpy", [
-                        builder.gep(array_mem, [idx]), item_content, item_len
-                    ], [PointerW8, PointerW8, W64], VOID
+                        builder.gep(array_mem, [idx]), item_content, item_len, i1_of(0)
+                    ], [PointerW8, PointerW8, W64, Bool], VOID
                 )
     
             for i, idx in enumerate(comma_starts[:-1]):

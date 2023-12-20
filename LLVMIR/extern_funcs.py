@@ -3,15 +3,15 @@ from common import *
 
 EXTERN_FUNCS = {
     "pow": {
-        "name": "pow", "return_type_": Q64, 
+        "name": "llvm.pow.f64", "return_type_": Q64, 
         "arguments": [Q64, Q64]
     },
     "sqrt": {
-        "name": "sqrt", "return_type_": Q64, 
+        "name": "llvm.sqrt.f64", "return_type_": Q64, 
         "arguments": [Q64]
     },
     "cbrt": {
-        "name": "cbrt", "return_type_": Q64, 
+        "name": "llvm.cbrt.f64", "return_type_": Q64, 
         "arguments": [Q64]
     },
     "malloc": {
@@ -71,11 +71,11 @@ EXTERN_FUNCS = {
         "arguments": [Z32]
     },
     "rangeArray2": {
-        "name": "rangeArray1", "return_type_": ArrayZ32,
+        "name": "rangeArray2", "return_type_": ArrayZ32,
         "arguments": [Z32, Z32]
     },
     "rangeArray3": {
-        "name": "rangeArray1", "return_type_": ArrayZ32,
+        "name": "rangeArray3", "return_type_": ArrayZ32,
         "arguments": [Z32, Z32, Z32]
     },
     "alwaysIncrementArrayRefCounts": {
@@ -83,11 +83,11 @@ EXTERN_FUNCS = {
         "arguments": [ArrayW8, W64]
     },
     "abs": {
-        "name": "abs", "return_type_": W32,
-        "arguments": [Z32]
+        "name": "llvm.abs.i32", "return_type_": W32,
+        "arguments": [Z32, Bool]
     },
     "fabs": {
-        "name": "fabs", "return_type_": Q64,
+        "name": "llvm.fabs.i32", "return_type_": Q64,
         "arguments": [Q64]
     },
     "print": {
@@ -108,8 +108,8 @@ EXTERN_FUNCS = {
         "arguments": [PointerW8, W64]
     },
     "memcpy": {
-        "name": "memcpy", "return_type_": VOID,
-        "arguments": [PointerW8, PointerW8, W64]
+        "name": "llvm.memcpy.p0.p0.i64", "return_type_": VOID,
+        "arguments": [PointerW8, PointerW8, W64, Bool]
     },
     "sprintf": {
         "name": "sprintf", "return_type_": W64,

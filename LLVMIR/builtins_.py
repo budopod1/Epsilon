@@ -173,8 +173,7 @@ def make_range_array_3(program, builder, params, param_types_):
 def abs_(program, builder, params, param_types_):
     value, = params
     return program.call_extern(
-        builder, "abs", [value], [Z32],
-        W32
+        builder, "abs", [value, i1_of(0)], [Z32, Bool], W32
     ), W32
 
 

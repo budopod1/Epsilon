@@ -46,7 +46,7 @@ class Program:
             self.module, make_function_type_(
                 self, data["return_type_"], data["arguments"],
                 data.get("vargs", False)
-            ), name=name
+            ), name=data["name"]
         )
 
     def call_extern(self, builder, name, params, param_types_, result_type_, vargs=None):
@@ -223,8 +223,8 @@ class Program:
             constant_str = self.string_literal_array(builder, value, size, name=name)
             mem = self.malloc(builder, make_type_(self, Byte), size)
             self.call_extern(
-                builder, "memcpy", [mem, constant_str, i64_of(len(value))],
-                [PointerW8, PointerW8, W64], VOID
+                builder, "memcpy", [mem, constant_str, i64_of(len(value)), i1_of(0)],
+                [PointerW8, PointerW8, W64, Bool], VOID
             )
             return mem
         else:
