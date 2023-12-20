@@ -30,8 +30,7 @@ class Typed_Instruction(BaseInstruction):
         self.ir_type = make_type_(self.program, self.type_)
 
 
-# TODO: make this subclass Typed_Instruction
-class CastToResultType_Instruction:
+class CastToResultType_Instruction(Typed_Instruction):
     def build(self, builder, params, param_types_):
         typed_params = [
             convert_type_(
@@ -56,7 +55,7 @@ class FlowInstruction(BaseInstruction):
         pass
 
 
-class ArithmeticInstruction(CastToResultType_Instruction, Typed_Instruction):
+class ArithmeticInstruction(CastToResultType_Instruction):
     def _build(self, builder, params):
         return {
             "addition": {0: builder.fadd, 1: builder.add, 2: builder.add},
@@ -196,7 +195,7 @@ class AssignmentInstruction(BaseInstruction):
         return builder.store(converted_value, declaration)
 
 
-class BitshiftInstruction(CastToResultType_Instruction, Typed_Instruction):
+class BitshiftInstruction(CastToResultType_Instruction):
     def _build(self, builder, params):
         return {
             "bitshift_left": {True: builder.shl, False: builder.shl},
@@ -204,7 +203,7 @@ class BitshiftInstruction(CastToResultType_Instruction, Typed_Instruction):
         }[self.name][is_signed_integer_type_(self.type_)](*params)
 
 
-class BitwiseInstruction(CastToResultType_Instruction, Typed_Instruction):
+class BitwiseInstruction(CastToResultType_Instruction):
     def _build(self, builder, params):
         return {
             "bitwise_or": builder.or_,
