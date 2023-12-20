@@ -44,10 +44,8 @@ class Program:
         self.externs[name] = data
         self.extern_funcs[name] = ir.Function(
             self.module, make_function_type_(
-                self, fill_type_(data["return_type_"]), [
-                    fill_type_(argument)
-                    for argument in data["arguments"]
-                ], data.get("vargs", False)
+                self, data["return_type_"], data["arguments"],
+                data.get("vargs", False)
             ), name=name
         )
 

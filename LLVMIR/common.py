@@ -278,18 +278,6 @@ def do_chain_power(program, builder, type_, value, pow):
         ))
 
 
-# TODO: remove
-def fill_type_(type_):
-    return {
-        "name": type_["name"], 
-        "bits": type_.get("bits", None), 
-        "generics": [
-            fill_type_(generic) 
-            for generic in type_.get("generics", [])
-        ]
-    }
-
-
 bool_true = ir.IntType(1)(1)
 bool_false = ir.IntType(1)(0)
 

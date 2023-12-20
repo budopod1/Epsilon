@@ -19,10 +19,7 @@ def create_ir(data):
 
     unique_arrays = []
     frozen_arrays = set()
-    all_arrays = data["arrays"] + [
-        fill_type_(array)
-        for array in EXTERN_ARRAYS
-    ]
+    all_arrays = data["arrays"] + EXTERN_ARRAYS
     for array in all_arrays:
         frozen = freeze_json(array)
         if frozen in frozen_arrays:
