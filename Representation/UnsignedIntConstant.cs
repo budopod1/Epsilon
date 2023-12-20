@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public class UnsignedIntConstant : INumberConstant {
+public class UnsignedIntConstant : INumberConstant, IIntConstant {
     uint value;
 
     public UnsignedIntConstant(uint value) {

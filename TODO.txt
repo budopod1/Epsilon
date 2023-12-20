@@ -1,4 +1,3 @@
 TODO:
-* add IIntConstant interface
 * make extern_funcs use instrinsics whenever possible
 * add compilation to machine code

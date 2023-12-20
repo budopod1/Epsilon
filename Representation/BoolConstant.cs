@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class BoolConstant : INumberConstant {
+public class BoolConstant : INumberConstant, IIntConstant {
     bool value;
 
     public BoolConstant(bool value) {
@@ -24,8 +24,12 @@ public class BoolConstant : INumberConstant {
         return new Type_("Bool");
     }
 
-    public double GetDoubleValue() {
+    public int GetIntValue() {
         return value ? 1 : 0;
+    }
+
+    public double GetDoubleValue() {
+        return GetIntValue();
     }
 
     public IJSONValue GetJSON() {

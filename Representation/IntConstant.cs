@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public class IntConstant : INumberConstant {
+public class IntConstant : INumberConstant, IIntConstant {
     int value;
 
     public IntConstant(int value) {
@@ -16,6 +16,10 @@ public class IntConstant : INumberConstant {
 
     public Type_ GetType_() {
         return new Type_("Z");
+    }
+
+    public int GetIntValue() {
+        return value;
     }
 
     public double GetDoubleValue() {

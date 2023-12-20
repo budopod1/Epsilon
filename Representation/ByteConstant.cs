@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public class ByteConstant : INumberConstant {
+public class ByteConstant : INumberConstant, IIntConstant {
     byte value;
 
     public ByteConstant(byte value) {
@@ -16,6 +16,10 @@ public class ByteConstant : INumberConstant {
 
     public Type_ GetType_() {
         return new Type_("Byte");
+    }
+
+    public int GetIntValue() {
+        return value;
     }
 
     public double GetDoubleValue() {
