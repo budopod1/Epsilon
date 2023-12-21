@@ -3,7 +3,7 @@ set -e
 cd "${0%/*}"
 echo "Setting up Epsilon (this can take a bit)..."
 echo "Building executable..."
-./build.bash > /dev/null
+./build.bash
 echo "Executable built"
 echo "Setting up builtins..."
 ./buildbuiltins.bash

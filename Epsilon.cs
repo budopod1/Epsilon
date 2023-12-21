@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 
 public class Epsilon {
-    public static void Main(string[] args) {
+    public static int Main(string[] args) {
         ArgumentParser parser = new ArgumentParser();
 
         parser.AddOption("p", "Print the AST");
@@ -12,8 +12,10 @@ public class Epsilon {
         parser.AddOption("print-steps", "Print the compilation steps");
         parser.AddOption("t", "Show step timings");
         parser.AddOption("timings", "Show step timings");
-        parser.AddOption("c", "Do not catch errors in code");
-        parser.AddOption("catch-errs", "Do not catch errors in code");
+        parser.AddOption("c", "Do not catch errors");
+        parser.AddOption("do-not-catch-errs", "Do not catch errors");
+        parser.AddOption("w", "Do not write to the output file");
+        parser.AddOption("do-not-write-output", "Do not write to the output file");
         
         parser.AddBranch("compile");
         parser.AddBranch("*input file");
@@ -28,7 +30,8 @@ public class Epsilon {
             compiler.PRINT_AST = parseResults.HasOption("p", "print-ast");
             compiler.PRINT_STEPS = parseResults.HasOption("s", "print-steps");
             compiler.SHOW_TIMINGS = parseResults.HasOption("t", "timings");
-            compiler.CATCH_ERRS = !parseResults.HasOption("c", "catch-errs");
+            compiler.CATCH_ERRS = !parseResults.HasOption("c", "do-not-catch-errs");
+            bool doNotWriteOutput = parseResults.HasOption("w", "do-not-write-output");
             
             string input = values[0];
             string output = values[1];
@@ -39,9 +42,20 @@ public class Epsilon {
                 }
             } catch (IOException) {
                 parser.DisplayProblem("Could not read specified input file");
+                return 1;
             }
-            if (content != null)
-                compiler.Compile(input, content);
+            CompilationResultStatus resultStatus = compiler.Compile(input, content);
+            if (resultStatus != CompilationResultStatus.GOOD) return 1;
+            if (doNotWriteOutput) return 0;
+            compiler.CompileIR();
+            try {
+                File.Copy(Utils.ProjectAbsolutePath()+"/code", output, true);
+            } catch (IOException) {
+                parser.DisplayProblem("Could not write specified output file");
+                return 1;
+            }
+            return 0;
         }
+        return 0;
     }
 }

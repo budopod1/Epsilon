@@ -15,28 +15,35 @@ public class Compiler {
 
     Stopwatch watch;
 
-    public void Compile(string file, string text) {
+    public CompilationResultStatus Compile(string file, string text) {
         if (CATCH_ERRS) {
             try {
                 _Compile(file, text);
+                return CompilationResultStatus.GOOD;
             } catch (SyntaxErrorException e) {
                 ShowCompilationError(e, text);
+                return CompilationResultStatus.USERERR;
             } catch (TargetInvocationException e) {
                 Exception inner = e.InnerException;
                 if (inner is SyntaxErrorException) {
                     ShowCompilationError((SyntaxErrorException)inner, text);
+                    return CompilationResultStatus.USERERR;
                 } else {
                     ExceptionDispatchInfo.Capture(inner).Throw();
+                    return CompilationResultStatus.FAIL;
                 }
             } catch (PythonExceptionException e) {
                 Console.WriteLine("Error in Python code:");
                 Console.WriteLine(e.Message);
+                return CompilationResultStatus.FAIL;
             } catch (BashExceptionException e) {
                 Console.WriteLine("Error in Bash code:");
                 Console.WriteLine(e.Message);
+                return CompilationResultStatus.FAIL;
             }
         } else {
             _Compile(file, text);
+            return CompilationResultStatus.GOOD;
         }
     }
     
@@ -293,7 +300,7 @@ public class Compiler {
         TimingStep();
 
         Step("Optimizing and compiling IR...");
-        OptimizeAndCompileIR();
+        OptimizeAndLinkIR();
         TimingStep();
     }
 
@@ -1613,34 +1620,34 @@ public class Compiler {
     }
 
     void SaveJSON(string json) {
-        using (StreamWriter file = new StreamWriter("code.json")) {
+        using (StreamWriter file = new StreamWriter(Utils.ProjectAbsolutePath()+"code.json")) {
             file.Write(json);
         }
     }
 
-    string RunCommand(string command) {
+    void RunCommand(string command) {
         // I know this isn't the right way to do this
         // (and I know it won't work on non-linux systems)
         ProcessStartInfo procStartInfo = new ProcessStartInfo(
             "/bin/bash", "-c " + Utils.EscapeStringToLiteral(command, '\'')
         );
-        procStartInfo.RedirectStandardOutput = true;
         procStartInfo.UseShellExecute = false;
         procStartInfo.CreateNoWindow = true;
 
-        System.Diagnostics.Process proc = new System.Diagnostics.Process();
+        Process proc = new Process();
         proc.StartInfo = procStartInfo;
         proc.Start();
+        proc.WaitForExit();
 
-        return proc.StandardOutput.ReadToEnd();
+        if (proc.ExitCode != 0) {
+            throw new BashExceptionException("Something went wrong with command");
+        }
     }
 
     void CreateLLVMIR() {
-        System.IO.File.WriteAllText("pyerr.txt", "");
-        Console.Write(
-            RunCommand($"cd {Utils.ProjectAbsolutePath()};source venv/bin/activate;python LLVMIR/create_ir.py 2> pyerr.txt")
-        );
-        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/pyerr.txt")) {
+        System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
+        RunCommand($"cd {Utils.ProjectAbsolutePath()};source venv/bin/activate;python LLVMIR/create_ir.py 2> err.txt");
+        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
                 throw new PythonExceptionException(log);
@@ -1648,12 +1655,21 @@ public class Compiler {
         }
     }
 
-    void OptimizeAndCompileIR() {
-        System.IO.File.WriteAllText("basherr.txt", "");
-        Console.Write(
-            RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir.bash 2> basherr.txt")
-        );
-        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/basherr.txt")) {
+    void OptimizeAndLinkIR() {
+        System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
+        RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir1.bash 2> err.txt");
+        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
+            string log = file.ReadToEnd();
+            if (log.Length > 0) {
+                throw new BashExceptionException(log);
+            }
+        }
+    }
+
+    public void CompileIR() {
+        System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
+        RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir2.bash 2> err.txt");
+        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
                 throw new BashExceptionException(log);

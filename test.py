@@ -153,10 +153,10 @@ def get_func(path, func):
 
 def compile_file(file):
     proccess = subprocess.run(
-        ["mono", "Epsilon.exe", "compile", str(file), "_"], capture_output=True
+        ["mono", "Epsilon.exe", "-w", "compile", str(file), "_"], capture_output=True
     )
     if b"compilation error" in proccess.stdout or b"Error in" in proccess.stdout:
-        return False, proccess.stdout.decode('utf-8')
+        return False, (proccess.stdout.decode('utf-8')+proccess.stderr.decode('utf-8'))
     subprocess.run(["llvm-dis", "-o", "code-opt.ll", "code-opt.bc"])
     return True, ""
 

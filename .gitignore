@@ -2,16 +2,11 @@ Epsilon.pdb
 Epsilon.exe
 output.mlpd
 *.pyc
-pyerr.txt
-basherr.txt
+err.txt
 code.json
 code.ll
 code.bc
-code.o
-code.s
-.replit
 .local
-profile.txt
 code-opt.ll
 .cache
 code
@@ -22,3 +17,4 @@ code-opt.bc
 code-linked.bc
 code-linked.ll
 .ackrc
+result
