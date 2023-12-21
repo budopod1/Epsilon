@@ -1625,7 +1625,7 @@ public class Compiler {
         }
     }
 
-    void RunCommand(string command) {
+    int RunCommand(string command) {
         // I know this isn't the right way to do this
         // (and I know it won't work on non-linux systems)
         ProcessStartInfo procStartInfo = new ProcessStartInfo(
@@ -1639,41 +1639,45 @@ public class Compiler {
         proc.Start();
         proc.WaitForExit();
 
-        if (proc.ExitCode != 0) {
-            throw new BashExceptionException("Something went wrong with command");
-        }
+        return proc.ExitCode;
     }
 
     void CreateLLVMIR() {
         System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
-        RunCommand($"cd {Utils.ProjectAbsolutePath()};source venv/bin/activate;python LLVMIR/create_ir.py 2> err.txt");
+        int exitCode = RunCommand($"cd {Utils.ProjectAbsolutePath()};source venv/bin/activate;python LLVMIR/create_ir.py 2> err.txt");
         using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
                 throw new PythonExceptionException(log);
             }
         }
+        if (exitCode != 0)
+            throw new BashExceptionException("Something went wrong with LLVMIR creation");
     }
 
     void OptimizeAndLinkIR() {
         System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
-        RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir1.bash 2> err.txt");
+        int exitCode = RunCommand($"cd {Utils.ProjectAbsolutePath()};./linkoptimize.bash 2> err.txt");
         using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
                 throw new BashExceptionException(log);
             }
         }
+        if (exitCode != 0)
+            throw new BashExceptionException("Something went wrong with optimization and linking creation");
     }
 
     public void CompileIR() {
         System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
-        RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir2.bash 2> err.txt");
+        int exitCode = RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir.bash 2> err.txt");
         using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
                 throw new BashExceptionException(log);
             }
         }
+        if (exitCode != 0)
+            throw new BashExceptionException("Something went wrong with final compilation");
     }
 }

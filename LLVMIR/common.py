@@ -77,7 +77,7 @@ def make_constant(constant, ir_type):
 
 
 def is_value_type_(type_):
-    return type_["name"] in ["W", "Z", "Bool", "Byte", "Q"]
+    return type_["name"] in ["W", "Z", "Bool", "Byte", "Q", "Void"]
 
 
 def is_signed_integer_type_(type_):
