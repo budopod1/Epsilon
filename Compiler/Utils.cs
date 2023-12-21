@@ -63,6 +63,11 @@ public static class Utils {
         {'\t', "\\t"},
         {'\r', "\\r"},
         {'\\', "\\\\"},
+        {'\0', "\\0"},
+        {'\a', "\\a"},
+        {'\b', "\\b"},
+        {'\f', "\\f"},
+        {'\v', "\\v"},
     };
 
     public static Dictionary<char, char> UnescapeReplacements = InvertDictionary(
