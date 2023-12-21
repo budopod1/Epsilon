@@ -177,6 +177,10 @@ public class Compiler {
         program = TokenizeStrings(program);
         TimingStep();
 
+        Step("Tokenizing character constants...");
+        program = TokenizeCharacterConstants(program);
+        TimingStep();
+
         Step("Removing comments...");
         program = RemoveComments(program);
         TimingStep();
@@ -306,6 +310,30 @@ public class Compiler {
 
     Program TokenizeStrings(Program program) {
         return (Program)PerformMatching(program, new StringMatcher(program));
+    }
+
+    Program TokenizeCharacterConstants(Program program) {
+        Program program2 = (Program)PerformMatching(
+            program, new PatternMatcher(new List<IPatternSegment> {
+                new TextPatternSegment("'"),
+                new TypePatternSegment(typeof(TextToken)),
+                new TextPatternSegment("'")
+            }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                string txt = String.Join("", tokens.ConvertAll<string>(token=>token.ToString()));
+                return new List<IToken> {new ConstantValue(CharConstant.FromString(txt))};
+            }))
+        );
+        return (Program)PerformMatching(
+            program2, new PatternMatcher(new List<IPatternSegment> {
+                new TextPatternSegment("'"),
+                new TextPatternSegment("\\"),
+                new TypePatternSegment(typeof(TextToken)),
+                new TextPatternSegment("'")
+            }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                string txt = String.Join("", tokens.ConvertAll<string>(token=>token.ToString()));
+                return new List<IToken> {new ConstantValue(CharConstant.FromString(txt))};
+            }))
+        );
     }
 
     Program RemoveComments(Program program) {
