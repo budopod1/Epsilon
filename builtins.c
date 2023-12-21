@@ -102,7 +102,7 @@ void extend(struct Array *array1, const struct Array *array2, uint64_t elem) {
     memcpy(array1->content+len1, array2->content, len2*elemSize);
 }
 
-struct Array *join(const struct Array *array1, const struct Array *array2, uint64_t elem) {
+struct Array *concat(const struct Array *array1, const struct Array *array2, uint64_t elem) {
     struct Array *newArray = malloc(sizeof(struct Array));
     newArray->refCounter = 0;
     uint64_t len1 = array1->length;

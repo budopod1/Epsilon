@@ -62,8 +62,8 @@ EXTERN_FUNCS = {
         "name": "extend", "return_type_": VOID,
         "arguments": [ArrayW8, ArrayW8, W64]
     },
-    "join": {
-        "name": "join", "return_type_": ArrayW8,
+    "concat": {
+        "name": "concat", "return_type_": ArrayW8,
         "arguments": [ArrayW8, ArrayW8, W64]
     },
     "rangeArray1": {

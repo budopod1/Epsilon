@@ -130,13 +130,13 @@ def extend(program, builder, params, param_types_):
     return None, VOID
 
 
-def join(program, builder, params, param_types_):
+def concat(program, builder, params, param_types_):
     array1, array2 = params
     array_type_, _ = param_types_ # array types_ will be the same
     elem_type_ = array_type_["generics"][0]
     elem = program.make_elem(builder, elem_type_)
     return program.call_extern(
-        builder, "join", [array1, array2, elem], [
+        builder, "concat", [array1, array2, elem], [
             ArrayW8, ArrayW8, W64
         ], array_type_
     ), array_type_
@@ -381,7 +381,7 @@ BUILTINS = {
         ]
     },
     -10: {
-        "func": join,
+        "func": concat,
         "params": [
             ArrayW8, ArrayW8
         ]
@@ -414,7 +414,7 @@ BUILTINS = {
         "params": [Q64]
     },
     -16: {
-        "func": join,
+        "func": concat,
         "params": [
             ArrayW8, ArrayW8
         ]

@@ -128,7 +128,7 @@ public static class BuiltinsList {
                 new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "join"),
+                    new UnitPatternSegment<string>(typeof(Name), "concat"),
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
@@ -136,7 +136,7 @@ public static class BuiltinsList {
                 new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
             }, -10, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
-                    throw new FunctionCallTypes_Exception($"Cannot join array of type {types_[0]} with an array of type {types_[1]}", 1);
+                    throw new FunctionCallTypes_Exception($"Cannot concat array of type {types_[0]} with an array of type {types_[1]}", 1);
                 return types_[0];
             }
         ), new ExternalFunction(
@@ -204,7 +204,7 @@ public static class BuiltinsList {
                 new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
             }, -16, (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
-                    throw new FunctionCallTypes_Exception($"Cannot join array of type {types_[0]} with an array of type {types_[1]}", 1);
+                    throw new FunctionCallTypes_Exception($"Cannot concat array of type {types_[0]} with an array of type {types_[1]}", 1);
                 return types_[0];
             }
         ), new ExternalFunction(
