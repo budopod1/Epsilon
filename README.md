@@ -1,6 +1,6 @@
 # Epsilon
 
-Epsilon is an **under development**, compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning Epsilon code can be ran on almost any system. Currently, however, only linux is supported, although this is likely to change soon.
+Epsilon is an **in development**, compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning Epsilon code can be ran on almost any system. Currently, however, only linux is supported, although this is likely to change soon.
 
 # Dependencies
 
@@ -21,7 +21,6 @@ To setup and build Epsilon, run:
 
 # Running Code
 
-*Compilation of Epsilon code to machine code is not yet implemented.*
 The file extention of an Epsilon file should be .ep, .eps, .epsilon, or .ε. To compile an Epsilon file, run the command:
 
     mono Epsilon.exe compile <input file path> <output file path>

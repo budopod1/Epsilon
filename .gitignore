@@ -6,6 +6,7 @@ err.txt
 code.json
 code.ll
 code.bc
+.replit
 .local
 code-opt.ll
 .cache
