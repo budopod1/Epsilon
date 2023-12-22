@@ -196,6 +196,10 @@ EXTERN_FUNCS = {
         "name": "join", "return_type_": ArrayW8,
         "arguments": [ArrayW8, ArrayW8, W64]
     },
+    "indexOfSubsection": {
+        "name": "indexOfSubsection", "return_type_": Z64,
+        "arguments": [ArrayW8, ArrayW8, W64]
+    }
 }
 
 EXTERN_ARRAYS = [

@@ -343,6 +343,28 @@ def join(program, builder, params, param_types_):
     ), ArrayW8
 
 
+def index_of(program, builder, params, param_types_):
+    arr, elem = params
+    arr_type_, elem_type_ = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem_casted = convert_type_(
+        program, builder, elem, elem_type_, generic_type_
+    )
+    return program.index_of(builder, arr, elem_casted, generic_type_), Z64
+
+
+def index_of_subsection(program, builder, params, param_types_):
+    arr, sub = params
+    arr_type_, sub_type_ = param_types_
+    assert arr_type_ == sub_type_
+    generic_type_ = arr_type_["generics"][0]
+    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
+    return program.call_extern(
+        builder, "indexOfSubsection", [arr, sub, elem_size],
+        [ArrayW8, ArrayW8, W64], Z64
+    ), Z64
+
+
 BUILTINS = {
     -1: {
         "func": length,
@@ -501,5 +523,13 @@ BUILTINS = {
     -34: {
         "func": join,
         "params": [None, None]
+    },
+    -35: {
+        "func": index_of,
+        "params": [None, None]
+    },
+    -36: {
+        "func": index_of_subsection,
+        "params": [ArrayW8, ArrayW8]
     }
 }

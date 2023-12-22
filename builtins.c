@@ -459,3 +459,19 @@ struct Array *join(const struct Array *arr, const struct Array *sep, uint64_t el
     }
     return result;
 }
+
+int64_t indexOfSubsection(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+    uint64_t arrLen = arr->length;
+    uint64_t subLen = sub->length;
+    if (subLen > arrLen) return -1;
+    if (arrLen == 0) return -1;
+    if (subLen == 0) return 0;
+    char *arrContent = arr->content;
+    char *subContent = sub->content;
+    for (uint64_t i = 0; i <= arrLen-subLen; i++) {
+        if (memcmp(subContent, arrContent+(i*elemSize), subLen * elemSize) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}

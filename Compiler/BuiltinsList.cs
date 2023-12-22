@@ -507,6 +507,38 @@ public static class BuiltinsList {
                     throw new FunctionCallTypes_Exception($"Cannot join of array of type {types_[1]} on array of type {types_[0]}", 1);
                 return types_[1];
             }
-        )
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "index_of"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("elem", Type_.Any()),
+            }, -35, (List<Type_> types_) => {
+                if (!types_[1].IsConvertibleTo(types_[0].GetGeneric(0)))
+                    throw new FunctionCallTypes_Exception($"Cannot check index of element of type {types_[1]} in array of type {types_[0]}", 1);
+                return new Type_("Z", 64);
+            }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "index_of_subsection"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
+            }, -36, (List<Type_> types_) => {
+                if (!types_[0].Equals(types_[1]))
+                    throw new FunctionCallTypes_Exception($"Cannot check index of array of type {types_[1]} in array of type {types_[0]}", 1);
+                return new Type_("Z", 64);
+            }
+        ),
     };
 }

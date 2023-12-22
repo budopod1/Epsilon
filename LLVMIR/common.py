@@ -278,20 +278,29 @@ def do_chain_power(program, builder, type_, value, pow):
         ))
 
 
+def Pointer(type_):
+    return {"name": "Pointer", "bits": None, "generics": [type_]}
+
+
+def Array(type_):
+    return {"name": "Array", "bits": None, "generics": [type_]}
+
+
 bool_true = ir.IntType(1)(1)
 bool_false = ir.IntType(1)(0)
 
 
 VOID = {"name": "Void", "bits": None, "generics": []}
 Z32 = {"name": "Z", "bits": 32, "generics": []}
+Z64 = {"name": "Z", "bits": 64, "generics": []}
 W64 = {"name": "W", "bits": 64, "generics": []}
 W32 = {"name": "W", "bits": 32, "generics": []}
 W8 = {"name": "W", "bits": 8, "generics": []}
-ArrayW8 = {"name": "Array", "bits": None, "generics": [W8]}
-ArrayZ32 = {"name": "Array", "bits": None, "generics": [Z32]}
-PointerW8 = {"name": "Pointer", "bits": None, "generics": [W8]}
+ArrayW8 = Array(W8)
+ArrayZ32 = Array(Z32)
+PointerW8 = Pointer(W8)
 Q64 = {"name": "Q", "bits": 64, "generics": []}
 Q32 = {"name": "Q", "bits": 32, "generics": []}
 Byte = {"name": "Byte", "bits": 8, "generics": []}
-String = {"name": "Array", "bits": None, "generics": [Byte]}
+String = Array(Byte)
 Bool = {"name": "Bool", "bits": 1, "generics": []}

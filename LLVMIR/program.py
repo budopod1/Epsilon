@@ -2,6 +2,7 @@ from llvmlite import ir
 from common import *
 from stringify import make_stringify_func
 from equals import refrence_equals, value_equals_depth_1, value_equals
+from misc_helpers import index_of
 
 
 class Program:
@@ -20,6 +21,7 @@ class Program:
         self.refrence_eq_funcs = {}
         self.value_eq_d1_funcs = {}
         self.value_eq_funcs = {}
+        self.index_of_funcs = {}
 
     def is_builtin(self, id):
         return id in self.builtins
@@ -295,3 +297,15 @@ class Program:
                 )
                 self.value_eq_funcs[frozen] = func
             return builder.call(func, [v1, v2])
+
+    def index_of(self, builder, arr, elem, type_):
+        frozen = freeze_json(type_)
+        if frozen in self.index_of_funcs:
+            func = self.index_of_funcs[frozen]
+        else:
+            self.index_of_funcs[frozen] = None
+            func = index_of(
+                self, len(self.index_of_funcs), type_
+            )
+            self.index_of_funcs[frozen] = func
+        return builder.call(func, [arr, elem])
