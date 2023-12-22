@@ -912,6 +912,18 @@ public class Compiler {
                     typeof(RawSquareGroup)
                 ),
             },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new FuncPatternSegment<Name>(
+                            (Name name) => Scope.GetEnclosing(name)
+                                                .ContainsVar(name.GetValue())
+                        ),
+                    }, new Wrapper2PatternProcessor(
+                        typeof(Variable)
+                    )
+                )
+            },
             functionRules,
             addMatchingFunctionRules,
             new List<IMatcher> {
@@ -927,17 +939,10 @@ public class Compiler {
 
                         for (int i = 0; i < call.Count; i++) {
                             RawSquareGroup rparameter = (call[i]) as RawSquareGroup;
-                            if (rparameter.Count != 1) {
-                                throw new SyntaxErrorException(
-                                    "Function parameters cannot be empty", rparameter
-                                );
-                            }
+                            if (rparameter.Count != 1) return null;
                             IValueToken parameter = (rparameter[0]) as IValueToken;
-                            if (parameter == null) {
-                                throw new SyntaxErrorException(
-                                    "Illegal syntax in function parameter", rparameter
-                                );
-                            }
+                            if (parameter == null) return null;
+                            // TODO: switch back to errors instead of ret null
                             paramTypes_.Add(parameter.GetType_());
                             parameters.Add(parameter);
                         }
@@ -1018,16 +1023,6 @@ public class Compiler {
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}),
                         typeof(MemberAccess)
-                    )
-                ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new FuncPatternSegment<Name>(
-                            (Name name) => Scope.GetEnclosing(name)
-                                                .ContainsVar(name.GetValue())
-                        ),
-                    }, new Wrapper2PatternProcessor(
-                        typeof(Variable)
                     )
                 ),
                 new PatternMatcher(

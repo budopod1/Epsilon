@@ -489,6 +489,24 @@ public static class BuiltinsList {
                 }
                 return new Type_("Bool");
             }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "join"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("arr", new Type_("Array", new List<Type_> {
+                    new Type_("Array", new List<Type_> {Type_.Any()})
+                })),
+                new FunctionArgument("sep", new Type_("Array", new List<Type_> {Type_.Any()})),
+            }, -34, (List<Type_> types_) => {
+                if (!(types_[0].GetGeneric(0)).Equals(types_[1]))
+                    throw new FunctionCallTypes_Exception($"Cannot join of array of type {types_[1]} on array of type {types_[0]}", 1);
+                return types_[1];
+            }
         )
     };
 }

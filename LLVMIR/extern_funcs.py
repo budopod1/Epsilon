@@ -191,7 +191,11 @@ EXTERN_FUNCS = {
     "memcmp": {
         "name": "memcmp", "return_type_": Z32,
         "arguments": [PointerW8, PointerW8, W64]
-    }
+    },
+    "join": {
+        "name": "join", "return_type_": ArrayW8,
+        "arguments": [ArrayW8, ArrayW8, W64]
+    },
 }
 
 EXTERN_ARRAYS = [

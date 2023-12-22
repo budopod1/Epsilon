@@ -443,3 +443,19 @@ int endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize
     char *startPtr = ((char*)arr->content)+startIdx*elemSize;
     return memcmp(startPtr, sub->content, subLen*elemSize) == 0;
 }
+
+struct Array *join(const struct Array *arr, const struct Array *sep, uint64_t elem) {
+    uint64_t elemSize = elem << 1;
+    struct Array *result = malloc(sizeof(struct Array));
+    result->refCounter = 0;
+    result->length = 0;
+    result->capacity = 1;
+    result->content = malloc(elemSize);
+    uint64_t arrLen = arr->length;
+    struct Array **arrContent = arr->content;
+    for (uint64_t i = 0; i < arrLen; i++) {
+        if (i > 0) extend(result, sep, elem);
+        extend(result, arrContent[i], elem);
+    }
+    return result;
+}

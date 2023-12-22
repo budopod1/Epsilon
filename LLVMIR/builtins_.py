@@ -332,6 +332,17 @@ def not_equals_depth(program, builder, params, param_types_):
     return program.value_equals(builder, type_1, v1, v2, depth, True), Bool
 
 
+def join(program, builder, params, param_types_):
+    arr, sep = params
+    type_1, type_2 = param_types_
+    generic_type_ = type_2["generics"][0]
+    elem = program.make_elem(builder, generic_type_)
+    return program.call_extern(
+        builder, "join", [arr, sep, elem], 
+        [type_1, type_2, W64], ArrayW8
+    ), ArrayW8
+
+
 BUILTINS = {
     -1: {
         "func": length,
@@ -486,5 +497,9 @@ BUILTINS = {
     -33: {
         "func": not_equals_depth,
         "params": [None, None, None]
+    },
+    -34: {
+        "func": join,
+        "params": [None, None]
     }
 }
