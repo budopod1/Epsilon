@@ -118,7 +118,7 @@ public class Compiler {
             Console.ResetColor();
 
             int firstLine = Math.Max(1, startLine-1);
-            int lastLine = Math.Min(lines.Count-1, endLine+1);
+            int lastLine = Math.Min(lines.Count, endLine+1);
 
             int prefixLen = lastLine.ToString().Length + 1;
 

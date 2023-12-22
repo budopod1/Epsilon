@@ -1,2 +1,1 @@
 TODO:
-* make multiline compilation errors not break when they include all lines of a program
