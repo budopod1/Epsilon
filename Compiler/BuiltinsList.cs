@@ -539,6 +539,48 @@ public static class BuiltinsList {
                     throw new FunctionCallTypes_Exception($"Cannot check index of array of type {types_[1]} in array of type {types_[0]}", 1);
                 return new Type_("Z", 64);
             }
-        ),
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "parse_int"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {1})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("str", Type_.String()),
+            }, -37, new Type_("Z", 32)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "is_valid_parsed_int"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {1})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("int", new Type_("Z", 32)),
+            }, -38, new Type_("Bool")
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "parse_float"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {1})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("str", Type_.String()),
+            }, -39, new Type_("Q", 32)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "is_valid_parsed_float"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {1})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("int", new Type_("Q", 32)),
+            }, -40, new Type_("Bool")
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "read_input_line"),
+                }, new SlotPatternProcessor(new List<int> {})
+            ), new List<FunctionArgument>(), -41, Type_.String()
+        )
     };
 }

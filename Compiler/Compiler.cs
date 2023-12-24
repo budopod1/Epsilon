@@ -912,6 +912,8 @@ public class Compiler {
                     typeof(RawSquareGroup)
                 ),
             },
+            functionRules,
+            addMatchingFunctionRules,
             new List<IMatcher> {
                 new PatternMatcher(
                     new List<IPatternSegment> {
@@ -924,8 +926,6 @@ public class Compiler {
                     )
                 )
             },
-            functionRules,
-            addMatchingFunctionRules,
             new List<IMatcher> {
                 new GroupConverterMatcher(typeof(RawGroup), typeof(Group)),
                 new PatternMatcher(
@@ -1698,7 +1698,23 @@ public class Compiler {
             throw new BashExceptionException("Something went wrong with optimization and linking creation");
     }
 
-    public void CompileIR() {
+    public int CompileIR() {
+        if (CATCH_ERRS) {
+            try {
+                _CompileIR();
+                return 0;
+            } catch (BashExceptionException e) {
+                Console.WriteLine("Error in Bash code:");
+                Console.WriteLine(e.Message);
+                return 1;
+            }
+        } else {
+            _CompileIR();
+            return 0;
+        }
+    }
+
+    void _CompileIR() {
         System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
         int exitCode = RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir.bash 2> err.txt");
         using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {

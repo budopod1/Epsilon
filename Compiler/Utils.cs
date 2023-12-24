@@ -57,8 +57,6 @@ public static class Utils {
     }
 
     public static Dictionary<char, string> EscapeReplacements = new Dictionary<char, string> {
-        {'\'', "\\'"},
-        {'"', "\\\""},
         {'\n', "\\n"},
         {'\t', "\\t"},
         {'\r', "\\r"},
@@ -79,6 +77,8 @@ public static class Utils {
         foreach (char chr in str) {
             if (EscapeReplacements.ContainsKey(chr)) {
                 result += EscapeReplacements[chr];
+            } else if (chr == quote) {
+                result += "\\" + quote.ToString();
             } else {
                 result += chr;
             }
@@ -87,6 +87,7 @@ public static class Utils {
     }
 
     public static string UnescapeStringFromLiteral(string str) {
+        char quote = str[0];
         string quoteless = str.Substring(1, str.Length-2);
         string result = "";
         bool wbs = false;
@@ -94,7 +95,9 @@ public static class Utils {
             if (wbs) {
                 if (UnescapeReplacements.ContainsKey(chr)) {
                     result += UnescapeReplacements[chr];
-                } else {
+                } else if (chr == quote) {
+                    result += quote;
+                } {
                     result += chr;
                 }
                 wbs = false;

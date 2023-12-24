@@ -1,0 +1,25 @@
+Z#main {
+    Str:s1 = "-432423";
+    Str:s2 = "bar";
+    Str:s3 = "-3.141592658535";
+    
+    println["i1"];
+    Z:i1 = parse_int[s1];
+    println[i1];
+    println[is_valid_parsed_int[i1]];
+    
+    println["i2"];
+    Z:i2 = parse_int[s2];
+    println[i2];
+    println[is_valid_parsed_int[i2]];
+    Q:f2 = parse_float[s2];
+    println[f2];
+    println[is_valid_parsed_float[f2]];
+    
+    println["i3"];
+    Q:f3 = parse_float[s3];
+    println[f3];
+    println[is_valid_parsed_float[f3]];
+    
+    return 0;
+}

@@ -199,6 +199,26 @@ EXTERN_FUNCS = {
     "indexOfSubsection": {
         "name": "indexOfSubsection", "return_type_": Z64,
         "arguments": [ArrayW8, ArrayW8, W64]
+    },
+    "parseInt": {
+        "name": "parseInt", "return_type_": Z32,
+        "arguments": [String]
+    },
+    "isValidParsedInt": {
+        "name": "isValidParsedInt", "return_type_": Z32,
+        "arguments": [Z32]
+    },
+    "parseFloat": {
+        "name": "parseFloat", "return_type_": Q32,
+        "arguments": [String]
+    },
+    "isValidParsedFloat": {
+        "name": "isValidParsedFloat", "return_type_": Z32,
+        "arguments": [Q32]
+    },
+    "readInputLine": {
+        "name": "readInputLine", "return_type_": String,
+        "arguments": []
     }
 }
 

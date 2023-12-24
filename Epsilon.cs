@@ -47,7 +47,8 @@ public class Epsilon {
             CompilationResultStatus resultStatus = compiler.Compile(input, content);
             if (resultStatus != CompilationResultStatus.GOOD) return 1;
             if (doNotWriteOutput) return 0;
-            compiler.CompileIR();
+            int status = compiler.CompileIR();
+            if (status > 0) return status;
             try {
                 File.Copy(Utils.ProjectAbsolutePath()+"/code", output, true);
             } catch (IOException) {

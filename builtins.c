@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
+#include <math.h>
 
 // elem types are 64 bit unsigned
 // upper 63 bits are the size
@@ -177,7 +178,7 @@ struct Array *rangeArray3(int32_t start, int32_t end, int32_t step) {
     array->capacity = capacity;
     int32_t *content = malloc(sizeof(int32_t)*capacity);
     array->content = content;
-    for (int i = 0; i < length; i++) {
+    for (int32_t i = 0; i < length; i++) {
         content[i] = (step>0?start:end) + step*i;
     }
     return array;
@@ -474,4 +475,106 @@ int64_t indexOfSubsection(const struct Array *arr, const struct Array *sub, uint
         }
     }
     return -1;
+}
+
+int32_t parseInt(const struct Array *str) {
+    int32_t result = 0;
+    int32_t multiplier = 1;
+    int32_t sign = 1;
+    int valid = 0;
+    char *content = str->content;
+    uint64_t length = str->length;
+    for (int64_t i = length-1; i >= 0; i--) {
+        char chr = content[i];
+        if (i == 0 && chr == '-') {
+            sign = -1;
+            continue;
+        }
+        if (i == 0 && chr == '+') continue;
+        if ('0' <= chr && chr <= '9') {
+            result += (chr - '0') * multiplier;
+            multiplier *= 10;
+            valid = 1;
+            continue;
+        }
+        if (chr == '_' || chr == ',') continue;
+        return 2147483647;
+    }
+    if (valid) return (result * sign);
+    return 2147483647;
+}
+
+int32_t isValidParsedInt(int32_t i) {
+    return i != 2147483647;
+}
+
+float parseFloat(const struct Array *str) {
+    char *content = str->content;
+    uint64_t length = str->length;
+    int64_t dot = 0;
+    int noDot = 1;
+    for (; dot < length; dot++) {
+        if (content[dot] == '.') {
+            noDot = 0;
+            break;
+        }
+    }
+    if (noDot) {
+        int32_t ival = parseInt(str);
+        if (isValidParsedInt(ival)) return ival;
+        return NAN;
+    }
+    if (length == 1) return NAN;
+    int valid = 0;
+    float result = 0;
+    float multiplier = 0.1;
+    float sign = 1;
+    for (int64_t i = 1; i + dot < length; i++) {
+        char chr = content[i + dot];
+        if ('0' <= chr && chr <= '9') {
+            result += (chr - '0') * multiplier;
+            multiplier *= 0.1;
+            valid = 1;
+            continue;
+        }
+        if (chr == '_' || chr == ',') continue;
+        return NAN;
+    }
+    multiplier = 1;
+    for (int64_t i = 1; dot - i >= 0; i++) {
+        char chr = content[dot - i];
+        if ('0' <= chr && chr <= '9') {
+            result += (chr - '0') * multiplier;
+            multiplier *= 10;
+            valid = 1;
+            continue;
+        }
+        if (chr == '_' || chr == ',') continue;
+        if (dot - i == 0) {
+            if (chr == '-') {
+                sign = -1;
+                continue;
+            }
+            if (chr == '+') continue;
+        }
+        return NAN;
+    }
+    if (valid) return (result * sign);
+    return NAN;
+}
+
+int32_t isValidParsedFloat(float f) {
+    return !isnan(f);
+}
+
+struct Array *readInputLine() {
+    // Maybe replace with a real readline solution like GNU readline?
+    struct Array *result = emptyArray(sizeof(char));
+    while (1) {
+        int chr = getchar();
+        if (chr == EOF || chr == '\n' || chr == '\r') return result;
+        uint64_t length = result->length;
+        incrementLength(result, sizeof(char));
+        ((char*)result->content)[length] = (char)chr;
+    }
 }

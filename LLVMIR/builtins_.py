@@ -365,6 +365,40 @@ def index_of_subsection(program, builder, params, param_types_):
     ), Z64
 
 
+def parse_int(program, builder, params, param_types_):
+    string, = params
+    return program.call_extern(
+        builder, "parseInt", [string], [String], Z32
+    ), Z32
+
+
+def is_valid_parsed_int(program, builder, params, param_types_):
+    num, = params
+    return program.call_extern(
+        builder, "isValidParsedInt", [num], [Z32], Z32
+    ), Z32
+
+
+def parse_float(program, builder, params, param_types_):
+    string, = params
+    return program.call_extern(
+        builder, "parseFloat", [string], [String], Q32
+    ), Q32
+
+
+def is_valid_parsed_float(program, builder, params, param_types_):
+    num, = params
+    return program.call_extern(
+        builder, "isValidParsedFloat", [num], [Q32], Z32
+    ), Z32
+
+
+def read_input_line(program, builder, params, param_types_):
+    return program.call_extern(
+        builder, "readInputLine", [], [], String
+    ), String
+
+
 BUILTINS = {
     -1: {
         "func": length,
@@ -531,5 +565,25 @@ BUILTINS = {
     -36: {
         "func": index_of_subsection,
         "params": [ArrayW8, ArrayW8]
-    }
+    },
+    -37: {
+        "func": parse_int,
+        "params": [String]
+    },
+    -38: {
+        "func": is_valid_parsed_int,
+        "params": [Z32]
+    },
+    -39: {
+        "func": parse_float,
+        "params": [String]
+    },
+    -40: {
+        "func": is_valid_parsed_float,
+        "params": [Q32]
+    },
+    -41: {
+        "func": read_input_line,
+        "params": []
+    },
 }

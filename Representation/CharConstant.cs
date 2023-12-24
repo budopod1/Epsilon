@@ -14,7 +14,9 @@ public class CharConstant : INumberConstant, IIntConstant {
 
     public static CharConstant FromString(string value) {
         if (value[1] == '\\') {
-            return new CharConstant(Utils.UnescapeReplacements[value[2]]);
+            char chr = value[2];
+            if (chr == '\'') return new CharConstant('\'');
+            return new CharConstant(Utils.UnescapeReplacements[chr]);
         } else {
             return new CharConstant(value[1]);
         }
