@@ -1,2 +1,6 @@
 TODO:
-* rename Epsilon files so they aren't marked as "PostScript" files
+* add <Array<T>>.clear<W64> function (which works when T is an integer, or a nullable type)
+* add <Array<T>>.unique function
+
+Long term:
+* make all CodeBlocks use their own Scopes
