@@ -10,7 +10,7 @@ engine = None
 
 TESTS = [
     {
-        "file": "basic.eps",
+        "file": "basic.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_int),
         "tests": [
@@ -18,7 +18,7 @@ TESTS = [
         ]
     },
     {
-        "file": "math.eps",
+        "file": "math.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_float, c_float),
         "tests": [
@@ -26,7 +26,7 @@ TESTS = [
         ]
     },
     {
-        "file": "if.eps",
+        "file": "if.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -36,7 +36,7 @@ TESTS = [
         ]
     },
     {
-        "file": "while.eps",
+        "file": "while.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -45,7 +45,7 @@ TESTS = [
         ]
     },
     {
-        "file": "string.eps",
+        "file": "string.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_char, c_int),
         "tests": [
@@ -54,7 +54,7 @@ TESTS = [
         ]
     },
     {
-        "file": "array.eps",
+        "file": "array.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int, c_int),
         "tests": [
@@ -63,7 +63,7 @@ TESTS = [
         ]
     },
     {
-        "file": "struct.eps",
+        "file": "struct.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -72,7 +72,7 @@ TESTS = [
         ]
     },
     {
-        "file": "switch.eps",
+        "file": "switch.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -82,7 +82,7 @@ TESTS = [
         ]
     },
     {
-        "file": "builtin.eps",
+        "file": "builtin.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -92,7 +92,7 @@ TESTS = [
         ]
     },
     {
-        "file": "stringify.eps",
+        "file": "stringify.epsl",
         "func": "f0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
@@ -100,7 +100,7 @@ TESTS = [
         ]
     },
     {
-        "file": "equals.eps",
+        "file": "equals.epsl",
         "func": "main",
         "sig": CFUNCTYPE(c_int),
         "tests": [
@@ -108,7 +108,7 @@ TESTS = [
         ]
     },
     {
-        "file": "bool.eps",
+        "file": "bool.epsl",
         "func": "main",
         "sig": CFUNCTYPE(c_int),
         "tests": [
@@ -116,7 +116,7 @@ TESTS = [
         ]
     },
     {
-        "file": "deepequals.eps",
+        "file": "deepequals.epsl",
         "func": "main",
         "sig": CFUNCTYPE(c_int),
         "tests": [

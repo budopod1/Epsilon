@@ -21,7 +21,7 @@ To setup and build Epsilon, run:
 
 # Running Code
 
-The file extention of an Epsilon file should be .ep, .eps, .epsilon, or .ε. To compile an Epsilon file, run the command:
+The file extention of an Epsilon file should be .epsl, .epsilon, or .ε. To compile an Epsilon file, run the command:
 
     mono Epsilon.exe compile <input file path> <output file path>
 

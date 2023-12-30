@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 
 
-FILE_EXTENSIONS = ["py", "nix", "cs", "ε", "ep", "eps", "epsilon", "bash"]
+FILE_EXTENSIONS = ["py", "nix", "cs", "ε", "epsl", "epsilon", "bash"]
 IGNORE = ["venv", ".local"]
 
 
