@@ -190,27 +190,15 @@ struct Array *rangeArray3(int32_t start, int32_t end, int32_t step) {
     return array;
 }
 
-// TODO: next two functions use file APIs instead of null byte insertion
-// (as well as abort_ function)
-
-void print(struct Array *string) {
-    // this assumes that the string is an array of chars
-    uint64_t len = string->length;
-    incrementLength(string, 1);
-    char* content = string->content;
-    content[len] = '\0';
-    printf("%s", content);
-    string->length = len;
+void print(const struct Array *string) {
+    fflush(stdout);
+    fwrite(string->content, string->length, 1, stdout);
 }
 
-void println(struct Array *string) {
-    // this assumes that the string is an array of chars
-    uint64_t len = string->length;
-    incrementLength(string, 1);
-    char* content = string->content;
-    content[len] = '\0';
-    puts(content);
-    string->length = len;
+void println(const struct Array *string) {
+    fflush(stdout);
+    fwrite(string->content, string->length, 1, stdout);
+    putc('\n', stdout);
 }
 
 char *formatW8() {
@@ -380,7 +368,8 @@ struct Array *nest(const struct Array *arr, uint64_t elem) {
 struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t elem) {
     uint64_t segLen = seg->length;
     if (segLen == 0) return nest(arr, elem);
-    struct Array *result = blankArray(sizeof(struct Array*));
+    uint64_t ptrSize = sizeof(struct Array*);
+    struct Array *result = blankArray(ptrSize);
     uint64_t elemSize = elem >> 2;
     uint64_t arrLen = arr->length;
     uint64_t sectionCount = 0;
@@ -829,11 +818,9 @@ void freeFile(struct File *file) {
     free(file);
 }
 
-void abort_(struct Array *string) {
-    uint64_t len = string->length;
-    incrementLength(string, 1);
-    char* content = string->content;
-    content[len] = '\0';
-    fprintf(stderr, "%s\n", content);
+void abort_(const struct Array *string) {
+    fflush(stderr);
+    fwrite(string->content, string->length, 1, stderr);
+    putc('\n', stderr);
     exit(1);
 }

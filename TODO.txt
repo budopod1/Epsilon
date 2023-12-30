@@ -1,1 +1,2 @@
 TODO:
+* rename Epsilon files so they aren't marked as "PostScript" files
