@@ -1,6 +1,4 @@
 TODO:
-* add <Array<T>>.clear<W64> function (which works when T is an integer, or a nullable type)
 * add <Array<T>>.unique function
-
-Long term:
+* add <Array<T>>.sort function
 * make all CodeBlocks use their own Scopes

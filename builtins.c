@@ -248,6 +248,7 @@ void leftPad(struct Array *str, uint64_t length, char chr) {
         requireCapacity(str, length, 1);
         char *content = str->content;
         str->length = length;
+        // TODO: replace for loop with memset
         for (uint64_t i = curLen; i <= length; i++) {
             content[i] = chr;
         }
@@ -263,6 +264,7 @@ void rightPad(struct Array *str, uint64_t length, char chr) {
         str->length = length;
         uint64_t reqLen = length - curLen;
         memmove(content+reqLen, content, curLen);
+        // TODO: replace for loop with memset
         for (uint64_t i = 0; i < reqLen; i++) {
             content[i] = chr;
         }
@@ -823,4 +825,16 @@ void abort_(const struct Array *string) {
     fwrite(string->content, string->length, 1, stderr);
     putc('\n', stderr);
     exit(1);
+}
+
+struct Array *makeBlankArray(uint64_t size, uint64_t elemSize) {
+    struct Array *result = malloc(sizeof(struct Array));
+    result->refCounter = 0;
+    result->capacity = size;
+    result->length = size;
+    uint64_t byteCount = size*elemSize;
+    void *content = malloc(byteCount);
+    memset(content, 0, byteCount);
+    result->content = content;
+    return result;
 }

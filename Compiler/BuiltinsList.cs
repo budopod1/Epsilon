@@ -797,6 +797,26 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("string", Type_.String()),
             }, -62, Type_.Void()
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "blank_from_type"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("amount", new Type_("W", 64))
+            }, -63, (List<Type_> types_) => {
+                BaseType_ bt = types_[0].GetGeneric(0).GetBaseType_();
+                if (!bt.IsNumber() && !bt.IsNullable()) {
+                    throw new FunctionCallTypes_Exception(
+                        $"Cannot make blank array of type {types_[0]}", 0
+                    );
+                }
+                return types_[0];
+            }
         ),
     };
 }

@@ -516,6 +516,16 @@ def abort(program, builder, params, param_types_):
     return None, VOID
 
 
+def blank_from_type(program, builder, params, param_types_):
+    _, size = params
+    result_type_, _ = param_types_
+    generic_type_ = result_type_["generics"][0]
+    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
+    return program.call_extern(
+        builder, "makeBlankArray", [size, elem_size], [W64, W64], result_type_
+    ), result_type_
+
+
 BUILTINS = {
     -1: {"func": length, "params": [ArrayW8]},
     -2: {"func": capacity, "params": [ArrayW8]},
@@ -578,5 +588,6 @@ BUILTINS = {
     -59: {"func": write_to_file, "params": [File, String]},
     -60: {"func": is_null, "params": [None]},
     -61: {"func": unwrap, "params": [None]},
-    -62: {"func": abort, "params": [String]}
+    -62: {"func": abort, "params": [String]},
+    -63: {"func": blank_from_type, "params": [None, W64]},
 }

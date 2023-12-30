@@ -296,6 +296,10 @@ EXTERN_FUNCS = {
         "name": "abort_", "return_type_": VOID,
         "arguments": [String]
     },
+    "makeBlankArray": {
+        "name": "makeBlankArray", "return_type_": ArrayW8,
+        "arguments": [W64, W64]
+    },
 }
 
 EXTERN_ARRAYS = [
