@@ -54,6 +54,8 @@ def make_type_(program, data):
             return ir.VoidType()
         case "Pointer", [pointee]:
             return pointee.as_pointer()
+        case "Func", [ret, *params]:
+            return ir.FunctionType(ret, params)
         case "Array", [sub]:
             id_ = program.array_ids[freeze_json(data)]
             return ir.global_context.get_identified_type(
@@ -332,6 +334,10 @@ def Optional(type_):
     return {"name": "Optional", "bits": None, "generics": [type_]}
 
 
+def FuncType_(ret_type_, params):
+    return {"name": "Func", "bits": None, "generics": [ret_type_, *params]}
+
+
 bool_true = ir.IntType(1)(1)
 bool_false = ir.IntType(1)(0)
 
@@ -354,3 +360,4 @@ File = {"name": "File", "bits": None, "generics": []}
 OptionalString = Optional(String)
 ArrayString = Array(String)
 OptionalArrayString = Optional(ArrayString)
+ComparerType_ = Pointer(FuncType_(Z32, [PointerW8, PointerW8]))

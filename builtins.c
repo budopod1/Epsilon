@@ -838,3 +838,9 @@ struct Array *makeBlankArray(uint64_t size, uint64_t elemSize) {
     result->content = content;
     return result;
 }
+
+// TODO: unique function goes here
+
+void sortArray(struct Array *array, uint64_t elemSize, int (*compar)(const void*, const void*)) {
+    qsort(array->content, array->length, elemSize, compar);
+}

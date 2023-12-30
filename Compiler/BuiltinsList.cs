@@ -817,6 +817,60 @@ public static class BuiltinsList {
                 }
                 return types_[0];
             }
-        ),
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "unique")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+            }, -64, Type_.Void()
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "sort")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+            }, -65, (List<Type_> types_) => {
+                if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
+                    throw new FunctionCallTypes_Exception(
+                        $"Only arrays of numbers can be sorted, not {types_[0]}", 0
+                    );
+                }
+                return Type_.Void();
+            }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "sort_inverted")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+            }, -66, (List<Type_> types_) => {
+                if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
+                    throw new FunctionCallTypes_Exception(
+                        $"Only arrays of numbers can be sorted, not {types_[0]}", 0
+                    );
+                }
+                return Type_.Void();
+            }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "dedup")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+            }, -67, Type_.Void()
+        ), 
     };
 }

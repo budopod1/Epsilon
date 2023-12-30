@@ -1670,7 +1670,7 @@ public class Compiler {
     }
 
     void VerifyCode(Program program) {
-        TraverseConfig config = new TraverseConfig(TraverseMode.DEPTH, true);
+        TraverseConfig config = new TraverseConfig(TraverseMode.DEPTH, invert: false);
         foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program, config)) {
             token.Verify();
         }

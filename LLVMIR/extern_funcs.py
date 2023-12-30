@@ -300,6 +300,10 @@ EXTERN_FUNCS = {
         "name": "makeBlankArray", "return_type_": ArrayW8,
         "arguments": [W64, W64]
     },
+    "sortArray": {
+        "name": "sortArray", "return_type_": VOID,
+        "arguments": [ArrayW8, W64, ComparerType_]
+    },
 }
 
 EXTERN_ARRAYS = [

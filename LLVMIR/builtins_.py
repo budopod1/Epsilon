@@ -526,6 +526,52 @@ def blank_from_type(program, builder, params, param_types_):
     ), result_type_
 
 
+def array_unique(program, builder, params, param_types_):
+    arr, = params
+    arr_type_, = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    sort_array(
+        program, builder, 
+        [builder.bitcast(arr, make_type_(program, ArrayW8))], [arr_type_]
+    )
+    program.dedup(builder, arr, generic_type_)
+    return None, VOID
+
+
+def sort_array(program, builder, params, param_types_):
+    arr, = params
+    arr_type_, = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
+    comparer_func = program.make_comparer_func(generic_type_)
+    program.call_extern(
+        builder, "sortArray", [arr, elem_size, comparer_func], 
+        [ArrayW8, W64, ComparerType_], VOID
+    )
+    return None, VOID
+
+
+def sort_array_inverted(program, builder, params, param_types_):
+    arr, = params
+    arr_type_, = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
+    comparer_func = program.make_comparer_func(generic_type_, invert=True)
+    program.call_extern(
+        builder, "sortArray", [arr, elem_size, comparer_func], 
+        [ArrayW8, W64, ComparerType_], VOID
+    )
+    return None, VOID
+
+
+def dedup(program, builder, params, param_types_):
+    arr, = params
+    arr_type_, = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    program.dedup(builder, arr, generic_type_)
+    return None, VOID
+
+
 BUILTINS = {
     -1: {"func": length, "params": [ArrayW8]},
     -2: {"func": capacity, "params": [ArrayW8]},
@@ -590,4 +636,8 @@ BUILTINS = {
     -61: {"func": unwrap, "params": [None]},
     -62: {"func": abort, "params": [String]},
     -63: {"func": blank_from_type, "params": [None, W64]},
+    -64: {"func": array_unique, "params": [None]},
+    -65: {"func": sort_array, "params": [ArrayW8]},
+    -66: {"func": sort_array_inverted, "params": [ArrayW8]},
+    -67: {"func": dedup, "params": [None]},
 }

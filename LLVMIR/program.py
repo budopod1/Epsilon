@@ -2,7 +2,7 @@ from llvmlite import ir
 from common import *
 from stringify import make_stringify_func
 from equals import refrence_equals, value_equals_depth_1, value_equals
-from misc_helpers import index_of
+from misc_helpers import index_of, compare, dedup
 
 
 class Program:
@@ -22,6 +22,8 @@ class Program:
         self.value_eq_d1_funcs = {}
         self.value_eq_funcs = {}
         self.index_of_funcs = {}
+        self.dedup_funcs = {}
+        self.comparer_funcs = {}
 
     def is_builtin(self, id):
         return id in self.builtins
@@ -341,3 +343,27 @@ class Program:
             )
             self.index_of_funcs[frozen] = func
         return builder.call(func, [arr, elem])
+
+    def dedup(self, builder, arr, type_):
+        frozen = freeze_json(type_)
+        if frozen in self.dedup_funcs:
+            func = self.dedup_funcs[frozen]
+        else:
+            self.dedup_funcs[frozen] = None
+            func = dedup(
+                self, len(self.dedup_funcs), type_
+            )
+            self.dedup_funcs[frozen] = func
+        return builder.call(func, [arr])
+        
+    def make_comparer_func(self, type_, invert=False):
+        frozen = (freeze_json(type_), invert)
+        if frozen in self.comparer_funcs:
+            return self.comparer_funcs[frozen]
+        else:
+            self.comparer_funcs[frozen] = None
+            func = compare(
+                self, len(self.comparer_funcs), type_, invert
+            )
+            self.comparer_funcs[frozen] = func
+            return func
