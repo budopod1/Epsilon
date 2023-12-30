@@ -40,12 +40,12 @@ class Program:
         )
         
         if not is_value_type_(type_):
-            incr_ref_counter(builder, result)
+            incr_ref_counter(self, builder, result, type_)
         for param, param_type_ in zip(params, param_types_):
             if not is_value_type_(param_type_):
                 self.check_ref(builder, param, param_type_)
         if not is_value_type_(type_):
-            dumb_decr_ref_counter(builder, result)
+            dumb_decr_ref_counter(self, builder, result, type_)
         
         if result_type_["name"] == "Void":
             return
@@ -71,9 +71,16 @@ class Program:
         result = builder.call(self.extern_funcs[name], converted_params+vargs)
         if result_type_["name"] == "Void":
             return
-        return convert_type_(
-            self, builder, result, func["return_type_"], result_type_
-        )
+        if (func["return_type_"] == Z32 and result_type_ == Bool 
+            and func.get("bool_ret", False)):
+            # This is a special convienience case for boolean
+            # external functions as there is not i1 type
+            # in C
+            return builder.trunc(result, make_type_(self, Bool))
+        else:
+            return convert_type_(
+                self, builder, result, func["return_type_"], result_type_
+            )
 
     def nullptr(self, builder, ir_type):
         return builder.inttoptr(i64_of(0), ir_type)
@@ -111,12 +118,14 @@ class Program:
 
     def make_elem(self, builder, type_):
         ir_type = make_type_(self, type_)
-        result = builder.mul(self.sizeof(builder, ir_type), i64_of(2))
+        result = builder.mul(self.sizeof(builder, ir_type), i64_of(4))
         if is_value_type_(type_):
+            result = builder.add(result, i64_of(2))
+        if is_nullable_type_(type_):
             result = builder.add(result, i64_of(1))
         return result
 
-    def _free_array(self, entry, builder, val, type_):
+    def _free_array(self, block, builder, val, type_):
         content_ptr_ptr = builder.gep(val, [i64_of(0), i32_of(3)])
         content_ptr = builder.load(content_ptr_ptr)
         if is_value_type_(type_):
@@ -134,7 +143,7 @@ class Program:
     
             cont_builder = ir.IRBuilder(cont_branch)
             i = cont_builder.phi(ir.IntType(64))
-            i.add_incoming(i64_of(0), entry)
+            i.add_incoming(i64_of(0), block)
             elem_ptr = cont_builder.gep(content_ptr, [i])
             elem = cont_builder.load(elem_ptr)
             self.decr_ref(cont_builder, elem, type_)
@@ -148,7 +157,11 @@ class Program:
             self.dumb_free(final_builder, content_ptr)
             final_builder.ret_void()
 
-    def _free_struct(self, entry, builder, val, type_):
+    def _free_file(self, block, builder, val):
+        self.call_extern(builder, "freeFile", [val], [File], VOID)
+        builder.ret_void()
+
+    def _free_struct(self, block, builder, val, type_):
         struct = self.structs[type_["name"]]
         for i, field_type_ in enumerate(struct.get_field_types_()):
             if not is_value_type_(field_type_):
@@ -159,6 +172,7 @@ class Program:
         builder.ret_void()
 
     def make_check_func(self, type_):
+        assert type_["name"] != "Optional"
         if is_value_type_(type_):
             return
         ir_type = make_type_(self, type_)
@@ -177,19 +191,29 @@ class Program:
         fbuilder = ir.IRBuilder(free_block)
         if type_["name"] == "Array":
             self._free_array(free_block, fbuilder, val, type_["generics"][0])
+        elif type_["name"] == "File":
+            self._free_file(free_block, fbuilder, val)
         else:
             self._free_struct(free_block, fbuilder, val, type_)
         ebuilder = ir.IRBuilder(exit_block)
         ebuilder.ret_void()
         return func
 
-    def check_ref(self, builder, value, type_, refs=None):
+    def check_ref(self, builder, value, type_, refs=None, no_nulls=False):
+        if is_value_type_(type_):
+            return
+        if is_nullable_type_(type_) and not no_nulls:
+            null_ptr = self.nullptr(builder, make_type_(self, type_))
+            with builder.if_then(builder.icmp_unsigned("!=", value, null_ptr)):
+                self.check_ref(builder, value, type_, refs, no_nulls=True)
+            return
+        if type_["name"] == "Optional":
+            assert no_nulls
+            type_ = type_["generics"][0]
         if refs is None:
             refs = builder.load(builder.bitcast(
                 value, REF_COUNTER_FIELD.as_pointer()
             ))
-        if is_value_type_(type_):
-            return
         frozen = freeze_json(type_)
         if frozen in self.check_funcs:
             func = self.check_funcs[frozen]
@@ -199,11 +223,19 @@ class Program:
             self.check_funcs[frozen] = func
         builder.call(func, [value, refs])
 
-    def decr_ref(self, builder, value, type_):
+    def decr_ref(self, builder, value, type_, no_nulls=False):
         if is_value_type_(type_):
             return
-        decred = dumb_decr_ref_counter(builder, value)
-        self.check_ref(builder, value, type_, decred)
+        if is_nullable_type_(type_) and not no_nulls:
+            null_ptr = self.nullptr(builder, make_type_(self, type_))
+            isnt_null = builder.icmp_unsigned("!=", value, null_ptr)
+            with builder.if_then(isnt_null):
+                self.decr_ref(builder, value, type_, no_nulls=True)
+            return
+        decred = dumb_decr_ref_counter(
+            self, builder, value, type_, no_nulls
+        )
+        self.check_ref(builder, value, type_, decred, no_nulls)
 
     def stringify(self, builder, value, type_):
         if type_ == String or type_ == ArrayW8:
@@ -226,10 +258,10 @@ class Program:
         # the unique argument, if false, means that the pointer returned is not unique
         # nor is it writable, and it needn't be freed. if true the pointer is a unique
         # pointer allocated during this call
-        # the size argument is only meaningfulu if unique is true, and will be the size
+        # the size argument is only meaningful if unique is true, and will be the size
         # of the returned buffer. the size argument should never be lower than len(value)
         # if ommited, the len(value) will be used instead
-        size = size or len(value)
+        size = size or (len(value)+1)
         if unique:
             constant_str = self.string_literal_array(builder, value, size, name=name)
             mem = self.malloc(builder, make_type_(self, Byte), size)

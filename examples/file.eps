@@ -1,0 +1,12 @@
+Z#main {
+    File:file = open_file["examples/test.txt"][FILE_READ_MODE];
+    if ([file].is_null) {
+        abort["Cannot open file test.txt"];
+    };
+    [Str]?:lines = [file].read_lines; // TODO: replace with [Str]?
+    if ([lines].is_null) {
+        abort["Cannot read file"];
+    };
+    println[[[lines].unwrap].join[", "]];
+    return 0;
+}

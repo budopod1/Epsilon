@@ -7,18 +7,15 @@ public class BaseType_ : IEquatable<BaseType_> {
     // Set_(mathematics)#Special_sets_of_numbers_in_mathematics
     public static List<string> BuiltInTypes_ = new List<string> {
         "Void",
-        "Bool",
+        "Bool", // equivalent to W1
         "Byte", // equivalent to W8
         "W", // whole numbers (unsigned ints)
         "Z", // integers (signed ints)
         "Q", // floats
         "Array",
-        "Struct"
-    };
-
-    public static List<string> SpecialTypes_ = new List<string> {
-        "Any", // matches any type_ except Unkown and Void
-        "Unknown",
+        "File",
+        "Optional",
+        "Null"
     };
 
     public static List<string> NumberTypes_ = new List<string> {
@@ -47,7 +44,8 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static Dictionary<string, int> GenericsAmounts = new Dictionary<string, int> {
-        {"Array", 1}
+        {"Array", 1},
+        {"Optional", 1}
     };
 
     public static Dictionary<string, List<string>> ConvertibleTo = new Dictionary<string, List<string>> {
@@ -55,6 +53,7 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"Byte", new List<string> {"W", "Z", "Q"}},
         {"W", new List<string> {"Byte", "Z", "Q"}},
         {"Z", new List<string> {"Q"}},
+        {"Optional", new List<string> {"Bool"}},
     };
 
     public static Dictionary<string, List<string>> CastableTo = new Dictionary<string, List<string>> {
@@ -63,10 +62,15 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"W", new List<string> {"Bool", "Byte", "Z", "Q"}},
         {"Z", new List<string> {"Bool", "Byte", "W", "Q"}},
         {"Q", new List<string> {"Bool", "Byte", "W", "Z"}},
+        {"Optional", new List<string> {"Bool"}},
     };
 
-    public static List<string> BitsImportant = new List<string> {
-        "W", "Z"
+    public static List<string> Optionable = new List<string> {
+        "Array"
+    };
+
+    public static List<string> Nullable = new List<String> {
+        "File", "Optional"
     };
 
     public static int DefaultBits = 32;
@@ -126,12 +130,6 @@ public class BaseType_ : IEquatable<BaseType_> {
             return true;
         if (other.IsAny() && !IsNon()) 
             return true;
-        /*
-        if (BitsImportant.Contains(name) && BitsImportant.Contains(oName)) {
-            if (other.GetBitsOrDefault() < GetBitsOrDefault())
-                return false;
-        }
-        */
         if (name == oName) return true;
         if (ConvertibleTo.ContainsKey(name))
             return ConvertibleTo[name].Contains(oName);
@@ -180,6 +178,18 @@ public class BaseType_ : IEquatable<BaseType_> {
         } else {
             return 0;
         }
+    }
+
+    public bool IsStructType_() {
+        return !BuiltInTypes_.Contains(name);
+    }
+
+    public bool IsOptionable() {
+        return IsStructType_() || Optionable.Contains(name);
+    }
+
+    public bool IsNullable() {
+        return Nullable.Contains(name);
     }
 
     public override string ToString() {

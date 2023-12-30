@@ -107,6 +107,8 @@ class ArrayAssignmentInstruction(BaseInstruction):
             self.program, builder, index, index_type_,
             W64
         )
+        if not is_value_type_(value_type_):
+            incr_ref_counter(self.program, builder, casted_value, value_type_)
         casted_value = convert_type_(
             self.program, builder, value, value_type_,
             self.elem_type_
@@ -114,8 +116,6 @@ class ArrayAssignmentInstruction(BaseInstruction):
         result_ptr = builder.load(builder.gep(
             array, [i64_of(0), i32_of(3)]
         ))
-        if not is_value_type_(self.elem_type_):
-            incr_ref_counter(builder, casted_index)
         builder.store(casted_value, builder.gep(
             result_ptr, [casted_index]
         ))
@@ -160,12 +160,9 @@ class ArrayCreationInstruction(Typed_Instruction):
             builder.store(elem, builder.gep(array_mem, [i64_of(i)]))
         if not is_value_type_(self.elem_type_):
             self.program.call_extern(
-                builder, "alwaysIncrementArrayRefCounts", 
-                [struct_mem, self.program.sizeof(
-                    builder, make_type_(self.program, self.elem_type_)
-                )],
-                [self.type_, W64],
-                VOID
+                builder, "incrementArrayRefCounts", 
+                [struct_mem, self.program.make_elem(builder, self.elem_type_)],
+                [self.type_, W64], VOID
             )
         return struct_mem
 
@@ -180,6 +177,8 @@ class AssignmentInstruction(BaseInstruction):
         value_type_, = param_types
         self.this_block.consume_value(value)
         var_type_ = self.function.get_var(self.variable)["type_"]
+        if not is_value_type_(value_type_):
+            incr_ref_counter(self.program, builder, value, value_type_)
         converted_value = convert_type_(
             self.program, builder, value, value_type_, 
             var_type_
@@ -190,8 +189,6 @@ class AssignmentInstruction(BaseInstruction):
         self.program.decr_ref(
             builder, builder.load(declaration), var_type_
         )
-        if not is_value_type_(var_type_):
-            incr_ref_counter(builder, converted_value)
         return builder.store(converted_value, declaration)
 
 
@@ -436,8 +433,13 @@ class FunctionCallInstruction(Typed_Instruction):
         else:
             func = self.program.functions[self.callee]
             converted_params = [
-                convert_type_(self.program, builder, param, param_type_, argument["type_"])
-                for param, param_type_, argument in zip(params, param_types_, func.arguments)
+                convert_type_(
+                    self.program, builder, param, param_type_,
+                    argument["type_"]
+                )
+                for param, param_type_, argument in zip(
+                    params, param_types_, func.arguments
+                )
             ]
             return builder.call(func.ir, converted_params)
 
@@ -452,12 +454,12 @@ class InitialAssignment(BaseInstruction):
         value_type_, = param_types_
         self.this_block.consume_value(value)
         var_type_ = self.function.get_var(self.variable)["type_"]
+        if not is_value_type_(value_type_):
+            incr_ref_counter(self.program, builder, value, value_type_)
         converted_value = convert_type_(
             self.program, builder, value, value_type_, 
             var_type_
         )
-        if not is_value_type_(var_type_):
-            incr_ref_counter(builder, converted_value)
         return builder.store(
             converted_value, 
             self.function.get_variable_declaration(self.variable)
@@ -470,13 +472,13 @@ class InstantiationInstruction(Typed_Instruction):
         struct = self.program.structs[self.type_["name"]]
         casted_fields = []
         for idx, (param, param_type_) in enumerate(zip(params, param_types_)):
+            if not is_value_type_(param_type_):
+                incr_ref_counter(self.program, builder, param, param_type_)
             proper_type_ = struct.get_type__by_index(idx)
             converted = convert_type_(
                 self.program, builder, param, param_type_,
                 proper_type_
             )
-            if not is_value_type_(proper_type_):
-                incr_ref_counter(builder, converted)
             casted_fields.append(converted)
         init_ref_counter(builder, result)
         for idx, casted_field in enumerate(casted_fields):
@@ -527,11 +529,11 @@ class MemberAssignmentInstruction(BaseInstruction):
         struct = self.program.structs[self.struct_type_["name"]]
         idx = struct.get_index_of_member(self.member)
         result_type_ = struct.get_type__by_index(idx)
+        if not is_value_type_(value_type_):
+            incr_ref_counter(self.program, builder, value, value_type_)
         converted_value = convert_type_(
             self.program, builder, value, value_type_, result_type_
         )
-        if not is_value_type_(result_type_):
-            incr_ref_counter(builder, converted_value)
         return builder.store(
             converted_value, builder.gep(obj, [i64_of(0), i32_of(1+idx)])
         )
@@ -550,6 +552,13 @@ class NotInstruction(Typed_Instruction):
             return builder.not_(param)
         else:
             return untruth_value(self.program, builder, param, param_type_)
+
+
+class NullInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        return self.program.nullptr(
+            builder, self.ir_type
+        )
 
 
 class ReturnInstruction(BaseInstruction):
@@ -578,15 +587,16 @@ class StringLiteralInstruction(Typed_Instruction):
 
     def _build(self, builder, _1, _2):
         str_len = len(self.string)
+        capacity = str_len+1
         array_mem = self.program.string_literal_array(
-            builder, self.string, str_len, unique=True
+            builder, self.string, capacity, unique=True
         )
         struct_mem = self.program.malloc(
             builder, make_type_(self.program, String).pointee
         )
         init_ref_counter(builder, struct_mem)
         builder.store(
-            i64_of(str_len),
+            i64_of(capacity),
             builder.gep(struct_mem, [i64_of(0), i32_of(1)]),
         )
         builder.store(
@@ -738,6 +748,7 @@ def make_instruction(program, function, data):
         "negation": ArithmeticInstruction,
         "not": NotInstruction,
         "not_equals": EqInstruction,
+        "null_value": NullInstruction,
         "or": LogicalInstruction,
         "return": ReturnInstruction,
         "return_void": ReturnVoidInstruction,

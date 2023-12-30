@@ -41,7 +41,8 @@ def value_equals_depth_1(program, i, type_, invert=False):
         builder.ret(compare_values(
             builder, "!=" if invert else "==", v1, v2, type_
         ))
-    if type_["name"] == "Array":
+        
+    elif type_["name"] == "Array":
         generic_type_ = type_["generics"][0]
         elem_size = program.sizeof(
             builder, make_type_(program, generic_type_)
@@ -53,7 +54,35 @@ def value_equals_depth_1(program, i, type_, invert=False):
         if invert:
             result = builder.not_(result)
         builder.ret(result)
+
+    elif type_["name"] == "Optional":
+        generic_type_ = type_["generics"][0]
+        null_ptr = self.nullptr(builder, make_type_(self, type_))
+        v1_null = builder.icmp_unsigned("==", v1, null_ptr)
+        v2_null = builder.icmp_unsigned("==", v2, null_ptr)
+        with builder.if_else(v1_null) as (then, otherwise):
+            with then:
+                if invert:
+                    builder.ret(builder.not_(v2_null))
+                else:
+                    builder.ret(v2_null)
+            with otherwise:
+                with builder.if_else(v2_null) as (then, otherwise):
+                    with then:
+                        builder.ret(i1_of(int(invert)))
+                    with otherwise:
+                        builder.ret(program.value_equals_depth_1(
+                            builder, generic_type_, v1, v2, invert
+                        ))
+    
     else:
+        if is_nullable_type_(type_):
+            null_ptr = self.nullptr(builder, make_type_(self, type_))
+            v1_null = builder.icmp_unsigned("==", v1, null_ptr)
+            v2_null = builder.icmp_unsigned("==", v2, null_ptr)
+            with builder.if_then(builder.or_(v1_null, v2_null)):
+                builder.ret(builder.and_(v1_null, v2_null))
+        
         size = program.sizeof(
             builder, ir_type.pointee
         )

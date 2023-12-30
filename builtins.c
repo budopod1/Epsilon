@@ -5,8 +5,9 @@
 #include <math.h>
 
 // elem types are 64 bit unsigned
-// upper 63 bits are the size
-// lower 1 bit is whether it's a pointer
+// upper 62 bits are the size
+// second to lowest bit is whether it's a pointer
+// lowest bit is whether the value is nullable
 
 struct Array {
     uint64_t refCounter;
@@ -60,20 +61,16 @@ void insertSpace(struct Array *array, uint64_t idx, uint64_t elemSize) {
 }
 
 void incrementArrayRefCounts(const struct Array *array, uint64_t elem) {
-    if (elem&1) return;
-    uint64_t elemSize = elem >> 1;
+    if (elem&2) return;
+    uint64_t elemSize = elem >> 2;
     uint64_t length = array->length;
     char *content = array->content;
     for (uint64_t i = 0; i < length; i++) {
-        (**(uint64_t**)(content+i*elemSize))++;
-    }
-}
-
-void alwaysIncrementArrayRefCounts(const struct Array *array, uint64_t elemSize) {
-    uint64_t length = array->length;
-    char *content = array->content;
-    for (uint64_t i = 0; i < length; i++) {
-        (**(uint64_t**)(content+i*elemSize))++;
+        uint64_t *item = *(uint64_t**)(content+i*elemSize);
+        if (elem&1) {
+            if (item == NULL) continue;
+        }
+        (*item)++;
     }
 }
 
@@ -83,7 +80,7 @@ struct Array *clone(const struct Array *array, uint64_t elem) {
     uint64_t capacity = array->capacity;
     newArray->capacity = capacity;
     newArray->length = array->length;
-    uint64_t elemSize = elem >> 1;
+    uint64_t elemSize = elem >> 2;
     uint64_t size = capacity * elemSize;
     void *content = malloc(size);
     memcpy(content, array->content, size);
@@ -96,7 +93,7 @@ void extend(struct Array *array1, const struct Array *array2, uint64_t elem) {
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
     uint64_t newLen = len1 + len2;
-    uint64_t elemSize = elem >> 1;
+    uint64_t elemSize = elem >> 2;
     requireCapacity(array1, newLen, elemSize);
     array1->length = newLen;
     incrementArrayRefCounts(array2, elem);
@@ -113,7 +110,7 @@ struct Array *concat(const struct Array *array1, const struct Array *array2, uin
     uint64_t newCap = newLen;
     if (newCap < 1) newCap = 1;
     newArray->capacity = newCap;
-    uint64_t elemSize = elem >> 1;
+    uint64_t elemSize = elem >> 2;
     void *content = malloc(elemSize*newCap);
     memcpy(content, array1->content, len1*elemSize);
     memcpy(content+len1, array2->content, len2*elemSize);
@@ -128,6 +125,15 @@ struct Array *emptyArray(uint64_t elemSize) {
     array->length = 0;
     array->capacity = 1;
     array->content = malloc(elemSize);
+    return array;
+}
+
+struct Array *blankArray(uint64_t elemSize) {
+    struct Array *array = malloc(sizeof(struct Array));
+    array->refCounter = 0;
+    array->length = 0;
+    array->capacity = 10;
+    array->content = malloc(10*elemSize);
     return array;
 }
 
@@ -183,6 +189,9 @@ struct Array *rangeArray3(int32_t start, int32_t end, int32_t step) {
     }
     return array;
 }
+
+// TODO: next two functions use file APIs instead of null byte insertion
+// (as well as abort_ function)
 
 void print(struct Array *string) {
     // this assumes that the string is an array of chars
@@ -278,7 +287,7 @@ struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uin
     uint64_t len = end - start + 1;
     slice->capacity = len;
     slice->length = len;
-    uint64_t elemSize = elem >> 1;
+    uint64_t elemSize = elem >> 2;
     uint64_t size = elemSize * len;
     void *content = malloc(size);
     slice->content = content;
@@ -350,7 +359,7 @@ struct Array *nest(const struct Array *arr, uint64_t elem) {
     result->length = len;
     struct Array **resultContent = malloc(sizeof(struct Array*)*len);
     result->content = resultContent;
-    uint64_t elemSize = elem >> 1;
+    uint64_t elemSize = elem >> 2;
     for (uint64_t i = 0; i < len; i++) {
         struct Array *sub = malloc(sizeof(struct Array));
         sub->refCounter = 1;
@@ -371,12 +380,13 @@ struct Array *nest(const struct Array *arr, uint64_t elem) {
 struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t elem) {
     uint64_t segLen = seg->length;
     if (segLen == 0) return nest(arr, elem);
+    // TODO: replace with blankArray func
     struct Array *result = malloc(sizeof(struct Array));
     size_t ptrSize = sizeof(struct Array*);
     result->refCounter = 0;
     result->capacity = 10;
     result->length = 0;
-    uint64_t elemSize = elem >> 1;
+    uint64_t elemSize = elem >> 2;
     result->content = malloc(ptrSize*10);
     uint64_t arrLen = arr->length;
     uint64_t sectionCount = 0;
@@ -430,13 +440,13 @@ struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t e
     return result;
 }
 
-int startsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+int32_t startsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
     uint64_t subLen = sub->length;
     if (subLen > arr->length) return 0;
     return memcmp(arr->content, sub->content, subLen*elemSize) == 0;
 }
 
-int endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+int32_t endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
     uint64_t subLen = sub->length;
     uint64_t arrLen = arr->length;
     if (subLen > arrLen) return 0;
@@ -446,7 +456,7 @@ int endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize
 }
 
 struct Array *join(const struct Array *arr, const struct Array *sep, uint64_t elem) {
-    uint64_t elemSize = elem << 1;
+    uint64_t elemSize = elem >> 2;
     struct Array *result = malloc(sizeof(struct Array));
     result->refCounter = 0;
     result->length = 0;
@@ -569,7 +579,7 @@ int32_t isValidParsedFloat(float f) {
 
 struct Array *readInputLine() {
     // Maybe replace with a real readline solution like GNU readline?
-    struct Array *result = emptyArray(sizeof(char));
+    struct Array *result = blankArray(sizeof(char));
     while (1) {
         int chr = getchar();
         if (chr == EOF || chr == '\n' || chr == '\r') return result;
@@ -577,4 +587,259 @@ struct Array *readInputLine() {
         incrementLength(result, sizeof(char));
         ((char*)result->content)[length] = (char)chr;
     }
+}
+
+struct File {
+    uint64_t refCounter;
+    FILE *file;
+    int32_t mode;
+    int32_t open;
+};
+
+int32_t _FILE_READ_MODE = 1;
+int32_t _FILE_WRITE_MODE = 2;
+int32_t _FILE_APPEND_MODE = 4;
+int32_t _FILE_BINARY_MODE = 8;
+
+struct File *openFile(struct Array *string, int32_t mode) {
+    char modeStr[4];
+    int i = 0;
+    if (mode&_FILE_WRITE_MODE) {
+        if (mode&_FILE_APPEND_MODE)
+            return NULL;
+        modeStr[i++] = 'w';
+        if (mode&_FILE_READ_MODE)
+            modeStr[i++] = '+';
+    } else if (mode&_FILE_READ_MODE) {
+        modeStr[i++] = 'r';
+        if (mode&_FILE_APPEND_MODE)
+            modeStr[i++] = '+';
+    } else if (mode&_FILE_APPEND_MODE) {
+        modeStr[i++] = 'a';
+    } else {
+        return NULL;
+    }
+    if (mode&_FILE_BINARY_MODE) {
+        modeStr[i++] = 'b';
+    }
+    modeStr[i] = '\0';
+
+    uint64_t len = string->length;
+    incrementLength(string, 1);
+    char* content = string->content;
+    content[len] = '\0';
+    string->length = len;
+    
+    FILE *cFile = fopen(content, modeStr);
+    if (cFile == NULL) return NULL;
+
+    struct File *file = malloc(sizeof(struct File));
+    file->refCounter = 0;
+    file->file = cFile;
+    file->mode = mode;
+    file->open = 1;
+
+    return file;
+}
+
+int32_t FILE_READ_MODE() {
+    return _FILE_READ_MODE;
+}
+
+int32_t FILE_WRITE_MODE() {
+    return _FILE_WRITE_MODE;
+}
+
+int32_t FILE_APPEND_MODE() {
+    return _FILE_APPEND_MODE;
+}
+
+int32_t FILE_BINARY_MODE() {
+    return _FILE_BINARY_MODE;
+}
+
+int32_t fileOpen(const struct File *file) {
+    return file != NULL && file->open;
+}
+
+int32_t fileMode(const struct File *file) {
+    if (file == NULL) return 0;
+    return file->mode;
+}
+
+int32_t closeFile(struct File *file) {
+    if (file != NULL && file->open) {
+        if (fclose(file->file) == 0) {
+            file->open = 0;
+            return 1;
+        }
+        return 0;
+    } else {
+        return 0;
+    }
+}
+
+int64_t fileLength(const struct File *file) {
+    if (file != NULL && file->open) {
+        FILE *fp = file->file;
+        long startPos = ftell(fp);
+        fseek(fp, 0, SEEK_END); 
+        uint64_t length = (uint64_t)ftell(fp);
+        fseek(fp, startPos, SEEK_SET);
+        return length;
+    } else {
+        return -1;
+    }
+}
+
+int64_t filePos(const struct File *file) {
+    if (file != NULL && file->open) {
+        return (uint64_t)ftell(file->file);
+    } else {
+        return -1;
+    }
+}
+
+// returns: Str?
+struct Array *readAllFile(const struct File *file) {
+    if (file != NULL && file->open) {
+        uint64_t fileLen = fileLength(file);
+        if (fileLen == -1) return emptyArray(sizeof(char));
+        uint64_t curPos = filePos(file);
+        if (curPos == -1) return emptyArray(sizeof(char));
+        uint64_t remainingText = (uint64_t)(fileLen - curPos);
+        uint64_t capacity = remainingText;
+        if (capacity == 0) capacity = 1;
+        struct Array *result = malloc(sizeof(struct Array));
+        result->refCounter = 0;
+        result->capacity = capacity;
+        result->length = remainingText;
+        char *content = malloc(capacity);
+        result->content = content;
+        size_t read = fread(content, remainingText, 1, file->file);
+        if (read < remainingText) {
+            free(result);
+            free(content);
+            return NULL;
+        }
+        return result;
+    } else {
+        return NULL;
+    }
+}
+
+// returns: Str?
+struct Array *readSomeFile(const struct File *file, uint64_t amount) {
+    if (file != NULL && file->open) {
+        uint64_t capacity = amount;
+        if (capacity == 0) capacity = 1;
+        struct Array *result = malloc(sizeof(struct Array));
+        result->refCounter = 0;
+        result->capacity = capacity;
+        result->length = amount;
+        char *content = malloc(capacity);
+        result->content = content;
+        size_t read = fread(content, amount, 1, file->file);
+        if (read < amount) {
+            free(result);
+            free(content);
+            return NULL;
+        }
+        return result;
+    } else {
+        return NULL;
+    }
+}
+
+int32_t setFilePos(const struct File *file, uint64_t pos) {
+    if (file != NULL && file->open) {
+        return fseek(file->file, (long)pos, SEEK_SET) == 0;
+    }
+    return 0;
+}
+
+int32_t jumpFilePos(const struct File *file, uint64_t amount) {
+    if (file != NULL && file->open) {
+        return fseek(file->file, (long)amount, SEEK_CUR) == 0;
+    }
+    return 0;
+}
+
+int32_t readLineEOF = 0;
+
+// returns: Str?
+struct Array *readFileLine(const struct File *file) {
+    readLineEOF = 0;
+    if (file != NULL && file->open) {
+        char *content = NULL;
+        size_t capacity = 0;
+        int64_t len = (int64_t)getline(&content, &capacity, file->file);
+        if (len == -1) {
+            free(content);
+            readLineEOF = 1;
+            return NULL;
+        }
+        if (content[len-1] == '\n') len--;
+        struct Array *result = malloc(sizeof(struct Array));
+        result->refCounter = 0;
+        result->capacity = capacity;
+        result->content = content;
+        result->length = len;
+        return result;
+    }
+    return NULL;
+}
+
+int32_t readLineReachedEOF() {
+    return readLineEOF;
+}
+
+// returns [Str]?
+struct Array *readFileLines(const struct File *file) {
+    struct Array *result = blankArray(sizeof(struct Array));
+    while (1) {
+        struct Array *line = readFileLine(file);
+        if (readLineEOF) {
+            return result;
+        }
+        if (line == NULL) {
+            for (uint64_t i = 0; i < result->length; i++) {
+                struct Array *str = ((struct Array**)result->content)[i];
+                free(str->content);
+                free(str);
+            }
+            free(result->content);
+            free(result);
+            return NULL;
+        }
+        uint64_t length = result->length;
+        incrementLength(result, sizeof(struct Array));
+        ((struct Array**)result->content)[length] = line;
+        line->refCounter = 1;
+    }
+}
+
+int32_t writeToFile(const struct File *file, const struct Array *text) {
+    if (file != NULL && file->open) {
+        uint64_t len = text->length;
+        return fwrite(text->content, len, 1, file->file) == len;
+    } else {
+        return 0;
+    }
+}
+
+void freeFile(struct File *file) {
+    // We don't need a check for if the file is already closed, becauuse
+    // closeFile contains one itself
+    closeFile(file);
+    free(file);
+}
+
+void abort_(struct Array *string) {
+    uint64_t len = string->length;
+    incrementLength(string, 1);
+    char* content = string->content;
+    content[len] = '\0';
+    fprintf(stderr, "%s\n", content);
+    exit(1);
 }

@@ -15,9 +15,14 @@ public class UserBaseType_ {
         "Str", "L"
     };
 
+    public static List<string> NonUserType_Names = new List<string> {
+        "Null"
+    };
+
     public static UserBaseType_ ParseString(string content, List<string> structNames) {
-        if (structNames.Contains(content) || BaseType_.BuiltInTypes_.Contains(content)
-            || SpecialFullBaseType_Names.Contains(content)) {
+        if ((structNames.Contains(content) || BaseType_.BuiltInTypes_.Contains(content)
+            || SpecialFullBaseType_Names.Contains(content)) 
+            && !NonUserType_Names.Contains(content)) {
             return new UserBaseType_(content);
         }
         System.Text.RegularExpressions.Match match = Regex.Match(
@@ -25,10 +30,9 @@ public class UserBaseType_ {
         );
         if (match.Success) {
             string name = match.Groups[1].Value;
-            if (BaseType_.BitTypes_.Contains(name)) {
-                int bits = Int32.Parse(match.Groups[2].Value);
-                return new UserBaseType_(name, bits);
-            }
+            if (NonUserType_Names.Contains(name)) return null;
+            int bits = Int32.Parse(match.Groups[2].Value);
+            return new UserBaseType_(name, bits);
         }
         return null;
     }

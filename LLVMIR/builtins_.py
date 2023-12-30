@@ -399,191 +399,184 @@ def read_input_line(program, builder, params, param_types_):
     ), String
 
 
+def open_file(program, builder, params, param_types_):
+    file, mode = params
+    return program.call_extern(
+        builder, "openFile", [file, mode], [String, Z32], File
+    ), File
+
+
+def paramless_func(name, type_):
+    def inner(program, builder, params, param_types_):
+        return program.call_extern(
+            builder, name, [], [], type_
+        ), type_
+    return {"func": inner, "params": []}
+
+
+def is_file_open(program, builder, params, param_types_):
+    file, = params
+    return program.call_extern(
+        builder, "fileOpen", [file], [File], Bool
+    ), Bool
+
+
+def file_mode(program, builder, params, param_types_):
+    file, = params
+    return program.call_extern(
+        builder, "fileMode", [file], [File], Z32
+    ), Z32
+
+
+def close_file(program, builder, params, param_types_):
+    file, = params
+    program.call_extern(builder, "closeFile", [file], [File], VOID)
+    return None, VOID
+
+
+def file_length(program, builder, params, param_types_):
+    file, = params
+    return program.call_extern(
+        builder, "fileLength", [file], [File], Z64
+    ), Z64
+
+
+def file_pos(program, builder, params, param_types_):
+    file, = params
+    return program.call_extern(builder, "filePos", [file], [File], Z64), Z64
+
+
+def file_read_all(program, builder, params, param_types_):
+    file, = params
+    return program.call_extern(
+        builder, "readAllFile", [file], [File], OptionalString
+    ), OptionalString
+
+
+def file_read_some(program, builder, params, param_types_):
+    file, amount = params
+    return program.call_extern(
+        builder, "readSomeFile", [file, amount], [File, W64], OptionalString
+    ), OptionalString
+
+
+def set_file_pos(program, builder, params, param_types_):
+    file, pos = params
+    return program.call_extern(
+        builder, "setFilePos", [file, pos], [File, W64], Bool
+    ), Bool
+
+
+def file_jump_pos(program, builder, params, param_types_):
+    file, amount = params
+    return program.call_extern(
+        builder, "jumpFilePos", [file, amount], [File, W64], Bool
+    ), Bool
+
+
+def read_file_line(program, builder, params, param_types_):
+    file, = params
+    return program.call_extern(
+        builder, "readFileLine", [file], [File], OptionalString
+    ), OptionalString
+
+
+def read_file_lines(program, builder, params, param_types_):
+    file, = params
+    return program.call_extern(
+        builder, "readFileLines", [file], [File], OptionalArrayString
+    ), OptionalArrayString
+
+
+def write_to_file(program, builder, params, param_types_):
+    file, text = params
+    return program.call_extern(
+        builder, "writeToFile", [file, text], [File, String], Bool
+    ), Bool
+
+
+def is_null(program, builder, params, param_types_):
+    value, = params
+    value_type_, = param_types_
+    assert not is_value_type_(value_type_)
+    null_ptr = program.nullptr(builder, make_type_(program, value_type_))
+    return builder.icmp_unsigned("==", value, null_ptr), Bool
+
+
+def unwrap(program, builder, params, param_types_):
+    value, = params
+    value_type_, = param_types_
+    generic_type_ = value_type_["generics"][0]
+    return value, generic_type_
+
+
+def abort(program, builder, params, param_types_):
+    string, = params
+    program.call_extern(builder, "abort_", [string], [String], VOID)
+    return None, VOID
+
+
 BUILTINS = {
-    -1: {
-        "func": length,
-        "params": [ArrayW8]
-    },
-    -2: {
-        "func": capacity,
-        "params": [ArrayW8]
-    },
-    -3: {
-        "func": append,
-        "params": [ArrayW8, None]
-    },
-    -4: {
-        "func": require_capacity,
-        "params": [ArrayW8, W64]
-    },
-    -5: {
-        "func": shrink_mem,
-        "params": [
-            ArrayW8
-        ]
-    },
-    -6: {
-        "func": pop,
-        "params": [
-            ArrayW8, W64
-        ]
-    },
-    -7: {
-        "func": insert,
-        "params": [
-            ArrayW8, W64,
-            None
-        ]
-    },
-    -8: {
-        "func": clone,
-        "params": [
-            ArrayW8
-        ]
-    },
-    -9: {
-        "func": extend,
-        "params": [
-            ArrayW8, ArrayW8
-        ]
-    },
-    -10: {
-        "func": concat,
-        "params": [
-            ArrayW8, ArrayW8
-        ]
-    },
-    -11: {
-        "func": make_range_array_1,
-        "params": [
-            Z32
-        ]
-    },
-    -12: {
-        "func": make_range_array_2,
-        "params": [
-            Z32, Z32
-        ]
-    },
-    -13: {
-        "func": make_range_array_3,
-        "params": [
-            Z32, Z32,
-            Z32
-        ]
-    },
-    -14: {
-        "func": abs_,
-        "params": [Z32]
-    },
-    -15: {
-        "func": fabs,
-        "params": [Q64]
-    },
-    -16: {
-        "func": concat,
-        "params": [
-            ArrayW8, ArrayW8
-        ]
-    },
-    -17: {
-        "func": stringify,
-        "params": [None]
-    },
-    -18: {
-        "func": print_,
-        "params": [None]
-    },
-    -19: {
-        "func": println,
-        "params": [None]
-    },
-    -20: {
-        "func": left_pad,
-        "params": [String, W64, Byte]
-    },
-    -21: {
-        "func": right_pad,
-        "params": [String, W64, Byte]
-    },
-    -22: {
-        "func": slice_,
-        "params": [ArrayW8, W64, W64]
-    },
-    -23: {
-        "func": countChr,
-        "params": [String, Byte]
-    },
-    -24: {
-        "func": count,
-        "params": [ArrayW8, ArrayW8]
-    },
-    -25: {
-        "func": overlapCount,
-        "params": [ArrayW8, ArrayW8]
-    },
-    -26: {
-        "func": nest,
-        "params": [ArrayW8]
-    },
-    -27: {
-        "func": split,
-        "params": [ArrayW8, ArrayW8]
-    },
-    -28: {
-        "func": starts_with,
-        "params": [ArrayW8, ArrayW8]
-    },
-    -29: {
-        "func": ends_with,
-        "params": [ArrayW8, ArrayW8]
-    },
-    -30: {
-        "func": equals,
-        "params": [None, None]
-    },
-    -31: {
-        "func": not_equals,
-        "params": [None, None]
-    },
-    -32: {
-        "func": equals_depth,
-        "params": [None, None, None]
-    },
-    -33: {
-        "func": not_equals_depth,
-        "params": [None, None, None]
-    },
-    -34: {
-        "func": join,
-        "params": [None, None]
-    },
-    -35: {
-        "func": index_of,
-        "params": [None, None]
-    },
-    -36: {
-        "func": index_of_subsection,
-        "params": [ArrayW8, ArrayW8]
-    },
-    -37: {
-        "func": parse_int,
-        "params": [String]
-    },
-    -38: {
-        "func": is_valid_parsed_int,
-        "params": [Z32]
-    },
-    -39: {
-        "func": parse_float,
-        "params": [String]
-    },
-    -40: {
-        "func": is_valid_parsed_float,
-        "params": [Q32]
-    },
-    -41: {
-        "func": read_input_line,
-        "params": []
-    },
+    -1: {"func": length, "params": [ArrayW8]},
+    -2: {"func": capacity, "params": [ArrayW8]},
+    -3: {"func": append, "params": [ArrayW8, None]},
+    -4: {"func": require_capacity, "params": [ArrayW8, W64]},
+    -5: {"func": shrink_mem, "params": [ArrayW8]},
+    -6: {"func": pop, "params": [ArrayW8, W64]},
+    -7: {"func": insert, "params": [ArrayW8, W64, None]},
+    -8: {"func": clone, "params": [ArrayW8]},
+    -9: {"func": extend, "params": [ArrayW8, ArrayW8]},
+    -10: {"func": concat, "params": [ArrayW8, ArrayW8]},
+    -11: {"func": make_range_array_1, "params": [Z32]},
+    -12: {"func": make_range_array_2, "params": [Z32, Z32]},
+    -13: {"func": make_range_array_3, "params": [Z32, Z32, Z32]},
+    -14: {"func": abs_, "params": [Z32]},
+    -15: {"func": fabs, "params": [Q64]},
+    -16: {"func": concat, "params": [ArrayW8, ArrayW8]},
+    -17: {"func": stringify, "params": [None]},
+    -18: {"func": print_, "params": [None]},
+    -19: {"func": println, "params": [None]},
+    -20: {"func": left_pad, "params": [String, W64, Byte]},
+    -21: {"func": right_pad, "params": [String, W64, Byte]},
+    -22: {"func": slice_, "params": [ArrayW8, W64, W64]},
+    -23: {"func": countChr, "params": [String, Byte]},
+    -24: {"func": count, "params": [ArrayW8, ArrayW8]},
+    -25: {"func": overlapCount, "params": [ArrayW8, ArrayW8]},
+    -26: {"func": nest, "params": [ArrayW8]},
+    -27: {"func": split, "params": [ArrayW8, ArrayW8]},
+    -28: {"func": starts_with, "params": [ArrayW8, ArrayW8]},
+    -29: {"func": ends_with, "params": [ArrayW8, ArrayW8]},
+    -30: {"func": equals, "params": [None, None]},
+    -31: {"func": not_equals, "params": [None, None]},
+    -32: {"func": equals_depth, "params": [None, None, None]},
+    -33: {"func": not_equals_depth, "params": [None, None, None]},
+    -34: {"func": join, "params": [None, None]},
+    -35: {"func": index_of, "params": [None, None]},
+    -36: {"func": index_of_subsection, "params": [ArrayW8, ArrayW8]},
+    -37: {"func": parse_int, "params": [String]},
+    -38: {"func": is_valid_parsed_int, "params": [Z32]},
+    -39: {"func": parse_float, "params": [String]},
+    -40: {"func": is_valid_parsed_float, "params": [Q32]},
+    -41: {"func": read_input_line, "params": []},
+    -42: {"func": open_file, "params": [String, Z32]},
+    -43: paramless_func("FILE_READ_MODE", Z32),
+    -44: paramless_func("FILE_WRITE_MODE", Z32),
+    -45: paramless_func("FILE_APPEND_MODE", Z32),
+    -46: paramless_func("FILE_BINARY_MODE", Z32),
+    -47: {"func": is_file_open, "params": [File]},
+    -48: {"func": file_mode, "params": [File]},
+    -49: {"func": close_file, "params": [File]},
+    -50: {"func": file_length, "params": [File]},
+    -51: {"func": file_pos, "params": [File]},
+    -52: {"func": file_read_all, "params": [File]},
+    -53: {"func": file_read_some, "params": [File, W64]},
+    -54: {"func": set_file_pos, "params": [File, W64]},
+    -55: {"func": file_jump_pos, "params": [File, W64]},
+    -56: {"func": read_file_line, "params": [File]},
+    -57: paramless_func("readLineReachedEOF", Bool),
+    -58: {"func": read_file_lines, "params": [File]},
+    -59: {"func": write_to_file, "params": [File, String]},
+    -60: {"func": is_null, "params": [None]},
+    -61: {"func": unwrap, "params": [None]},
+    -62: {"func": abort, "params": [String]}
 }

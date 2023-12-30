@@ -59,6 +59,12 @@ def make_type_(program, data):
             return ir.global_context.get_identified_type(
                 "a"+str(id_)
             ).as_pointer()
+        case "Optional", [sub]:
+            return sub
+        case "File", []:
+            return ir.global_context.get_identified_type(
+                "struct.File"
+            ).as_pointer()
         case name, []:
             return ir.global_context.get_identified_type(
                 "___"+name
@@ -98,6 +104,10 @@ def is_floating_type_(type_):
 
 def is_number_type_(type_):
     return is_integer_type_(type_) or is_floating_type_(type_)
+
+
+def is_nullable_type_(type_):
+    return type_["name"] in ["File", "Optional"]
 
 
 def convert_floating_type__bits(builder, val, old, new, new_type):
@@ -148,6 +158,12 @@ def types__equal(type_1, type_2):
 def convert_type_(program, builder, val, old, new):
     if types__equal(old, new):
         return val
+    if old["name"] == "Optional" and old["generics"][0] == new:
+        return val
+    if new["name"] == "Optional" and new["generics"][0] == old:
+        return val
+    if new["name"] == "Bool":
+        return truth_value(program, builder, val, old)
     new_ir_type = make_type_(program, new)
     if is_integer_type_(old) and is_integer_type_(new):
         return convert_integer_type__bits(builder, val, old, new, new_ir_type)
@@ -178,23 +194,33 @@ def compare_values(builder, comparison, value1, value2, type_):
 def truth_value(program, builder, value, type_):
     if is_integer_type_(type_) and type_["bits"] == 1:
         return value
-    if is_floating_type_(type_):
+    elif is_floating_type_(type_):
         return builder.fcmp_unordered("!=", value, ir.Constant(make_type_(program, type_), 0))
     elif is_signed_integer_type_(type_):
         return builder.icmp_signed("!=", value, ir.Constant(make_type_(program, type_), 0))
-    else:
+    elif is_unsigned_integer_type_(type_):
         return builder.icmp_unsigned("!=", value, ir.Constant(make_type_(program, type_), 0))
+    elif not is_value_type_(type_):
+        null_ptr = program.nullptr(builder, make_type_(program, type_))
+        return builder.icmp_unsigned("!=", value, null_ptr)
+    else:
+        raise ValueError(f"Cannot get truth value of type_ {type_}")
 
 
 def untruth_value(program, builder, value, type_):
     if is_integer_type_(type_) and type_["bits"] == 1:
         return builder.not_(value)
-    if is_floating_type_(type_):
+    elif is_floating_type_(type_):
         return builder.fcmp_unordered("==", value, ir.Constant(make_type_(program, type_), 0))
     elif is_signed_integer_type_(type_):
         return builder.icmp_signed("==", value, ir.Constant(make_type_(program, type_), 0))
-    else:
+    elif is_unsigned_integer_type_(type_):
         return builder.icmp_unsigned("==", value, ir.Constant(make_type_(program, type_), 0))
+    elif not is_value_type_(type_):
+        null_ptr = program.nullptr(builder, make_type_(program, type_))
+        return builder.icmp_unsigned("==", value, null_ptr)
+    else:
+        raise ValueError(f"Cannot get untruth value of type_ {type_}")
 
 
 def iter_block_chain(block_chain):
@@ -249,18 +275,34 @@ def init_ref_counter(builder, val):
     )
 
 
-def incr_ref_counter(builder, val):
-    ref_counter = builder.bitcast(val, REF_COUNTER_FIELD.as_pointer())
-    incred = builder.add(builder.load(ref_counter), REF_COUNTER_FIELD(1))
-    builder.store(incred, ref_counter)
-    return incred
+def incr_ref_counter(program, builder, val, type_, no_nulls=False):
+    if is_nullable_type_(type_) and not no_nulls:
+        null_ptr = program.nullptr(builder, make_type_(program, type_))
+        is_null = builder.icmp_unsigned("!=", val, null_ptr)
+        with builder.if_then(is_null):
+            incr_ref_counter(program, builder, val, type_, no_nulls=True)
+        return None
+    else:
+        ref_counter = builder.bitcast(val, REF_COUNTER_FIELD.as_pointer())
+        incred = builder.add(builder.load(ref_counter), REF_COUNTER_FIELD(1))
+        builder.store(incred, ref_counter)
+        return incred
 
 
-def dumb_decr_ref_counter(builder, val):
-    ref_counter = builder.bitcast(val, REF_COUNTER_FIELD.as_pointer())
-    decred = builder.sub(builder.load(ref_counter), REF_COUNTER_FIELD(1))
-    builder.store(decred, ref_counter)
-    return decred
+def dumb_decr_ref_counter(program, builder, val, type_, no_nulls=False):
+    if is_nullable_type_(type_) and not no_nulls:
+        null_ptr = program.nullptr(builder, make_type_(program, type_))
+        is_null = builder.icmp_unsigned("!=", val, null_ptr)
+        with builder.if_then(is_null):
+            dumb_decr_ref_counter(program, builder, val, type_, no_nulls=True)
+        return None
+    else:
+        ref_counter = builder.bitcast(val, REF_COUNTER_FIELD.as_pointer())
+        decred = builder.sub(
+            builder.load(ref_counter), REF_COUNTER_FIELD(1)
+        )
+        builder.store(decred, ref_counter)
+        return decred
 
 
 def do_chain_power(program, builder, type_, value, pow):
@@ -286,6 +328,10 @@ def Array(type_):
     return {"name": "Array", "bits": None, "generics": [type_]}
 
 
+def Optional(type_):
+    return {"name": "Optional", "bits": None, "generics": [type_]}
+
+
 bool_true = ir.IntType(1)(1)
 bool_false = ir.IntType(1)(0)
 
@@ -304,3 +350,7 @@ Q32 = {"name": "Q", "bits": 32, "generics": []}
 Byte = {"name": "Byte", "bits": 8, "generics": []}
 String = Array(Byte)
 Bool = {"name": "Bool", "bits": 1, "generics": []}
+File = {"name": "File", "bits": None, "generics": []}
+OptionalString = Optional(String)
+ArrayString = Array(String)
+OptionalArrayString = Optional(ArrayString)

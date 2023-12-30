@@ -118,7 +118,15 @@ public class Type_ : IEquatable<Type_> {
 
     public static Type_ FromUserBaseType_(UserBaseType_ baseType_, List<Type_> generics = null) {
         if (generics == null) generics = new List<Type_>();
-        return baseType_.ToType_(generics);
+        Type_ result = baseType_.ToType_(generics);
+        if (result.GetBaseType_().GetName() == "Optional") {
+            if (!generics[0].GetBaseType_().IsOptionable()) {
+                throw new IllegalType_GenericsException(
+                    $"Invalid generic {generics[0]} for Optional type"
+                );
+            }
+        }
+        return result;
     }
 
     public Type_ WithGenerics(List<Type_> generics) {
@@ -141,12 +149,24 @@ public class Type_ : IEquatable<Type_> {
         return generics.Count > 0;
     }
 
+    bool IsConvertibleOptionalTo(Type_ other) {
+        if (other.GetBaseType_().GetName() != "Optional") return false;
+        return Equals(other.GetGeneric(0));
+    }
+
+    bool IsConvertibleNullTo(Type_ other) {
+        if (baseType_.GetName() != "Null") return false;
+        return other.GetBaseType_().GetName() == "Optional";
+    }
+
     public bool IsConvertibleTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
         if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
             return true;
         if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
             return true;
+        if (IsConvertibleOptionalTo(other)) return true;
+        if (IsConvertibleNullTo(other)) return true;
         if (HasGenerics())
             return Equals(other);
         if (other.HasGenerics()) return false;
@@ -161,6 +181,8 @@ public class Type_ : IEquatable<Type_> {
             return true;
         if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
             return true;
+        if (IsConvertibleOptionalTo(other)) return true;
+        if (IsConvertibleNullTo(other)) return true;
         if (HasGenerics())
             return Equals(other);
         if (other.HasGenerics()) return false;

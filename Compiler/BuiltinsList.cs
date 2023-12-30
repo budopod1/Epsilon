@@ -504,7 +504,7 @@ public static class BuiltinsList {
                 new FunctionArgument("sep", new Type_("Array", new List<Type_> {Type_.Any()})),
             }, -34, (List<Type_> types_) => {
                 if (!(types_[0].GetGeneric(0)).Equals(types_[1]))
-                    throw new FunctionCallTypes_Exception($"Cannot join of array of type {types_[1]} on array of type {types_[0]}", 1);
+                    throw new FunctionCallTypes_Exception($"Cannot join of array of type {types_[0]} on array of type {types_[1]}", 1);
                 return types_[1];
             }
         ), new ExternalFunction(
@@ -579,8 +579,224 @@ public static class BuiltinsList {
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
                     new UnitPatternSegment<string>(typeof(Name), "read_input_line"),
-                }, new SlotPatternProcessor(new List<int> {})
+                }, new EmptyPatternProcessor()
             ), new List<FunctionArgument>(), -41, Type_.String()
-        )
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "open_file"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {1, 2})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("str", Type_.String()),
+                new FunctionArgument("mode", new Type_("Z", 32)),
+            }, -42, new Type_("File")
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "FILE_READ_MODE"),
+                }, new EmptyPatternProcessor()
+            ), new List<FunctionArgument> {}, -43, new Type_("Z", 32)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "FILE_WRITE_MODE"),
+                }, new EmptyPatternProcessor()
+            ), new List<FunctionArgument> {}, -44, new Type_("Z", 32)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "FILE_APPEND_MODE"),
+                }, new EmptyPatternProcessor()
+            ), new List<FunctionArgument> {}, -45, new Type_("Z", 32)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "FILE_BINARY_MODE"),
+                }, new EmptyPatternProcessor()
+            ), new List<FunctionArgument> {}, -46, new Type_("Z", 32)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "is_open"),
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+            }, -47, new Type_("Bool")
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "mode"),
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+            }, -48, new Type_("Z", 32)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "close"),
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+            }, -49, Type_.Void()
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "length"),
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+            }, -50, new Type_("Z", 64)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "pos"),
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+            }, -51, new Type_("Z", 64)
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "read_all"),
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+            }, -52, new Type_("Optional", new List<Type_> {Type_.String()})
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "read_some"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+                new FunctionArgument("bytes", new Type_("W", 64))
+            }, -53, new Type_("Optional", new List<Type_> {Type_.String()})
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "set_pos"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+                new FunctionArgument("pos", new Type_("W", 64))
+            }, -54, new Type_("Bool")
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "jump_pos"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+                new FunctionArgument("amount", new Type_("W", 64))
+            }, -55, new Type_("Bool")
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "read_line"),
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File"))
+            }, -56, new Type_("Optional", new List<Type_> {Type_.String()})
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "read_line_reached_EOF"),
+                }, new EmptyPatternProcessor()
+            ), new List<FunctionArgument> {}, -57, new Type_("Bool")
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "read_lines"),
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File"))
+            }, -58, new Type_("Optional", new List<Type_> {
+                new Type_("Array", new List<Type_> {Type_.String()})
+            })
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "write"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("file", new Type_("File")),
+                new FunctionArgument("content", Type_.String())
+            }, -59, new Type_("Bool")
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "is_null")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("nullable", Type_.Any()),
+            }, -60, (List<Type_> types_) => {
+                if (!types_[0].GetBaseType_().IsNullable()) {
+                    throw new FunctionCallTypes_Exception(
+                        $"Type {types_[0]} is never null", 0
+                    );
+                }
+                return new Type_("Bool");
+            }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "unwrap")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("optional", new Type_(
+                    "Optional", new List<Type_> {Type_.Any()}
+                )),
+            }, -61, (List<Type_> types_) => {
+                if (types_[0].GetBaseType_().GetName() != "Optional") {
+                    throw new FunctionCallTypes_Exception(
+                        $"Cannot unwrap non Optional type {types_[0]}", 0
+                    );
+                }
+                return types_[0].GetGeneric(0);
+            }
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "abort"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {1})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("string", Type_.String()),
+            }, -62, Type_.Void()
+        ),
     };
 }

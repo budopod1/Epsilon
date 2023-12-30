@@ -78,10 +78,6 @@ EXTERN_FUNCS = {
         "name": "rangeArray3", "return_type_": ArrayZ32,
         "arguments": [Z32, Z32, Z32]
     },
-    "alwaysIncrementArrayRefCounts": {
-        "name": "alwaysIncrementArrayRefCounts", "return_type_": VOID,
-        "arguments": [ArrayW8, W64]
-    },
     "abs": {
         "name": "llvm.abs.i32", "return_type_": W32,
         "arguments": [Z32, Bool]
@@ -154,7 +150,7 @@ EXTERN_FUNCS = {
     },
     "arrayEqual": {
         "name": "arrayEqual", "return_type_": Z32,
-        "arguments": [ArrayW8, ArrayW8]
+        "arguments": [ArrayW8, ArrayW8], "bool_ret": True
     },
     "countChr": {
         "name": "countChr", "return_type_": W64,
@@ -178,15 +174,15 @@ EXTERN_FUNCS = {
     },
     "startsWith": {
         "name": "startWith", "return_type_": Z32,
-        "arguments": [ArrayW8, ArrayW8, W64]
+        "arguments": [ArrayW8, ArrayW8, W64], "bool_ret": True
     },
     "endsWith": {
         "name": "endsWith", "return_type_": Z32,
-        "arguments": [ArrayW8, ArrayW8, W64]
+        "arguments": [ArrayW8, ArrayW8, W64], "bool_ret": True
     },
     "arrayEqual": {
         "name": "arrayEqual", "return_type_": Z32,
-        "arguments": [ArrayW8, ArrayW8, W64]
+        "arguments": [ArrayW8, ArrayW8, W64], "bool_ret": True
     },
     "memcmp": {
         "name": "memcmp", "return_type_": Z32,
@@ -206,7 +202,7 @@ EXTERN_FUNCS = {
     },
     "isValidParsedInt": {
         "name": "isValidParsedInt", "return_type_": Z32,
-        "arguments": [Z32]
+        "arguments": [Z32], "bool_ret": True
     },
     "parseFloat": {
         "name": "parseFloat", "return_type_": Q32,
@@ -214,14 +210,94 @@ EXTERN_FUNCS = {
     },
     "isValidParsedFloat": {
         "name": "isValidParsedFloat", "return_type_": Z32,
-        "arguments": [Q32]
+        "arguments": [Q32], "bool_ret": True
     },
     "readInputLine": {
         "name": "readInputLine", "return_type_": String,
         "arguments": []
-    }
+    },
+    "openFile": {
+        "name": "openFile", "return_type_": File,
+        "arguments": [String, Z32]
+    },
+    "FILE_READ_MODE": {
+        "name": "FILE_READ_MODE", "return_type_": Z32,
+        "arguments": []
+    },
+    "FILE_WRITE_MODE": {
+        "name": "FILE_WRITE_MODE", "return_type_": Z32,
+        "arguments": []
+    },
+    "FILE_APPEND_MODE": {
+        "name": "FILE_APPEND_MODE", "return_type_": Z32,
+        "arguments": []
+    },
+    "FILE_BINARY_MODE": {
+        "name": "FILE_BINARY_MODE", "return_type_": Z32,
+        "arguments": []
+    },
+    "fileOpen": {
+        "name": "fileOpen", "return_type_": Z32,
+        "arguments": [File], "bool_ret": True
+    },
+    "fileMode": {
+        "name": "fileMode", "return_type_": Z32,
+        "arguments": [File]
+    },
+    "closeFile": {
+        "name": "closeFile", "return_type_": Z32,
+        "arguments": [File], "bool_ret": True
+    },
+    "fileLength": {
+        "name": "fileLength", "return_type_": Z64,
+        "arguments": [File]
+    },
+    "filePos": {
+        "name": "filePos", "return_type_": Z64,
+        "arguments": [File]
+    },
+    "readAllFile": {
+        "name": "readAllFile", "return_type_": OptionalString,
+        "arguments": [File]
+    },
+    "readSomeFile": {
+        "name": "readSomeFile", "return_type_": OptionalString,
+        "arguments": [File, W64]
+    },
+    "setFilePos": {
+        "name": "setFilePos", "return_type_": Z32,
+        "arguments": [File, W64], "bool_ret": True
+    },
+    "jumpFilePos": {
+        "name": "jumpFilePos", "return_type_": Z32,
+        "arguments": [File, W64], "bool_ret": True
+    },
+    "readFileLine": {
+        "name": "readFileLine", "return_type_": OptionalString,
+        "arguments": [File]
+    },
+    "readLineReachedEOF": {
+        "name": "readLineReachedEOF", "return_type_": Z32,
+        "arguments": [], "bool_ret": True
+    },
+    "readFileLines": {
+        "name": "readFileLines", "return_type_": OptionalArrayString,
+        "arguments": [File]
+    },
+    "writeToFile": {
+        "name": "writeToFile", "return_type_": Z32,
+        "arguments": [File, String], "bool_ret": True
+    },
+    "freeFile": {
+        "name": "freeFile", "return_type_": VOID,
+        "arguments": [File]
+    },
+    "abort_": {
+        "name": "abort_", "return_type_": VOID,
+        "arguments": [String]
+    },
 }
 
 EXTERN_ARRAYS = [
-    ArrayW8, ArrayZ32, String
+    ArrayW8, ArrayZ32, String, ArrayString
 ]

@@ -95,7 +95,7 @@ class Block:
     def add_argument(self, value, var, type_):
         self.builder.store(value, var)
         if not is_value_type_(type_):
-            incr_ref_counter(self.builder, value)
+            incr_ref_counter(self.program, self.builder, value, type_)
 
     def clean_declarations(self, assignments):
         for id in assignments:
@@ -116,7 +116,7 @@ class Block:
 
     def prepare_for_return(self, ret_val=None, ret_type_=None):
         if ret_val is not None and not is_value_type_(ret_type_):
-            incr_ref_counter(self.builder, ret_val)
+            incr_ref_counter(self.program, self.builder, ret_val, ret_type_)
         self.perpare_for_termination()
         self.clean_declarations(self.parent_declarations)
         for type_, var in self.function.get_argument_info():
@@ -125,7 +125,9 @@ class Block:
                     self.builder, self.builder.load(var), type_
                 )
         if ret_val is not None and not is_value_type_(ret_type_):
-            dumb_decr_ref_counter(self.builder, ret_val)
+            dumb_decr_ref_counter(
+                self.program, self.builder, ret_val, ret_type_
+            )
 
     def register_value(self, value, type_):
         if is_value_type_(type_):
