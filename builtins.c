@@ -380,14 +380,8 @@ struct Array *nest(const struct Array *arr, uint64_t elem) {
 struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t elem) {
     uint64_t segLen = seg->length;
     if (segLen == 0) return nest(arr, elem);
-    // TODO: replace with blankArray func
-    struct Array *result = malloc(sizeof(struct Array));
-    size_t ptrSize = sizeof(struct Array*);
-    result->refCounter = 0;
-    result->capacity = 10;
-    result->length = 0;
+    struct Array *result = blankArray(sizeof(struct Array*));
     uint64_t elemSize = elem >> 2;
-    result->content = malloc(ptrSize*10);
     uint64_t arrLen = arr->length;
     uint64_t sectionCount = 0;
     uint64_t partStart = 0;
