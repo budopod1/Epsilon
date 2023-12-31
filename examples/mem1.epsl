@@ -1,0 +1,7 @@
+#func<[Str]:words> {}
+
+Z#main {
+    func[[Str] ["word1", "nextt", "final"]];
+
+    return 0;
+}

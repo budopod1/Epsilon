@@ -73,7 +73,8 @@ class Block:
                     for parameter in instruction.parameters
                 ])
             built = instruction.build(self.builder, params, param_types_)
-            if result_type_ is not None and built is not None and instruction.REGISTER_RESULT:
+            if (result_type_ is not None and built is not None 
+                and instruction.REGISTER_RESULT):
                 self.register_value(built, result_type_)
             ir_instructions.append(built)
 

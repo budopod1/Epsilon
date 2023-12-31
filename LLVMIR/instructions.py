@@ -127,6 +127,8 @@ class ArrayCreationInstruction(Typed_Instruction):
         self.elem_type_ = self.data["elem_type_"]
 
     def _build(self, builder, elems, elem_types_):
+        for elem in elems:
+            self.this_block.consume_value(elem)
         converted_elems = [
             convert_type_(
                 self.program, builder, elem, elem_type_,
@@ -472,6 +474,7 @@ class InstantiationInstruction(Typed_Instruction):
         struct = self.program.structs[self.type_["name"]]
         casted_fields = []
         for idx, (param, param_type_) in enumerate(zip(params, param_types_)):
+            self.this_block.consume_value(param)
             if not is_value_type_(param_type_):
                 incr_ref_counter(self.program, builder, param, param_type_)
             proper_type_ = struct.get_type__by_index(idx)
