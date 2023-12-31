@@ -1,0 +1,8 @@
+Z#main {
+    [Z]:arr1 = [Z] [1, 2, 3];
+    [Z]:arr2 = [arr1].clone;
+    [arr1].append[4];
+    println[arr1];
+    println[arr2];
+    return 0;
+}

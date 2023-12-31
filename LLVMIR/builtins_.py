@@ -20,19 +20,19 @@ def append(program, builder, params, param_types_):
     length_ptr = builder.gep(array, [i64_of(0), i32_of(2)])
     length = builder.load(length_ptr)
     elem_type_ = array_type_["generics"][0]
-    elem_size = program.sizeof(builder, make_type_(program, array_generic))
+    elem_size = program.sizeof(builder, make_type_(program, elem_type_))
     program.call_extern(
-        builder, "incrementLength", [array, elem_size], [
-            ArrayW8,
-            W8
-        ], VOID
+        builder, "incrementLength", [array, elem_size], 
+        [ArrayW8, W64], VOID
     )
-    content_ptr = builder.gep(param, [i64_of(0), i32_of(3)])
+    content_ptr = builder.gep(array, [i64_of(0), i32_of(3)])
     content = builder.bitcast(
         builder.load(content_ptr), 
         make_type_(program, elem_type_).as_pointer()
     )
     end_ptr = builder.gep(content, [length])
+    if not is_value_type_(value_type_):
+        incr_ref_counter(program, builder, value, value_type_)
     value_casted = convert_type_(program, builder, value, value_type_, elem_type_)
     builder.store(value_casted, end_ptr)
     return None, VOID
@@ -44,11 +44,8 @@ def require_capacity(program, builder, params, param_types_):
     elem_type_ = array_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, elem_type_))
     program.call_extern(
-        builder, "requireCapacity", [], [array, capacity, elem_size], [
-            ArrayW8,
-            W64,
-            W64
-        ], VOID
+        builder, "requireCapacity", [], [array, capacity, elem_size], 
+        [ArrayW8, W64, W64], VOID
     )
     return None, VOID
 
@@ -108,13 +105,12 @@ def clone(program, builder, params, param_types_):
     array, = params
     array_type_, = param_types_
     elem_type_ = array_type_["generics"][0]
-    elem = progra.make_elem(builder, elem_type_)
-    new_array = program.call_extern(
+    elem = program.make_elem(builder, elem_type_)
+    return program.call_extern(
         builder, "clone", [array, elem], [
             ArrayW8, W64
         ], ArrayW8
-    )
-    return array, ArrayW8
+    ), ArrayW8
 
 
 def extend(program, builder, params, param_types_):
