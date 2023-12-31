@@ -367,3 +367,12 @@ class Program:
             )
             self.comparer_funcs[frozen] = func
             return func
+
+    def sort_array(self, builder, arr, arr_type_, invert=False):
+        generic_type_ = arr_type_["generics"][0]
+        elem_size = self.sizeof(builder, make_type_(self, generic_type_))
+        comparer_func = self.make_comparer_func(generic_type_, invert)
+        self.call_extern(
+            builder, "sortArray", [arr, elem_size, comparer_func], 
+            [arr_type_, W64, ComparerType_], VOID
+        )

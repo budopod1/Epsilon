@@ -1,0 +1,7 @@
+Z#main {
+    Str:c = "a";
+    [c].sort;
+    [c].dedup;
+
+    return 0;
+}

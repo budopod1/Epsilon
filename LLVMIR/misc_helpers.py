@@ -131,6 +131,7 @@ def dedup(program, i, type_):
     sbuilder.branch(check_block)
 
     fbuilder.store(j, length_ptr)
+    program.dumb_free(fbuilder, content)
     fbuilder.ret_void()
 
     i.add_incoming(i64_of(1), begin_block)
