@@ -156,8 +156,6 @@ public class Compiler {
     }
 
     void _Compile(string path, string text) {
-        Console.Write("Epsilon Compiler\n\n");
-
         Program program = new Program(
             Path.GetFullPath(path), new List<IToken>()
         );
