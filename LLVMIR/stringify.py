@@ -48,6 +48,24 @@ def make_stringify_func(program, type_, i):
                 abuilder, text, capacity, unique=True
             ), array_field)
             abuilder.ret(struct_mem)
+
+    elif type_ == Null:
+        struct_mem = program.malloc(
+            builder, make_type_(program, String).pointee, name="struct_mem"
+        )
+        init_ref_counter(builder, struct_mem)
+        capacity_field = builder.gep(struct_mem, [i64_of(0), i32_of(1)])
+        length_field = builder.gep(struct_mem, [i64_of(0), i32_of(2)])
+        array_field = builder.gep(struct_mem, [i64_of(0), i32_of(3)])
+
+        string = "null"
+        capacity = len(string)
+        builder.store(i64_of(capacity), capacity_field)
+        builder.store(i64_of(capacity), length_field)
+        builder.store(program.string_literal_array(
+             builder, string, capacity, unique=True
+         ), array_field)
+        builder.ret(struct_mem)
             
     elif type_ == Byte:
         struct_mem = program.malloc(
@@ -209,27 +227,35 @@ def make_stringify_func(program, type_, i):
         fbuilder.ret(struct_mem)
 
     elif type_["name"] == "Optional":
-        null_ptr = self.nullptr(builder, make_type_(self, type_))
-        with builder.if_else(builder.icmp_unsigned("==", val, null_ptr)) as (then, otherwise):
-            with then:
-                struct_mem = program.malloc(
-                    builder, make_type_(program, String).pointee, name="struct_mem"
-                )
-                init_ref_counter(builder, struct_mem)
-                capacity_field = builder.gep(struct_mem, [i64_of(0), i32_of(1)])
-                length_field = builder.gep(struct_mem, [i64_of(0), i32_of(2)])
-                array_field = builder.gep(struct_mem, [i64_of(0), i32_of(3)])
-                
-                string = "null"
-                capacity = len(string)
-                builder.store(capacity, capacity_field)
-                builder.store(capacity, length_field)
-                builder.store(program.string_literal_array(
-                     builder, text, capacity, unique=True
-                 ), array_field)
-                builder.ret(struct_mem)
-            with otherwise:
-                builder.ret(program.stringify(builder, val, type_["generics"][0]))
+        null_block = func.append_basic_block(name="null")
+        nonnull_block = func.append_basic_block(name="nonnull")
+
+        null_ptr = program.nullptr(builder, make_type_(program, type_))
+        builder.cbranch(
+            builder.icmp_unsigned("==", val, null_ptr), 
+            null_block, nonnull_block
+        )
+        
+        builder = ir.IRBuilder(null_block)
+        struct_mem = program.malloc(
+            builder, make_type_(program, String).pointee, name="struct_mem"
+        )
+        init_ref_counter(builder, struct_mem)
+        capacity_field = builder.gep(struct_mem, [i64_of(0), i32_of(1)])
+        length_field = builder.gep(struct_mem, [i64_of(0), i32_of(2)])
+        array_field = builder.gep(struct_mem, [i64_of(0), i32_of(3)])
+        
+        string = "null"
+        capacity = len(string)
+        builder.store(i64_of(capacity), capacity_field)
+        builder.store(i64_of(capacity), length_field)
+        builder.store(program.string_literal_array(
+             builder, string, capacity, unique=True
+         ), array_field)
+        builder.ret(struct_mem)
+
+        builder = ir.IRBuilder(nonnull_block)
+        builder.ret(program.stringify(builder, val, type_["generics"][0]))
 
     elif type_["name"] == "File":
         struct_mem = program.malloc(

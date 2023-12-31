@@ -67,6 +67,8 @@ def make_type_(program, data):
             return ir.global_context.get_identified_type(
                 "struct.File"
             ).as_pointer()
+        case "Null", []:
+            return ir.IntType(8).as_pointer()
         case name, []:
             return ir.global_context.get_identified_type(
                 "___"+name
@@ -85,7 +87,7 @@ def make_constant(constant, ir_type):
 
 
 def is_value_type_(type_):
-    return type_["name"] in ["W", "Z", "Bool", "Byte", "Q", "Void"]
+    return type_["name"] in ["W", "Z", "Bool", "Byte", "Q", "Void", "Null"]
 
 
 def is_signed_integer_type_(type_):
@@ -141,24 +143,8 @@ def is_void_pointer(type_):
     return type_["name"] == "W" and type_["bits"] == 8
 
 
-def types__equal(type_1, type_2):
-    if type_1["name"] != type_2["name"]:
-        return False
-    if type_1["bits"] != type_2["bits"]:
-        return False
-    t1_generics = type_1["generics"]
-    t2_generics = type_2["generics"]
-    if len(t1_generics) != len(t2_generics):
-        return False
-    generic_equality = [
-        types__equal(t1, t2)
-        for t1, t2 in zip(t1_generics, t2_generics)
-    ]
-    return all(generic_equality)
-
-
 def convert_type_(program, builder, val, old, new):
-    if types__equal(old, new):
+    if old == new:
         return val
     if old["name"] == "Optional" and old["generics"][0] == new:
         return val
@@ -179,7 +165,8 @@ def convert_type_(program, builder, val, old, new):
         return builder.sitofp(val, new_ir_type)
     elif is_unsigned_integer_type_(old) and is_floating_type_(new):
         return builder.uitofp(val, new_ir_type)
-    elif (not is_value_type_(old)) and (not is_value_type_(new)):
+    elif ((not is_value_type_(old) or old == Null) 
+          and (not is_value_type_(new))):
         return builder.bitcast(val, new_ir_type)
     raise TypeError(f"Cannot convert type {old} to {new}")
 
@@ -202,6 +189,8 @@ def truth_value(program, builder, value, type_):
         return builder.icmp_signed("!=", value, ir.Constant(make_type_(program, type_), 0))
     elif is_unsigned_integer_type_(type_):
         return builder.icmp_unsigned("!=", value, ir.Constant(make_type_(program, type_), 0))
+    elif type_ == Null:
+        return i1_of(0)
     elif not is_value_type_(type_):
         null_ptr = program.nullptr(builder, make_type_(program, type_))
         return builder.icmp_unsigned("!=", value, null_ptr)
@@ -218,6 +207,8 @@ def untruth_value(program, builder, value, type_):
         return builder.icmp_signed("==", value, ir.Constant(make_type_(program, type_), 0))
     elif is_unsigned_integer_type_(type_):
         return builder.icmp_unsigned("==", value, ir.Constant(make_type_(program, type_), 0))
+    elif type_ == Null:
+        return i1_of(1)
     elif not is_value_type_(type_):
         null_ptr = program.nullptr(builder, make_type_(program, type_))
         return builder.icmp_unsigned("==", value, null_ptr)
@@ -361,3 +352,4 @@ OptionalString = Optional(String)
 ArrayString = Array(String)
 OptionalArrayString = Optional(ArrayString)
 ComparerType_ = Pointer(FuncType_(Z32, [PointerW8, PointerW8]))
+Null = {"name": "Null", "bits": None, "generics": []}

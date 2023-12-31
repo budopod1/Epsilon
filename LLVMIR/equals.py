@@ -55,6 +55,9 @@ def value_equals_depth_1(program, i, type_, invert=False):
             result = builder.not_(result)
         builder.ret(result)
 
+    elif type_ == Null:
+        builder.ret(i1_of(1))
+
     elif type_["name"] == "Optional":
         generic_type_ = type_["generics"][0]
         null_ptr = self.nullptr(builder, make_type_(self, type_))
