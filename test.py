@@ -11,7 +11,7 @@ engine = None
 TESTS = [
     {
         "file": "basic.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
@@ -19,7 +19,7 @@ TESTS = [
     },
     {
         "file": "math.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_float, c_float),
         "tests": [
             {"arguments": [3], "compare": "float", "expect": 35.54}
@@ -27,7 +27,7 @@ TESTS = [
     },
     {
         "file": "if.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [6], "compare": "exact", "expect": 1},
@@ -37,7 +37,7 @@ TESTS = [
     },
     {
         "file": "while.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [4], "compare": "exact", "expect": 10},
@@ -46,7 +46,7 @@ TESTS = [
     },
     {
         "file": "string.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_char, c_int),
         "tests": [
             {"arguments": [0], "compare": "exact", "expect": b"a"},
@@ -55,7 +55,7 @@ TESTS = [
     },
     {
         "file": "array.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_int, c_int, c_int),
         "tests": [
             {"arguments": [0, 0], "compare": "exact", "expect": 1},
@@ -64,7 +64,7 @@ TESTS = [
     },
     {
         "file": "struct.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [0], "compare": "exact", "expect": 5},
@@ -73,7 +73,7 @@ TESTS = [
     },
     {
         "file": "switch.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 2},
@@ -83,7 +83,7 @@ TESTS = [
     },
     {
         "file": "builtin.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [4], "compare": "exact", "expect": 2},
@@ -93,7 +93,7 @@ TESTS = [
     },
     {
         "file": "stringify.epsl",
-        "func": "f0",
+        "func": "func0",
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [10], "compare": "exact", "expect": 2851}

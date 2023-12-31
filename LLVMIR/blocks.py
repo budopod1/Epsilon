@@ -18,6 +18,7 @@ class Block:
         self.builder = None
         self.next_block = None
         self.return_block = None
+        self.break_block = None
         self.param_offset = param_offset
         self.registered_values = []
         self.consumed_values = set()

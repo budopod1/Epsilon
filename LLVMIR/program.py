@@ -276,7 +276,7 @@ class Program:
             ir_type = ir.ArrayType(make_type_(self, Byte), len(value))
             constant = ir.Constant(ir_type, bytearray(value, "utf-8"))
             global_var = ir.GlobalVariable(
-                self.module, ir_type, f"c{self.const_id()}"
+                self.module, ir_type, f"string{self.const_id()}"
             )
             global_var.global_constant = True
             global_var.unnamed_addr = True

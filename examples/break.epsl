@@ -1,0 +1,12 @@
+Z#main {
+    [Z]:arr = [Z] [1, 2, 3, 4];
+    W:i = 0;
+    while (i < [arr].length) {
+        Z:num = arr[i];
+        if (num == 3) {break;};
+        println[num];
+        i = i + 1;
+    };
+    println["end"];
+    return 0;
+}

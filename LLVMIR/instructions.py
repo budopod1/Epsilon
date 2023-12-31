@@ -218,7 +218,7 @@ class BreakInstruction(BaseInstruction):
 
     def _build(self, builder, params, param_types_):
         self.this_block.perpare_for_termination()
-        return builder.branch(self.block.next_block.block)
+        return builder.branch(self.block.break_block.block)
 
 
 class CastInstruction(Typed_Instruction):
@@ -680,6 +680,7 @@ class WhileInstruction(FlowInstruction):
 
     def set_return_block(self):
         set_return_block(self.block, self.eval_block)
+        self.block.break_block = self.this_block.next_block
 
     def create_sub_blocks(self):
         self.eval_block = self.function.add_block(

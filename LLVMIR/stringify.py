@@ -12,7 +12,7 @@ def make_stringify_func(program, type_, i):
     ir_type = make_type_(program, type_)
     func = ir.Function(
         program.module, ir.FunctionType(make_type_(program, String), [ir_type]),
-        name=f"str{i}"
+        name=f"stringify{i}"
     )
     entry = func.append_basic_block(name="entry")
     val, = func.args
@@ -356,7 +356,8 @@ def make_stringify_func(program, type_, i):
             for idx, item_len, item_content in zip(starts, item_lens, item_contents):
                 program.call_extern(
                     builder, "memcpy", [
-                        builder.gep(array_mem, [idx]), item_content, item_len, i1_of(0)
+                        builder.gep(array_mem, [idx]), item_content,
+                        item_len, i1_of(0)
                     ], [PointerW8, PointerW8, W64, Bool], VOID
                 )
     
@@ -368,9 +369,15 @@ def make_stringify_func(program, type_, i):
                     array_mem, [builder.add(idx, i64_of(1))], name=f"space_ptr{i}"
                 ))
             
-            builder.store(total_length, builder.gep(struct_mem, [i64_of(0), i32_of(1)]))
-            builder.store(total_length, builder.gep(struct_mem, [i64_of(0), i32_of(2)]))
-            builder.store(array_mem, builder.gep(struct_mem, [i64_of(0), i32_of(3)]))
+            builder.store(total_length, builder.gep(
+                struct_mem, [i64_of(0), i32_of(1)]
+            ))
+            builder.store(total_length, builder.gep(
+                struct_mem, [i64_of(0), i32_of(2)]
+            ))
+            builder.store(array_mem, builder.gep(
+                struct_mem, [i64_of(0), i32_of(3)]
+            ))
     
             for item_str in item_strs:
                 program.dumb_free(builder, item_str)
