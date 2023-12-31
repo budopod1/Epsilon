@@ -192,6 +192,10 @@ def print_(program, builder, params, param_types_):
     param_type_, = param_types_
     string = program.stringify(builder, param, param_type_)
     program.call_extern(builder, "print", [string], [String], VOID)
+    program.dumb_free(builder, builder.load(
+        builder.gep(string, [i64_of(0), i32_of(3)])
+    ))
+    program.dumb_free(builder, string)
     return None, VOID
 
 
@@ -200,6 +204,10 @@ def println(program, builder, params, param_types_):
     param_type_, = param_types_
     string = program.stringify(builder, param, param_type_)
     program.call_extern(builder, "println", [string], [String], VOID)
+    program.dumb_free(builder, builder.load(
+        builder.gep(string, [i64_of(0), i32_of(3)])
+    ))
+    program.dumb_free(builder, string)
     return None, VOID
 
 
