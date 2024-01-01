@@ -1,23 +1,32 @@
 using System;
 using System.Collections.Generic;
 
-public class Assignment : BinaryOperation<Variable, IValueToken>, IVerifier, ICompleteLine, ISerializableToken {
-    public Assignment(Variable o1, IValueToken o2) : base(o1, o2) {}
+public class Assignment : UnaryOperation<IValueToken>, IVerifier, ICompleteLine, ISerializableToken {
+    int id;
+    
+    public Assignment(Variable variable, IValueToken o) : base(o) {
+        id = variable.GetID();
+    }
 
     public void Verify() {
-        if (!o2.GetType_().IsConvertibleTo(o1.GetType_())) {
+        Type_ valueType_ = o.GetType_();
+        Scope scope = Scope.GetEnclosing(this);
+        ScopeVar svar = scope.GetVarByID(id);
+        Type_ varType_ = svar.GetType_();
+        if (!valueType_.IsConvertibleTo(varType_)) {
             throw new SyntaxErrorException(
-                $"Cannot assign value of type {o2.GetType_()} to variable of type {o1.GetType_()}", this
+                $"Cannot assign value of type {valueType_} to variable of type {varType_}", this
             );
         }
     }
 
     public override int Serialize(SerializationContext context) {
+        Scope scope = Scope.GetEnclosing(this);
+        ScopeVar svar = scope.GetVarByID(id);
         return context.AddInstruction(
-            new SerializableInstruction(
-                "assignment", new List<int> {o2.Serialize(context)}
-            ).AddData("variable", new JSONInt(o1.GetID()))
-             .AddData("var_type_", o1.GetType_().GetJSON())
+            new SerializableInstruction(this, context)
+                .AddData("variable", new JSONInt(id))
+                .AddData("var_type_", svar.GetType_().GetJSON())
         );
     }
 }

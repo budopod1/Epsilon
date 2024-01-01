@@ -1,5 +1,4 @@
 TODO:
-* make Assignments store the variable id instead of a Variable like InitialAssignments
 * remove the parent_assignments/initial_assignments system
 * add compound assignment operators
 * add -- and ++ operators
