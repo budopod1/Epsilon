@@ -248,10 +248,7 @@ void leftPad(struct Array *str, uint64_t length, char chr) {
         requireCapacity(str, length, 1);
         char *content = str->content;
         str->length = length;
-        // TODO: replace for loop with memset
-        for (uint64_t i = curLen; i <= length; i++) {
-            content[i] = chr;
-        }
+        memset(content+curLen, chr, length-curLen);
     }
 }
 
@@ -264,10 +261,7 @@ void rightPad(struct Array *str, uint64_t length, char chr) {
         str->length = length;
         uint64_t reqLen = length - curLen;
         memmove(content+reqLen, content, curLen);
-        // TODO: replace for loop with memset
-        for (uint64_t i = 0; i < reqLen; i++) {
-            content[i] = chr;
-        }
+        memset(content, chr, reqLen);
     }
 }
 
@@ -839,8 +833,24 @@ struct Array *makeBlankArray(uint64_t size, uint64_t elemSize) {
     return result;
 }
 
-// TODO: unique function goes here
-
 void sortArray(struct Array *array, uint64_t elemSize, int (*compar)(const void*, const void*)) {
     qsort(array->content, array->length, elemSize, compar);
+}
+
+struct Array *repeatArray(const struct Array *array, uint64_t times, uint64_t elem) {
+    struct Array *result = malloc(sizeof(struct Array));
+    result->refCounter = 0;
+    uint64_t srcLen = array->length;
+    uint64_t newLen = srcLen * times;
+    result->capacity = newLen;
+    result->length = newLen;
+    uint64_t elemSize = elem >> 2;
+    uint64_t srcSize = srcLen*elemSize;
+    char *content = malloc(newLen*elemSize);
+    for (uint64_t i = 0; i < times; i++) {
+        memcpy(content+i*srcSize, array->content, srcSize);
+    }
+    result->content = content;
+    incrementArrayRefCounts(result, elem);
+    return result;
 }

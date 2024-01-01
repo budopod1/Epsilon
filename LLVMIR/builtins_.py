@@ -563,6 +563,17 @@ def dedup(program, builder, params, param_types_):
     return None, VOID
 
 
+def repeat_array(program, builder, params, param_types_):
+    arr, times = params
+    arr_type_, _ = param_types_
+    generic_type_ = arr_type_["generics"][0]
+    elem = program.make_elem(builder, generic_type_)
+    return program.call_extern(
+        builder, "repeatArray", [arr, times, elem],
+        [ArrayW8, W64, W64], ArrayW8
+    ), ArrayW8
+
+
 BUILTINS = {
     -1: {"func": length, "params": [ArrayW8]},
     -2: {"func": capacity, "params": [ArrayW8]},
@@ -631,4 +642,5 @@ BUILTINS = {
     -65: {"func": sort_array, "params": [None]},
     -66: {"func": sort_array_inverted, "params": [None]},
     -67: {"func": dedup, "params": [None]},
+    -68: {"func": repeat_array, "params": [ArrayW8, W64]},
 }

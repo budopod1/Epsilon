@@ -1,0 +1,13 @@
+Z#main {
+    W:size = 10;
+    Str:str = "hello";
+    Str:lpadded = [str].clone;
+    [lpadded].left_pad[size][' '];
+    println[lpadded];
+    println[["="].repeat[size]];
+    Str:rpadded = [str].clone;
+    [rpadded].right_pad[size][' '];
+    println[rpadded];
+
+    return 0;
+}

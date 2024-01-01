@@ -304,6 +304,10 @@ EXTERN_FUNCS = {
         "name": "sortArray", "return_type_": VOID,
         "arguments": [ArrayW8, W64, ComparerType_]
     },
+    "repeatArray": {
+        "name": "repeatArray", "return_type_": ArrayW8,
+        "arguments": [ArrayW8, W64, W64]
+    },
 }
 
 EXTERN_ARRAYS = [
