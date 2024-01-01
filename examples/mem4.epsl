@@ -1,0 +1,6 @@
+Z#main {
+    [Str]:words = [Str] ["hello"];
+    println[words];
+
+    return 0;
+}

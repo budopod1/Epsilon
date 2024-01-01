@@ -104,13 +104,7 @@ def insert(program, builder, params, param_types_):
 def clone(program, builder, params, param_types_):
     array, = params
     array_type_, = param_types_
-    elem_type_ = array_type_["generics"][0]
-    elem = program.make_elem(builder, elem_type_)
-    return program.call_extern(
-        builder, "clone", [array, elem], [
-            ArrayW8, W64
-        ], ArrayW8
-    ), ArrayW8
+    return program.array_copy(builder, array, array_type_), array_type_
 
 
 def extend(program, builder, params, param_types_):
@@ -577,7 +571,7 @@ BUILTINS = {
     -5: {"func": shrink_mem, "params": [ArrayW8]},
     -6: {"func": pop, "params": [ArrayW8, W64]},
     -7: {"func": insert, "params": [ArrayW8, W64, None]},
-    -8: {"func": clone, "params": [ArrayW8]},
+    -8: {"func": clone, "params": [None]},
     -9: {"func": extend, "params": [ArrayW8, ArrayW8]},
     -10: {"func": concat, "params": [ArrayW8, ArrayW8]},
     -11: {"func": make_range_array_1, "params": [Z32]},

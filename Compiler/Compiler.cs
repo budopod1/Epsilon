@@ -1683,6 +1683,7 @@ public class Compiler {
                 if (line == null) continue;
                 IValueToken sub = line[0] as IValueToken;
                 if (sub == null) continue;
+                if (sub.GetType_().GetBaseType_().IsVoid()) continue;
                 line[0] = new UnusedValueWrapper(sub);
             }
         }

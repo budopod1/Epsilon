@@ -243,8 +243,8 @@ class Program:
         self.check_ref(builder, value, type_, decred, no_nulls)
 
     def stringify(self, builder, value, type_):
-        if type_ == String or type_ == ArrayW8:
-            return value
+        if type_ == String:
+            return self.array_copy(builder, value, String)
         frozen = freeze_json(type_)
         if frozen in self.stringifiers:
             func = self.stringifiers[frozen]
@@ -378,4 +378,12 @@ class Program:
         self.call_extern(
             builder, "sortArray", [arr, elem_size, comparer_func], 
             [arr_type_, W64, ComparerType_], VOID
+        )
+
+    def array_copy(self, builder, arr, arr_type_):
+        elem_type_ = arr_type_["generics"][0]
+        elem = self.make_elem(builder, elem_type_)
+        return self.call_extern(
+            builder, "clone", [arr, elem], 
+            [arr_type_, W64], arr_type_
         )
