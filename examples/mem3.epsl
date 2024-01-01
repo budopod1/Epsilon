@@ -1,0 +1,11 @@
+Str#test<Str:word> {
+    return word;
+}
+
+Z#main {
+    Str:word = "taker";
+
+    test[word];
+
+    return 0;
+}

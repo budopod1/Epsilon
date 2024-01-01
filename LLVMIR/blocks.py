@@ -20,8 +20,6 @@ class Block:
         self.return_block = None
         self.break_block = None
         self.param_offset = param_offset
-        self.registered_values = []
-        self.consumed_values = set()
         self.initial_declarations = block["initial_declarations"]
         self.parent_declarations = block["parent_declarations"]
 
@@ -73,9 +71,6 @@ class Block:
                     for parameter in instruction.parameters
                 ])
             built = instruction.build(self.builder, params, param_types_)
-            if (result_type_ is not None and built is not None 
-                and instruction.REGISTER_RESULT):
-                self.register_value(built, result_type_)
             ir_instructions.append(built)
 
         if not self.builder.block.is_terminated:
@@ -111,10 +106,6 @@ class Block:
 
     def perpare_for_termination(self):
         self.clean_declarations(self.initial_declarations)
-        for type_, value in self.registered_values:
-            if value in self.consumed_values:
-                continue
-            self.program.check_ref(self.builder, value, type_)
 
     def prepare_for_return(self, ret_val=None, ret_type_=None):
         if ret_val is not None and not is_value_type_(ret_type_):
@@ -130,14 +121,6 @@ class Block:
             dumb_decr_ref_counter(
                 self.program, self.builder, ret_val, ret_type_
             )
-
-    def register_value(self, value, type_):
-        if is_value_type_(type_):
-            return
-        self.registered_values.append((type_, value))
-
-    def consume_value(self, value):
-        self.consumed_values.add(value)
 
     def cut(self, start, id_):
         cut = self.instructions[start:]

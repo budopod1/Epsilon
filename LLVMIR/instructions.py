@@ -3,8 +3,6 @@ from common import *
 
 
 class BaseInstruction:
-    REGISTER_RESULT = True
-    
     def __init__(self, program, function, data):
         self.program = program
         self.function = function
@@ -99,7 +97,6 @@ class ArrayAssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         array, index, value = params
         _, index_type_, value_type_ = param_types_
-        self.this_block.consume_value(value)
         # array should always already be the correct type_
         # this could change, and if it does, type_ casting would be
         # required here
@@ -127,8 +124,6 @@ class ArrayCreationInstruction(Typed_Instruction):
         self.elem_type_ = self.data["elem_type_"]
 
     def _build(self, builder, elems, elem_types_):
-        for elem in elems:
-            self.this_block.consume_value(elem)
         converted_elems = [
             convert_type_(
                 self.program, builder, elem, elem_type_,
@@ -177,7 +172,6 @@ class AssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types):
         value, = params
         value_type_, = param_types
-        self.this_block.consume_value(value)
         var_type_ = self.function.get_var(self.variable)["type_"]
         if not is_value_type_(value_type_):
             incr_ref_counter(self.program, builder, value, value_type_)
@@ -227,7 +221,6 @@ class CastInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
         param, = params
         param_type_, = param_types_
-        self.this_block.consume_value(param)
         return convert_type_(self.program, builder, param, param_type_, self.type_)
 
 
@@ -426,8 +419,6 @@ class FunctionCallInstruction(Typed_Instruction):
         self.callee = self.data["function"]
 
     def _build(self, builder, params, param_types_):
-        for param in params:
-            self.this_block.consume_value(param)
         if self.program.is_builtin(self.callee):
             return self.program.call_builtin(
                 self.callee, builder, params, param_types_, self.type_
@@ -454,7 +445,6 @@ class InitialAssignment(BaseInstruction):
     def _build(self, builder, params, param_types_):
         value, = params
         value_type_, = param_types_
-        self.this_block.consume_value(value)
         var_type_ = self.function.get_var(self.variable)["type_"]
         if not is_value_type_(value_type_):
             incr_ref_counter(self.program, builder, value, value_type_)
@@ -474,7 +464,6 @@ class InstantiationInstruction(Typed_Instruction):
         struct = self.program.structs[self.type_["name"]]
         casted_fields = []
         for idx, (param, param_type_) in enumerate(zip(params, param_types_)):
-            self.this_block.consume_value(param)
             if not is_value_type_(param_type_):
                 incr_ref_counter(self.program, builder, param, param_type_)
             proper_type_ = struct.get_type__by_index(idx)
@@ -528,7 +517,6 @@ class MemberAssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         obj, value = params
         _, value_type_ = param_types_
-        self.this_block.consume_value(value)
         struct = self.program.structs[self.struct_type_["name"]]
         idx = struct.get_index_of_member(self.member)
         result_type_ = struct.get_type__by_index(idx)
@@ -568,7 +556,6 @@ class ReturnInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         param, = params
         param_type_, = param_types_
-        self.this_block.consume_value(param)
         ret_type_ = self.function.return_type_
         ret_val = convert_type_(
             self.program, builder, param, param_type_, ret_type_
@@ -658,6 +645,13 @@ class SwitchInstruction(FlowInstruction):
     def set_return_block(self):
         for arm in self.arms:
             arm.set_return_block(self.this_block.next_block)
+
+
+class UnusedValueInstruction(BaseInstruction):
+    def _build(self, builder, params, param_types_):
+        param, = params
+        param_type_, = param_types_
+        self.program.check_ref(builder, param, param_type_)
 
 
 class VariableInstruction(Typed_Instruction):
@@ -760,6 +754,7 @@ def make_instruction(program, function, data):
         "subtraction": ArithmeticInstruction,
         "switch": SwitchInstruction,
         "uninit_var_declaration": NoopInstruction,
+        "unused_value_wrapper": UnusedValueInstruction,
         "variable": VariableInstruction,
         "while": WhileInstruction,
         "xor": LogicalInstruction,

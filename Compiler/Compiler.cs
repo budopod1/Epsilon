@@ -289,6 +289,10 @@ public class Compiler {
         VerifyCode(program);
         TimingStep();
 
+        Step("Adding unused value wrappers...");
+        AddUnusedValueWrappers(program);
+        TimingStep();
+
         Step("Getting JSON...");
         string json = GetJSON(program);
         TimingStep();
@@ -1550,14 +1554,12 @@ public class Compiler {
 
     void DoBlockCodeRules(CodeBlock block, List<List<IMatcher>> rules) {
         for (int i = 0; i < block.Count; i++) {
-            IToken token = block[i];
-            if (token is Line) {
-                Line line = ((Line)token);
-                foreach (List<IMatcher> ruleset in rules) {
-                    line = (Line)DoTreeCodeRules(line, ruleset);
-                }
-                block[i] = line;
+            Line line = block[i] as Line;
+            if (line == null) continue;
+            foreach (List<IMatcher> ruleset in rules) {
+                line = (Line)DoTreeCodeRules(line, ruleset);
             }
+            block[i] = line;
         }
     }
 
@@ -1671,6 +1673,18 @@ public class Compiler {
         TraverseConfig config = new TraverseConfig(TraverseMode.DEPTH, invert: false);
         foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program, config)) {
             token.Verify();
+        }
+    }
+
+    void AddUnusedValueWrappers(Program program) {
+        foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(program)) {
+            for (int i = 0; i < block.Count; i++) {
+                Line line = block[i] as Line;
+                if (line == null) continue;
+                IValueToken sub = line[0] as IValueToken;
+                if (sub == null) continue;
+                line[0] = new UnusedValueWrapper(sub);
+            }
         }
     }
 

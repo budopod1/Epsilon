@@ -40,14 +40,17 @@ class Program:
         result, type_ = builtin["func"](
             self, builder, casted_params, param_types_
         )
-        
-        if not is_value_type_(type_):
-            incr_ref_counter(self, builder, result, type_)
+
+        result_in_params = builtin.get("result_in_params", False)
+        if result_in_params:
+            if not is_value_type_(type_):
+                incr_ref_counter(self, builder, result, type_)
         for param, param_type_ in zip(params, param_types_):
             if not is_value_type_(param_type_):
                 self.check_ref(builder, param, param_type_)
-        if not is_value_type_(type_):
-            dumb_decr_ref_counter(self, builder, result, type_)
+        if result_in_params:
+            if not is_value_type_(type_):
+                dumb_decr_ref_counter(self, builder, result, type_)
         
         if result_type_["name"] == "Void":
             return
