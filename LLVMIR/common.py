@@ -111,7 +111,9 @@ def is_number_type_(type_):
 
 
 def is_nullable_type_(type_):
-    return type_["name"] in ["File", "Optional"]
+    name = type_["name"]
+    assert name != "Null"
+    return name in ["File", "Optional"]
 
 
 def convert_floating_type__bits(builder, val, old, new, new_type):
@@ -269,6 +271,8 @@ def init_ref_counter(builder, val):
 
 
 def incr_ref_counter(program, builder, val, type_, no_nulls=False):
+    if type_ == Null:
+        return
     if is_nullable_type_(type_) and not no_nulls:
         null_ptr = program.nullptr(builder, make_type_(program, type_))
         is_null = builder.icmp_unsigned("!=", val, null_ptr)
@@ -283,6 +287,8 @@ def incr_ref_counter(program, builder, val, type_, no_nulls=False):
 
 
 def dumb_decr_ref_counter(program, builder, val, type_, no_nulls=False):
+    if type_ == Null:
+        return
     if is_nullable_type_(type_) and not no_nulls:
         null_ptr = program.nullptr(builder, make_type_(program, type_))
         is_null = builder.icmp_unsigned("!=", val, null_ptr)

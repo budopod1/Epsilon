@@ -17,7 +17,7 @@ public class Assignment : BinaryOperation<Variable, IValueToken>, IVerifier, ICo
             new SerializableInstruction(
                 "assignment", new List<int> {o2.Serialize(context)}
             ).AddData("variable", new JSONInt(o1.GetID()))
-             .AddData("var_type_", o2.GetType_().GetJSON())
+             .AddData("var_type_", o1.GetType_().GetJSON())
         );
     }
 }

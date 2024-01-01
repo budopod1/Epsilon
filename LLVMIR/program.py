@@ -205,6 +205,8 @@ class Program:
         return func
 
     def check_ref(self, builder, value, type_, refs=None, no_nulls=False):
+        if type_ == Null:
+            return
         if is_value_type_(type_):
             return
         if is_nullable_type_(type_) and not no_nulls:
@@ -229,6 +231,8 @@ class Program:
         builder.call(func, [value, refs])
 
     def decr_ref(self, builder, value, type_, no_nulls=False):
+        if type_ == Null:
+            return
         if is_value_type_(type_):
             return
         if is_nullable_type_(type_) and not no_nulls:

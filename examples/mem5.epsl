@@ -1,0 +1,10 @@
+#test<Str:word2> {
+    Str?:best = null;
+    best = word2;
+}
+
+Z#main {
+    test["words"];
+
+    return 0;
+}
