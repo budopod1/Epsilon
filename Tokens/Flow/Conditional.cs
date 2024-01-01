@@ -68,18 +68,19 @@ public class Conditional : IFlowControl {
     public int Serialize(SerializationContext context) {
         JSONList conditionsJSON = new JSONList();
         foreach (Condition condition in conditions) {
-            SerializationContext sub = context.AddSubContext();
-            sub.Serialize(condition.GetBlock());
+            CodeBlock conditionBlock = condition.GetBlock();
+            SerializationContext sub = context.AddSubContext(conditionBlock.GetScope());
+            sub.Serialize(conditionBlock);
             JSONObject conditionObj = new JSONObject();
             conditionObj["block"] = new JSONInt(sub.GetIndex());
-            SerializationContext conditionCtx = context.AddSubContext(true);
+            SerializationContext conditionCtx = context.AddSubContext(hidden: true);
             condition.GetCondition().Serialize(conditionCtx);
             conditionObj["condition"] = conditionCtx.Serialize();
             conditionsJSON.Add(conditionObj);
         }
         IJSONValue elseJSON = new JSONNull();
         if (elseBlock != null) {
-            SerializationContext sub = context.AddSubContext();
+            SerializationContext sub = context.AddSubContext(elseBlock.GetScope());
             sub.Serialize(elseBlock);
             elseJSON = new JSONInt(sub.GetIndex());
         }

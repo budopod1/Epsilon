@@ -168,11 +168,12 @@ class AssignmentInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
         self.variable = self.data["variable"]
+        self.var_type_ = self.data["var_type_"]
 
-    def _build(self, builder, params, param_types):
+    def _build(self, builder, params, param_types_):
         value, = params
-        value_type_, = param_types
-        var_type_ = self.function.get_var(self.variable)["type_"]
+        value_type_, = param_types_
+        var_type_ = self.var_type_
         if not is_value_type_(value_type_):
             incr_ref_counter(self.program, builder, value, value_type_)
         converted_value = convert_type_(
@@ -437,15 +438,16 @@ class FunctionCallInstruction(Typed_Instruction):
             return builder.call(func.ir, converted_params)
 
 
-class InitialAssignment(BaseInstruction):
+class InitialAssignmentInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
         self.variable = self.data["variable"]
+        self.var_type_ = self.data["var_type_"]
 
     def _build(self, builder, params, param_types_):
         value, = params
         value_type_, = param_types_
-        var_type_ = self.function.get_var(self.variable)["type_"]
+        var_type_ = self.var_type_
         if not is_value_type_(value_type_):
             incr_ref_counter(self.program, builder, value, value_type_)
         converted_value = convert_type_(
@@ -735,7 +737,7 @@ def make_instruction(program, function, data):
         "function_call": FunctionCallInstruction,
         "greater": ComparisonInstruction,
         "greater_equal": ComparisonInstruction,
-        "initial_assignment": InitialAssignment,
+        "initial_assignment": InitialAssignmentInstruction,
         "instantiation": InstantiationInstruction,
         "less": ComparisonInstruction,
         "less_equal": ComparisonInstruction,

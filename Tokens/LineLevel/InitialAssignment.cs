@@ -29,9 +29,12 @@ public class InitialAssignment : UnaryOperation<IValueToken>, IVerifier, IComple
 
     public override int Serialize(SerializationContext context) {
         if (fromDeclaration) context.AddDeclaration(id);
+        Scope scope = Scope.GetEnclosing(this);
+        ScopeVar svar = scope.GetVarByID(id);
         return context.AddInstruction(
             new SerializableInstruction(this, context)
                 .AddData("variable", new JSONInt(id))
+                .AddData("var_type_", svar.GetType_().GetJSON())
         );
     }
 }

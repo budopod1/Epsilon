@@ -2,10 +2,15 @@ using System;
 using System.Collections.Generic;
 
 public class Scope {
+    CodeBlock block;
     Dictionary<int, ScopeVar> variables = new Dictionary<int, ScopeVar>();
     static int id = 0;
 
-    public bool ContainsVar(int id) {
+    public Scope(CodeBlock block) {
+        this.block = block;
+    }
+
+    bool containsVarLocal(int id) {
         return variables.ContainsKey(id);
     }
 
@@ -13,11 +18,13 @@ public class Scope {
         foreach (ScopeVar svar in variables.Values) {
             if (svar.GetName() == name) return true; 
         }
-        return false;
+        Scope parent = GetParentScope();
+        if (parent == null) return false;
+        return parent.ContainsVar(name);
     }
     
     public ScopeVar GetVarByID(int id) {
-        if (!ContainsVar(id)) return null;
+        if (!containsVarLocal(id)) return GetParentScope()?.GetVarByID(id);
         return variables[id];
     }
     
@@ -25,14 +32,14 @@ public class Scope {
         foreach (ScopeVar svar in variables.Values) {
             if (svar.GetName() == name) return svar; 
         }
-        return null;
+        return GetParentScope()?.GetVarByName(name);
     }
 
     public int? GetIDByName(string name) {
         foreach (KeyValuePair<int, ScopeVar> pair in variables) {
             if (pair.Value.GetName() == name) return pair.Key;
         }
-        return null;
+        return GetParentScope()?.GetIDByName(name);
     }
 
     public int AddVar(string name, Type_ type_) {
@@ -41,20 +48,26 @@ public class Scope {
     }
 
     public static Scope GetEnclosing(IToken token) {
-        Function func = TokenUtils.GetParentOfType<Function>(token);
-        if (func == null) return null;
-        return func.GetScope();
+        CodeBlock block = TokenUtils.GetParentOfType<CodeBlock>(token);
+        return block?.GetScope();
     }
 
-    public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
+    public IEnumerable<IJSONValue> GetVarsJSON() {
         foreach (KeyValuePair<int, ScopeVar> pair in variables) {
-            obj[pair.Key.ToString()] = pair.Value.GetJSON();
+            yield return pair.Value.GetJSON(pair.Key);
         }
-        return obj;
     }
 
-    public override string ToString() {
-        return GetJSON().ToJSON();
+    public Scope GetParentScope() {
+        CodeBlock parent = TokenUtils.GetParentOfType<CodeBlock>(block);
+        return parent?.GetScope();
+    }
+
+    public Dictionary<int, ScopeVar> GetAllVars() {
+        return variables;
+    }
+
+    public void CopyFrom(Scope other) {
+        variables = new Dictionary<int, ScopeVar>(other.GetAllVars());
     }
 }

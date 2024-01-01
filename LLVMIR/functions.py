@@ -10,8 +10,8 @@ class Function:
         self.id_ = id_
         self.return_type_= data["return_type_"]
         self.arguments = data["arguments"]
-        self.scope = data["scope"]
         self.is_main = data["is_main"]
+        self.declarations = data["declarations"]
         self.ir_type = make_function_type_(
             program, self.return_type_, 
             (argument["type_"] for argument in self.arguments)
@@ -42,7 +42,7 @@ class Function:
         for block in self.blocks:
             block.finish()
         self.variable_declarations = self.blocks[0].add_variable_declarations(
-            self.scope
+            self.declarations
         )
         for arg, ir_arg in zip(self.arguments, self.ir.args):
             self.blocks[0].add_argument(
@@ -64,9 +64,6 @@ class Function:
     def get_argument_info(self):
         for arg in self.arguments:
             yield arg["type_"], self.get_variable_declaration(arg["variable"])
-    
-    def get_var(self, id_):
-        return self.scope[str(id_)]
 
     def compile_ir(self):
         for block in self.blocks:

@@ -15,24 +15,24 @@ public static class TokenUtils {
     public static IToken GetParentWithCond(IToken token, Func<IToken, bool> cond) {
         IToken current = token;
         int i = 0;
-        while (!cond(current)) {
+        do {
             current = current.parent;
             if (current == null || ++i >= 1000) {
                 return null;
             }
-        }
+        } while (!cond(current));
         return current;
     }
 
     public static T GetParentOfType<T>(IToken token) {
         IToken current = token;
         int i = 0;
-        while (!(current is T)) {
+        do {
             current = current.parent;
             if (current == null || ++i >= 1000) {
                 return default(T);
             }
-        }
+        } while (!(current is T));
         return (T)current;
     }
 

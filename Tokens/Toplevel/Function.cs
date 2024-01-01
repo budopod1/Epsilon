@@ -27,7 +27,6 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
     PatternExtractor<List<IToken>> pattern;
     List<FunctionArgument> arguments;
     CodeBlock block;
-    Scope scope = new Scope();
     Type_ returnType_;
     int id;
     List<SerializationContext> contexts = new List<SerializationContext>();
@@ -40,6 +39,7 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         this.block = block;
         this.returnType_ = returnType_;
         isMain = Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments());
+        Scope scope = block.GetScope();
         foreach (FunctionArgumentToken argument in arguments) {
             argument.SetID(scope.AddVar(
                 argument.GetName(), argument.GetType_()
@@ -65,10 +65,6 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
 
     public void SetBlock(CodeBlock block) {
         this.block = block;
-    }
-
-    public Scope GetScope() {
-        return scope;
     }
 
     public Type_ GetReturnType_() {
@@ -113,11 +109,17 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
             argument => argument.GetJSON()
         ));
         obj["return_type_"] = returnType_.GetJSON();
-        new SerializationContext(this).Serialize(block);
+        new SerializationContext(this, block.GetScope()).Serialize(block);
         obj["blocks"] = new JSONList(contexts.Select(
             context=>context.Serialize()
         ));
-        obj["scope"] = scope.GetJSON();
+        JSONList declarations = new JSONList();
+        foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(this)) {
+            foreach (IJSONValue declaration in block.GetScope().GetVarsJSON()) {
+                declarations.Add(declaration);
+            }
+        }
+        obj["declarations"] = declarations;
         obj["is_main"] = new JSONBool(isMain);
         return obj;
     }

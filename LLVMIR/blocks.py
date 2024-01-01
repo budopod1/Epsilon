@@ -81,22 +81,24 @@ class Block:
                 self.prepare_for_return()
                 self.builder.ret_void()
 
-    def add_variable_declarations(self, scope):
-        variable_declarations = {}
-        for str_id, scopevar in scope.items():
-            variable_declarations[int(str_id)] = self.builder.alloca(
+    def add_variable_declarations(self, declarations):
+        allocas = {}
+        for scopevar in declarations:
+            allocas[scopevar["id"]] = self.builder.alloca(
                 make_type_(self.program, scopevar["type_"])
             )
-        return variable_declarations
+        return allocas
 
     def add_argument(self, value, var, type_):
         self.builder.store(value, var)
         if not is_value_type_(type_):
             incr_ref_counter(self.program, self.builder, value, type_)
 
-    def clean_declarations(self, assignments):
+    def clean_variables(self, assignments):
         for id in assignments:
-            type_ = self.function.scope[str(id)]["type_"]
+            type_ = next(filter(
+                (lambda dec: dec["id"] == id), self.function.declarations
+            ))["type_"]
             if is_value_type_(type_):
                 continue
             var = self.function.get_variable_declaration(id)
@@ -105,13 +107,13 @@ class Block:
             )
 
     def perpare_for_termination(self):
-        self.clean_declarations(self.initial_declarations)
+        self.clean_variables(self.initial_declarations)
 
     def prepare_for_return(self, ret_val=None, ret_type_=None):
         if ret_val is not None and not is_value_type_(ret_type_):
             incr_ref_counter(self.program, self.builder, ret_val, ret_type_)
         self.perpare_for_termination()
-        self.clean_declarations(self.parent_declarations)
+        self.clean_variables(self.parent_declarations)
         for type_, var in self.function.get_argument_info():
             if not is_value_type_(type_):
                 self.program.decr_ref(

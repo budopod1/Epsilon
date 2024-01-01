@@ -9,9 +9,9 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop {
     }
 
     public override int Serialize(SerializationContext context) {
-        SerializationContext sub = context.AddSubContext();
+        SerializationContext sub = context.AddSubContext(o2.GetScope());
         sub.Serialize(o2);
-        SerializationContext conditionCtx = context.AddSubContext(true);
+        SerializationContext conditionCtx = context.AddSubContext(hidden: true);
         o1.Serialize(conditionCtx);
         return context.AddInstruction(
             new SerializableInstruction(

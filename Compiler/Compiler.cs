@@ -872,25 +872,26 @@ public class Compiler {
     }
 
     Program GetScopeVariables(Program program) {
+        program.UpdateParents();
+        
         foreach (IToken token in program) {
             if (token is Function) {
                 Function function = ((Function)token);
-                Scope scope = function.GetScope();
                 foreach (VarDeclaration declaration 
                         in TokenUtils.TraverseFind<VarDeclaration>(function)) {
                     string name = declaration.GetName().GetValue();
+                    Scope scope = Scope.GetEnclosing(declaration);
                     declaration.SetID(scope.AddVar(
                         name, declaration.GetType_()
                     ));
                 }
             }
         }
+        
         return program;
     }
 
     Program ParseFunctionCode(Program program) {
-        program.UpdateParents();
-
         List<IMatcher> functionRules = new List<IMatcher>();
         List<IMatcher> addMatchingFunctionRules = new List<IMatcher>();
 
