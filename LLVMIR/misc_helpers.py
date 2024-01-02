@@ -89,7 +89,6 @@ def dedup(program, i, type_):
     arr, = func.args
 
     length_ptr = builder.gep(arr, [i64_of(0), i32_of(2)])
-    
     length = builder.load(length_ptr)
 
     vacant = builder.icmp_unsigned("==", length, i64_of(0))
@@ -97,18 +96,9 @@ def dedup(program, i, type_):
 
     vbuilder.ret_void()
 
-    capacity_ptr = bbuilder.gep(arr, [i64_of(0), i32_of(1)])
-    content_ptr = bbuilder.gep(arr, [i64_of(0), i32_of(3)])
-    
-    content = bbuilder.load(content_ptr)
-    
-    new_content = program.mallocv(bbuilder, ir_type, length)
-    
-    bbuilder.store(length, capacity_ptr)
-    bbuilder.store(new_content, content_ptr)
+    content = bbuilder.load(bbuilder.gep(arr, [i64_of(0), i32_of(3)]))
 
     first_val = bbuilder.load(content)
-    bbuilder.store(first_val, new_content)
 
     bbuilder.branch(check_block)
 
@@ -123,7 +113,7 @@ def dedup(program, i, type_):
     next_i = lbuilder.add(i, i64_of(1), name="next_i")
     lbuilder.cbranch(is_unique, unique_block, same_block)
 
-    ubuilder.store(val, ubuilder.gep(new_content, [j]))
+    ubuilder.store(val, ubuilder.gep(content, [j]))
     next_j = ubuilder.add(j, i64_of(1), name="next_j")
     ubuilder.branch(check_block)
 
@@ -131,17 +121,16 @@ def dedup(program, i, type_):
     sbuilder.branch(check_block)
 
     fbuilder.store(j, length_ptr)
-    program.dumb_free(fbuilder, content)
     fbuilder.ret_void()
 
     i.add_incoming(i64_of(1), begin_block)
     i.add_incoming(next_i, same_block)
     i.add_incoming(next_i, unique_block)
-    
+
     j.add_incoming(i64_of(1), begin_block)
     j.add_incoming(j, same_block)
     j.add_incoming(next_j, unique_block)
-    
+
     last_val.add_incoming(first_val, begin_block)
     last_val.add_incoming(val, same_block)
     last_val.add_incoming(val, unique_block)
