@@ -9,6 +9,6 @@ public class ParameterGroup : UnaryOperation<IValueToken>, IValueToken {
     }
 
     public override int Serialize(SerializationContext context) {
-        return o.Serialize(context);
+        return context.SerializeInstruction(o);
     }
 }

@@ -74,7 +74,7 @@ public class Conditional : IFlowControl {
             JSONObject conditionObj = new JSONObject();
             conditionObj["block"] = new JSONInt(sub.GetIndex());
             SerializationContext conditionCtx = context.AddSubContext(hidden: true);
-            condition.GetCondition().Serialize(conditionCtx);
+            conditionCtx.SerializeInstruction(condition.GetCondition());
             conditionObj["condition"] = conditionCtx.Serialize();
             conditionsJSON.Add(conditionObj);
         }

@@ -1,6 +1,6 @@
 using System;
 
-public class Variable : IValueToken {
+public class Variable : IAssignableValue {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
@@ -42,5 +42,9 @@ public class Variable : IValueToken {
             new SerializableInstruction(this)
                 .AddData("variable", new JSONInt(GetID()))
         );
+    }
+    
+    public ICompleteLine AssignTo(IValueToken value) {
+        return new Assignment(this, value);
     }
 }

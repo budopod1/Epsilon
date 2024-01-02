@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public class SerializationContext {
     Function function;
@@ -32,7 +33,7 @@ public class SerializationContext {
             if (token is Line) {
                 Line line = ((Line)token);
                 ICompleteLine instruction = (ICompleteLine)line[0];
-                instruction.Serialize(this);
+                SerializeInstruction(instruction);
             }
         }
     }
@@ -73,5 +74,14 @@ public class SerializationContext {
 
     public void AddDeclaration(int varID) {
         initialDeclarations.Add(new JSONInt(varID));
+    }
+
+    static Dictionary<ISerializableToken, int> Serialized = new Dictionary<ISerializableToken, int>();
+
+    public int SerializeInstruction(ISerializableToken token) {
+        if (Serialized.ContainsKey(token)) return Serialized[token];
+        int id = token.Serialize(this);
+        Serialized[token] = id;
+        return id;
     }
 }

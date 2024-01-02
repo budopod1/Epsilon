@@ -53,6 +53,14 @@ class FlowInstruction(BaseInstruction):
         pass
 
 
+class AddOneInstruction(CastToResultType_Instruction):
+    def _build(self, builder, params):
+        value, = params
+        return (
+            builder.fadd if is_floating_type_(self.type_) else builder.add
+        )(value, make_type_(self.program, self.type_)(1))
+
+
 class ArithmeticInstruction(CastToResultType_Instruction):
     def _build(self, builder, params):
         return {
@@ -602,6 +610,15 @@ class StringLiteralInstruction(Typed_Instruction):
         return struct_mem
 
 
+
+class SubOneInstruction(CastToResultType_Instruction):
+    def _build(self, builder, params):
+        value, = params
+        return (
+            builder.fsub if is_floating_type_(self.type_) else builder.sub
+        )(value, make_type_(self.program, self.type_)(1))
+
+
 class SwitchArm:
     def __init__(self, function, data, ir_type):
         self.function = function
@@ -714,6 +731,7 @@ class WhileInstruction(FlowInstruction):
 
 def make_instruction(program, function, data):
     return {
+        "add_one": AddOneInstruction,
         "addition": ArithmeticInstruction,
         "and": LogicalInstruction,
         "array_access": ArrayAccessInstruction,
@@ -753,6 +771,7 @@ def make_instruction(program, function, data):
         "return": ReturnInstruction,
         "return_void": ReturnVoidInstruction,
         "string_literal": StringLiteralInstruction,
+        "sub_one": SubOneInstruction,
         "subtraction": ArithmeticInstruction,
         "switch": SwitchInstruction,
         "uninit_var_declaration": NoopInstruction,

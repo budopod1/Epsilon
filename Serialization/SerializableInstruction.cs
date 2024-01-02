@@ -25,7 +25,7 @@ public class SerializableInstruction {
         JSONList parameters = new JSONList();
         for (int i = 0; i < token.Count; i++) {
             ISerializableToken sub = token[i] as ISerializableToken;
-            if (sub != null) parameters.Add(new JSONInt(sub.Serialize(context)));
+            if (sub != null) parameters.Add(new JSONInt(context.SerializeInstruction(sub)));
         }
         obj["parameters"] = parameters;
         IValueToken valueToken = token as IValueToken;

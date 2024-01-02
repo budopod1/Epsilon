@@ -1,6 +1,6 @@
 using System;
 
-public class ArrayAccess : BinaryOperation<IValueToken, IValueToken>, IValueToken, IVerifier {
+public class ArrayAccess : BinaryOperation<IValueToken, IValueToken>, IAssignableValue, IVerifier {
     public ArrayAccess(IValueToken array, IValueToken index) : base(array, index) {}
     public ArrayAccess(IValueToken array, ValueList index) : base(array, null) {
         if (index.Count != 1)
@@ -28,9 +28,14 @@ public class ArrayAccess : BinaryOperation<IValueToken, IValueToken>, IValueToke
     }
 
     public void Verify() {
-        if (!o2.GetType_().IsConvertibleTo(new Type_("Z")))
+        if (!o2.GetType_().IsConvertibleTo(new Type_("Z"))) {
             throw new SyntaxErrorException(
                 $"Arrays can only be indexed with integers, not {o2.GetType_()}", this
             );
+        }
+    }
+
+    public ICompleteLine AssignTo(IValueToken value) {
+        return new ArrayAssignment(this, value);
     }
 }

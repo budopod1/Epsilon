@@ -12,7 +12,7 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop {
         SerializationContext sub = context.AddSubContext(o2.GetScope());
         sub.Serialize(o2);
         SerializationContext conditionCtx = context.AddSubContext(hidden: true);
-        o1.Serialize(conditionCtx);
+        conditionCtx.SerializeInstruction(o1);
         return context.AddInstruction(
             new SerializableInstruction(
                 "while"

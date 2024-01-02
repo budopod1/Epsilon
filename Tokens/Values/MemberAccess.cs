@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier {
+public class MemberAccess : UnaryOperation<IValueToken>, IAssignableValue, IVerifier {
     string member;
     
     public MemberAccess(IValueToken o, Name member) : base(o) {
@@ -44,5 +44,9 @@ public class MemberAccess : UnaryOperation<IValueToken>, IValueToken, IVerifier 
                 .AddData("member", new JSONString(member))
                 .AddData("struct_type_", o.GetType_().GetJSON())
         );
+    }
+
+    public ICompleteLine AssignTo(IValueToken value) {
+        return new MemberAssignment(this, value);
     }
 }

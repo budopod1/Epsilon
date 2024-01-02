@@ -1165,6 +1165,60 @@ public class Compiler {
                         typeof(BitwiseNOT)
                     )
                 ),
+                new CombinedMatchersMatcher(new List<IMatcher> {
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new AndPatternSegment(
+                                new Type_PatternSegment(new Type_("Q")),
+                                new TypePatternSegment(typeof(IAssignableValue))
+                            ),
+                            new TextPatternSegment("+"),
+                            new TextPatternSegment("+")
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0}),
+                            typeof(PostIncrement)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new AndPatternSegment(
+                                new Type_PatternSegment(new Type_("Q")),
+                                new TypePatternSegment(typeof(IAssignableValue))
+                            ),
+                            new TextPatternSegment("-"),
+                            new TextPatternSegment("-")
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0}),
+                            typeof(PostDecrement)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new TextPatternSegment("+"),
+                            new TextPatternSegment("+"),
+                            new AndPatternSegment(
+                                new Type_PatternSegment(new Type_("Q")),
+                                new TypePatternSegment(typeof(IAssignableValue))
+                            )
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {2}),
+                            typeof(PreIncrement)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
+                            new TextPatternSegment("-"),
+                            new TextPatternSegment("-"),
+                            new AndPatternSegment(
+                                new Type_PatternSegment(new Type_("Q")),
+                                new TypePatternSegment(typeof(IAssignableValue))
+                            )
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {2}),
+                            typeof(PreDecrement)
+                        )
+                    )
+                }),
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new Type_PatternSegment(new Type_("Q")),
@@ -1454,37 +1508,12 @@ public class Compiler {
             new List<IMatcher> {
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(Variable)),
+                        new TypePatternSegment(typeof(IAssignableValue)),
                         new TextPatternSegment("="),
                         new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
-                        typeof(Assignment)
-                    )
-                )
-            },
-            new List<IMatcher> {
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(MemberAccess)),
-                        new TextPatternSegment("="),
-                        new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
-                        typeof(MemberAssignment)
-                    )
-                )
-            },
-            new List<IMatcher> {
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(ArrayAccess)),
-                        new TextPatternSegment("="),
-                        new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
-                        typeof(ArrayAssignment)
-                    )
+                    }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                        ((IAssignableValue)tokens[0]).AssignTo((IValueToken)tokens[2])
+                    })
                 )
             },
             new List<IMatcher> {

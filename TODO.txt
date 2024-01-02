@@ -1,5 +1,4 @@
 TODO:
 * remove the parent_assignments/initial_assignments system
 * add compound assignment operators
-* add -- and ++ operators
 * add for loops

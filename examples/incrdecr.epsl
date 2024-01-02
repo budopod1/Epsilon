@@ -1,0 +1,13 @@
+Z#main {
+    [Z]:arr = [Z] [5, 4, 3, 2, 1, 0];
+    W:i = 0;
+    while (i < [arr].length) {
+        println[--arr[i++]];
+    };
+    println["====="];
+    println[i--];
+    println[++i];
+    println[i];
+    println[arr];
+    return 0;
+}
