@@ -1,0 +1,6 @@
+Z#main {
+    Z:i = 2;
+    i *= 5;
+    i ^= 4;
+    return i;
+}

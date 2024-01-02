@@ -925,6 +925,17 @@ public class Compiler {
             );
         }
 
+        Dictionary<string, Type> floatCompoundableOperators = new Dictionary<string, Type> {
+            {"+", typeof(Addition)}, {"-", typeof(Subtraction)}, 
+            {"*", typeof(Multiplication)}, {"/", typeof(Division)},
+            {"%", typeof(Modulo)}
+        };
+
+        Dictionary<string, Type> intCompoundableOperators = new Dictionary<string, Type> {
+            {"&", typeof(BitwiseAND)}, {"|", typeof(BitwiseOR)},
+            {"^", typeof(BitwiseXOR)}
+        };
+
         List<List<IMatcher>> rules = new List<List<IMatcher>> {
             new List<IMatcher> {
                 new PatternMatcher(
@@ -1512,7 +1523,45 @@ public class Compiler {
                         new TextPatternSegment("="),
                         new Type_PatternSegment(Type_.Any())
                     }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
-                        ((IAssignableValue)tokens[0]).AssignTo((IValueToken)tokens[2])
+                        ((IAssignableValue)tokens[0]).AssignTo(
+                            (IValueToken)tokens[2]
+                        )
+                    })
+                )
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(IAssignableValue)),
+                        new TextsPatternSegment(
+                            floatCompoundableOperators.Keys.ToList()
+                        ),
+                        new TextPatternSegment("="),
+                        new Type_PatternSegment(new Type_("Q"))
+                    }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                        new CompoundAssignment(
+                            floatCompoundableOperators[
+                                ((TextToken)tokens[1]).GetText()
+                            ], (IAssignableValue)tokens[0], (IValueToken)tokens[3]
+                        )
+                    })
+                )
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(IAssignableValue)),
+                        new TextsPatternSegment(
+                            intCompoundableOperators.Keys.ToList()
+                        ),
+                        new TextPatternSegment("="),
+                        new Type_PatternSegment(new Type_("Z"))
+                    }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                        new CompoundAssignment(
+                            intCompoundableOperators[
+                                ((TextToken)tokens[1]).GetText()
+                            ], (IAssignableValue)tokens[0], (IValueToken)tokens[3]
+                        )
                     })
                 )
             },

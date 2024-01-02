@@ -122,7 +122,15 @@ TESTS = [
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 10}
         ]
-    }
+    },
+    {
+        "file": "compound.epsl",
+        "func": "main",
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 14}
+        ]
+    },
 ]
 
 
