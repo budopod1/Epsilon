@@ -109,7 +109,7 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
             argument => argument.GetJSON()
         ));
         obj["return_type_"] = returnType_.GetJSON();
-        new SerializationContext(this, block.GetScope()).Serialize(block);
+        new SerializationContext(this).Serialize(block);
         obj["blocks"] = new JSONList(contexts.Select(
             context=>context.Serialize()
         ));

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 public class SerializationContext {
     Function function;
-    Scope scope;
     JSONList instructions = new JSONList();
     CodeBlock block;
     int index;
@@ -11,11 +10,10 @@ public class SerializationContext {
     JSONList parentDeclarations;
     JSONList initialDeclarations = new JSONList();
 
-    public SerializationContext(Function function, Scope scope, bool hidden=false, JSONList parentDeclarations=null) {
+    public SerializationContext(Function function, bool hidden=false, JSONList parentDeclarations=null) {
         if (parentDeclarations == null) parentDeclarations = new JSONList();
         this.parentDeclarations = parentDeclarations;
         this.function = function;
-        this.scope = scope;
         this.hidden = hidden;
         if (!hidden) {
             index = function.RegisterContext(this);
@@ -38,13 +36,13 @@ public class SerializationContext {
         }
     }
 
-    public SerializationContext AddSubContext(Scope scope=null, bool hidden=false) {
+    public SerializationContext AddSubContext(bool hidden=false) {
         JSONList declarations = new JSONList(parentDeclarations);
         foreach (IJSONValue declaration in initialDeclarations) {
             declarations.Add(declaration);
         }
         return new SerializationContext(
-            function, scope ?? this.scope, hidden, declarations
+            function, hidden, declarations
         );
     }
 

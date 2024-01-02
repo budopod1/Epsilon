@@ -86,9 +86,8 @@ public class Switch : IFlowControl, IVerifier {
     public int Serialize(SerializationContext context) {
         JSONList armsJSON = new JSONList();
         foreach (SwitchArm arm in arms) {
-            CodeBlock armBlock = arm.GetBlock();
-            SerializationContext sub = context.AddSubContext(armBlock.GetScope());
-            sub.Serialize(armBlock);
+            SerializationContext sub = context.AddSubContext();
+            sub.Serialize(arm.GetBlock());
             JSONObject armObj = new JSONObject();
             armObj["block"] = new JSONInt(sub.GetIndex());
             armObj["target"] = arm.GetTarget().GetValue().GetJSON();
@@ -96,7 +95,7 @@ public class Switch : IFlowControl, IVerifier {
         }
         IJSONValue defaultJSON = new JSONNull();
         if (default_ != null) {
-            SerializationContext sub = context.AddSubContext(default_.GetScope());
+            SerializationContext sub = context.AddSubContext();
             sub.Serialize(default_);
             defaultJSON = new JSONInt(sub.GetIndex());
         }
