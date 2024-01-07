@@ -163,8 +163,12 @@ def compile_file(file):
     proccess = subprocess.run(
         ["mono", "Epsilon.exe", "-w", "compile", str(file), "_"], capture_output=True
     )
-    if b"compilation error" in proccess.stdout or b"Error in" in proccess.stdout:
-        return False, (proccess.stdout.decode('utf-8')+proccess.stderr.decode('utf-8'))
+    error_markers = [b"compilation error", b"Error in", b"Unhandled Exception"]
+    for error_marker in error_markers:
+        if error_marker in error_markers:
+            return False, (
+                proccess.stdout.decode('utf-8')+proccess.stderr.decode('utf-8')
+            )
     subprocess.run(["llvm-dis", "-o", "code-opt.ll", "code-opt.bc"])
     return True, ""
 
