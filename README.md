@@ -1,8 +1,8 @@
 # Epsilon
 
-Epsilon is an in development, compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning Epsilon code can be ran on almost any system. Currently, however, only linux is supported, although this is likely to change soon.
+Epsilon is a compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning that Epsilon uses the same optimizer as Swift, Clang, and Rust. Currently, Epsilon only support linux.
 
-# Dependencies
+## Dependencies
 
 Epsilon depends on:
 
@@ -10,26 +10,25 @@ Epsilon depends on:
     * The `virtualenv` package
 * Mono 5
 * LLVM 14
-* libstdc++
 * Clang
 
-# Setup
+## Setup
 
 To setup and build Epsilon, run:
 
     ./setup.bash
 
-# Running Code
+## Running Code
 
-The file extention of an Epsilon file should be .epsl, .epsilon, or .ε. To compile an Epsilon file, run the command:
+The file extention of an Epsilon file should be .epsl. To compile an Epsilon file, run the command:
 
     mono Epsilon.exe compile <input file path> <output file path>
 
-# Building
+## Building
 
-After changes are made to the C#, the C# must be rebuilt with `./build.bash`. After `builtins.c` is editted, the builtins can be rebuilt with `./buildbuiltins.bash`.
+After Epsilon has been setup, Epsilon's C# can be rebuilt with `./build.bash`, while Epsilon's builtins can be rebuilt with `./buildbuiltins.bash`.
 
-# Testing
+## Testing
 
 Epsilon can be tested with
 
