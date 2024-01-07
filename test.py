@@ -164,11 +164,10 @@ def compile_file(file):
         ["mono", "Epsilon.exe", "-w", "compile", str(file), "_"], capture_output=True
     )
     error_markers = [b"compilation error", b"Error in", b"Unhandled Exception"]
+    output = proccess.stdout+proccess.stderr
     for error_marker in error_markers:
-        if error_marker in error_markers:
-            return False, (
-                proccess.stdout.decode('utf-8')+proccess.stderr.decode('utf-8')
-            )
+        if error_marker in output:
+            return False, output.decode('utf-8')
     subprocess.run(["llvm-dis", "-o", "code-opt.ll", "code-opt.bc"])
     return True, ""
 
