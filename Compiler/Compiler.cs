@@ -275,6 +275,14 @@ public class Compiler {
         program = ConvertStringLiterals(program);
         TimingStep();
 
+        Step("Tokenizing groups...");
+        program = TokenizeGroups(program);
+        TimingStep();
+
+        Step("Tokenizing for loops...");
+        program = TokenizeForLoops(program);
+        TimingStep();
+
         Step("Getting scope variables...");
         program = GetScopeVariables(program);
         TimingStep();
@@ -413,6 +421,7 @@ public class Compiler {
             {"continue", typeof(ContinueKeyword)},
             {"uninit", typeof(UninitKeyword)},
             {"null", typeof(NullValue)},
+            {"for", typeof(ForKeyword)},
         };
         return (Program)PerformMatching(
             program,
@@ -871,6 +880,56 @@ public class Compiler {
         );
     }
 
+    Program TokenizeGroups(Program _program) {
+        List<IMatcher> matchers = new List<IMatcher> {
+            new PatternMatcher(
+                new List<IPatternSegment> {
+                    new TextPatternSegment("("),
+                    new TypePatternSegment(typeof(Type_Token)),
+                    new TextPatternSegment(")")
+                }, new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor(new List<int> {1}),
+                    typeof(UnmatchedCast)
+                )
+            ),
+            new BlockMatcher(
+                new TextPatternSegment("["), new TextPatternSegment("]"),
+                typeof(RawSquareGroup)
+            ),
+            new BlockMatcher(
+                new TextPatternSegment("("), new TextPatternSegment(")"),
+                typeof(RawGroup)
+            )
+        };
+        Program program = _program;
+        foreach(IMatcher matcher in matchers) {
+            program = (Program)PerformTreeMatching(program, matcher);
+        }
+        return program;
+    }
+
+    Program TokenizeForLoops(Program program) {
+        return (Program)PerformTreeMatching(
+            program, new PatternMatcher(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(ForKeyword)),
+                    new TypePatternSegment(typeof(RawGroup)),
+                    new TypePatternSegment(typeof(CodeBlock))
+                }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                    List<IToken> condition = ((RawGroup)tokens[1]).GetTokens();
+                    if (condition.Count <= 1) {
+                        throw new SyntaxErrorException(
+                            "For loop condition cannot be empty and must have at least one clause", tokens[1]
+                        );
+                    }
+                    return new List<IToken> {new RawFor(
+                        condition, (CodeBlock)tokens[2]
+                    )};
+                })
+            )
+        );
+    }
+
     Program GetScopeVariables(Program program) {
         program.UpdateParents();
         
@@ -937,26 +996,6 @@ public class Compiler {
         };
 
         List<List<IMatcher>> rules = new List<List<IMatcher>> {
-            new List<IMatcher> {
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TextPatternSegment("("),
-                        new TypePatternSegment(typeof(Type_Token)),
-                        new TextPatternSegment(")")
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
-                        typeof(UnmatchedCast)
-                    )
-                ),
-                new BlockMatcher(
-                    new TextPatternSegment("("), new TextPatternSegment(")"),
-                    typeof(RawGroup)
-                ),
-                new BlockMatcher(
-                    new TextPatternSegment("["), new TextPatternSegment("]"),
-                    typeof(RawSquareGroup)
-                ),
-            },
             functionRules,
             addMatchingFunctionRules,
             new List<IMatcher> {
@@ -1116,6 +1155,13 @@ public class Compiler {
                     }, new Wrapper2PatternProcessor(
                         new SlotPatternProcessor(new List<int> {0, 2}),
                         typeof(Conditional)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(RawFor))
+                    }, new Wrapper2PatternProcessor(
+                        typeof(For)
                     )
                 ),
                 new PatternMatcher(

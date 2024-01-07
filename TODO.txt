@@ -1,2 +1,6 @@
 TODO:
-* add for loops
+* fix:
+    uninit Str:txt;
+    if (true) {
+        return;
+    };

@@ -41,10 +41,6 @@ public class RawFunctionCall : IParentToken {
         return segments;
     }
 
-    public Type_ GetType_() {
-        return Type_.Unknown(); // temp
-    }
-
     public override string ToString() {
         return Utils.WrapName(GetType().Name, String.Join(
             ", ", arguments.ConvertAll<string>(obj => obj.ToString())

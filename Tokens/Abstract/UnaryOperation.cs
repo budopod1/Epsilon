@@ -31,6 +31,10 @@ public abstract class UnaryOperation<T> : IParentToken, ISerializableToken where
         return o;
     }
 
+    public void SetSub(T o) {
+        this.o = o;
+    }
+
     public virtual int Serialize(SerializationContext context) {
         return context.AddInstruction(
             new SerializableInstruction(this, context)

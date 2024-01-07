@@ -28,6 +28,7 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
     List<FunctionArgument> arguments;
     CodeBlock block;
     Type_ returnType_;
+    List<Type_> specialAllocs = new List<Type_>();
     int id;
     List<SerializationContext> contexts = new List<SerializationContext>();
     bool isMain;
@@ -120,6 +121,9 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
             }
         }
         obj["declarations"] = declarations;
+        obj["special_allocs"] = new JSONList(
+            specialAllocs.Select(specialAlloc=>specialAlloc.GetJSON())
+        );
         obj["is_main"] = new JSONBool(isMain);
         return obj;
     }
@@ -152,5 +156,10 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
 
     public bool IsMain() {
         return isMain;
+    }
+
+    public int AddSpecialAlloc(Type_ type_) {
+        specialAllocs.Add(type_);
+        return specialAllocs.Count-1;
     }
 }

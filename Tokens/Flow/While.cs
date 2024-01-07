@@ -14,10 +14,9 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop {
         SerializationContext conditionCtx = context.AddSubContext(hidden: true);
         conditionCtx.SerializeInstruction(o1);
         return context.AddInstruction(
-            new SerializableInstruction(
-                "while"
-            ).AddData("block", new JSONInt(sub.GetIndex()))
-             .AddData("condition", conditionCtx.Serialize())
+            new SerializableInstruction(this)
+                .AddData("block", new JSONInt(sub.GetIndex()))
+                .AddData("condition", conditionCtx.Serialize())
         );
     }
 }

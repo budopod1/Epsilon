@@ -39,6 +39,7 @@ class CastToResultType_Instruction(Typed_Instruction):
         return self._build(builder, typed_params)
 
 
+# TODO: phase out and replace with instructions for specific tasks
 class DirectIRInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
@@ -361,7 +362,7 @@ class ContinueInstruction(BaseInstruction):
 
     def _build(self, builder, params, param_types_):
         self.this_block.perpare_for_termination()
-        return builder.branch(self.block.block)
+        return builder.branch(self.block.continue_block.block)
 
 
 class EqInstruction(Typed_Instruction):
@@ -420,6 +421,156 @@ class ExponentiationInstruction(Typed_Instruction):
                     builder, "cbrt", [base], [base_type_],
                     self.type_
                 )
+
+
+# class ForCheckInstruction(BaseInstruction):
+#     pass
+
+
+class ForInstruction(FlowInstruction):
+    FOR_COUNTER = 0
+    
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.block_num = self.data["block"]
+        self.block = self.function.blocks[self.block_num]
+        self.variable = self.data["variable"]
+        self.clause_names = self.data["clause_names"]
+        # self.check_block_num = self.data["check_block"]
+        self.type_ = self.data["type_"]
+        self.for_counter = self.FOR_COUNTER
+        self.FOR_COUNTER += 1
+        self.check_block = None
+        self.iter_var = self.data["iter_var"]
+        self.iter_type_ = self.data["iter_type_"]
+
+    def finish(self, block):
+        super().finish(block)
+        self.check_block = self.function.ir.append_basic_block(
+            f"for{self.for_counter}"
+        )
+
+    def set_return_block(self):
+        check_block_wrapped = IRBlockWrapper(self.check_block)
+        set_return_block(self.block, check_block_wrapped)
+        self.block.break_block = self.this_block.next_block
+        self.block.continue_block = check_block_wrapped
+
+    def _build(self, builder, params, param_types_):
+        iter_var = self.function.get_special_alloc(self.iter_var)
+
+        loop_block = self.block.block
+        fail_block = self.this_block.next_block.block
+        
+        is_in = "in" in self.clause_names
+        is_enumerating = "enumerating" in self.clause_names
+        
+        idx_type_ = self.iter_type_
+        ir_idx_type = make_type_(self.program, idx_type_)
+        
+        from_ = ir_idx_type(0)
+        to = None
+        array = None
+        step = ir_idx_type(1)
+        step_type_ = idx_type_
+        signed_step = False
+        
+        zipped = zip(params, param_types_, self.clause_names)
+        for param, param_type_, clause_name in zipped:
+            if clause_name == "from":
+                from_ = convert_type_(
+                    self.program, builder, param, param_type_, idx_type_
+                )
+            elif clause_name == "to":
+                to = convert_type_(
+                    self.program, builder, param, param_type_, idx_type_
+                )
+            elif clause_name == "in" or clause_name == "enumerating":
+                array = param
+                to = convert_type_(
+                    self.program, builder,
+                    builder.load(builder.gep(param, [i64_of(0), i32_of(2)])),
+                    W64, idx_type_
+                )
+            elif clause_name == "step":
+                signed_step = is_signed_integer_type_(param_type_)
+                step = param
+                
+        start = from_
+        end = to
+        
+        negative_step = None
+        if signed_step:
+            zero = make_type_(self.program, step_type_)(0)
+            negative_step = builder.icmp_signed("<", step, zero)
+            
+            real_to = builder.sub(to, ir_idx_type_(1))
+            start = builder.select(negative_step, real_to, from_)
+            end = builder.select(negative_step, from_, to)
+
+        idx_comparer = (
+            builder.icmp_signed if is_signed_integer_type_(idx_type_)
+            else builder.icmp_unsigned
+        )
+
+        start_lt_end = idx_comparer("<", start, end)
+        start_loop = start_lt_end
+        
+        if signed_step:
+            end_lt_start = idx_comparer("<", end, start)
+            start_loop = builder.select(
+                negative_step, end_lt_start, start_lt_end
+            )
+
+        declaration = self.function.get_variable_declaration(self.variable)
+
+        builder.store(start, iter_var)
+        
+        if is_in:
+            with builder.if_then(start_loop):
+                value = builder.load(builder.gep(builder.load(
+                    builder.gep(array, [i64_of(0), i32_of(3)])
+                ), [start]))
+                if not is_value_type_(self.type_):
+                    incr_ref_counter(self.program, builder, value, self.type_)
+                builder.store(value, declaration)
+                builder.branch(loop_block)
+            builder.branch(fail_block)
+        else:
+            builder.store(start, declaration)
+            builder.cbranch(start_loop, loop_block, fail_block)
+
+        builder = ir.IRBuilder(self.check_block)
+
+        idx_comparer = (
+            builder.icmp_signed if is_signed_integer_type_(idx_type_)
+            else builder.icmp_unsigned
+        )
+
+        idx = builder.add(builder.load(iter_var), step)
+
+        idx_lt_end = idx_comparer("<", idx, end)
+        continue_ = idx_lt_end
+
+        if signed_step:
+            idx_ge_start = idx_comparer(">=", idx, start)
+            continue_ = builder.select(negative_step, idx_ge_start, idx_lt_end)
+
+        builder.store(idx, iter_var)
+
+        if is_in:
+            with builder.if_then(continue_):
+                value = builder.load(builder.gep(builder.load(
+                    builder.gep(array, [i64_of(0), i32_of(3)])
+                ), [idx]))
+                if not is_value_type_(self.type_):
+                    incr_ref_counter(self.program, builder, value, self.type_)
+                builder.store(value, declaration)
+                builder.branch(loop_block)
+            builder.branch(fail_block)
+        else:
+            builder.store(idx, declaration)
+            builder.cbranch(continue_, loop_block, fail_block)
 
 
 class FunctionCallInstruction(Typed_Instruction):
@@ -697,6 +848,7 @@ class WhileInstruction(FlowInstruction):
     def set_return_block(self):
         set_return_block(self.block, self.eval_block)
         self.block.break_block = self.this_block.next_block
+        self.block.continue_block = self.block
 
     def create_sub_blocks(self):
         self.eval_block = self.function.add_block(
@@ -752,6 +904,8 @@ def make_instruction(program, function, data):
         "division": ArithmeticInstruction,
         "equals": EqInstruction,
         "exponentiation": ExponentiationInstruction,
+        "for": ForInstruction,
+        # "for_check": ForCheckInstruction,
         "function_call": FunctionCallInstruction,
         "greater": ComparisonInstruction,
         "greater_equal": ComparisonInstruction,

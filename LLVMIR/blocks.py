@@ -19,6 +19,7 @@ class Block:
         self.next_block = None
         self.return_block = None
         self.break_block = None
+        self.continue_block = None
         self.param_offset = param_offset
         self.initial_declarations = block["initial_declarations"]
         self.parent_declarations = block["parent_declarations"]
@@ -45,13 +46,13 @@ class Block:
         return self.param_offset + len(self.instructions)-1
 
     def finish(self):
-        for instruction in self.instructions:
-            instruction.finish(self)
-        self.set_return_blocks()
         self.block = self.function.ir.append_basic_block(
             name=("b"+str(self.id_) if self.id_ > 0 else "entry")
         )
         self.builder = ir.IRBuilder(self.block)
+        for instruction in self.instructions:
+            instruction.finish(self)
+        self.set_return_blocks()
 
     def build(self):
         ir_instructions = []
@@ -80,6 +81,12 @@ class Block:
             else:
                 self.prepare_for_return()
                 self.builder.ret_void()
+
+    def add_special_allocs(self, types_):
+        return [
+            self.builder.alloca(make_type_(self.program, type_))
+            for type_ in types_
+        ]
 
     def add_variable_declarations(self, declarations):
         allocas = {}

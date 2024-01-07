@@ -1,0 +1,27 @@
+Z#main {
+    for (W:i to 10) {
+        println[i];
+    };
+    for (W:i from 2 to 10) {
+        if (i == 5) {continue;};
+        println[i];
+    };
+    for (W:i to 10 step 3) {
+        println[i];
+    };
+    for (Z:i from 2 to 10 step 3) {
+        println[i];
+    };
+    Str:txt = "message";
+    for (Byte:b in txt) {
+        println[b];
+    };
+    for (W:idx enumerating txt) {
+        println[idx];
+    };
+    [Str]:msgs = [Str] ["msg #1", "msg #2", "msg #3"];
+    for (Str:msg in msgs from 1) {
+        println[msg];
+    };
+    return 0;
+}

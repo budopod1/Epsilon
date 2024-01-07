@@ -237,6 +237,15 @@ def set_return_block(block_chain, return_block):
         block.return_block = return_block
 
 
+class IRBlockWrapper:
+    def __init__(self, block):
+        self.block = block
+        self.next_block = None
+        self.return_block = None
+        self.break_block = None
+        self.continue_block = None
+
+
 def make_function_type_(program, return_type_, arguments, vargs=False):
     return ir.FunctionType(
         make_type_(program, return_type_),

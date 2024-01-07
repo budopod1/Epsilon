@@ -12,6 +12,7 @@ class Function:
         self.arguments = data["arguments"]
         self.is_main = data["is_main"]
         self.declarations = data["declarations"]
+        self.special_alloc_types_ = data["special_allocs"]
         self.ir_type = make_function_type_(
             program, self.return_type_, 
             (argument["type_"] for argument in self.arguments)
@@ -41,6 +42,9 @@ class Function:
             i += 1
         for block in self.blocks:
             block.finish()
+        self.special_allocs = self.blocks[0].add_special_allocs(
+            self.special_alloc_types_
+        )
         self.variable_declarations = self.blocks[0].add_variable_declarations(
             self.declarations
         )
@@ -68,3 +72,6 @@ class Function:
     def compile_ir(self):
         for block in self.blocks:
             block.build()
+
+    def get_special_alloc(self, i):
+        return self.special_allocs[i]
