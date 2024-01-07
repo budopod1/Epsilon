@@ -419,7 +419,6 @@ public class Compiler {
             {"switch", typeof(SwitchKeyword)},
             {"break", typeof(BreakKeyword)},
             {"continue", typeof(ContinueKeyword)},
-            {"uninit", typeof(UninitKeyword)},
             {"null", typeof(NullValue)},
             {"for", typeof(ForKeyword)},
         };
@@ -1541,24 +1540,10 @@ public class Compiler {
             new List<IMatcher> {
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(UninitKeyword)),
                         new TypePatternSegment(typeof(VarDeclaration))
                     }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
+                        new SlotPatternProcessor(new List<int> {0}),
                         typeof(UninitVarDeclaration)
-                    )
-                )
-            },
-            new List<IMatcher> {
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(UninitKeyword)),
-                        new TypePatternSegment(typeof(Variable)),
-                        new TextPatternSegment("="),
-                        new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1, 3}),
-                        typeof(InitialAssignment)
                     )
                 )
             },

@@ -3,13 +3,8 @@ G {
     Z:v2
 }
 
-Z#main<Z:b> {
-    uninit G:g;
-    if (b) {
-        uninit g = G [1, 0];
-    } else {
-        uninit g = G [3, 0];
-    };
+Z#main {
+    G:g = G [3, 0];
     g.v2 = 2;
     return g.v1 + g.v2;
 }

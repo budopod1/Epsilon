@@ -1,6 +1,1 @@
 TODO:
-* fix:
-    uninit Str:txt;
-    if (true) {
-        return;
-    };

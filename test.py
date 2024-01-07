@@ -64,11 +64,10 @@ TESTS = [
     },
     {
         "file": "struct.epsl",
-        "func": "func0",
-        "sig": CFUNCTYPE(c_int, c_int),
+        "func": "main",
+        "sig": CFUNCTYPE(c_int),
         "tests": [
-            {"arguments": [0], "compare": "exact", "expect": 5},
-            {"arguments": [1], "compare": "exact", "expect": 3},
+            {"arguments": [], "compare": "exact", "expect": 5}
         ]
     },
     {
@@ -129,6 +128,15 @@ TESTS = [
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 14}
+        ]
+    },
+    {
+        "file": "uninitvalue.epsl",
+        "func": "func0",
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "exact", "expect": 42},
+            {"arguments": [0], "compare": "exact", "expect": 24}
         ]
     },
 ]

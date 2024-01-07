@@ -69,8 +69,12 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Array"
     };
 
-    public static List<string> Nullable = new List<String> {
+    public static List<string> Nullable = new List<string> {
         "File", "Optional"
+    };
+
+    public static List<string> ValueTypes_ = new List<string> {
+        "Void", "Bool", "Byte", "W", "Z", "Q", "Null"
     };
 
     public static int DefaultBits = 32;
@@ -190,6 +194,10 @@ public class BaseType_ : IEquatable<BaseType_> {
 
     public bool IsNullable() {
         return Nullable.Contains(name);
+    }
+
+    public bool IsValueType_() {
+        return ValueTypes_.Contains(name);
     }
 
     public override string ToString() {
