@@ -22,7 +22,7 @@ To setup and build Epsilon, run:
 
 The file extention of an Epsilon file should be .epsl. To compile an Epsilon file, run the command:
 
-    mono Epsilon.exe compile <input file path> <output file path>
+    mono <path to Epsilon.exe> compile <input file path> <output file path>
 
 ## Building
 
