@@ -45,7 +45,7 @@ public class UserBaseType_ {
         if (SpecialFullBaseType_Names.Contains(name)) {
             if (generics.Count > 0) {
                 throw new IllegalType_GenericsException(
-                    $"Special type {name} cannot have generics"
+                    $"Alias type {name} cannot have generics"
                 );
             }
             return SpecialFullBaseTypes_[name];
