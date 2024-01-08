@@ -3,8 +3,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 public class BaseType_ : IEquatable<BaseType_> {
-    // https://en.wikipedia.org/wiki/
-    // Set_(mathematics)#Special_sets_of_numbers_in_mathematics
+    // https://en.wikipedia.org/wiki/Set_(mathematics)#Special_sets_of_numbers_in_mathematics
     public static List<string> BuiltInTypes_ = new List<string> {
         "Void",
         "Bool", // equivalent to W1
@@ -74,7 +73,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static List<string> ValueTypes_ = new List<string> {
-        "Void", "Bool", "Byte", "W", "Z", "Q", "Null"
+        "Bool", "Byte", "W", "Z", "Q", "Null"
     };
 
     public static int DefaultBits = 32;
