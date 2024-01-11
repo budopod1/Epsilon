@@ -1,0 +1,9 @@
+Z#main {
+    Z:dividend = 5;
+    Z:divisor = 2;
+    Q:quotient1 = dividend / divisor;
+    Z:quotient2 = dividend ~/ divisor;
+    println[quotient1];
+    println[quotient2];
+    return 0;
+}

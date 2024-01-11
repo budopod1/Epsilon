@@ -1318,6 +1318,17 @@ public class Compiler {
                     ),
                     new PatternMatcher(
                         new List<IPatternSegment> {
+                            new Type_PatternSegment(new Type_("Z")),
+                            new TextPatternSegment("~"),
+                            new TextPatternSegment("/"),
+                            new Type_PatternSegment(new Type_("Z"))
+                        }, new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor(new List<int> {0, 3}), 
+                            typeof(IntDivision)
+                        )
+                    ),
+                    new PatternMatcher(
+                        new List<IPatternSegment> {
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment("%"),
                             new Type_PatternSegment(new Type_("Q"))
