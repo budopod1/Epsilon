@@ -69,6 +69,7 @@ class ArithmeticInstruction(CastToResultType_Instruction):
             "subtraction": {0: builder.fsub, 1: builder.sub, 2: builder.sub},
             "multiplication": {0: builder.fmul, 1: builder.mul, 2: builder.mul},
             "division": {0: builder.fdiv, 1: builder.sdiv, 2: builder.udiv},
+            "int_division": {0: builder.fdiv, 1: builder.sdiv, 2: builder.udiv},
             "modulo": {0: builder.frem, 1: builder.srem, 2: builder.urem},
             "negation": {0: builder.fneg, 1: builder.neg, 2: builder.neg}
         }[self.name][
@@ -911,6 +912,7 @@ def make_instruction(program, function, data):
         "greater_equal": ComparisonInstruction,
         "initial_assignment": InitialAssignmentInstruction,
         "instantiation": InstantiationInstruction,
+        "int_division": ArithmeticInstruction,
         "less": ComparisonInstruction,
         "less_equal": ComparisonInstruction,
         "member_access": MemberAccessInstruction,
