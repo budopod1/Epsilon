@@ -1,0 +1,5 @@
+Z#main {
+    Bool:val = [null].truthy;
+    println[val];
+    return 0;
+}

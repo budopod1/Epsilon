@@ -574,6 +574,12 @@ def repeat_array(program, builder, params, param_types_):
     ), ArrayW8
 
 
+def truthy(program, builder, params, param_types_):
+    value, = params
+    type_, = param_types_
+    return truth_value(program, builder, value, type_), Bool
+
+
 BUILTINS = {
     -1: {"func": length, "params": [ArrayW8]},
     -2: {"func": capacity, "params": [ArrayW8]},
@@ -643,4 +649,5 @@ BUILTINS = {
     -66: {"func": sort_array_inverted, "params": [None]},
     -67: {"func": dedup, "params": [None]},
     -68: {"func": repeat_array, "params": [ArrayW8, W64]},
+    -69: {"func": truthy, "params": [None]},
 }

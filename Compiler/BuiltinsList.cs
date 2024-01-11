@@ -883,6 +883,16 @@ public static class BuiltinsList {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("times", new Type_("W", 64))
             }, -68, (List<Type_> types_) => types_[0]
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "truthy")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("value", Type_.Any())
+            }, -69, new Type_("Bool")
         ), 
     };
 }
