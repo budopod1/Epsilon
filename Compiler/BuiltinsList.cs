@@ -893,6 +893,36 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", Type_.Any())
             }, -69, new Type_("Bool")
+        ),  new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "floor")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("value", new Type_("Q"))
+            }, -70, new Type_("Z")
+        ),   new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "ceil")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("value", new Type_("Q"))
+            }, -71, new Type_("Z")
+        ),   new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "round")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("value", new Type_("Q"))
+            }, -72, new Type_("Z")
         ), 
     };
 }

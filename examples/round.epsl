@@ -1,0 +1,14 @@
+Z#main {
+    Q:num;
+    while (true) {
+        println["Please enter a number"];
+        num = parse_float[read_input_line];
+        if (is_valid_parsed_float[num]) {
+            break;
+        };
+    };
+    println[["Floor: "] + [[[num].floor].stringify]];
+    println[["Ceiling: "] + [[[num].ceil].stringify]];
+    println[["Rounded: "] + [[[num].round].stringify]];
+    return 0;
+}

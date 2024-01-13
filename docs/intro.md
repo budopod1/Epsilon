@@ -363,278 +363,290 @@ The `return` keyword exits the function in which it is in. If the function has a
 
 There are currently 69 builtin functions:
 
-**#1 length**<br>
+**#1: length**<br>
 Usage: TODO<br>
 `W64#<array:Array<Any>>.length`
 
-**#2 capacity**<br>
+**#2: capacity**<br>
 Usage: TODO<br>
 `W64#<array:Array<Any>>.capacity`
 
-**#3 append**<br>
+**#3: append**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.append<value:Any>`
 
-**#4 require_capacity**<br>
+**#4: require_capacity**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.require_capacity<value:W64>`
 
-**#5 shrink_mem**<br>
+**#5: shrink_mem**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.shrink_mem`
 
-**#6 pop**<br>
+**#6: pop**<br>
 Usage: TODO<br>
 `T#<array:Array<T>>.pop<index:W64>` where `T` is `Any`
 
-**#7 insert**<br>
+**#7: insert**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.insert<index:W64><value:Any>`
 
-**#8 clone**<br>
+**#8: clone**<br>
 Usage: TODO<br>
 `Array<T>#<array:Array<T>>.clone` where `T` is `Any`
 
-**#9 extend**<br>
+**#9: extend**<br>
 Usage: TODO<br>
 `Void#<array:Array<T>>.extend<array2:Array<T>>` where `T` is `Any`
 
-**#10 concat**<br>
+**#10: concat**<br>
 Usage: TODO<br>
 `Array<T>#<array1:Array<T>>.concat<array2:Array<T>>` where `T` is `Any`
 
-**#11 make_range_array**<br>
+**#11: make_range_array**<br>
 Usage: TODO<br>
 `Array<Z>#make_range_array<end:Z>`
 
-**#12 make_range_array**<br>
+**#12: make_range_array**<br>
 Usage: TODO<br>
 `Array<Z>#make_range_array<start:Z><end:Z>`
 
-**#13 make_range_array**<br>
+**#13: make_range_array**<br>
 Usage: TODO<br>
 `Array<Z>#make_range_array<start:Z><end:Z><step:Z>`
 
-**#14 abs**<br>
+**#14: abs**<br>
 Usage: TODO<br>
 `W#<value:Z>.abs`
 
-**#15 abs**<br>
+**#15: abs**<br>
 Usage: TODO<br>
 `Q64#<value:Q64>.abs`
 
-**#16 concat**<br>
+**#16: concat**<br>
 Usage: TODO<br>
 `Array<T>#<Array<T>> + <Array<T>>` where `T` is `Any`
 
-**#17 stringify**<br>
+**#17: stringify**<br>
 Usage: TODO<br>
 `Str#<value:Any>.stringify`
 
-**#18 print**<br>
+**#18: print**<br>
 Usage: TODO<br>
 `Void#print<value:Any>`
 
-**#19 println**<br>
+**#19: println**<br>
 Usage: TODO<br>
 `Void#println<value:Any>`
 
-**#20 left_pad**<br>
+**#20: left_pad**<br>
 Usage: TODO<br>
 `Void#<str:Str>.left_pad<len:W64><chr:Byte>`
 
-**#21 right_pad**<br>
+**#21: right_pad**<br>
 Usage: TODO<br>
 `Void#<str:Str>.right_pad<len:W64><chr:Byte>`
 
-**#22 slice**<br>
+**#22: slice**<br>
 Usage: TODO<br>
 `Array<T>#<arr:Array<T>>.slice<start:W64><end:W64>` where `T` is `Any`
 
-**#23 countChr**<br>
+**#23: countChr**<br>
 Usage: TODO<br>
 `W64#<str:Str>.countChr<chr:Byte>`
 
-**#24 count**<br>
+**#24: count**<br>
 Usage: TODO<br>
 `W64#<arr:Array<T>>.count<sub:Array<T>>` where `T` is `Any`
 
-**#25 overlapCount**<br>
+**#25: overlapCount**<br>
 Usage: TODO<br>
 `W64#<arr:Array<T>>.overlapCount<sub:Array<T>>` where `T` is `Any`
 
-**#26 nest**<br>
+**#26: nest**<br>
 Usage: TODO<br>
 `Array<Array<T>>#<arr:Array<T>>.nest` where `T` is `Any`
 
-**#27 split**<br>
+**#27: split**<br>
 Usage: TODO<br>
 `Array<Array<T>>#<arr:Array<T>>.split<sub:Array<T>>` where `T` is `Any`
 
-**#28 starts_with**<br>
+**#28: starts_with**<br>
 Usage: TODO<br>
 `Bool#<arr:Array<T>>.starts_with<sub:Array<T>>` where `T` is `Any`
 
-**#29 ends_with**<br>
+**#29: ends_with**<br>
 Usage: TODO<br>
 `Bool#<arr:Array<T>>.ends_with<sub:Array<T>>` where `T` is `Any`
 
-**#30 equals**<br>
+**#30: equals**<br>
 Usage: TODO<br>
 `Bool#<v1:T> equals <v2:T>` where `T` is `Any`
 
-**#31 not equals**<br>
+**#31: not equals**<br>
 Usage: TODO<br>
 `Bool#not<v1:T> not equals <v2:T>` where `T` is `Any`
 
-**#32 equals depth**<br>
+**#32: equals depth**<br>
 Usage: TODO<br>
 `Bool#<v1:T> equals <v2:T> depth <depth:W>` where `T` is `Any`
 
-**#33 not equals depth**<br>
+**#33: not equals depth**<br>
 Usage: TODO<br>
 `Bool#<v1:T> not equals <v2:T> depth <depth:W>` where `T` is `Any`
 
-**#34 join**<br>
+**#34: join**<br>
 Usage: TODO<br>
 `Array<T>#<arr:Array<Array<T>>>.join<sep:Array<T>>` where `T` is `Any`
 
-**#35 index_of**<br>
+**#35: index_of**<br>
 Usage: TODO<br>
 `W64#<arr:Array<T>>.index_of<elem:T>` where `T` is `Any`
 
-**#36 index_of_subsection**<br>
+**#36: index_of_subsection**<br>
 Usage: TODO<br>
 `W64#<arr:Array<T>>.index_of_subsection<sub:Array<T>>` where `T` is `Any`
 
-**#37 parse_int**<br>
+**#37: parse_int**<br>
 Usage: TODO<br>
 `Z32#parse_int<str:Str>`
 
-**#38 is_valid_parsed_int**<br>
+**#38: is_valid_parsed_int**<br>
 Usage: TODO<br>
 `Bool#is_valid_parsed_int<int:Z>`
 
-**#39 parse_float**<br>
+**#39: parse_float**<br>
 Usage: TODO<br>
 `Q32#parse_float<str:Str>`
 
-**#40 is_valid_parsed_float**<br>
+**#40: is_valid_parsed_float**<br>
 Usage: TODO<br>
 `Bool#is_valid_parsed_float<int:Q32>`
 
-**#41 read_input_line**<br>
+**#41: read_input_line**<br>
 Usage: TODO<br>
 `Str#read_input_line`
 
-**#42 open_file**<br>
+**#42: open_file**<br>
 Usage: TODO<br>
 `File#open_file<str:Str><mode:Z>`
 
-**#43 FILE_READ_MODE**<br>
+**#43: FILE_READ_MODE**<br>
 Usage: TODO<br>
 `Z32#FILE_READ_MODE`
 
-**#44 FILE_WRITE_MODE**<br>
+**#44: FILE_WRITE_MODE**<br>
 Usage: TODO<br>
 `Z32#FILE_WRITE_MODE`
 
-**#45 FILE_APPEND_MODE**<br>
+**#45: FILE_APPEND_MODE**<br>
 Usage: TODO<br>
 `Z32#FILE_APPEND_MODE`
 
-**#46 FILE_BINARY_MODE**<br>
+**#46: FILE_BINARY_MODE**<br>
 Usage: TODO<br>
 `Z32#FILE_BINARY_MODE`
 
-**#47 is_open**<br>
+**#47: is_open**<br>
 Usage: TODO<br>
 `Bool#<file:File>.is_open`
 
-**#48 mode**<br>
+**#48: mode**<br>
 Usage: TODO<br>
 `Z32#<file:File>.mode`
 
-**#49 close**<br>
+**#49: close**<br>
 Usage: TODO<br>
 `Void#<file:File>.close`
 
-**#50 length**<br>
+**#50: length**<br>
 Usage: TODO<br>
 `Z64#<file:File>.length`
 
-**#51 pos**<br>
+**#51: pos**<br>
 Usage: TODO<br>
 `Z64#<file:File>.pos`
 
-**#52 read_all**<br>
+**#52: read_all**<br>
 Usage: TODO<br>
 `Optional<Str>#<file:File>.read_all`
 
-**#53 read_some**<br>
+**#53: read_some**<br>
 Usage: TODO<br>
 `Optional<Str>#<file:File>.read_some<bytes:W64>`
 
-**#54 set_pos**<br>
+**#54: set_pos**<br>
 Usage: TODO<br>
 `Bool#<file:File>.set_pos<pos:W64>`
 
-**#55 jump_pos**<br>
+**#55: jump_pos**<br>
 Usage: TODO<br>
 `Bool#<file:File>.jump_pos<amount:W64>`
 
-**#56 read_line**<br>
+**#56: read_line**<br>
 Usage: TODO<br>
 `Optional<Str>#<file:File>.read_line`
 
-**#57 read_line_reached_EOF**<br>
+**#57: read_line_reached_EOF**<br>
 Usage: TODO<br>
 `Bool#read_line_reached_EOF`
 
-**#58 read_lines**<br>
+**#58: read_lines**<br>
 Usage: TODO<br>
 `Optional<Array<Str>>#<file:File>.read_lines`
 
-**#59 write**<br>
+**#59: write**<br>
 Usage: TODO<br>
 `Bool#<file:File>.write<content:Str>`
 
-**#60 is_null**<br>
+**#60: is_null**<br>
 Usage: TODO<br>
 `Bool#<nullable:Any>.is_null`
 
-**#61 unwrap**<br>
+**#61: unwrap**<br>
 Usage: TODO<br>
 `T#<optional:Optional<T>>.unwrap` where `T` is `Any`
 
-**#62 abort**<br>
+**#62: abort**<br>
 Usage: TODO<br>
 `Void#abort<string:Str>`
 
-**#63 blank_from_type**<br>
+**#63: blank_from_type**<br>
 Usage: TODO<br>
 `Array<T>#<array:Array<T>>.blank_from_type<amount:W64>` where `T` is `Any`
 
-**#64 unique**<br>
+**#64: unique**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.unique`
 
-**#65 sort**<br>
+**#65: sort**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.sort`
 
-**#66 sort_inverted**<br>
+**#66: sort_inverted**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.sort_inverted`
 
-**#67 dedup**<br>
+**#67: dedup**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.dedup`
 
-**#68 repeat**<br>
+**#68: repeat**<br>
 Usage: TODO<br>
 `Array<T>#<array:Array<T>>.repeat<times:W64>` where `T` is `Any`
 
-**#69 truthy**<br>
+**#69: truthy**<br>
 Usage: determines whether the specified value is truthy<br>
 `Bool#<value:Any>.truthy`
+
+**#70: floor**<br>
+Usage: computes the largest integer less than or equal to the given value.<br>
+`Z#<num:Q>.floor`
+
+**#71: ceil**<br>
+Usage: computes the smallest integer greater than or equal to the given value.<br>
+`Z#<num:Q>.ceil`
+
+**#72: round**<br>
+Usage: computes the integer with the smallest absolute distance from the given value.
+`Z#<num:Q>.round`

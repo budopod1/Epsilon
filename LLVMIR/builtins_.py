@@ -580,6 +580,27 @@ def truthy(program, builder, params, param_types_):
     return truth_value(program, builder, value, type_), Bool
 
 
+def floor(program, builder, params, param_types_):
+    value, = params
+    return program.call_extern(
+        builder, "ffloor", [value], [Q32], Z32
+    ), Z32
+
+
+def ceil(program, builder, params, param_types_):
+    value, = params
+    return program.call_extern(
+        builder, "fceil", [value], [Q32], Z32
+    ), Z32
+
+
+def round_(program, builder, params, param_types_):
+    value, = params
+    return program.call_extern(
+        builder, "round", [value], [Q32], Z32
+    ), Z32
+
+
 BUILTINS = {
     -1: {"func": length, "params": [ArrayW8]},
     -2: {"func": capacity, "params": [ArrayW8]},
@@ -650,4 +671,7 @@ BUILTINS = {
     -67: {"func": dedup, "params": [None]},
     -68: {"func": repeat_array, "params": [ArrayW8, W64]},
     -69: {"func": truthy, "params": [None]},
+    -70: {"func": floor, "params": [Q32]},
+    -71: {"func": ceil, "params": [Q32]},
+    -72: {"func": round_, "params": [Q32]},
 }

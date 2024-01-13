@@ -308,6 +308,18 @@ EXTERN_FUNCS = {
         "name": "repeatArray", "return_type_": ArrayW8,
         "arguments": [ArrayW8, W64, W64]
     },
+    "ffloor": {
+        "name": "llvm.floor.f32", "return_type_": Q32,
+        "arguments": [Q32]
+    },
+    "fceil": {
+        "name": "llvm.ceil.f32", "return_type_": Q32,
+        "arguments": [Q32]
+    },
+    "round": {
+        "name": "llvm.lrint.i32.f32", "return_type_": Z32,
+        "arguments": [Q32]
+    },
 }
 
 EXTERN_ARRAYS = [
