@@ -139,6 +139,7 @@ class Program:
             builder.ret_void()
         else:
             cont_branch = builder.append_basic_block("cont")
+            forward_branch = builder.append_basic_block("forward")
             final_branch = builder.append_basic_block("final")
 
             length_ptr = builder.gep(val, [i64_of(0), i32_of(2)])
@@ -153,9 +154,12 @@ class Program:
             elem = cont_builder.load(elem_ptr)
             self.decr_ref(cont_builder, elem, type_)
             i_incr = cont_builder.add(i, i64_of(1))
-            i.add_incoming(i_incr, cont_branch)
+            i.add_incoming(i_incr, forward_branch)
             should_continue = cont_builder.icmp_unsigned("<", i_incr, length)
-            cont_builder.cbranch(should_continue, cont_branch, final_branch)
+            cont_builder.cbranch(should_continue, forward_branch, final_branch)
+
+            forward_builder = ir.IRBuilder(forward_branch)
+            forward_builder.branch(cont_branch)
             
             final_builder = ir.IRBuilder(final_branch)
             self.dumb_free(final_builder, val)

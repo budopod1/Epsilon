@@ -149,6 +149,10 @@ public class Type_ : IEquatable<Type_> {
         return generics.Count > 0;
     }
 
+    public int GenericCount() {
+        return generics.Count;
+    }
+
     bool IsConvertibleOptionalTo(Type_ other) {
         if (other.GetBaseType_().GetName() != "Optional") return false;
         return Equals(other.GetGeneric(0));
@@ -175,16 +179,32 @@ public class Type_ : IEquatable<Type_> {
         return false;
     }
 
+    public bool IsEquivalentTo(Type_ other) {
+        BaseType_ otherBaseType_ = other.GetBaseType_();
+        if (IsConvertibleOptionalTo(other)) return true;
+        if (IsConvertibleNullTo(other)) return true;
+        if (HasGenerics()) {
+            if (!baseType_.Equals(otherBaseType_)) return false;
+            List<Type_> otherGenerics = other.GetGenerics();
+            if (generics.Count != otherGenerics.Count) return false;
+            for (int i = 0; i < generics.Count; i++) {
+                if (!generics[i].IsEquivalentTo(otherGenerics[i])) 
+                    return false;
+            }
+            return true;
+        } else {
+            return baseType_.IsEquivalentTo(otherBaseType_);
+        }
+    }
+
     public bool IsCastableTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
         if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
             return true;
         if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
             return true;
-        if (IsConvertibleOptionalTo(other)) return true;
-        if (IsConvertibleNullTo(other)) return true;
-        if (HasGenerics())
-            return Equals(other);
+        if (IsEquivalentTo(other)) return true;
+        if (HasGenerics()) return Equals(other);
         if (other.HasGenerics()) return false;
         if (baseType_.IsCastableTo(otherBaseType_))
             return true;

@@ -55,6 +55,13 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"Optional", new List<string> {"Bool"}},
     };
 
+    public static Dictionary<string, List<string>> EquivalentToBesidesBits = new Dictionary<string, List<string>> {
+        {"Bool", new List<string> {"W", "Z"}},
+        {"W", new List<string> {"Bool", "Z", "Byte"}},
+        {"Z", new List<string> {"W", "Bool", "Byte"}},
+        {"Byte", new List<string> {"W", "Z"}},
+    };
+
     public static Dictionary<string, List<string>> CastableTo = new Dictionary<string, List<string>> {
         {"Bool", new List<string> {"Byte", "W", "Z", "Q"}},
         {"Byte", new List<string> {"Bool", "W", "Z", "Q"}},
@@ -137,6 +144,16 @@ public class BaseType_ : IEquatable<BaseType_> {
         if (ConvertibleTo.ContainsKey(name))
             return ConvertibleTo[name].Contains(oName);
         return false;
+    }
+
+    public bool IsEquivalentTo(BaseType_ other) {
+        if (GetBitsOrDefault() != other.GetBitsOrDefault()) return false;
+        string oName = other.GetName();
+        if (EquivalentToBesidesBits.ContainsKey(name)) {
+            return EquivalentToBesidesBits[name].Contains(oName);
+        } else {
+            return name == oName;
+        }
     }
 
     public bool IsCastableTo(BaseType_ other) {
