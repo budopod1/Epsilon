@@ -6,8 +6,8 @@ public class ArgumentParser {
     ParserTree tree = new ParserTree("", null);
     ParserTree currentTree;
     Dictionary<string, string> options = new Dictionary<string, string> {
-        {"-h", "Show usage information"},
-        {"--help", "Show usage information"},
+        {"h", "Show usage information"},
+        {"help", "Show usage information"},
     };
 
     public ArgumentParser() {
@@ -68,7 +68,8 @@ public class ArgumentParser {
         Console.WriteLine();
         Console.WriteLine("Options:");
         foreach (KeyValuePair<string, string> pair in options) {
-            Console.WriteLine(pair.Key + ": " + pair.Value);
+            string prefix = pair.Key.Length == 1 ? "-" : "--";
+            Console.WriteLine(prefix + pair.Key + ": " + pair.Value);
         }
         Environment.Exit(0);
     }
