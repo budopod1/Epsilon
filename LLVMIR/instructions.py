@@ -39,13 +39,6 @@ class CastToResultType_Instruction(Typed_Instruction):
         return self._build(builder, typed_params)
 
 
-# TODO: phase out and replace with instructions for specific tasks
-class DirectIRInstruction(BaseInstruction):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self._build = self.data["function"]
-
-
 class FlowInstruction(BaseInstruction):
     def set_return_block(self):
         pass
@@ -217,6 +210,23 @@ class BitwiseInstruction(CastToResultType_Instruction):
         }[self.name](*params)
 
 
+class BranchInstruction(FlowInstruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.true_block = self.data["true_block"]
+        self.false_block = self.data["false_block"]
+
+    def _build(self, builder, params, param_types_):
+        param, = params
+        param_type_, = param_types_
+        self.this_block.perpare_for_termination()
+        builder.cbranch(
+            truth_value(self.program, builder, param, param_type_),
+            self.true_block.block,
+            self.false_block.block
+        )
+
+
 class BreakInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
@@ -277,25 +287,17 @@ class Condition:
 
     def finish(self):
         final_block = last_block_chain_block(self.eval_block)
-        def _build(builder, params, param_types_):
-            param, = params
-            param_type_, = param_types_
-            final_block.perpare_for_termination()
-            builder.cbranch(
-                truth_value(self.program, builder, param, param_type_),
-                self.block.block,
-                (
+        final_block.instructions.append(BranchInstruction(
+            self.program, self.function, 
+            {
+                "name": "branch", 
+                "parameters": [final_block.last_instruction_idx()], 
+                "true_block": self.block,
+                "false_block": (
                     (self.else_block or self.return_block) 
                     if self.next_condition is None else 
                     self.next_condition.eval_block
-                ).block
-            )
-        final_block.instructions.append(DirectIRInstruction(
-            self.program, self.function, 
-            {
-                "name": "direct_ir", 
-                "parameters": [final_block.last_instruction_idx()], 
-                "function": _build
+                ),
             }
         ))
 
@@ -422,10 +424,6 @@ class ExponentiationInstruction(Typed_Instruction):
                     builder, "cbrt", [base], [base_type_],
                     self.type_
                 )
-
-
-# class ForCheckInstruction(BaseInstruction):
-#     pass
 
 
 class ForInstruction(FlowInstruction):
@@ -860,20 +858,13 @@ class WhileInstruction(FlowInstruction):
     def finish(self, block):
         super().finish(block)
         final_block = last_block_chain_block(self.eval_block)
-        def _build(builder, params, param_types_):
-            param, = params
-            param_type_, = param_types_
-            final_block.perpare_for_termination()
-            builder.cbranch(
-                truth_value(self.program, builder, param, param_type_),
-                self.block.block, self.this_block.next_block.block
-            )
-        final_block.instructions.append(DirectIRInstruction(
+        final_block.instructions.append(BranchInstruction(
             self.program, self.function, 
             {
-                "name": "direct_ir", 
+                "name": "branch", 
                 "parameters": [final_block.last_instruction_idx()], 
-                "function": _build
+                "true_block": self.block,
+                "false_block": self.this_block.next_block
             }
         ))
 
@@ -900,13 +891,13 @@ def make_instruction(program, function, data):
         "break": BreakInstruction,
         "cast": CastInstruction,
         "conditional": ConditionalInstruction,
+        # "branch": BranchInstruction,
         "constant_value": ConstantInstruction,
         "continue": ContinueInstruction,
         "division": ArithmeticInstruction,
         "equals": EqInstruction,
         "exponentiation": ExponentiationInstruction,
         "for": ForInstruction,
-        # "for_check": ForCheckInstruction,
         "function_call": FunctionCallInstruction,
         "greater": ComparisonInstruction,
         "greater_equal": ComparisonInstruction,
