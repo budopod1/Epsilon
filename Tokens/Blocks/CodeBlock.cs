@@ -2,14 +2,16 @@ using System;
 using System.Collections.Generic;
 
 public class CodeBlock : Block {
+    Program program;
     Scope scope;
     
-    public CodeBlock(List<IToken> tokens) : base(tokens) {
-        scope = new Scope(this);
+    public CodeBlock(Program program, List<IToken> tokens) : base(tokens) {
+        scope = new Scope(program, this);
+        this.program = program;
     }
     
     protected override TreeToken _Copy(List<IToken> tokens) {
-        CodeBlock newBlock = new CodeBlock(tokens);
+        CodeBlock newBlock = new CodeBlock(program, tokens);
         newBlock.GetScope().CopyFrom(scope);
         return newBlock;
     }

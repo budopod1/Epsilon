@@ -585,7 +585,7 @@ class FunctionCallInstruction(Typed_Instruction):
                 self.callee, builder, params, param_types_, self.type_
             )
         else:
-            func = self.program.functions[self.callee]
+            func = self.program.get_function(self.callee)
             converted_params = [
                 convert_type_(
                     self.program, builder, param, param_type_,

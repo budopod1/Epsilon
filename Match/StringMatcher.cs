@@ -21,7 +21,7 @@ public class StringMatcher : IMatcher {
             matched.Add(token);
             bool wasBackslash = false;
             for (int j = i + 1; j < tokens.Count; j++) {
-                token = tokens[j];
+                token = tokens[j];;
                 if (!(token is TextToken)) {
                     continue;
                 }

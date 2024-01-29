@@ -1,6 +1,6 @@
 # Epsilon
 
-Epsilon is a compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning that Epsilon uses the same optimizer as Swift, Clang, and Rust. Currently, Epsilon only supports linux.
+Epsilon is a compiled, statically typed, semi-memory safe programming language with automatic refrence counting. It compiles through LLVM, meaning that Epsilon uses the same optimizer as Swift, Clang, and Rust. Currently, Epsilon only supports Linux.
 
 ## Dependencies
 

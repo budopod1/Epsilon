@@ -6,36 +6,25 @@ from common import *
 from structs import Struct, Array
 from functions import Function
 from program import Program
-from extern_funcs import EXTERN_FUNCS, EXTERN_ARRAYS
+from extern_funcs import EXTERN_FUNCS
 from builtins_ import BUILTINS
+import re
+
+
+epsilon_folder = Path.cwd()
 
 
 def create_ir(data):
     module = ir.Module(name="main")
-    
+
+    with open(epsilon_folder / "builtins.ll") as builtins_file:
+        builtins_text = builtins_file.read()
+
+    module.data_layout = re.search("target datalayout ?= ?\"([:\\-a-zA-Z0-9]+)\"", builtins_text).group(1)
+
     module.triple = llvm.get_default_triple()
-    
+
     program = Program(module)
-
-    unique_arrays = []
-    frozen_arrays = set()
-    all_arrays = data["arrays"] + EXTERN_ARRAYS
-    for array in all_arrays:
-        frozen = freeze_json(array)
-        if frozen in frozen_arrays:
-            continue
-        frozen_arrays.add(frozen)
-        unique_arrays.append(array)
-
-    program.array_ids = dict(map(
-        lambda pair: (freeze_json(pair[1]), pair[0]), 
-        enumerate(unique_arrays)
-    ))
-    
-    for i, array in enumerate(unique_arrays):
-        program.add_array(Array(
-            program, i, array
-        ))
 
     for struct in data["structs"]:
         program.add_struct(Struct(
@@ -46,6 +35,8 @@ def create_ir(data):
         program.add_extern_func(func_name, func_data)
 
     program.builtins = BUILTINS
+
+    program.add_module_functions(data["module_functions"])
 
     functions = []
     for function_data in data["functions"]:
@@ -62,6 +53,8 @@ def create_ir(data):
 
 
 def main(*, print_ir=False):
+    global epsilon_folder
+    
     epsilon_folder = Path(__file__).parent.parent
     with open(epsilon_folder / "code.json") as file:
         data = orjson.loads(file.read())

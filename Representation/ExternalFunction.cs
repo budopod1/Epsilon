@@ -5,10 +5,10 @@ using System.Collections.Generic;
 public class ExternalFunction : FunctionDeclaration {
     PatternExtractor<List<IToken>> pattern;
     List<FunctionArgument> arguments;
-    int id;
+    string id;
     Func<List<IValueToken>, Type_> returnType_;
 
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, int id, Func<List<Type_>, Type_> returnType_) {
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<Type_>, Type_> returnType_) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
@@ -24,14 +24,14 @@ public class ExternalFunction : FunctionDeclaration {
         };
     }
 
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, int id, Func<List<IValueToken>, Type_> returnType_) {
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<IValueToken>, Type_> returnType_) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
         this.returnType_ = returnType_;
     }
     
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, int id, Type_ returnType_) {
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Type_ returnType_) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
@@ -50,7 +50,7 @@ public class ExternalFunction : FunctionDeclaration {
         return returnType_(tokens);
     }
     
-    public override int GetID() {
+    public override string GetID() {
         return id;
     }
 

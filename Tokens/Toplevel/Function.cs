@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier {
+public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    static int id_ = 0;
     static List<IPatternSegment> mainPattern = new List<IPatternSegment> {
         new UnitPatternSegment<string>(typeof(Name), "main")
     };
+    public Dictionary<ISerializableToken, int> Serialized = new Dictionary<ISerializableToken, int>();
     
     public int Count {
         get { return 1; }
@@ -29,11 +29,11 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
     CodeBlock block;
     Type_ returnType_;
     List<Type_> specialAllocs = new List<Type_>();
-    int id;
+    string id;
     List<SerializationContext> contexts = new List<SerializationContext>();
     bool isMain;
     
-    public Function(PatternExtractor<List<IToken>> pattern, 
+    public Function(Program program, PatternExtractor<List<IToken>> pattern, 
                     List<FunctionArgumentToken> arguments, CodeBlock block,
                     Type_ returnType_) {
         this.pattern = pattern;
@@ -49,7 +49,7 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         this.arguments = arguments.Select(
             argument=>new FunctionArgument(argument)
         ).ToList();
-        id = id_++;
+        id = program.GetPath() + program.GetFunctionID().ToString();
     }
 
     public override PatternExtractor<List<IToken>> GetPattern() {
@@ -68,7 +68,7 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         this.block = block;
     }
 
-    public Type_ GetReturnType_() {
+    public override Type_ GetReturnType_() {
         return returnType_;
     }
 
@@ -76,7 +76,7 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         return GetReturnType_();
     }
 
-    public override int GetID() {
+    public override string GetID() {
         return id;
     }
 
@@ -105,7 +105,7 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
 
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
-        obj["id"] = new JSONInt(id);
+        obj["id"] = new JSONString(id);
         obj["arguments"] = new JSONList(arguments.Select(
             argument => argument.GetJSON()
         ));

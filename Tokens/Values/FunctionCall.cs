@@ -41,7 +41,7 @@ public class FunctionCall : IParentToken, IValueToken {
     public int Serialize(SerializationContext context) {
         return context.AddInstruction(
             new SerializableInstruction(this, context)
-                .AddData("function", new JSONInt(function.GetID()))
+                .AddData("function", new JSONString(function.GetID()))
         );
     }
 }

@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.IO;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public static class Utils {
@@ -143,5 +145,38 @@ public static class Utils {
 
     public static bool ApproxEquals(double a, double b) {
         return Math.Abs(a-b)/(a+b) < 0.01;
+    }
+
+    public static int RunCommand(string command) {
+        // I know this isn't the right way to do this
+        // (and I know it won't work on non-linux systems)
+        ProcessStartInfo procStartInfo = new ProcessStartInfo(
+            "/bin/bash", "-c " + Utils.EscapeStringToLiteral(command, '\'')
+        );
+        procStartInfo.UseShellExecute = false;
+        procStartInfo.CreateNoWindow = true;
+
+        Process proc = new Process();
+        proc.StartInfo = procStartInfo;
+        proc.Start();
+        proc.WaitForExit();
+
+        return proc.ExitCode;
+    }
+
+    public static bool FileExists(string path) {
+        try {
+            FileStream file = File.Open(path, FileMode.Open);
+            file.Dispose();
+            return true;
+        } catch (FileNotFoundException) {
+            return false;
+        } catch (DirectoryNotFoundException) {
+            return false;
+        } catch (UnauthorizedAccessException) {
+            return false;
+        } catch (Exception) {
+            return false;
+        }
     }
 }

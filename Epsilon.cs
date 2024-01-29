@@ -14,8 +14,6 @@ public class Epsilon {
         parser.AddOption("timings", "Show step timings");
         parser.AddOption("c", "Do not catch errors");
         parser.AddOption("do-not-catch-errs", "Do not catch errors");
-        parser.AddOption("w", "Do not write to the output file");
-        parser.AddOption("do-not-write-output", "Do not write to the output file");
         
         parser.AddBranch("compile");
         parser.AddBranch("*input file");
@@ -26,29 +24,24 @@ public class Epsilon {
         List<string> values = parseResults.GetValues();
         
         if (mode[0] == "compile") {
-            Compiler compiler = new Compiler();
-            compiler.PRINT_AST = parseResults.HasOption("p", "print-ast");
-            compiler.PRINT_STEPS = parseResults.HasOption("s", "print-steps");
-            compiler.SHOW_TIMINGS = parseResults.HasOption("t", "timings");
-            compiler.CATCH_ERRS = !parseResults.HasOption("c", "do-not-catch-errs");
-            bool doNotWriteOutput = parseResults.HasOption("w", "do-not-write-output");
+            Builder builder = new Builder();
+            /*
+            builder.PRINT_AST = parseResults.HasOption("p", "print-ast");
+            builder.PRINT_STEPS = parseResults.HasOption("s", "print-steps");
+            builder.SHOW_TIMINGS = parseResults.HasOption("t", "timings");
+            builder.CATCH_ERRS = !parseResults.HasOption("c", "do-not-catch-errs");
+            */
             
             string input = values[0];
             string output = values[1];
-            string content = null;
-            try {
-                using (StreamReader file = new StreamReader(input)) {
-                    content = file.ReadToEnd();
-                }
-            } catch (IOException) {
-                parser.DisplayProblem("Could not read specified input file");
+            
+            CompilationResult result = builder.Build(input);
+            if (result.GetStatus() != CompilationResultStatus.GOOD) {
+                if (result.HasMessage()) parser.DisplayProblem(result.GetMessage());
                 return 1;
             }
-            CompilationResultStatus resultStatus = compiler.Compile(input, content);
-            if (resultStatus != CompilationResultStatus.GOOD) return 1;
-            if (doNotWriteOutput) return 0;
-            int status = compiler.CompileIR();
-            if (status > 0) return status;
+            int toExecutableStatus = builder.ToExecutable();
+            if (toExecutableStatus != 0) return toExecutableStatus;
             try {
                 File.Copy(Utils.ProjectAbsolutePath()+"/code", output, true);
             } catch (IOException) {

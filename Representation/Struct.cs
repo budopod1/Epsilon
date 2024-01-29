@@ -2,10 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Struct : IMultiLineToken, ITopLevel {
-    public IParentToken parent { get; set; }
-    public CodeSpan span { get; set; }
-    
+public class Struct {
     string name;
     List<Field> fields;
     
@@ -36,8 +33,7 @@ public class Struct : IMultiLineToken, ITopLevel {
             result += "\n" + field.ToString();
         }
         return Utils.WrapName(
-            "Struct", 
-            Utils.WrapNewline(Utils.Indent(result))
+            "Struct", Utils.WrapNewline(Utils.Indent(result))
         );
     }
 

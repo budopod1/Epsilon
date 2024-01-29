@@ -1,0 +1,53 @@
+functions: [
+    {
+        id: "llvm.log.f64
+        return_type_: "Q64
+        template: [
+            {
+                type: "name
+                name: "ln
+            }
+            {
+                type: "argument
+                name: "argument
+                type_: "Q64
+            }
+        ]
+    }
+    {
+        id: "varBaseLog
+        return_type_: "Q64
+        template: [
+            {
+                type: "name
+                name: "log
+            }
+            {
+                type: "argument
+                name: "argument
+                type_: "Q64
+            }
+            {
+                type: "argument
+                name: "base
+                type_: "Q64
+            }
+        ]
+    }
+]
+structs: [
+    {
+        name: "C
+        fields: [
+            {
+                name: "real
+                type_: "Q64
+            }
+            {
+                name: "imag
+                type_: "Q64
+            }
+        ]
+    }
+]
+ir: "math_.bc

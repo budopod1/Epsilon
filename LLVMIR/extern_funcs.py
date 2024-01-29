@@ -321,7 +321,3 @@ EXTERN_FUNCS = {
         "arguments": [Q32]
     },
 }
-
-EXTERN_ARRAYS = [
-    ArrayW8, ArrayZ32, String, ArrayString
-]

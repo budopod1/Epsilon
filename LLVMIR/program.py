@@ -3,15 +3,15 @@ from common import *
 from stringify import make_stringify_func
 from equals import refrence_equals, value_equals_depth_1, value_equals
 from misc_helpers import index_of, compare, dedup
+from functions import ModuleFunction
 
 
 class Program:
     def __init__(self, module):
         self.module = module
         self.functions = {}
+        self.module_functions = {}
         self.structs = {}
-        self.array_ids = {}
-        self.arrays = {}
         self.externs = {}
         self.extern_funcs = {}
         self.check_funcs = {}
@@ -25,8 +25,15 @@ class Program:
         self.dedup_funcs = {}
         self.comparer_funcs = {}
 
+    def add_module_functions(self, funcs):
+        for func in funcs:
+            self.module_functions[func["id"]] = ModuleFunction(self, func)
+
+    def get_function(self, id):
+        return self.functions.get(id) or self.module_functions.get(id)
+
     def is_builtin(self, id):
-        return id in self.builtins
+        return id.startswith("builtin")
 
     def call_builtin(self, id, builder, params, param_types_, result_type_):
         builtin = self.builtins[id]
@@ -51,7 +58,7 @@ class Program:
         if result_in_params:
             if not is_value_type_(type_):
                 dumb_decr_ref_counter(self, builder, result, type_)
-        
+
         if result_type_["name"] == "Void":
             return
         return convert_type_(self, builder, result, type_, result_type_)
@@ -118,9 +125,6 @@ class Program:
     def add_struct(self, struct):
         self.structs[struct.name] = struct
 
-    def add_array(self, array):
-        self.arrays[array.id_] = array
-
     def make_elem(self, builder, type_):
         ir_type = make_type_(self, type_)
         result = builder.mul(self.sizeof(builder, ir_type), i64_of(4))
@@ -146,7 +150,7 @@ class Program:
             length = builder.load(length_ptr)
             has_content = builder.icmp_unsigned("!=", length, i64_of(0))
             builder.cbranch(has_content, cont_branch, final_branch)
-    
+
             cont_builder = ir.IRBuilder(cont_branch)
             i = cont_builder.phi(ir.IntType(64))
             i.add_incoming(i64_of(0), block)
@@ -160,7 +164,7 @@ class Program:
 
             forward_builder = ir.IRBuilder(forward_branch)
             forward_builder.branch(cont_branch)
-            
+
             final_builder = ir.IRBuilder(final_branch)
             self.dumb_free(final_builder, val)
             self.dumb_free(final_builder, content_ptr)
@@ -366,7 +370,7 @@ class Program:
             )
             self.dedup_funcs[frozen] = func
         return builder.call(func, [arr])
-        
+
     def make_comparer_func(self, type_, invert=False):
         frozen = (freeze_json(type_), invert)
         if frozen in self.comparer_funcs:

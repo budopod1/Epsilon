@@ -1,0 +1,7 @@
+#import math;
+// TODO: try importing another .epsl file
+
+Z#main {
+    println[log[100][10]];
+    return 0;
+}

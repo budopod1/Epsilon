@@ -20,7 +20,7 @@ public class RawFuncSignatureMatcher : IMatcher {
                             hasHashtag = true;
                             matched.Add(token);
                             continue;
-                        } else if (txt == "\n" || txt == "{") {
+                        } else if (txt == "{") {
                             if (hasHashtag) {
                                 if (after.Count == 0) {
                                     throw new SyntaxErrorException(
@@ -42,6 +42,8 @@ public class RawFuncSignatureMatcher : IMatcher {
                             } else {
                                 break;
                             }
+                        } else if (txt == "\n") {
+                            break;
                         }
                     }
                     if (hasHashtag) {

@@ -19,7 +19,7 @@ class Function:
         )
         self.ir = ir.Function(
             program.module, self.ir_type,
-            name=("main" if self.is_main else "func"+str(id_))
+            name=("main" if self.is_main else id_)
         )
         self.blocks = [
             Block(program, self, i, block)
@@ -75,3 +75,15 @@ class Function:
 
     def get_special_alloc(self, i):
         return self.special_allocs[i]
+
+
+class ModuleFunction:
+    def __init__(self, program, data):
+        self.id_ = data["id"]
+        self.return_type_= data["return_type_"]
+        self.arguments = data["arguments"]
+        self.ir_type = make_function_type_(
+            program, self.return_type_, 
+            (argument["type_"] for argument in self.arguments)
+        )
+        self.ir = ir.Function(program.module, self.ir_type, name=self.id_)

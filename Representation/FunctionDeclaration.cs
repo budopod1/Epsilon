@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
     public abstract PatternExtractor<List<IToken>> GetPattern();
     public abstract List<FunctionArgument> GetArguments();
-    public abstract int GetID();
+    public abstract string GetID();
     public abstract Type_ GetReturnType_(List<IValueToken> tokens);
 
     public int CompareTo(FunctionDeclaration other) {
@@ -29,6 +29,10 @@ public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
             if (aToB) return 1;
             if (bToA) return -1;
         }
-        return b.GetID() - a.GetID();
+        // TODO: add step that add priority:
+        // 1. functions in this program
+        // 2. functions imported from other modules
+        // 3. builtins
+        return b.GetID().CompareTo(a.GetID());
     }
 }

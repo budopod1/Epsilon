@@ -5,24 +5,6 @@ from pathlib import Path
 from common import *
 
 
-class Array:
-    def __init__(self, program, id_, type_):
-        self.program = program
-        self.id_ = id_
-        self.type_ = type_
-        self.generic = type_["generics"][0]
-        field_ir_types = [
-            REF_COUNTER_FIELD, 
-            ir.IntType(64), # capacity
-            ir.IntType(64), # element count
-            ir.PointerType(make_type_(program, self.generic))
-        ]
-        self.ir_type = ir.LiteralStructType(field_ir_types).as_pointer()
-        ir.global_context.get_identified_type(
-            "a"+str(id_)
-        ).set_body(*field_ir_types)
-
-
 class Struct:
     def __init__(self, program, name, fields):
         self.program = program

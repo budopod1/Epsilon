@@ -2,151 +2,36 @@ using System;
 using System.Text;
 using System.IO;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Diagnostics;
 using System.Reflection;
 using System.Collections.Generic;
 
-public class Compiler {
+public class CodeFileCompiler : IFileCompiler {
     public bool PRINT_AST = false;
     public bool PRINT_STEPS = false;
-    public bool SHOW_TIMINGS = false;
-    public bool CATCH_ERRS = true;
 
-    Stopwatch watch;
+    Program program;
+    string fileText = null;
 
-    public CompilationResultStatus Compile(string file, string text) {
-        if (CATCH_ERRS) {
-            try {
-                _Compile(file, text);
-                return CompilationResultStatus.GOOD;
-            } catch (SyntaxErrorException e) {
-                ShowCompilationError(e, text);
-                return CompilationResultStatus.USERERR;
-            } catch (TargetInvocationException e) {
-                Exception inner = e.InnerException;
-                if (inner is SyntaxErrorException) {
-                    ShowCompilationError((SyntaxErrorException)inner, text);
-                    return CompilationResultStatus.USERERR;
-                } else {
-                    ExceptionDispatchInfo.Capture(inner).Throw();
-                    return CompilationResultStatus.FAIL;
-                }
-            } catch (PythonExceptionException e) {
-                Console.WriteLine("Error in Python code:");
-                Console.WriteLine(e.Message);
-                return CompilationResultStatus.FAIL;
-            } catch (BashExceptionException e) {
-                Console.WriteLine("Error in Bash code:");
-                Console.WriteLine(e.Message);
-                return CompilationResultStatus.FAIL;
-            }
-        } else {
-            _Compile(file, text);
-            return CompilationResultStatus.GOOD;
+    public CodeFileCompiler(string path) {
+        using (StreamReader file = new StreamReader(path)) {
+            fileText = file.ReadToEnd();
         }
-    }
-    
-    void ShowCompilationError(SyntaxErrorException e, string text) {
-        CodeSpan span = e.span;
-
-        int startLine = 1;
-        int endLine = 1;
-        int totalLines = 1;
-        int stage = 0;
-        int startIndex = 0;
-        
-        List<string> lines = new List<string> {""};
-        
-        for (int i = 0; i < text.Length; i++) {
-            if (stage == 0 && i == span.GetStart()) {
-                stage = 1;
-            } else if (stage == 1 && i == span.GetEnd()+1) {
-                stage = 2;
-            }
-            char chr = text[i];
-            if (chr == '\n') {
-                if (stage == 0) startIndex = 0;
-                if (stage <= 0)
-                    startLine++;
-                if (stage <= 1)
-                    endLine++;
-                totalLines++;
-                lines.Add("");
-            } else {
-                lines[lines.Count-1] += chr;
-                if (stage == 0) startIndex++;
-            }
-        }
-        
-        Console.ForegroundColor = ConsoleColor.DarkRed;
-        Console.Write("compilation error: ");
-        Console.ResetColor();
-        Console.WriteLine(e.Message);
-        
-        Console.Write(startLine == endLine ? "Line " : "Lines ");
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.Write(startLine);
-        Console.ResetColor();
-        
-        if (startLine == endLine) {
-            Console.WriteLine();
-            
-            string linenum = startLine.ToString();
-            string line = lines[startLine-1];
-            while (line.Length > 0 && Utils.Whitespace.Contains(line[0])) {
-                line = line.Substring(1);
-                startIndex--;
-            }
-            Console.WriteLine(line);
-            Console.Write(new string(' ', startIndex));
-            Console.ForegroundColor = ConsoleColor.Green;
-            if (span.Size() == 1) {
-                Console.Write("^");
-            } else {
-                Console.Write("┗");
-                for (int i = 0; i < span.Size()-2; i++)
-                    Console.Write("━");
-                Console.Write("┛");
-            }
-            Console.ResetColor();
-            Console.WriteLine();
-        } else {
-            Console.Write("–");
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine(endLine);
-            Console.ResetColor();
-
-            int firstLine = Math.Max(1, startLine-1);
-            int lastLine = Math.Min(lines.Count, endLine+1);
-
-            int prefixLen = lastLine.ToString().Length + 1;
-
-            for (int line = firstLine; line <= lastLine; line++) {
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.Write(line.ToString().PadRight(prefixLen));
-                Console.ResetColor();
-                string prefix = "  ";
-                if (line == startLine) {
-                    prefix = "┏╸";
-                } else if (line == endLine) {
-                    prefix = "┗╸";
-                } else if (line > startLine && line < endLine) {
-                    prefix = "┃ ";
-                }
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write(prefix);
-                Console.ResetColor();
-                Console.WriteLine(lines[line-1]);
-            }
+        program = new Program(
+            Path.GetFullPath(path), new List<IToken>()
+        );
+        program.span = new CodeSpan(0, fileText.Length-1);
+        int i = 0;
+        foreach (char chr in fileText) {
+            TextToken token = new TextToken(chr.ToString());
+            token.span = new CodeSpan(i);
+            program.Add(token);
+            i++;
         }
     }
 
-    void TimingStep() {
-        if (SHOW_TIMINGS) {
-            Console.WriteLine((watch.ElapsedMilliseconds/1000.0).ToString());
-            watch.Restart();
-        }
+    public string GetText() {
+        return fileText;
     }
 
     void Step(string text) {
@@ -155,22 +40,9 @@ public class Compiler {
         }
     }
 
-    void _Compile(string path, string text) {
-        Program program = new Program(
-            Path.GetFullPath(path), new List<IToken>()
-        );
-        program.span = new CodeSpan(0, text.Length-1);
-        int i = 0;
-        foreach (char chr in text) {
-            TextToken token = new TextToken(chr.ToString());
-            token.span = new CodeSpan(i);
-            program.Add(token);
-            i++;
-        }
+    void TimingStep() {}
 
-        watch = new Stopwatch();
-        if (SHOW_TIMINGS) watch.Start();
-
+    public List<string> ToImports() {
         Step("Tokenizing strings...");
         program = TokenizeStrings(program);
         TimingStep();
@@ -191,10 +63,20 @@ public class Compiler {
         program = TokenizeNames(program);
         TimingStep();
 
+        Step("Tokenizing imports...");
+        program = TokenizeImports(program);
+        TimingStep();
+
+        return program.Where(token => token is Import).Select(
+            token => (token as Import).GetRealPath()
+        ).ToList();
+    }
+
+    public HashSet<string> ToBaseTypes_() {
         Step("Tokenizing keywords...");
         program = TokenizeKeywords(program);
         TimingStep();
-
+        
         Step("Tokenizing numbers...");
         program = TokenizeNumbers(program);
         TimingStep();
@@ -227,6 +109,14 @@ public class Compiler {
         ComputeBaseTypes_(program);
         TimingStep();
 
+        return program.GetBaseType_Names();
+    }
+
+    public void AddBaseTypes_(HashSet<string> baseTypes_) {
+        program.AddBaseTypes_(baseTypes_);
+    }
+
+    public List<Struct> ToStructs() {
         Step("Tokenizing base types...");
         program = TokenizeBaseTypes_(program);
         TimingStep();
@@ -247,10 +137,18 @@ public class Compiler {
         program = TokenizeVarDeclarations(program);
         TimingStep();
 
-        Step("Objectifying structs...");
-        program = ObjectifyingStructs(program);
+        Step("Computing structs...");
+        program = ComputeStructs(program);
         TimingStep();
 
+        return program.GetStructs();
+    }
+
+    public void AddStructs(List<Struct> structs) {
+        program.AddStructs(structs);
+    }
+
+    public List<RealFunctionDeclaration> ToDeclarations() {
         Step("Converting template arguments...");
         program = ConvertTemplateArguments(program);
         TimingStep();
@@ -267,6 +165,15 @@ public class Compiler {
         program = ObjectifyingFunctions(program);
         TimingStep();
 
+        return program.Select(token => token as RealFunctionDeclaration)
+            .Where(func => func != null).ToList();
+    }
+
+    public void AddDeclarations(List<RealFunctionDeclaration> declarations) {
+        program.AddExternalDeclarations(declarations);
+    }
+
+    public string ToExecutable(string path) {
         Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
         TimingStep();
@@ -313,9 +220,13 @@ public class Compiler {
         CreateLLVMIR();
         TimingStep();
 
-        Step("Optimizing and compiling IR...");
-        OptimizeAndLinkIR();
-        TimingStep();
+        File.Copy(Path.Combine(Utils.ProjectAbsolutePath(), "code.ll"), path+".ll", true);
+
+        return path+".ll";
+
+        // Step("Optimizing and compiling IR...");
+        // OptimizeAndLinkIR();
+        // TimingStep();
     }
 
     Program TokenizeStrings(Program program) {
@@ -407,6 +318,10 @@ public class Compiler {
             sig.SetTemplate(PerformMatching((TreeToken)sig.GetTemplate(), matcher));
         }
         return (Program)PerformMatching(program, matcher);
+    }
+
+    Program TokenizeImports(Program program) {
+        return (Program)PerformMatching(program, new ImportMatcher());
     }
 
     Program TokenizeKeywords(Program program) {
@@ -516,10 +431,11 @@ public class Compiler {
         IMatcher matcher = new PatternMatcher(
             new List<IPatternSegment> {
                 new TypePatternSegment(typeof(Block), true)
-            }, new WrapperPatternProcessor(
-                new UnwrapperPatternProcessor(),
-                typeof(CodeBlock)
-            )
+            }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                return new List<IToken> {new CodeBlock(
+                    program, ((Block)tokens[0]).GetTokens()
+                )};
+            })
         );
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
@@ -543,11 +459,11 @@ public class Compiler {
                 }
             }
         }
-        program.SetBaseType_Names(types_);
+        program.SetBaseType_Names(new HashSet<string>(types_));
     }
 
     Program TokenizeBaseTypes_(Program program) {
-        List<string> baseType_Names = program.GetBaseType_Names();
+        List<string> baseType_Names = new List<string>(program.GetBaseType_Names());
         Func<string, UserBaseType_> converter = (string source) => 
             UserBaseType_.ParseString(source, baseType_Names);
         IMatcher matcher = new UnitSwitcherMatcher<string, UserBaseType_>(
@@ -710,8 +626,33 @@ public class Compiler {
         return program;
     }
 
-    Program ObjectifyingStructs(Program program) {
-        return (Program)PerformMatching(program, new StructObjectifyerMatcher());
+    Program ComputeStructs(Program program) {
+        ListTokenParser<Field> listParser = new ListTokenParser<Field>(
+            new TextPatternSegment(","), typeof(VarDeclaration), 
+            (token) => new Field((VarDeclaration)token)
+        );
+        List<Struct> structs = new List<Struct>();
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (token is StructHolder) {
+                Holder holder = ((Holder)token);
+                Block block = holder.GetBlock();
+                if (block == null) continue;
+                IToken nameT = holder[0];
+                if (!(nameT is Unit<string>)) continue;
+                Name name = ((Name)nameT);
+                string nameStr = name.GetValue();
+                List<Field> fields = listParser.Parse(block);
+                if (fields == null) {
+                    throw new SyntaxErrorException(
+                        "Malformed struct", token
+                    );
+                }
+                structs.Add(new Struct(nameStr, fields));
+            }
+        }
+        program.SetStructs(structs);
+        return (Program)program.Copy(program.Where(token => !(token is StructHolder)).ToList());
     }
 
     Program ConvertTemplateArguments(Program program) {
@@ -823,7 +764,7 @@ public class Compiler {
                 FuncTemplate template = sig.GetTemplate();
                 return new List<IToken> {
                     new Function(
-                        template.GetValue(), template.GetArguments(),
+                        program, template.GetValue(), template.GetArguments(),
                         (CodeBlock)holder.GetBlock(), sig.GetReturnType_()
                     )
                 };
@@ -955,6 +896,7 @@ public class Compiler {
 
         List<FunctionDeclaration> functions = new List<FunctionDeclaration>();
         functions.AddRange(BuiltinsList.Builtins);
+        functions.AddRange(program.GetExternalDeclarations());
 
         foreach (IToken token in program) {
             if (token is Function) {
@@ -1022,13 +964,13 @@ public class Compiler {
 
                         for (int i = 0; i < call.Count; i++) {
                             RawSquareGroup rparameter = (call[i]) as RawSquareGroup;
-                            if (rparameter.Count != 1) {
+                            if (rparameter.Count == 0) {
                                 throw new SyntaxErrorException(
                                     "Function parameters cannot be empty", rparameter
                                 );
                             }
                             IValueToken parameter = (rparameter[0]) as IValueToken;
-                            if (parameter == null) {
+                            if (parameter == null || rparameter.Count > 1) {
                                 throw new SyntaxErrorException(
                                     "Illegal syntax in function parameter", rparameter
                                 );
@@ -1672,7 +1614,7 @@ public class Compiler {
 
         return program;
     }
-
+    
     void DoBlockCodeRules(CodeBlock block, List<List<IMatcher>> rules) {
         for (int i = 0; i < block.Count; i++) {
             Line line = block[i] as Line;
@@ -1820,26 +1762,9 @@ public class Compiler {
         }
     }
 
-    int RunCommand(string command) {
-        // I know this isn't the right way to do this
-        // (and I know it won't work on non-linux systems)
-        ProcessStartInfo procStartInfo = new ProcessStartInfo(
-            "/bin/bash", "-c " + Utils.EscapeStringToLiteral(command, '\'')
-        );
-        procStartInfo.UseShellExecute = false;
-        procStartInfo.CreateNoWindow = true;
-
-        Process proc = new Process();
-        proc.StartInfo = procStartInfo;
-        proc.Start();
-        proc.WaitForExit();
-
-        return proc.ExitCode;
-    }
-
     void CreateLLVMIR() {
         System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
-        int exitCode = RunCommand($"cd {Utils.ProjectAbsolutePath()};source venv/bin/activate;python LLVMIR/create_ir.py 2> err.txt");
+        int exitCode = Utils.RunCommand($"cd {Utils.ProjectAbsolutePath()};source venv/bin/activate;python LLVMIR/create_ir.py 2> err.txt");
         using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
             string log = file.ReadToEnd();
             if (log.Length > 0) {
@@ -1849,6 +1774,8 @@ public class Compiler {
         if (exitCode != 0)
             throw new BashExceptionException("Something went wrong with LLVMIR creation");
     }
+
+    /*
 
     void OptimizeAndLinkIR() {
         System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
@@ -1891,4 +1818,5 @@ public class Compiler {
         if (exitCode != 0)
             throw new BashExceptionException("Something went wrong with final compilation");
     }
+    */
 }
