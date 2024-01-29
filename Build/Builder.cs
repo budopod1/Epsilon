@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
 public class Builder {
+    string projectDirectory = "";
     string currentFile = "";
     string currentText = "";
     List<string> sections;
     
     public CompilationResult Build(string input) {
         try {
+            projectDirectory = Path.GetDirectoryName(input);
             FileTree tree = LoadFile(input, true);
             LoadTree(tree);
             TransferBaseTypes_(tree);
@@ -90,7 +92,8 @@ public class Builder {
     string FindFile(string path) {
         foreach (string extention in new string[] {".epsl", ".epslspec"}) {
             string file = path + extention;
-            if (Utils.FileExists(file)) return file;
+            string project = Path.Combine(projectDirectory, file);
+            if (Utils.FileExists(project)) return project;
             string lib = Path.Combine(Utils.ProjectAbsolutePath(), "libs", file);
             if (Utils.FileExists(lib)) return lib;
         }

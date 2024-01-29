@@ -18,7 +18,7 @@ TESTS = [
         ]
     },
     {
-        "file": "math.epsl",
+        "file": "mathtest.epsl",
         "func": "func0",
         "sig": CFUNCTYPE(c_float, c_float),
         "tests": [
