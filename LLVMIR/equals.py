@@ -8,7 +8,7 @@ def refrence_equals(program, i, type_, invert=False):
     func = ir.Function(
         program.module, ir.FunctionType(
             bool_ir_type, [ir_type, ir_type]
-        ), name=f"ref_eq{i}"
+        ), name=f"{program.path} ref_eq{i}"
     )
     entry = func.append_basic_block(name="entry")
     v1, v2 = func.args
@@ -31,7 +31,7 @@ def value_equals_depth_1(program, i, type_, invert=False):
     func = ir.Function(
         program.module, ir.FunctionType(
             bool_ir_type, [ir_type, ir_type]
-        ), name=f"val_eq_d1{i}"
+        ), name=f"{program.path} val_eq_d1{i}"
     )
     entry = func.append_basic_block(name="entry")
     v1, v2 = func.args
@@ -110,7 +110,7 @@ def value_equals(program, i, type_, depth, invert=False):
     func = ir.Function(
         program.module, ir.FunctionType(
             bool_ir_type, [ir_type, ir_type]
-        ), name=f"val_eq{i}"
+        ), name=f"{program.path} val_eq{i}"
     )
     v1, v2 = func.args
     

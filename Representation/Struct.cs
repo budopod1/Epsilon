@@ -5,9 +5,9 @@ using System.Collections.Generic;
 public class Struct {
     string name;
     List<Field> fields;
-    
-    public Struct(string name, List<Field> fields) {
-        this.name = name;
+
+    public Struct(string path, string name, List<Field> fields) {
+        this.name = name + " " + path;
         this.fields = fields;
     }
 

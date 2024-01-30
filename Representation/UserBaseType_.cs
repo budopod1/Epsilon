@@ -20,9 +20,13 @@ public class UserBaseType_ {
     };
 
     public static UserBaseType_ ParseString(string content, List<string> structNames) {
-        if ((structNames.Contains(content) || BaseType_.BuiltInTypes_.Contains(content)
-            || SpecialFullBaseType_Names.Contains(content)) 
-            && !NonUserType_Names.Contains(content)) {
+        foreach (string structName in structNames) {
+            string userStructName = structName.Substring(0, structName.IndexOf(' '));
+            if (content == userStructName) return new UserBaseType_(structName);
+        }
+        if ((BaseType_.BuiltInTypes_.Contains(content) 
+            || SpecialFullBaseType_Names.Contains(content)
+            ) && !NonUserType_Names.Contains(content)) {
             return new UserBaseType_(content);
         }
         System.Text.RegularExpressions.Match match = Regex.Match(

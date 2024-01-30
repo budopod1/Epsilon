@@ -24,7 +24,7 @@ def create_ir(data):
 
     module.triple = llvm.get_default_triple()
 
-    program = Program(module)
+    program = Program(module, data["path"])
 
     for struct in data["structs"]:
         program.add_struct(Struct(

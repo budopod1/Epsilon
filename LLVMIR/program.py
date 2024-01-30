@@ -7,8 +7,9 @@ from functions import ModuleFunction
 
 
 class Program:
-    def __init__(self, module):
+    def __init__(self, module, path):
         self.module = module
+        self.path = path
         self.functions = {}
         self.module_functions = {}
         self.structs = {}
@@ -192,7 +193,7 @@ class Program:
         func = ir.Function(
             self.module, ir.FunctionType(
                 ir.VoidType(), [ir_type, make_type_(self, W64)]
-            ), name=f"check{len(self.check_funcs)}"
+            ), name=f"{self.path} check{len(self.check_funcs)}"
         )
         entry = func.append_basic_block(name="entry")
         builder = ir.IRBuilder(entry)

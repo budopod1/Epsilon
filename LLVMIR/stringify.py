@@ -12,7 +12,7 @@ def make_stringify_func(program, type_, i):
     ir_type = make_type_(program, type_)
     func = ir.Function(
         program.module, ir.FunctionType(make_type_(program, String), [ir_type]),
-        name=f"stringify{i}"
+        name=f"{program.path} stringify{i}"
     )
     entry = func.append_basic_block(name="entry")
     val, = func.args

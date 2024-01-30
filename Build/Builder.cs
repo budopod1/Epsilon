@@ -22,6 +22,7 @@ public class Builder {
             int i = 0;
             foreach (FileTree file in tree.IterTree()) {
                 currentFile = file.File;
+                currentText = file.Compiler.GetText();
                 sections.Add(file.Compiler.ToExecutable(Path.Combine(
                     Utils.ProjectAbsolutePath(), "build", $"section{i}"
                 )));

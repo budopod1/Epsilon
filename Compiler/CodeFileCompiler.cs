@@ -455,7 +455,7 @@ public class CodeFileCompiler : IFileCompiler {
                 if (token.Count == 0) continue;
                 IToken name = token[0];
                 if (name is Name) {
-                    types_.Add(((Name)name).GetValue());
+                    types_.Add(((Name)name).GetValue() + " " + program.GetPath());
                 }
             }
         }
@@ -648,7 +648,7 @@ public class CodeFileCompiler : IFileCompiler {
                         "Malformed struct", token
                     );
                 }
-                structs.Add(new Struct(nameStr, fields));
+                structs.Add(new Struct(program.GetPath(), nameStr, fields));
             }
         }
         program.SetStructs(structs);

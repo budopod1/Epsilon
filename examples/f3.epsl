@@ -1,0 +1,8 @@
+G {
+    Q:i
+}
+
+Q#bar {
+    G:g = G [2.5];
+    return g.i;
+}

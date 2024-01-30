@@ -4,10 +4,12 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class SPECFileCompiler : IFileCompiler {
+    string path;
     SPECObj obj;
     string fileText = null;
     
     public SPECFileCompiler(string path) {
+        this.path = path;
         using (StreamReader file = new StreamReader(path)) {
             fileText = file.ReadToEnd();
         }
@@ -53,7 +55,7 @@ public class SPECFileCompiler : IFileCompiler {
 
     List<string> GetStructTypes_() {
         return ((SPECList)obj["structs"]).Select(
-            val => ((SPECStr)((SPECObj)val)["name"]).Value
+            val => ((SPECStr)((SPECObj)val)["name"]).Value + " " + path
         ).ToList();
     }
 
@@ -136,6 +138,7 @@ public class SPECFileCompiler : IFileCompiler {
             val => {
                 SPECObj sobj = ((SPECObj)val);
                 return new Struct(
+                    path,
                     ((SPECStr)sobj["name"]).Value, 
                     ((SPECList)sobj["fields"]).Select(
                         fval => {
