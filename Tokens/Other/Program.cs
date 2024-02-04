@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Program : TreeToken, IVerifier {
     string path;
-    HashSet<string> baseType_Names = null;
+    HashSet<string> structIds = new HashSet<string>();
     int functionIDCounter = 0;
     int scopeVarIDCounter = 0;
     List<Struct> structs = new List<Struct>();
@@ -14,17 +14,17 @@ public class Program : TreeToken, IVerifier {
         this.path = path;
     }
 
-    public Program(string path, List<IToken> tokens, HashSet<string> baseType_Names, int functionIDCounter, int scopeVarIDCounter, List<Struct> structs, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
+    public Program(string path, List<IToken> tokens, HashSet<string> structIds, int functionIDCounter, int scopeVarIDCounter, List<Struct> structs, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
         this.path = path;
-        this.baseType_Names = baseType_Names;
+        this.structIds = structIds;
         this.functionIDCounter = functionIDCounter;
         this.scopeVarIDCounter = scopeVarIDCounter;
         this.structs = structs;
         this.externalDeclarations = externalDeclarations;
     }
 
-    public HashSet<string> GetBaseType_Names() {
-        return baseType_Names;
+    public HashSet<string> GetStructIDs() {
+        return structIds;
     }
 
     public void UpdateParents() {
@@ -32,12 +32,8 @@ public class Program : TreeToken, IVerifier {
         parent = null;
     }
 
-    public void SetBaseType_Names(HashSet<string> baseType_Names) {
-        this.baseType_Names = baseType_Names;
-    }
-
-    public void AddBaseTypes_(HashSet<string> baseType_Names) {
-        this.baseType_Names.UnionWith(baseType_Names);
+    public void AddStructIDs(HashSet<string> structIds) {
+        this.structIds.UnionWith(structIds);
     }
 
     public int GetFunctionID() {
@@ -73,7 +69,7 @@ public class Program : TreeToken, IVerifier {
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return new Program(path, tokens, baseType_Names, functionIDCounter, scopeVarIDCounter, structs, externalDeclarations);
+        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structs, externalDeclarations);
     }
 
     public void Verify() {
@@ -119,6 +115,7 @@ public class Program : TreeToken, IVerifier {
             externalDeclarations.Select(declaration => {
                 JSONObject dobj = new JSONObject();
                 dobj["id"] = new JSONString(declaration.GetID());
+                dobj["callee"] = new JSONString(declaration.GetCallee());
                 dobj["arguments"] = new JSONList(declaration.GetArguments().Select(
                     argument => argument.GetJSON()
                 ));

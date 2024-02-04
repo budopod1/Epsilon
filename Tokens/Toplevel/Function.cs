@@ -30,6 +30,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     Type_ returnType_;
     List<Type_> specialAllocs = new List<Type_>();
     string id;
+    string callee;
     List<SerializationContext> contexts = new List<SerializationContext>();
     bool isMain;
     
@@ -50,6 +51,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
             argument=>new FunctionArgument(argument)
         ).ToList();
         id = program.GetPath() + program.GetFunctionID().ToString();
+        callee = isMain ? "main" : id;
     }
 
     public override PatternExtractor<List<IToken>> GetPattern() {
@@ -80,6 +82,10 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         return id;
     }
 
+    public override string GetCallee()  {
+        return callee;
+    }
+
     public override string ToString() {
         string title = Utils.WrapName(
             GetType().Name, String.Join(", ", arguments), "<", ">"
@@ -106,6 +112,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["id"] = new JSONString(id);
+        obj["callee"] = new JSONString(callee);
         obj["arguments"] = new JSONList(arguments.Select(
             argument => argument.GetJSON()
         ));

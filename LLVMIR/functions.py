@@ -13,14 +13,12 @@ class Function:
         self.is_main = data["is_main"]
         self.declarations = data["declarations"]
         self.special_alloc_types_ = data["special_allocs"]
+        self.callee = data["callee"]
         self.ir_type = make_function_type_(
             program, self.return_type_, 
             (argument["type_"] for argument in self.arguments)
         )
-        self.ir = ir.Function(
-            program.module, self.ir_type,
-            name=("main" if self.is_main else id_)
-        )
+        self.ir = ir.Function(program.module, self.ir_type, name=self.callee)
         self.blocks = [
             Block(program, self, i, block)
             for i, block in enumerate(data["blocks"])
@@ -86,4 +84,4 @@ class ModuleFunction:
             program, self.return_type_, 
             (argument["type_"] for argument in self.arguments)
         )
-        self.ir = ir.Function(program.module, self.ir_type, name=self.id_)
+        self.ir = ir.Function(program.module, self.ir_type, name=data["callee"])

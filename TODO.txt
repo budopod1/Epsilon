@@ -1,6 +1,6 @@
 TODO:
 * improve messages when an invalid EPSLSPEC shape is recieved
 * update documentation
+* make a new type to hold struct ids instead of using strings
 * reduce number of conversions between lists and hashsets when dealing with the base types_
 * add caching of compiled .ll files
-* seperating function id from the function called so multiple functions can call the same underlying function

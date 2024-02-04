@@ -7,6 +7,8 @@ echo "Building executable..."
 echo "Executable built"
 echo "Setting up builtins..."
 ./buildbuiltins.bash
+echo "Setting up libraries..."
+./buildlibs.bash
 echo "Setting up venv..."
 rm -rdf venv
 virtualenv venv

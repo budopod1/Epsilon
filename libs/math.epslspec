@@ -1,6 +1,7 @@
 functions: [
     {
-        id: "llvm.log.f64
+        id: "lib_math_log
+        callee: "llvm.log.f64
         return_type_: "Q64
         template: [
             {
@@ -15,7 +16,8 @@ functions: [
         ]
     }
     {
-        id: "varBaseLog
+        id: "lib_math_var_base_log
+        callee: "varBaseLog
         return_type_: "Q64
         template: [
             {

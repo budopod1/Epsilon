@@ -19,6 +19,7 @@ public class SPECFileCompiler : IFileCompiler {
             {"functions", new SPECListShape(new SPECObjShape(
                 new Dictionary<string, ISPECShape> {
                     {"id", new SPECStrShape()},
+                    {"callee", new SPECStrShape()},
                     {"return_type_", new SPECStrShape()},
                     {"template", new SPECListShape(new SPECObjShape(
                         new Dictionary<string, ISPECShape> {
@@ -53,19 +54,17 @@ public class SPECFileCompiler : IFileCompiler {
         return new List<string>();
     }
 
-    List<string> GetStructTypes_() {
+    IEnumerable<string> GetStructIDs() {
         return ((SPECList)obj["structs"]).Select(
             val => ((SPECStr)((SPECObj)val)["name"]).Value + " " + path
-        ).ToList();
+        );
     }
 
-    public HashSet<string> ToBaseTypes_() {
-        List<string> result = GetStructTypes_();
-        result.AddRange(BaseType_.BuiltInTypes_);
-        return new HashSet<string>(result);
+    public HashSet<string> ToStructIDs() {
+        return new HashSet<string>(GetStructIDs());
     }
 
-    public void AddBaseTypes_(HashSet<string> baseTypes_) {}
+    public void AddStructIDs(HashSet<string> structIds) {}
 
     Type_ MakeSPECType_(string str) {
         /*
@@ -93,7 +92,7 @@ public class SPECFileCompiler : IFileCompiler {
                     userBaseTypes_.Add(null);
                 } else {
                     userBaseTypes_.Add(UserBaseType_.ParseString(
-                        soFar, GetStructTypes_()
+                        soFar, new List<string>(GetStructIDs())
                     ));
                 }
                 seperators.Add(chr);
@@ -216,11 +215,12 @@ public class SPECFileCompiler : IFileCompiler {
                 }
             }
             string id = ((SPECStr)func["id"]).Value;
+            string callee = ((SPECStr)func["callee"]).Value;
             Type_ returnType_ = MakeSPECType_(((SPECStr)func["return_type_"]).Value);
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)
-                ), arguments, id, returnType_
+                ), arguments, id, callee, returnType_
             );
         }).ToList();
     }

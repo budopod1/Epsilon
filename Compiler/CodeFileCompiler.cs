@@ -72,7 +72,7 @@ public class CodeFileCompiler : IFileCompiler {
         ).ToList();
     }
 
-    public HashSet<string> ToBaseTypes_() {
+    public HashSet<string> ToStructIDs() {
         Step("Tokenizing keywords...");
         program = TokenizeKeywords(program);
         TimingStep();
@@ -109,11 +109,11 @@ public class CodeFileCompiler : IFileCompiler {
         ComputeBaseTypes_(program);
         TimingStep();
 
-        return program.GetBaseType_Names();
+        return program.GetStructIDs();
     }
 
-    public void AddBaseTypes_(HashSet<string> baseTypes_) {
-        program.AddBaseTypes_(baseTypes_);
+    public void AddStructIDs(HashSet<string> structIds) {
+        program.AddStructIDs(structIds);
     }
 
     public List<Struct> ToStructs() {
@@ -448,22 +448,23 @@ public class CodeFileCompiler : IFileCompiler {
     }
 
     void ComputeBaseTypes_(Program program) {
-        List<string> types_ = new List<string>();
+        List<string> structIds = new List<string>();
         foreach (IToken token_ in program) {
             if (token_ is StructHolder) {
                 StructHolder token = ((StructHolder)token_);
                 if (token.Count == 0) continue;
-                IToken name = token[0];
-                if (name is Name) {
-                    types_.Add(((Name)name).GetValue() + " " + program.GetPath());
+                IToken nameToken = token[0];
+                if (nameToken is Name) {
+                    string name = ((Name)nameToken).GetValue();
+                    structIds.Add(name + " " + program.GetPath());
                 }
             }
         }
-        program.SetBaseType_Names(new HashSet<string>(types_));
+        program.AddStructIDs(new HashSet<string>(structIds));
     }
 
     Program TokenizeBaseTypes_(Program program) {
-        List<string> baseType_Names = new List<string>(program.GetBaseType_Names());
+        List<string> baseType_Names = new List<string>(program.GetStructIDs());
         Func<string, UserBaseType_> converter = (string source) => 
             UserBaseType_.ParseString(source, baseType_Names);
         IMatcher matcher = new UnitSwitcherMatcher<string, UserBaseType_>(

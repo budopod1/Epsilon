@@ -176,7 +176,7 @@ def compile_file(file):
     for error_marker in error_markers:
         if error_marker in output:
             return False, output.decode('utf-8')
-    subprocess.run(["llvm-dis", "-o", "code-opt.ll", "code-opt.bc"])
+    subprocess.run(["llvm-dis", "-o", "code-linked.ll", "code-linked.bc"])
     return True, ""
 
 
@@ -184,7 +184,7 @@ def equal(mode, a, b):
     if mode == "exact":
         return a == b
     elif mode == "float":
-        return round(a, 2) == round(b, 2)
+        return abs(a - b) < 0.005
 
 
 def main():

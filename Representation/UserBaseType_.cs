@@ -19,10 +19,13 @@ public class UserBaseType_ {
         "Null"
     };
 
-    public static UserBaseType_ ParseString(string content, List<string> structNames) {
-        foreach (string structName in structNames) {
-            string userStructName = structName.Substring(0, structName.IndexOf(' '));
-            if (content == userStructName) return new UserBaseType_(structName);
+    public static UserBaseType_ ParseString(string content, List<string> structIds) {
+        foreach (string structId in structIds) {
+            int spaceIdx = structId.IndexOf(' ');
+            if (spaceIdx == -1) 
+                throw new ArgumentException($"Invalid struct id {structId}");
+            string userStructName = structId.Substring(0, spaceIdx);
+            if (content == userStructName) return new UserBaseType_(structId);
         }
         if ((BaseType_.BuiltInTypes_.Contains(content) 
             || SpecialFullBaseType_Names.Contains(content)

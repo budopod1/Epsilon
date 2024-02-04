@@ -6,12 +6,14 @@ public class RealExternalFunction : RealFunctionDeclaration {
     PatternExtractor<List<IToken>> pattern;
     List<FunctionArgument> arguments;
     string id;
+    string callee;
     Type_ returnType_;
 
-    public RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Type_ returnType_) {
+    public RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, string callee, Type_ returnType_) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
+        this.callee = callee;
         this.returnType_ = returnType_;
     }
 
@@ -33,6 +35,10 @@ public class RealExternalFunction : RealFunctionDeclaration {
 
     public override string GetID() {
         return id;
+    }
+
+    public override string GetCallee() {
+        return callee;
     }
 
     public override string ToString() {

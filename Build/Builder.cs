@@ -15,7 +15,7 @@ public class Builder {
             projectDirectory = Path.GetDirectoryName(input);
             FileTree tree = LoadFile(input, true);
             LoadTree(tree);
-            TransferBaseTypes_(tree);
+            TransferStructIDs(tree);
             TransferStructs(tree);
             TransferDeclarations(tree);
             sections = new List<string>();
@@ -109,15 +109,15 @@ public class Builder {
         }
     }
 
-    HashSet<string> TransferBaseTypes_(FileTree tree) {
+    HashSet<string> TransferStructIDs(FileTree tree) {
         HashSet<string> baseTypes_ = new HashSet<string>();
         foreach (FileTree dependency in tree.Dependencies) {
-            baseTypes_.UnionWith(TransferBaseTypes_(dependency));
+            baseTypes_.UnionWith(TransferStructIDs(dependency));
         }
         currentFile = tree.File;
         currentText = tree.Compiler.GetText();
-        HashSet<string> hereTypes_ = tree.Compiler.ToBaseTypes_();
-        tree.Compiler.AddBaseTypes_(baseTypes_);
+        HashSet<string> hereTypes_ = tree.Compiler.ToStructIDs();
+        tree.Compiler.AddStructIDs(baseTypes_);
         baseTypes_.UnionWith(hereTypes_);
         return baseTypes_;
     }
