@@ -134,7 +134,7 @@ public static class Utils {
         if (list.Count == 2) return $"{list[0]} {joiner} {list[1]}";
         string result = "";
         for (int i = 0; i < list.Count-1; i++) {
-            result = list[i] + ", ";
+            result += list[i] + ", ";
         }
         return $"{result}{joiner} {list[list.Count-1]}";
     }
