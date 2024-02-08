@@ -5,44 +5,13 @@ using System.Collections.Generic;
 
 public class SPECFileCompiler : IFileCompiler {
     string path;
-    SPECObj obj;
+    ShapedJSON obj;
     string fileText = null;
     
     public SPECFileCompiler(string path) {
         this.path = path;
         using (StreamReader file = new StreamReader(path)) {
             fileText = file.ReadToEnd();
-        }
-        SPECParser parser = new SPECParser();
-        obj = parser.Parse(fileText);
-        ISPECShape shape = new SPECObjShape(new Dictionary<string, ISPECShape> {
-            {"functions", new SPECListShape(new SPECObjShape(
-                new Dictionary<string, ISPECShape> {
-                    {"id", new SPECStrShape()},
-                    {"callee", new SPECStrShape()},
-                    {"return_type_", new SPECStrShape()},
-                    {"template", new SPECListShape(new SPECObjShape(
-                        new Dictionary<string, ISPECShape> {
-                            {"type", new SPECStrShape()}
-                        }
-                    ))}
-                }
-            ))},
-            {"structs", new SPECListShape(new SPECObjShape(
-                new Dictionary<string, ISPECShape> {
-                    {"name", new SPECStrShape()},
-                    {"fields", new SPECListShape(new SPECObjShape(
-                        new Dictionary<string, ISPECShape> {
-                            {"name", new SPECStrShape()},
-                            {"type_", new SPECStrShape()}
-                        }
-                    ))}
-                }
-            ))},
-            {"ir", new SPECStrShape()}
-        });
-        if (!shape.Matches(obj)) {
-            throw new SPECShapeErrorException("File does not match required shape");
         }
     }
 
@@ -51,12 +20,40 @@ public class SPECFileCompiler : IFileCompiler {
     }
 
     public List<string> ToImports() {
+        IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
+        IJSONShape shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
+            {"functions", new JSONListShape(new JSONObjectShape(
+                new Dictionary<string, IJSONShape> {
+                    {"id", new JSONStringShape()},
+                    {"callee", new JSONStringShape()},
+                    {"return_type_", new JSONStringShape()},
+                    {"template", new JSONListShape(new JSONObjectShape(
+                        new Dictionary<string, IJSONShape> {
+                            {"type", new JSONStringShape()}
+                        }
+                    ))}
+                }
+            ))},
+            {"structs", new JSONListShape(new JSONObjectShape(
+                new Dictionary<string, IJSONShape> {
+                    {"name", new JSONStringShape()},
+                    {"fields", new JSONListShape(new JSONObjectShape(
+                        new Dictionary<string, IJSONShape> {
+                            {"name", new JSONStringShape()},
+                            {"type_", new JSONStringShape()}
+                        }
+                    ))}
+                }
+            ))},
+            {"ir", new JSONStringShape()}
+        });
+        obj = new ShapedJSON(jsonValue, shape);
         return new List<string>();
     }
 
     IEnumerable<string> GetStructIDs() {
-        return ((SPECList)obj["structs"]).Select(
-            val => ((SPECStr)((SPECObj)val)["name"]).Value + " " + path
+        return obj["structs"].IterList().Select(
+            val => val["name"].GetString() + " " + path
         );
     }
 
@@ -133,80 +130,69 @@ public class SPECFileCompiler : IFileCompiler {
     }
 
     public List<Struct> ToStructs() {
-        return ((SPECList)obj["structs"]).Select(
-            val => {
-                SPECObj sobj = ((SPECObj)val);
-                return new Struct(
-                    path,
-                    ((SPECStr)sobj["name"]).Value, 
-                    ((SPECList)sobj["fields"]).Select(
-                        fval => {
-                            SPECObj fobj = ((SPECObj)fval);
-                            return new Field(
-                                ((SPECStr)fobj["name"]).Value, 
-                                MakeSPECType_(((SPECStr)fobj["type_"]).Value)
-                            );
-                        }
-                    ).ToList()
-                );
-            }
+        return obj["structs"].IterList().Select(
+            sobj => new Struct(
+                path, sobj["name"].GetString(),
+                sobj["fields"].IterList().Select(
+                    fobj => new Field(
+                        fobj["name"].GetString(), 
+                        MakeSPECType_(fobj["type_"].GetString())
+                    )
+                ).ToList()
+            )
         ).ToList();
     }
 
     public void AddStructs(List<Struct> structs) {}
 
     public List<RealFunctionDeclaration> ToDeclarations() {
-        return ((SPECList)obj["functions"]).Select(fval => {
-            SPECObj func = ((SPECObj)fval);
+        return obj["functions"].IterList().Select(func => {
             List<FunctionArgument> arguments = new List<FunctionArgument>();
             List<IPatternSegment> segments = new List<IPatternSegment>();
             List<int> argumentIdxs = new List<int>();
-            SPECList template = ((SPECList)func["template"]);
-            for (int i = 0; i < template.Count; i++) {
-                SPECObj sobj = ((SPECObj)template[i]);
-                string type = ((SPECStr)sobj["type"]).Value;
-                Dictionary<string, ISPECShape> fields;
+            ShapedJSON template = func["template"];
+            for (int i = 0; i < template.ListCount(); i++) {
+                ShapedJSON sobj = template[i];
+                string type = sobj["type"].GetString();
+                Dictionary<string, IJSONShape> fields;
                 switch (type) {
                     case "name":
-                        fields = new Dictionary<string, ISPECShape> {
-                            {"name", new SPECStrShape()}
+                        fields = new Dictionary<string, IJSONShape> {
+                            {"name", new JSONStringShape()}
                         };
                         break;
                     case "text":
-                        fields = new Dictionary<string, ISPECShape> {
-                            {"text", new SPECStrShape()}
+                        fields = new Dictionary<string, IJSONShape> {
+                            {"text", new JSONStringShape()}
                         };
                         break;
                     case "argument":
-                        fields = new Dictionary<string, ISPECShape> {
-                            {"name", new SPECStrShape()},
-                            {"type_", new SPECStrShape()}
+                        fields = new Dictionary<string, IJSONShape> {
+                            {"name", new JSONStringShape()},
+                            {"type_", new JSONStringShape()}
                         };
                         break;
                     default:
-                        throw new SPECShapeErrorException(
-                            "Invalid type of template segment"
+                        throw new InvalidJSONException(
+                            "Invalid type of template segment", 
+                            sobj.GetJSON()
                         );
                 }
 
-                if (!(new SPECObjShape(fields).Matches(sobj))) {
-                    throw new SPECShapeErrorException(
-                        "Function template segment does not match required shape"
-                    );
-                }
+                sobj = sobj.ToShape(new JSONObjectShape(fields));
 
                 switch (type) {
                     case "name":
-                        string name1 = ((SPECStr)sobj["name"]).Value;
+                        string name1 = sobj["name"].GetString();
                         segments.Add(new UnitPatternSegment<string>(typeof(Name), name1));
                         break;
                     case "text":
-                        string text = ((SPECStr)sobj["text"]).Value;
+                        string text = sobj["text"].GetString();
                         segments.Add(new TextPatternSegment(text));
                         break;
                     case "argument":
-                        string name2 = ((SPECStr)sobj["name"]).Value;
-                        Type_ type_ = MakeSPECType_(((SPECStr)sobj["type_"]).Value);
+                        string name2 = sobj["name"].GetString();
+                        Type_ type_ = MakeSPECType_(sobj["type_"].GetString());
                         FunctionArgument argument = new FunctionArgument(name2, type_);
                         arguments.Add(argument);
                         segments.Add(new TypePatternSegment(typeof(RawSquareGroup)));
@@ -214,9 +200,9 @@ public class SPECFileCompiler : IFileCompiler {
                         break;
                 }
             }
-            string id = ((SPECStr)func["id"]).Value;
-            string callee = ((SPECStr)func["callee"]).Value;
-            Type_ returnType_ = MakeSPECType_(((SPECStr)func["return_type_"]).Value);
+            string id = func["id"].GetString();
+            string callee = func["callee"].GetString();
+            Type_ returnType_ = MakeSPECType_(func["return_type_"].GetString());
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)
@@ -228,7 +214,7 @@ public class SPECFileCompiler : IFileCompiler {
     public void AddDeclarations(List<RealFunctionDeclaration> declarations) {}
 
     public string ToExecutable(string path) {
-        string ir = ((SPECStr)obj["ir"]).Value;
+        string ir = obj["ir"].GetString();
         File.Copy(Path.Combine(Utils.ProjectAbsolutePath(), "libs", ir), path+".bc", true);
         return path+".bc";
     }

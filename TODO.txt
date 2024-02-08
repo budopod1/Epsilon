@@ -1,8 +1,9 @@
 TODO:
-* improve messages when an invalid EPSLSPEC shape is recieved
+* reorganize folder structure
 * update documentation
 * make a new type to hold struct ids instead of using strings
 * reduce number of conversions between lists and hashsets when dealing with the base types_
 * add caching of compiled .ll files
 * disalow circular imports
 * if A imports B and C, all three of which import D, D should only be compiled once
+* rework bash systems

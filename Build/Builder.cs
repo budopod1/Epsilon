@@ -57,13 +57,8 @@ public class Builder {
                 CompilationResultStatus.USERERR, 
                 $"Cannot read {currentFile}"
             );
-        } catch (SPECSyntaxErrorException e) {
-            Console.WriteLine($"Syntax error in EPSLSPEC file {currentFile}:");
-            Console.WriteLine(e.Message);
-            return new CompilationResult(CompilationResultStatus.USERERR);
-        } catch (SPECShapeErrorException e) {
-            Console.WriteLine($"Shape problem in EPSLSPEC file {currentFile}:");
-            Console.WriteLine(e.Message);
+        } catch (InvalidJSONException e) {
+            JSONTools.ShowError(currentText, e, currentFile);
             return new CompilationResult(CompilationResultStatus.USERERR);
         } catch (FileNotFoundErrorException e) {
             Console.WriteLine($"Cannot find requested file or module {e.Path}");
