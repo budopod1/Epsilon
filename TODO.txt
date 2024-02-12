@@ -1,5 +1,4 @@
 TODO:
-* reorganize folder structure
 * update documentation
 * make a new type to hold struct ids instead of using strings
 * reduce number of conversions between lists and hashsets when dealing with the base types_

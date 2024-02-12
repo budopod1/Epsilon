@@ -24,7 +24,7 @@ public class Builder {
                 currentFile = file.File;
                 currentText = file.Compiler.GetText();
                 sections.Add(file.Compiler.ToExecutable(Path.Combine(
-                    Utils.ProjectAbsolutePath(), "build", $"section{i}"
+                    Utils.ProjectAbsolutePath(), "sections", $"section{i}"
                 )));
                 i++;
             }
