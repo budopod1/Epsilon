@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -e
 cd "${0%/*}"
+
 echo "Setting up Epsilon (this can take a bit)..."
 echo "Loading submodules..."
 git submodule init
 git submodule update --recursive --remote
+echo "Loading commands..."
+./loadcommands.bash
 echo "Building executable..."
 ./build.bash
 echo "Executable built"

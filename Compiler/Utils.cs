@@ -147,21 +147,45 @@ public static class Utils {
         return Math.Abs(a-b)/(a+b) < 0.01;
     }
 
-    public static int RunCommand(string command) {
-        // I know this isn't the right way to do this
-        // (and I know it won't work on non-linux systems)
-        ProcessStartInfo procStartInfo = new ProcessStartInfo(
-            "/bin/bash", "-c " + Utils.EscapeStringToLiteral(command, '\'')
-        );
-        procStartInfo.UseShellExecute = false;
-        procStartInfo.CreateNoWindow = true;
+    static Dictionary<string, string> commands;
 
-        Process proc = new Process();
-        proc.StartInfo = procStartInfo;
-        proc.Start();
-        proc.WaitForExit();
+    public static void LoadCommands(List<string> names) {
+        commands = new Dictionary<string, string>();
+        string path = Utils.ProjectAbsolutePath()+"/commands.txt";
+        using (StreamReader sr = new StreamReader(path)) {
+            foreach (string name in names) {
+                commands[name] = sr.ReadLine();
+            }
+        }
+    }
 
-        return proc.ExitCode;
+    public static Process RunCommand(string command, List<string> arguments) {
+        ProcessStartInfo startInfo = new ProcessStartInfo(commands[command]);
+        startInfo.CreateNoWindow = true;
+        startInfo.UseShellExecute = false;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        string argumentsStr = "";
+        // https://stackoverflow.com/questions/5510343
+        foreach (string argument in arguments) {
+            argumentsStr += "\"" + argument.Replace("\\", "\\\\")
+                .Replace("\"", "\\\"") + "\" ";
+        }
+        startInfo.Arguments = argumentsStr;
+        Process process = Process.Start(startInfo);
+        process.WaitForExit();
+        if (process.ExitCode != 0) {
+            Console.Write(process.StandardOutput.ReadToEnd());
+            Console.Write(process.StandardError.ReadToEnd());
+            throw new CommandFailureException(
+                $"Command '{command}' exited with status code {process.ExitCode}"
+            );
+        }
+        return process;
+    }
+
+    public static Process RunCommand(string command) {
+        return RunCommand(command, new List<string>());
     }
 
     public static bool FileExists(string path) {

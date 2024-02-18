@@ -9,9 +9,9 @@ public class Builder {
     string currentFile = "";
     string currentText = "";
     List<string> sections;
-    
+
     public CompilationResult Build(string input) {
-        try {
+        return RunWrapped(() => {
             projectDirectory = Path.GetDirectoryName(input);
             FileTree tree = LoadFile(input, true);
             LoadTree(tree);
@@ -28,6 +28,12 @@ public class Builder {
                 )));
                 i++;
             }
+        });
+    }
+    
+    public CompilationResult RunWrapped(Action action) {
+        try {
+            action();
         } catch (SyntaxErrorException e) {
             ShowCompilationError(e, currentText, currentFile);
             return new CompilationResult(CompilationResultStatus.USERERR);
@@ -44,12 +50,7 @@ public class Builder {
                 // C# compiler happy
                 return new CompilationResult(CompilationResultStatus.FAIL);
             }
-        } catch (PythonExceptionException e) {
-            Console.WriteLine("Error in Python code:");
-            Console.WriteLine(e.Message);
-            return new CompilationResult(CompilationResultStatus.FAIL);
-        } catch (BashExceptionException e) {
-            Console.WriteLine("Error in Bash code:");
+        } catch (CommandFailureException e) {
             Console.WriteLine(e.Message);
             return new CompilationResult(CompilationResultStatus.FAIL);
         } catch (IOException) {
@@ -244,11 +245,17 @@ public class Builder {
         }
     }
 
-    public int ToExecutable() {
-        // Yes, I known this won't work if the directory name contains spaces
-        string builtins = Path.Combine(Utils.ProjectAbsolutePath(), "builtins.bc");
-        int status = Utils.RunCommand($"llvm-link {builtins} {String.Join(" ", sections)} -o code-linked.bc");
-        if (status != 0) return status;
-        return Utils.RunCommand(Path.Combine(Utils.ProjectAbsolutePath(), "compileir.bash"));
+    public CompilationResult ToExecutable() {
+        return RunWrapped(() => {
+            string builtins = Path.Combine(Utils.ProjectAbsolutePath(), "builtins.bc");
+            List<string> arguments = new List<string> {
+                "-o", $"{Utils.ProjectAbsolutePath()}/code-linked.bc", "--", builtins
+            };
+            arguments.AddRange(sections);
+            Utils.RunCommand("llvm-link", arguments);
+            Utils.RunCommand("bash", new List<string> {
+                "--", Path.Combine(Utils.ProjectAbsolutePath(), "compileir.bash")
+            });
+        });
     }
 }

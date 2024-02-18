@@ -1764,16 +1764,9 @@ public class CodeFileCompiler : IFileCompiler {
     }
 
     void CreateLLVMIR() {
-        System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
-        int exitCode = Utils.RunCommand($"cd {Utils.ProjectAbsolutePath()};source venv/bin/activate;python LLVMIR/create_ir.py 2> err.txt");
-        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
-            string log = file.ReadToEnd();
-            if (log.Length > 0) {
-                throw new PythonExceptionException(log);
-            }
-        }
-        if (exitCode != 0)
-            throw new BashExceptionException("Something went wrong with LLVMIR creation");
+        Utils.RunCommand("bash", new List<string> {
+            "--", $"{Utils.ProjectAbsolutePath()}/runpython.bash"
+        });
     }
 
     /*

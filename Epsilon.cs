@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 public class Epsilon {
     public static int Main(string[] args) {
+        Utils.LoadCommands(new List<string> {
+            "bash", "python", "opt", "clang", "python", "llvm-link"
+        });
+        
         ArgumentParser parser = new ArgumentParser();
 
         parser.AddOption("p", "Print the AST");
@@ -36,12 +40,13 @@ public class Epsilon {
             string output = values[1];
             
             CompilationResult result = builder.Build(input);
+            if (result.GetStatus() == CompilationResultStatus.GOOD) {
+                result = builder.ToExecutable();
+            }
             if (result.GetStatus() != CompilationResultStatus.GOOD) {
                 if (result.HasMessage()) parser.DisplayProblem(result.GetMessage());
                 return 1;
             }
-            int toExecutableStatus = builder.ToExecutable();
-            if (toExecutableStatus != 0) return toExecutableStatus;
             try {
                 File.Copy(Utils.ProjectAbsolutePath()+"/code", output, true);
             } catch (IOException) {
