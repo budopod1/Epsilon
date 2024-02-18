@@ -9,15 +9,6 @@ public class Epsilon {
         });
         
         ArgumentParser parser = new ArgumentParser();
-
-        parser.AddOption("p", "Print the AST");
-        parser.AddOption("print-ast", "Print the AST");
-        parser.AddOption("s", "Print the compilation steps");
-        parser.AddOption("print-steps", "Print the compilation steps");
-        parser.AddOption("t", "Show step timings");
-        parser.AddOption("timings", "Show step timings");
-        parser.AddOption("c", "Do not catch errors");
-        parser.AddOption("do-not-catch-errs", "Do not catch errors");
         
         parser.AddBranch("compile");
         parser.AddBranch("*input file");
@@ -29,12 +20,6 @@ public class Epsilon {
         
         if (mode[0] == "compile") {
             Builder builder = new Builder();
-            /*
-            builder.PRINT_AST = parseResults.HasOption("p", "print-ast");
-            builder.PRINT_STEPS = parseResults.HasOption("s", "print-steps");
-            builder.SHOW_TIMINGS = parseResults.HasOption("t", "timings");
-            builder.CATCH_ERRS = !parseResults.HasOption("c", "do-not-catch-errs");
-            */
             
             string input = values[0];
             string output = values[1];
