@@ -31,7 +31,9 @@ public class SPECFileCompiler : IFileCompiler {
                         new Dictionary<string, IJSONShape> {
                             {"type", new JSONStringShape()}
                         }
-                    ))}
+                    ))},
+                    {"takes_ownership", new JSONBoolShape()},
+                    {"result_in_params", new JSONBoolShape()}
                 }
             ))},
             {"structs", new JSONListShape(new JSONObjectShape(
@@ -202,11 +204,14 @@ public class SPECFileCompiler : IFileCompiler {
             }
             string id = func["id"].GetString();
             string callee = func["callee"].GetString();
+            bool takesOwnership = func["takes_ownership"].GetBool().Value;
+            bool resultInParams = func["result_in_params"].GetBool().Value;
             Type_ returnType_ = MakeSPECType_(func["return_type_"].GetString());
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)
-                ), arguments, id, callee, returnType_
+                ), arguments, id, callee, returnType_, takesOwnership,
+                resultInParams
             );
         }).ToList();
     }

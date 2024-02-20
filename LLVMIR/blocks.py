@@ -144,3 +144,10 @@ class Block:
         self.initial_declarations = []
         self.next_block = next_block
         return next_block
+
+    def __str__(self):
+        next_id = self.next_block and self.next_block.id_
+        return_id = self.return_block and self.return_block.id_
+        break_id = self.break_block and self.break_block.id_
+        continue_id = self.continue_block and self.continue_block.id_
+        return f"block{self.id_}({', '.join(map(str, self.instructions))}, next={next_id}, return={return_id}, break={break_id}, continue={continue_id})"

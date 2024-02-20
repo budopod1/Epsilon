@@ -20,6 +20,9 @@ class BaseInstruction:
     def _build(self, builder, *args):
         raise NotImplementedError(f"Instruction {type(self).__name__} must define instruction()")
 
+    def __str__(self):
+        return f"{type(self).__name__}"
+
 
 class Typed_Instruction(BaseInstruction):
     def __init__(self, *args):
@@ -584,17 +587,9 @@ class FunctionCallInstruction(Typed_Instruction):
             )
         else:
             func = self.program.get_function(self.callee)
-            converted_params = [
-                convert_type_(
-                    self.program, builder, param, param_type_,
-                    argument["type_"]
-                )
-                for param, param_type_, argument in zip(
-                    params, param_types_, func.arguments
-                )
-            ]
-            return builder.call(func.ir, converted_params)
-
+            return self.program.call_function(
+                builder, func, params, param_types_
+            )
 
 class InitialAssignmentInstruction(BaseInstruction):
     def __init__(self, *args):

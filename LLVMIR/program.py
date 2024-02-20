@@ -64,6 +64,36 @@ class Program:
             return
         return convert_type_(self, builder, result, type_, result_type_)
 
+    def call_function(self, builder, func, params, param_types_):
+        converted_params = [
+            convert_type_(
+                self, builder, param, param_type_,
+                argument["type_"]
+            )
+            for param, param_type_, argument in zip(
+                params, param_types_, func.arguments
+            )
+        ]
+        
+        result = builder.call(func.ir, converted_params)
+
+        if not func.takes_ownership:
+            if func.result_in_params:
+                if not is_value_type_(func.return_type_):
+                    incr_ref_counter(
+                        self, builder, result, func.return_type_
+                    )
+            for param, param_type_ in zip(params, param_types_):
+                if not is_value_type_(param_type_):
+                    self.check_ref(builder, param, param_type_)
+            if func.result_in_params:
+                if not is_value_type_(func.return_type_):
+                    dumb_decr_ref_counter(
+                        self, builder, result, func.return_type_
+                    )
+
+        return result
+
     def add_extern_func(self, name, data):
         self.externs[name] = data
         self.extern_funcs[name] = ir.Function(

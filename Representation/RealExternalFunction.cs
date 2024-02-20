@@ -8,13 +8,17 @@ public class RealExternalFunction : RealFunctionDeclaration {
     string id;
     string callee;
     Type_ returnType_;
+    bool takesOwnership;
+    bool resultInParams;
 
-    public RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, string callee, Type_ returnType_) {
+    public RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, string callee, Type_ returnType_, bool takesOwnership=false, bool resultInParams=false) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
         this.callee = callee;
         this.returnType_ = returnType_;
+        this.takesOwnership = takesOwnership;
+        this.resultInParams = resultInParams;
     }
 
     public override PatternExtractor<List<IToken>> GetPattern() {
@@ -39,6 +43,14 @@ public class RealExternalFunction : RealFunctionDeclaration {
 
     public override string GetCallee() {
         return callee;
+    }
+
+    public override bool TakesOwnership() {
+        return takesOwnership;
+    }
+
+    public override bool ResultInParams() {
+        return resultInParams;
     }
 
     public override string ToString() {

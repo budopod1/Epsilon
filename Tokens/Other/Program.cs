@@ -107,21 +107,12 @@ public class Program : TreeToken, IVerifier {
         JSONList functions = new JSONList();
         foreach (IToken token in this) {
             if (token is Function) {
-                functions.Add(((Function)token).GetJSON());
+                functions.Add(((Function)token).GetFullJSON());
             }
         }
         obj["functions"] = functions;
         obj["module_functions"] = new JSONList(
-            externalDeclarations.Select(declaration => {
-                JSONObject dobj = new JSONObject();
-                dobj["id"] = new JSONString(declaration.GetID());
-                dobj["callee"] = new JSONString(declaration.GetCallee());
-                dobj["arguments"] = new JSONList(declaration.GetArguments().Select(
-                    argument => argument.GetJSON()
-                ));
-                dobj["return_type_"] = declaration.GetReturnType_().GetJSON();
-                return dobj;
-            })
+            externalDeclarations.Select(declaration => declaration.GetJSON())
         );
         obj["structs"] = new JSONList(structs.Select(struct_ => struct_.GetJSON()));
         obj["path"] = new JSONString(path);

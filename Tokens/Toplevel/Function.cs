@@ -86,6 +86,14 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         return callee;
     }
 
+    public override bool TakesOwnership() {
+        return true;
+    }
+
+    public override bool ResultInParams() {
+        return true;
+    }
+
     public override string ToString() {
         string title = Utils.WrapName(
             GetType().Name, String.Join(", ", arguments), "<", ">"
@@ -109,14 +117,8 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         return null;
     }
 
-    public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["id"] = new JSONString(id);
-        obj["callee"] = new JSONString(callee);
-        obj["arguments"] = new JSONList(arguments.Select(
-            argument => argument.GetJSON()
-        ));
-        obj["return_type_"] = returnType_.GetJSON();
+    public JSONObject GetFullJSON() {
+        JSONObject obj = GetJSON();
         new SerializationContext(this).Serialize(block);
         obj["blocks"] = new JSONList(contexts.Select(
             context=>context.Serialize()

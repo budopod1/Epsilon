@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Collections.Generic;
 
 public static class Utils {
+    public static bool SUBPROCCESSOUTPUT = true;
+    
     public static string Tab = "    ";
     public static string Whitespace = "\r\n\t ";
     public static string Numbers = "1234567890";
@@ -174,9 +176,11 @@ public static class Utils {
         startInfo.Arguments = argumentsStr;
         Process process = Process.Start(startInfo);
         process.WaitForExit();
-        if (process.ExitCode != 0) {
+        if (SUBPROCCESSOUTPUT || process.ExitCode != 0) {
             Console.Write(process.StandardOutput.ReadToEnd());
             Console.Write(process.StandardError.ReadToEnd());
+        }
+        if (process.ExitCode != 0) {
             throw new CommandFailureException(
                 $"Command '{command}' exited with status code {process.ExitCode}"
             );

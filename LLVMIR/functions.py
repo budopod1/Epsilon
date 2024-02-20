@@ -13,6 +13,8 @@ class Function:
         self.is_main = data["is_main"]
         self.declarations = data["declarations"]
         self.special_alloc_types_ = data["special_allocs"]
+        self.takes_ownership = data["takes_ownership"]
+        self.result_in_params = data["result_in_params"]
         self.callee = data["callee"]
         self.ir_type = make_function_type_(
             program, self.return_type_, 
@@ -84,4 +86,6 @@ class ModuleFunction:
             program, self.return_type_, 
             (argument["type_"] for argument in self.arguments)
         )
+        self.takes_ownership = data["takes_ownership"]
+        self.result_in_params = data["result_in_params"]
         self.ir = ir.Function(program.module, self.ir_type, name=data["callee"])
