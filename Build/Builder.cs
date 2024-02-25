@@ -105,14 +105,14 @@ public class Builder {
         }
     }
 
-    HashSet<string> TransferStructIDs(FileTree tree) {
-        HashSet<string> baseTypes_ = new HashSet<string>();
+    HashSet<LocatedID> TransferStructIDs(FileTree tree) {
+        HashSet<LocatedID> baseTypes_ = new HashSet<LocatedID>();
         foreach (FileTree dependency in tree.Dependencies) {
             baseTypes_.UnionWith(TransferStructIDs(dependency));
         }
         currentFile = tree.File;
         currentText = tree.Compiler.GetText();
-        HashSet<string> hereTypes_ = tree.Compiler.ToStructIDs();
+        HashSet<LocatedID> hereTypes_ = tree.Compiler.ToStructIDs();
         tree.Compiler.AddStructIDs(baseTypes_);
         baseTypes_.UnionWith(hereTypes_);
         return baseTypes_;

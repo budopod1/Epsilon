@@ -28,7 +28,7 @@ def create_ir(data):
 
     for struct in data["structs"]:
         program.add_struct(Struct(
-            program, struct["name"], struct["fields"]
+            program, struct["id"], struct["name"], struct["fields"]
         ))
 
     for func_name, func_data in EXTERN_FUNCS.items():

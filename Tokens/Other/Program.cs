@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Program : TreeToken, IVerifier {
     string path;
-    HashSet<string> structIds = new HashSet<string>();
+    HashSet<LocatedID> structIds = new HashSet<LocatedID>();
     int functionIDCounter = 0;
     int scopeVarIDCounter = 0;
     List<Struct> structs = new List<Struct>();
@@ -14,7 +14,7 @@ public class Program : TreeToken, IVerifier {
         this.path = path;
     }
 
-    public Program(string path, List<IToken> tokens, HashSet<string> structIds, int functionIDCounter, int scopeVarIDCounter, List<Struct> structs, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
+    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, int functionIDCounter, int scopeVarIDCounter, List<Struct> structs, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
         this.path = path;
         this.structIds = structIds;
         this.functionIDCounter = functionIDCounter;
@@ -23,7 +23,7 @@ public class Program : TreeToken, IVerifier {
         this.externalDeclarations = externalDeclarations;
     }
 
-    public HashSet<string> GetStructIDs() {
+    public HashSet<LocatedID> GetStructIDs() {
         return structIds;
     }
 
@@ -32,7 +32,7 @@ public class Program : TreeToken, IVerifier {
         parent = null;
     }
 
-    public void AddStructIDs(HashSet<string> structIds) {
+    public void AddStructIDs(HashSet<LocatedID> structIds) {
         this.structIds.UnionWith(structIds);
     }
 
@@ -97,7 +97,7 @@ public class Program : TreeToken, IVerifier {
     public Struct GetStructFromType_(Type_ type_) {
         string name = type_.GetBaseType_().GetName();
         foreach (Struct struct_ in structs) {
-            if (struct_.GetName() == name) return struct_;
+            if (struct_.GetID() == name) return struct_;
         }
         return null;
     }

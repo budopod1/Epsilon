@@ -3,16 +3,24 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Struct {
-    string name;
+    LocatedID id;
     List<Field> fields;
 
     public Struct(string path, string name, List<Field> fields) {
-        this.name = name + " " + path;
+        id = new LocatedID(path, name);
         this.fields = fields;
     }
 
+    public string GetPath() {
+        return id.Path;
+    }
+
     public string GetName() {
-        return name;
+        return id.Name;
+    }
+
+    public string GetID() {
+        return id.GetID();
     }
 
     public List<Field> GetFields() {
@@ -28,7 +36,7 @@ public class Struct {
     }
 
     public override string ToString() {
-        string result = $"Name: {name}";
+        string result = $"Name: {GetName()}, Path: {GetPath()}";
         foreach (Field field in fields) {
             result += "\n" + field.ToString();
         }
@@ -39,7 +47,8 @@ public class Struct {
 
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
-        obj["name"] = new JSONString(name);
+        obj["id"] = new JSONString(GetID());
+        obj["name"] = new JSONString(GetName());
         obj["fields"] = new JSONList(fields.Select(
             field => field.GetJSON()
         ));

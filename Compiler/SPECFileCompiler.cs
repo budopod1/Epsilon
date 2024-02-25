@@ -60,10 +60,14 @@ public class SPECFileCompiler : IFileCompiler {
         return new List<string>();
     }
 
-    IEnumerable<string> GetStructIDs() {
-        Dictionary<string, string> structIds = obj["structs"].IterList().ToDictionary(
-            val => val["name"].GetString(), val => val["name"].GetString() + " " + path
-        );
+    public HashSet<LocatedID> ToStructIDs() {
+        HashSet<LocatedID> result = new HashSet<LocatedID>();
+        Dictionary<string, string> structIds = new Dictionary<string, string>();
+        foreach (ShapedJSON struct_ in obj["structs"].IterList()) {
+            string name = struct_["name"].GetString();
+            result.Add(new LocatedID(path, name));
+            structIds[name] = name + " " + path;
+        }
         foreach (ShapedJSON type_Data in obj["types_"].IterList()) {
             List<Type_> generics = new List<Type_>();
             foreach (ShapedJSON generic_Name in type_Data["generics"].IterList()) {
@@ -75,14 +79,10 @@ public class SPECFileCompiler : IFileCompiler {
             Type_ type_ = new Type_(type_Name, type_Bits, generics);
             types_[type_Data["given_name"].GetString()] = type_;
         }
-        return structIds.Values;
+        return result;
     }
 
-    public HashSet<string> ToStructIDs() {
-        return new HashSet<string>(GetStructIDs());
-    }
-
-    public void AddStructIDs(HashSet<string> structIds) {}
+    public void AddStructIDs(HashSet<LocatedID> structIds) {}
 
     Type_ MakeSPECType_(ShapedJSON str) {
         string text = str.GetString();

@@ -19,13 +19,9 @@ public class UserBaseType_ {
         "Null"
     };
 
-    public static UserBaseType_ ParseString(string content, List<string> structIds) {
-        foreach (string structId in structIds) {
-            int spaceIdx = structId.IndexOf(' ');
-            if (spaceIdx == -1) 
-                throw new ArgumentException($"Invalid struct id {structId}");
-            string userStructName = structId.Substring(0, spaceIdx);
-            if (content == userStructName) return new UserBaseType_(structId);
+    public static UserBaseType_ ParseString(string content, HashSet<LocatedID> structIds) {
+        foreach (LocatedID structId in structIds) {
+            if (content == structId.Name) return new UserBaseType_(structId.GetID());
         }
         if ((BaseType_.BuiltInTypes_.Contains(content) 
             || SpecialFullBaseType_Names.Contains(content)

@@ -73,7 +73,7 @@ public class CodeFileCompiler : IFileCompiler {
         ).ToList();
     }
 
-    public HashSet<string> ToStructIDs() {
+    public HashSet<LocatedID> ToStructIDs() {
         Step("Tokenizing keywords...");
         program = TokenizeKeywords(program);
         TimingStep();
@@ -113,7 +113,7 @@ public class CodeFileCompiler : IFileCompiler {
         return program.GetStructIDs();
     }
 
-    public void AddStructIDs(HashSet<string> structIds) {
+    public void AddStructIDs(HashSet<LocatedID> structIds) {
         program.AddStructIDs(structIds);
     }
 
@@ -451,25 +451,22 @@ public class CodeFileCompiler : IFileCompiler {
     }
 
     void ComputeBaseTypes_(Program program) {
-        List<string> structIds = new List<string>();
+        List<LocatedID> structIds = new List<LocatedID>();
         foreach (IToken token_ in program) {
-            if (token_ is StructHolder) {
-                StructHolder token = ((StructHolder)token_);
-                if (token.Count == 0) continue;
-                IToken nameToken = token[0];
-                if (nameToken is Name) {
-                    string name = ((Name)nameToken).GetValue();
-                    structIds.Add(name + " " + program.GetPath());
-                }
-            }
+            if (!(token_ is StructHolder)) continue;
+            StructHolder token = ((StructHolder)token_);
+            if (token.Count == 0) continue;
+            IToken nameToken = token[0];
+            if (!(nameToken is Name)) continue;
+            string name = ((Name)nameToken).GetValue();
+            structIds.Add(new LocatedID(program.GetPath(), name));
         }
-        program.AddStructIDs(new HashSet<string>(structIds));
+        program.AddStructIDs(new HashSet<LocatedID>(structIds));
     }
 
     Program TokenizeBaseTypes_(Program program) {
-        List<string> baseType_Names = new List<string>(program.GetStructIDs());
         Func<string, UserBaseType_> converter = (string source) => 
-            UserBaseType_.ParseString(source, baseType_Names);
+            UserBaseType_.ParseString(source, program.GetStructIDs());
         IMatcher matcher = new UnitSwitcherMatcher<string, UserBaseType_>(
             typeof(Name), converter, typeof(UserBaseType_Token)
         );

@@ -6,8 +6,9 @@ from common import *
 
 
 class Struct:
-    def __init__(self, program, name, fields):
+    def __init__(self, program, id_, name, fields):
         self.program = program
+        self.id_ = id_
         self.name = name
         self.fields = fields
         field_ir_types = [REF_COUNTER_FIELD] + [
@@ -16,7 +17,7 @@ class Struct:
         ]
         self.ir_type = ir.LiteralStructType(field_ir_types).as_pointer()
         ir.global_context.get_identified_type(
-            "___"+name
+            "___"+id_
         ).set_body(*field_ir_types)
 
     def get_index_of_member(self, member):

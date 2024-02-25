@@ -154,7 +154,7 @@ class Program:
         self.functions[function.id_] = function
 
     def add_struct(self, struct):
-        self.structs[struct.name] = struct
+        self.structs[struct.id_] = struct
 
     def make_elem(self, builder, type_):
         ir_type = make_type_(self, type_)
