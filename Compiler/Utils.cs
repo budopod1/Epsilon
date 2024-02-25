@@ -76,46 +76,6 @@ public static class Utils {
         EscapeReplacements
     ).ToDictionary(val=>val.Key[1], val=>val.Value);
 
-    public static string EscapeStringToLiteral(string str, char quote='"') {
-        string result = quote.ToString();
-        foreach (char chr in str) {
-            if (EscapeReplacements.ContainsKey(chr)) {
-                result += EscapeReplacements[chr];
-            } else if (chr == quote) {
-                result += "\\" + quote.ToString();
-            } else {
-                result += chr;
-            }
-        }
-        return result + quote;
-    }
-
-    public static string UnescapeStringFromLiteral(string str) {
-        char quote = str[0];
-        string quoteless = str.Substring(1, str.Length-2);
-        string result = "";
-        bool wbs = false;
-        foreach (char chr in quoteless) {
-            if (wbs) {
-                if (UnescapeReplacements.ContainsKey(chr)) {
-                    result += UnescapeReplacements[chr];
-                } else if (chr == quote) {
-                    result += quote;
-                } {
-                    result += chr;
-                }
-                wbs = false;
-            } else {
-                if (chr == '\\') {
-                    wbs = true;
-                } else {
-                    result += chr;
-                }
-            }
-        }
-        return result;
-    }
-
     public static string CammelToSnake(string str) {
         string result = "";
         bool first = true;
