@@ -106,7 +106,7 @@ public class Type_ : IEquatable<Type_> {
 
     void CheckGenerics(BaseType_ baseType_, List<Type_> generics) {
         if (generics.Count != baseType_.GenericsAmount()) {
-            throw new IllegalType_GenericsException(
+            throw new IllegalType_Exception(
                 $"Incorrect number of generics on base type {baseType_} (got {generics.Count}, expected {baseType_.GenericsAmount()})"
             );
         }
@@ -117,7 +117,7 @@ public class Type_ : IEquatable<Type_> {
         Type_ result = baseType_.ToType_(generics);
         if (result.GetBaseType_().GetName() == "Optional") {
             if (!generics[0].GetBaseType_().IsOptionable()) {
-                throw new IllegalType_GenericsException(
+                throw new IllegalType_Exception(
                     $"Invalid generic {generics[0]} for Optional type"
                 );
             }
@@ -217,6 +217,17 @@ public class Type_ : IEquatable<Type_> {
             return GenericsEqual(other);
         }
         return false;
+    }
+
+    public bool IsGreaterThan(Type_ other) {
+        if (!other.IsConvertibleTo(this)) return false;
+        if (!IsConvertibleTo(other)) return true;
+        BaseType_ otherBaseType_ = other.GetBaseType_();
+        if (baseType_.GetName() != otherBaseType_.GetName()) return false;
+        int? thisBits = baseType_.GetBits();
+        int? otherBits = otherBaseType_.GetBits();
+        if (!thisBits.HasValue || !otherBits.HasValue) return false;
+        return thisBits.Value > otherBits.Value;
     }
 
     public bool GenericsEqual(Type_ other) {

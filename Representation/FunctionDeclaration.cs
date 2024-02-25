@@ -23,11 +23,11 @@ public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
         for (int i = 0; i < aac; i++) {
             Type_ argaType_ = aa[i].GetType_();
             Type_ argbType_ = ba[i].GetType_();
-            bool aToB = argaType_.IsConvertibleTo(argbType_);
-            bool bToA = argbType_.IsConvertibleTo(argaType_);
-            if (aToB && bToA) continue;
-            if (aToB) return 1;
-            if (bToA) return -1;
+            bool aGtB = argaType_.IsGreaterThan(argbType_);
+            bool bGtA = argbType_.IsGreaterThan(argaType_);
+            if (aGtB && bGtA) continue;
+            if (aGtB) return -1;
+            if (bGtA) return 1;
         }
         // TODO: add step that add priority:
         // 1. functions in this program

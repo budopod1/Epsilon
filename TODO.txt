@@ -7,3 +7,5 @@ TODO:
 * disalow circular imports
 * if A imports B and C, all three of which import D, D should only be compiled once
 * rework bash systems
+* make 64 the default number of btis for Q
+* make builtins that return boolean have return type _Bool in C

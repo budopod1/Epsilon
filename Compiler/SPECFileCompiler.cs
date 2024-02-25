@@ -7,6 +7,7 @@ public class SPECFileCompiler : IFileCompiler {
     string path;
     ShapedJSON obj;
     string fileText = null;
+    Dictionary<string, Type_> types_ = new Dictionary<string, Type_>();
     
     public SPECFileCompiler(string path) {
         this.path = path;
@@ -36,6 +37,12 @@ public class SPECFileCompiler : IFileCompiler {
                     {"result_in_params", new JSONBoolShape()}
                 }
             ))},
+            {"types_", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
+                {"given_name", new JSONStringShape()},
+                {"name", new JSONStringShape()},
+                {"bits", new JSONNullableShape(new JSONIntShape())},
+                {"generics", new JSONListShape(new JSONStringShape())}
+            }))},
             {"structs", new JSONListShape(new JSONObjectShape(
                 new Dictionary<string, IJSONShape> {
                     {"name", new JSONStringShape()},
@@ -54,9 +61,21 @@ public class SPECFileCompiler : IFileCompiler {
     }
 
     IEnumerable<string> GetStructIDs() {
-        return obj["structs"].IterList().Select(
-            val => val["name"].GetString() + " " + path
+        Dictionary<string, string> structIds = obj["structs"].IterList().ToDictionary(
+            val => val["name"].GetString(), val => val["name"].GetString() + " " + path
         );
+        foreach (ShapedJSON type_Data in obj["types_"].IterList()) {
+            List<Type_> generics = new List<Type_>();
+            foreach (ShapedJSON generic_Name in type_Data["generics"].IterList()) {
+                generics.Add(MakeSPECType_(generic_Name));
+            }
+            string type_Name = type_Data["name"].GetString();
+            if (structIds.ContainsKey(type_Name)) type_Name = structIds[type_Name];
+            int? type_Bits = type_Data["bits"].GetInt();
+            Type_ type_ = new Type_(type_Name, type_Bits, generics);
+            types_[type_Data["given_name"].GetString()] = type_;
+        }
+        return structIds.Values;
     }
 
     public HashSet<string> ToStructIDs() {
@@ -65,70 +84,14 @@ public class SPECFileCompiler : IFileCompiler {
 
     public void AddStructIDs(HashSet<string> structIds) {}
 
-    Type_ MakeSPECType_(string str) {
-        /*
-        Valid usage:
-        Q64 -> Q64
-        Str -> Array<Byte>
-        Array<Z32> -> Array<Z32>
-        Foo<Bar,Baz> -> Foo<Bar, Baz>
-        Foo<Bar<Baz>Zoo,Pie> -> Foo<Bar<Baz>, Zoo, Pie>
-        Foo<Bar<Baz>___> -> Foo<Bar<Baz>>
-        */
-        // TODO: add validation
-        // TODO: improve greatly
-        if (Utils.NameChars.Contains(str[str.Length-1])) str += ".";
-        List<UserBaseType_> userBaseTypes_ = new List<UserBaseType_>();
-        List<char> seperators = new List<char> {' '};
-        string soFar = "";
-        for (int i = 0; i < str.Length; i++) {
-            char chr = str[i];
-            if (chr == ' ') continue;
-            if (Utils.NameChars.Contains(chr)) {
-                soFar += chr;
-            } else {
-                if (soFar == "___") {
-                    userBaseTypes_.Add(null);
-                } else {
-                    userBaseTypes_.Add(UserBaseType_.ParseString(
-                        soFar, new List<string>(GetStructIDs())
-                    ));
-                }
-                seperators.Add(chr);
-            }
+    Type_ MakeSPECType_(ShapedJSON str) {
+        string text = str.GetString();
+        if (!types_.ContainsKey(text)) {
+            throw new InvalidJSONException(
+                $"Invalid JSON type_ '{text}'", str.GetJSON()
+            );
         }
-        int count = userBaseTypes_.Count;
-        List<Type_> types_ = new List<Type_>(new Type_[count]);
-        while (types_[0] == null) {
-            for (int i = 0; i < count; i++) {
-                if (types_[i] == null) {
-                    UserBaseType_ userBaseType_ = userBaseTypes_[i];
-                    if (userBaseType_ == null) continue;
-                    List<Type_> generics = new List<Type_>();
-                    int indent = 0;
-                    bool success = true;
-                    for (int j = i+1; j < count; j++) {
-                        char seperator = seperators[j];
-                        if (seperator == '<') indent++;
-                        if (seperator == '>') indent--;
-                        if (indent == 0) break;
-                        if (indent == 1) {
-                            if (userBaseTypes_[j] == null) continue;
-                            Type_ type_ = types_[j];
-                            if (type_ == null) {
-                                success = false;
-                                break;
-                            }
-                            generics.Add(type_);
-                        }
-                    }
-                    if (success) {
-                        types_[i] = userBaseType_.ToType_(generics);
-                    }
-                }
-            }
-        }
-        return types_[0];
+        return types_[text];
     }
 
     public List<Struct> ToStructs() {
@@ -138,7 +101,7 @@ public class SPECFileCompiler : IFileCompiler {
                 sobj["fields"].IterList().Select(
                     fobj => new Field(
                         fobj["name"].GetString(), 
-                        MakeSPECType_(fobj["type_"].GetString())
+                        MakeSPECType_(fobj["type_"])
                     )
                 ).ToList()
             )
@@ -194,7 +157,7 @@ public class SPECFileCompiler : IFileCompiler {
                         break;
                     case "argument":
                         string name2 = sobj["name"].GetString();
-                        Type_ type_ = MakeSPECType_(sobj["type_"].GetString());
+                        Type_ type_ = MakeSPECType_(sobj["type_"]);
                         FunctionArgument argument = new FunctionArgument(name2, type_);
                         arguments.Add(argument);
                         segments.Add(new TypePatternSegment(typeof(RawSquareGroup)));
@@ -206,7 +169,7 @@ public class SPECFileCompiler : IFileCompiler {
             string callee = func["callee"].GetString();
             bool takesOwnership = func["takes_ownership"].GetBool().Value;
             bool resultInParams = func["result_in_params"].GetBool().Value;
-            Type_ returnType_ = MakeSPECType_(func["return_type_"].GetString());
+            Type_ returnType_ = MakeSPECType_(func["return_type_"]);
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)

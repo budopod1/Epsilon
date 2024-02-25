@@ -7,7 +7,8 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class CodeFileCompiler : IFileCompiler {
-    public bool PRINT_AST = false;
+    public bool POST_PARSE_PRINT_AST = false;
+    public bool PRE_PARSE_PRINT_AST = false;
     public bool PRINT_STEPS = false;
 
     Program program;
@@ -193,12 +194,14 @@ public class CodeFileCompiler : IFileCompiler {
         Step("Getting scope variables...");
         program = GetScopeVariables(program);
         TimingStep();
+        
+        if (PRE_PARSE_PRINT_AST) Console.WriteLine(program);
 
         Step("Parsing function code...");
         program = ParseFunctionCode(program);
         TimingStep();
 
-        if (PRINT_AST) Console.WriteLine(program);
+        if (POST_PARSE_PRINT_AST) Console.WriteLine(program);
 
         Step("Verifying code...");
         VerifyCode(program);
@@ -1006,7 +1009,9 @@ public class CodeFileCompiler : IFileCompiler {
                             }
                         }
 
-                        return null;
+                        throw new SyntaxErrorException(
+                            "Types supplied to function do not match any overload", call
+                        );
                     })
                 ),
                 new PatternMatcher(

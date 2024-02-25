@@ -51,7 +51,7 @@ public class UserBaseType_ {
     public Type_ ToType_(List<Type_> generics) {
         if (SpecialFullBaseType_Names.Contains(name)) {
             if (generics.Count > 0) {
-                throw new IllegalType_GenericsException(
+                throw new IllegalType_Exception(
                     $"Alias type {name} cannot have generics"
                 );
             }
