@@ -451,7 +451,7 @@ public class CodeFileCompiler : IFileCompiler {
     }
 
     void ComputeBaseTypes_(Program program) {
-        List<LocatedID> structIds = new List<LocatedID>();
+        HashSet<LocatedID> structIds = new HashSet<LocatedID>();
         foreach (IToken token_ in program) {
             if (!(token_ is StructHolder)) continue;
             StructHolder token = ((StructHolder)token_);
@@ -461,7 +461,7 @@ public class CodeFileCompiler : IFileCompiler {
             string name = ((Name)nameToken).GetValue();
             structIds.Add(new LocatedID(program.GetPath(), name));
         }
-        program.AddStructIDs(new HashSet<LocatedID>(structIds));
+        program.AddStructIDs(structIds);
     }
 
     Program TokenizeBaseTypes_(Program program) {

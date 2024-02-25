@@ -1,8 +1,6 @@
 TODO:
 * update documentation
 * remove unnecessary EscapeStringToLiteral and UnescapeStringFromLiteral functions, use JSONTools implementations
-* make a new type to hold struct ids instead of using strings
-* reduce number of conversions between lists and hashsets when dealing with the base types_
 * add caching of compiled .ll files
 * disalow circular imports
 * if A imports B and C, all three of which import D, D should only be compiled once
