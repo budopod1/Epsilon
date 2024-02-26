@@ -114,16 +114,9 @@ class Program:
         result = builder.call(self.extern_funcs[name], converted_params+vargs)
         if result_type_["name"] == "Void":
             return
-        if (func["return_type_"] == Z32 and result_type_ == Bool 
-            and func.get("bool_ret", False)):
-            # This is a special convienience case for boolean
-            # external functions as there is not i1 type
-            # in C
-            return builder.trunc(result, make_type_(self, Bool))
-        else:
-            return convert_type_(
-                self, builder, result, func["return_type_"], result_type_
-            )
+        return convert_type_(
+            self, builder, result, func["return_type_"], result_type_
+        )
 
     def nullptr(self, builder, ir_type):
         return builder.inttoptr(i64_of(0), ir_type)

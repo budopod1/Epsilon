@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
 // elem types are 64 bit unsigned
 // upper 62 bits are the size
@@ -280,13 +281,13 @@ struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uin
     return slice;
 }
 
-int arrayEqual(const struct Array *array1, const struct Array *array2, uint64_t elemSize) {
+_Bool arrayEqual(const struct Array *array1, const struct Array *array2, uint64_t elemSize) {
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
     if (len1 == len2) {
         return memcmp(array1->content, array2->content, len1*elemSize) == 0;
     } else {
-        return 0;
+        return false;
     }
 }
 
@@ -419,13 +420,13 @@ struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t e
     return result;
 }
 
-int32_t startsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+_Bool startsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
     uint64_t subLen = sub->length;
     if (subLen > arr->length) return 0;
     return memcmp(arr->content, sub->content, subLen*elemSize) == 0;
 }
 
-int32_t endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+_Bool endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
     uint64_t subLen = sub->length;
     uint64_t arrLen = arr->length;
     if (subLen > arrLen) return 0;
@@ -493,7 +494,7 @@ int32_t parseInt(const struct Array *str) {
     return 2147483647;
 }
 
-int32_t isValidParsedInt(int32_t i) {
+_Bool isValidParsedInt(int32_t i) {
     return i != 2147483647;
 }
 
@@ -552,7 +553,7 @@ float parseFloat(const struct Array *str) {
     return NAN;
 }
 
-int32_t isValidParsedFloat(float f) {
+_Bool isValidParsedFloat(float f) {
     return !isnan(f);
 }
 
@@ -637,7 +638,7 @@ int32_t FILE_BINARY_MODE() {
     return _FILE_BINARY_MODE;
 }
 
-int32_t fileOpen(const struct File *file) {
+_Bool fileOpen(const struct File *file) {
     return file != NULL && file->open;
 }
 
@@ -646,15 +647,15 @@ int32_t fileMode(const struct File *file) {
     return file->mode;
 }
 
-int32_t closeFile(struct File *file) {
+_Bool closeFile(struct File *file) {
     if (file != NULL && file->open) {
         if (fclose(file->file) == 0) {
             file->open = 0;
-            return 1;
+            return true;
         }
-        return 0;
+        return false;
     } else {
-        return 0;
+        return false;
     }
 }
 
@@ -734,28 +735,28 @@ int32_t setFilePos(const struct File *file, uint64_t pos) {
     if (file != NULL && file->open) {
         return fseek(file->file, (long)pos, SEEK_SET) == 0;
     }
-    return 0;
+    return false;
 }
 
 int32_t jumpFilePos(const struct File *file, uint64_t amount) {
     if (file != NULL && file->open) {
         return fseek(file->file, (long)amount, SEEK_CUR) == 0;
     }
-    return 0;
+    return false;
 }
 
-int32_t readLineEOF = 0;
+_Bool readLineEOF = 0;
 
 // returns: Str?
 struct Array *readFileLine(const struct File *file) {
-    readLineEOF = 0;
+    readLineEOF = false;
     if (file != NULL && file->open) {
         char *content = NULL;
         size_t capacity = 0;
         int64_t len = (int64_t)getline(&content, &capacity, file->file);
         if (len == -1) {
             free(content);
-            readLineEOF = 1;
+            readLineEOF = true;
             return NULL;
         }
         if (content[len-1] == '\n') len--;
@@ -769,7 +770,7 @@ struct Array *readFileLine(const struct File *file) {
     return NULL;
 }
 
-int32_t readLineReachedEOF() {
+_Bool readLineReachedEOF() {
     return readLineEOF;
 }
 
@@ -798,12 +799,12 @@ struct Array *readFileLines(const struct File *file) {
     }
 }
 
-int32_t writeToFile(const struct File *file, const struct Array *text) {
+_Bool writeToFile(const struct File *file, const struct Array *text) {
     if (file != NULL && file->open) {
         uint64_t len = text->length;
         return fwrite(text->content, len, 1, file->file) == len;
     } else {
-        return 0;
+        return false;
     }
 }
 
