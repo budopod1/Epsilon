@@ -56,6 +56,7 @@ public static class Utils {
         return true;
     }
 
+    /*
     public static Dictionary<TValue, TKey> InvertDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary) {
         return dictionary.ToDictionary(val => val.Value, val => val.Key);
     }
@@ -75,6 +76,7 @@ public static class Utils {
     public static Dictionary<char, char> UnescapeReplacements = InvertDictionary(
         EscapeReplacements
     ).ToDictionary(val=>val.Key[1], val=>val.Value);
+    */
 
     public static string CammelToSnake(string str) {
         string result = "";

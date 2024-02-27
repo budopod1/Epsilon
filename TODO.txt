@@ -6,3 +6,5 @@ TODO:
 * rework bash systems
 * make 64 the default number of bits for Q
 * remove Utils.ENList, replace with JSONUtils.ENList
+* disallow char constants with codepoints > 127
+* JSONTools To and From Literal function's should raise InvalidJSONExceptions
