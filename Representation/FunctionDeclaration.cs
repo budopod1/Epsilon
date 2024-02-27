@@ -5,6 +5,7 @@ public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
     public abstract PatternExtractor<List<IToken>> GetPattern();
     public abstract List<FunctionArgument> GetArguments();
     public abstract string GetID();
+    public abstract FunctionSource GetSource();
     public abstract Type_ GetReturnType_(List<IValueToken> tokens);
 
     public int CompareTo(FunctionDeclaration other) {
@@ -29,10 +30,8 @@ public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
             if (aGtB) return -1;
             if (bGtA) return 1;
         }
-        // TODO: add step that add priority:
-        // 1. functions in this program
-        // 2. functions imported from other modules
-        // 3. builtins
-        return b.GetID().CompareTo(a.GetID());
+        FunctionSource aSrc = a.GetSource();
+        FunctionSource bSrc = b.GetSource();
+        return bSrc.CompareTo(aSrc);
     }
 }

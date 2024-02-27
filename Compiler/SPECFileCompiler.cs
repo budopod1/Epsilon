@@ -34,7 +34,10 @@ public class SPECFileCompiler : IFileCompiler {
                         }
                     ))},
                     {"takes_ownership", new JSONBoolShape()},
-                    {"result_in_params", new JSONBoolShape()}
+                    {"result_in_params", new JSONBoolShape()},
+                    {"source", new JSONStringOptionsShape(new List<string> {
+                        "Program", "Library", "Builtin"
+                    })}
                 }
             ))},
             {"types_", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
@@ -170,11 +173,12 @@ public class SPECFileCompiler : IFileCompiler {
             bool takesOwnership = func["takes_ownership"].GetBool().Value;
             bool resultInParams = func["result_in_params"].GetBool().Value;
             Type_ returnType_ = MakeSPECType_(func["return_type_"]);
+            Enum.TryParse<FunctionSource>(func["source"].GetString(), out FunctionSource source);
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)
-                ), arguments, id, callee, returnType_, takesOwnership,
-                resultInParams
+                ), arguments, id, callee, returnType_, source,
+                takesOwnership, resultInParams
             );
         }).ToList();
     }

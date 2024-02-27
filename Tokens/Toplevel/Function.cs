@@ -82,6 +82,10 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         return id;
     }
 
+    public override FunctionSource GetSource() {
+        return FunctionSource.Program;
+    }
+
     public override string GetCallee()  {
         return callee;
     }

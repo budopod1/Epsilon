@@ -7,8 +7,9 @@ public class ExternalFunction : FunctionDeclaration {
     List<FunctionArgument> arguments;
     string id;
     Func<List<IValueToken>, Type_> returnType_;
+    FunctionSource source;
 
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<Type_>, Type_> returnType_) {
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<Type_>, Type_> returnType_, FunctionSource source) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
@@ -22,20 +23,23 @@ public class ExternalFunction : FunctionDeclaration {
                 );
             }
         };
+        this.source = source;
     }
 
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<IValueToken>, Type_> returnType_) {
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<IValueToken>, Type_> returnType_, FunctionSource source) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
         this.returnType_ = returnType_;
+        this.source = source;
     }
     
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Type_ returnType_) {
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Type_ returnType_, FunctionSource source) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
         this.returnType_ = (tokens) => returnType_;
+        this.source = source;
     }
     
     public override PatternExtractor<List<IToken>> GetPattern() {
@@ -52,6 +56,10 @@ public class ExternalFunction : FunctionDeclaration {
     
     public override string GetID() {
         return id;
+    }
+
+    public override FunctionSource GetSource() {
+        return source;
     }
 
     public override string ToString() {
