@@ -92,17 +92,6 @@ public static class Utils {
         return result;
     }
 
-    public static string ENList(List<string> list, string joiner="and") {
-        if (list.Count == 0) return "none";
-        if (list.Count == 1) return list[0];
-        if (list.Count == 2) return $"{list[0]} {joiner} {list[1]}";
-        string result = "";
-        for (int i = 0; i < list.Count-1; i++) {
-            result += list[i] + ", ";
-        }
-        return $"{result}{joiner} {list[list.Count-1]}";
-    }
-
     public static string ProjectAbsolutePath() {
         return AppDomain.CurrentDomain.BaseDirectory;
     }

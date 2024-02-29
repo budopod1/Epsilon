@@ -75,7 +75,7 @@ public class ArgumentParser {
     }
 
     string ShowTreeOptions(ParserTree t) {
-        return Utils.ENList(t.GetNodes().Select(node=>node.GetContent()).Select(
+        return JSONTools.ENList(t.GetNodes().Select(node=>node.GetContent()).Select(
             txt=>txt[0]=='*'?txt.Substring(1):txt
         ).ToList(), "or");
     }

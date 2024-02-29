@@ -5,4 +5,3 @@ TODO:
 * if A imports B and C, all three of which import D, D should only be compiled once
 * rework bash systems
 * make 64 the default number of bits for Q
-* remove Utils.ENList, replace with JSONUtils.ENList
