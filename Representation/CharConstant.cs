@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public class CharConstant : INumberConstant, IIntConstant {
+public class CharConstant : IIntConstant {
     byte value;
 
     public CharConstant(byte value) {
@@ -9,6 +9,9 @@ public class CharConstant : INumberConstant, IIntConstant {
     }
 
     public CharConstant(char value) {
+        if (value >= 128) {
+            throw new OverflowException("Character constants' codepoints must not exceed 127");
+        }
         this.value = Convert.ToByte(value);
     }
 

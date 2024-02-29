@@ -74,6 +74,7 @@ public class Builder {
         if (path == null) throw new FileNotFoundErrorException(partialPath);
         string extention = path.Substring(path.LastIndexOf('.')+1);
         IFileCompiler fileCompiler;
+        currentFile = path;
         if (extention == "epsl") {
             fileCompiler = new CodeFileCompiler(path);
         } else if (extention == "epslspec") {
@@ -81,7 +82,6 @@ public class Builder {
         } else {
             return null;
         }
-        currentFile = path;
         currentText = fileCompiler.GetText();
         return new FileTree(partialPath, fileCompiler, fileCompiler.ToImports());
     }

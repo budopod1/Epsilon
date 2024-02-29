@@ -237,15 +237,20 @@ public class CodeFileCompiler : IFileCompiler {
     }
 
     Program TokenizeCharacterConstants(Program program) {
+        Func<List<IToken>, List<IToken>> converter = tokens => {
+            string txt = String.Join("", tokens.ConvertAll<string>(token=>token.ToString()));
+            try {
+                return new List<IToken> {new ConstantValue(CharConstant.FromString(txt))};
+            } catch (OverflowException e) {
+                throw new SyntaxErrorException(e.Message, TokenUtils.MergeSpans(tokens));
+            }
+        };
         Program program2 = (Program)PerformMatching(
             program, new PatternMatcher(new List<IPatternSegment> {
                 new TextPatternSegment("'"),
                 new TypePatternSegment(typeof(TextToken)),
                 new TextPatternSegment("'")
-            }, new FuncPatternProcessor<List<IToken>>(tokens => {
-                string txt = String.Join("", tokens.ConvertAll<string>(token=>token.ToString()));
-                return new List<IToken> {new ConstantValue(CharConstant.FromString(txt))};
-            }))
+            }, new FuncPatternProcessor<List<IToken>>(converter))
         );
         return (Program)PerformMatching(
             program2, new PatternMatcher(new List<IPatternSegment> {
@@ -253,10 +258,7 @@ public class CodeFileCompiler : IFileCompiler {
                 new TextPatternSegment("\\"),
                 new TypePatternSegment(typeof(TextToken)),
                 new TextPatternSegment("'")
-            }, new FuncPatternProcessor<List<IToken>>(tokens => {
-                string txt = String.Join("", tokens.ConvertAll<string>(token=>token.ToString()));
-                return new List<IToken> {new ConstantValue(CharConstant.FromString(txt))};
-            }))
+            }, new FuncPatternProcessor<List<IToken>>(converter))
         );
     }
 

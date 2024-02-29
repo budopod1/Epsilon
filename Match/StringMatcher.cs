@@ -21,31 +21,39 @@ public class StringMatcher : IMatcher {
             matched.Add(token);
             bool wasBackslash = false;
             for (int j = i + 1; j < tokens.Count; j++) {
-                token = tokens[j];;
+                token = tokens[j];
                 if (!(token is TextToken)) {
                     continue;
                 }
                 matched.Add(token);
                 string text = ((TextToken)token).GetText();
+                
                 if (wasBackslash) {
                     wasBackslash = false;
-                } else {
-                    if (text == "\\") {
-                        wasBackslash = true;
-                    } else if (text == "\"") {
-                        string matchedString = String.Join(
-                            "", matched.Select(
-                                (IToken sub) => ((TextToken)sub).GetText()
-                            )
-                        );
-                        List<IToken> replacement = new List<IToken> {
-                            new ConstantValue(
-                                StringConstant.FromString(matchedString)
-                            )
-                        };
-                        
-                        return new Match(i, j, replacement, matched);
-                    }
+                    continue;
+                }
+                if (text == "\\") {
+                    wasBackslash = true;
+                    continue;
+                }
+                if (text != "\"") continue;
+                
+                string matchedString = String.Join("", matched.Select(
+                        (IToken sub) => ((TextToken)sub).GetText()
+                ));
+
+                try {
+                    List<IToken> replacement = new List<IToken> {
+                        new ConstantValue(
+                            StringConstant.FromString(matchedString)
+                        )
+                    };
+
+                    return new Match(i, j, replacement, matched);
+                } catch (LiteralDecodeException e) {
+                    throw new SyntaxErrorException(
+                        e.Message, new CodeSpan(e.Position+matched[0].span.GetStart())
+                    );
                 }
             }
         }
