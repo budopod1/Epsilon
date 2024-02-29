@@ -309,15 +309,15 @@ EXTERN_FUNCS = {
         "arguments": [ArrayW8, W64, W64]
     },
     "ffloor": {
-        "name": "llvm.floor.f32", "return_type_": Q32,
-        "arguments": [Q32]
+        "name": "llvm.floor.f64", "return_type_": Q64,
+        "arguments": [Q64]
     },
     "fceil": {
-        "name": "llvm.ceil.f32", "return_type_": Q32,
-        "arguments": [Q32]
+        "name": "llvm.ceil.f64", "return_type_": Q64,
+        "arguments": [Q64]
     },
     "round": {
-        "name": "llvm.lrint.i32.f32", "return_type_": Z32,
-        "arguments": [Q32]
+        "name": "llvm.lrint.i64.f64", "return_type_": Q64,
+        "arguments": [Q64]
     },
 }

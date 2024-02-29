@@ -565,7 +565,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {1})
             ), new List<FunctionArgument> {
                 new FunctionArgument("str", Type_.String()),
-            }, "builtin39", new Type_("Q", 32), FunctionSource.Builtin
+            }, "builtin39", new Type_("Q", 64), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -573,7 +573,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {1})
             ), new List<FunctionArgument> {
-                new FunctionArgument("int", new Type_("Q", 32)),
+                new FunctionArgument("int", new Type_("Q", 64)),
             }, "builtin40", new Type_("Bool"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(

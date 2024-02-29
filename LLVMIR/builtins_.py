@@ -169,10 +169,7 @@ def abs_(program, builder, params, param_types_):
 
 def fabs(program, builder, params, param_types_):
     value, = params
-    return program.call_extern(
-        builder, "fabs", [value], [Q64],
-        Q64
-    ), Q64
+    return program.call_extern(builder, "fabs", [value], [Q64], Q64), Q64
 
 
 def stringify(program, builder, params, param_types_):
@@ -388,14 +385,14 @@ def is_valid_parsed_int(program, builder, params, param_types_):
 def parse_float(program, builder, params, param_types_):
     string, = params
     return program.call_extern(
-        builder, "parseFloat", [string], [String], Q32
-    ), Q32
+        builder, "parseFloat", [string], [String], Q64
+    ), Q64
 
 
 def is_valid_parsed_float(program, builder, params, param_types_):
     num, = params
     return program.call_extern(
-        builder, "isValidParsedFloat", [num], [Q32], Z32
+        builder, "isValidParsedFloat", [num], [Q64], Z32
     ), Z32
 
 
@@ -583,21 +580,21 @@ def truthy(program, builder, params, param_types_):
 def floor(program, builder, params, param_types_):
     value, = params
     return program.call_extern(
-        builder, "ffloor", [value], [Q32], Z32
+        builder, "ffloor", [value], [Q64], Z32
     ), Z32
 
 
 def ceil(program, builder, params, param_types_):
     value, = params
     return program.call_extern(
-        builder, "fceil", [value], [Q32], Z32
+        builder, "fceil", [value], [Q64], Z32
     ), Z32
 
 
 def round_(program, builder, params, param_types_):
     value, = params
     return program.call_extern(
-        builder, "round", [value], [Q32], Z32
+        builder, "round", [value], [Q64], Z32
     ), Z32
 
 
@@ -641,7 +638,7 @@ BUILTINS = {
     "builtin37": {"func": parse_int, "params": [String]},
     "builtin38": {"func": is_valid_parsed_int, "params": [Z32]},
     "builtin39": {"func": parse_float, "params": [String]},
-    "builtin40": {"func": is_valid_parsed_float, "params": [Q32]},
+    "builtin40": {"func": is_valid_parsed_float, "params": [Q64]},
     "builtin41": {"func": read_input_line, "params": []},
     "builtin42": {"func": open_file, "params": [String, Z32]},
     "builtin43": paramless_func("FILE_READ_MODE", Z32),
@@ -671,7 +668,7 @@ BUILTINS = {
     "builtin67": {"func": dedup, "params": [None]},
     "builtin68": {"func": repeat_array, "params": [ArrayW8, W64]},
     "builtin69": {"func": truthy, "params": [None]},
-    "builtin70": {"func": floor, "params": [Q32]},
-    "builtin71": {"func": ceil, "params": [Q32]},
-    "builtin72": {"func": round_, "params": [Q32]},
+    "builtin70": {"func": floor, "params": [Q64]},
+    "builtin71": {"func": ceil, "params": [Q64]},
+    "builtin72": {"func": round_, "params": [Q64]},
 }

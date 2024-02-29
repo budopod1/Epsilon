@@ -498,7 +498,7 @@ _Bool isValidParsedInt(int32_t i) {
     return i != 2147483647;
 }
 
-float parseFloat(const struct Array *str) {
+double parseFloat(const struct Array *str) {
     char *content = str->content;
     uint64_t length = str->length;
     int64_t dot = 0;
@@ -516,9 +516,9 @@ float parseFloat(const struct Array *str) {
     }
     if (length == 1) return NAN;
     int valid = 0;
-    float result = 0;
-    float multiplier = 0.1;
-    float sign = 1;
+    double result = 0;
+    double multiplier = 0.1;
+    double sign = 1;
     for (int64_t i = 1; i + dot < length; i++) {
         char chr = content[i + dot];
         if ('0' <= chr && chr <= '9') {
@@ -553,7 +553,7 @@ float parseFloat(const struct Array *str) {
     return NAN;
 }
 
-_Bool isValidParsedFloat(float f) {
+_Bool isValidParsedFloat(double f) {
     return !isnan(f);
 }
 
