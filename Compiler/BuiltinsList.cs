@@ -310,7 +310,7 @@ public static class BuiltinsList {
                 new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "overlapCount"),
+                    new UnitPatternSegment<string>(typeof(Name), "overlap_count"),
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {

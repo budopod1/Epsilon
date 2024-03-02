@@ -459,9 +459,9 @@ Usage: TODO<br>
 Usage: TODO<br>
 `W64#<arr:Array<T>>.count<sub:Array<T>>` where `T` is `Any`
 
-**#25: overlapCount**<br>
+**#25: overlap_count**<br>
 Usage: TODO<br>
-`W64#<arr:Array<T>>.overlapCount<sub:Array<T>>` where `T` is `Any`
+`W64#<arr:Array<T>>.overlap_count<sub:Array<T>>` where `T` is `Any`
 
 **#26: nest**<br>
 Usage: TODO<br>
@@ -648,5 +648,5 @@ Usage: computes the smallest integer greater than or equal to the given value.<b
 `Z#<num:Q>.ceil`
 
 **#72: round**<br>
-Usage: computes the integer with the smallest absolute distance from the given value.
+Usage: computes the integer with the smallest absolute distance from the given value.<br>
 `Z#<num:Q>.round`
