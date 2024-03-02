@@ -3,149 +3,143 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class ArgumentParser {
-    ParserTree tree = new ParserTree("", null);
-    ParserTree currentTree;
-    Dictionary<string, string> options = new Dictionary<string, string> {
-        {"h", "Show usage information"},
-        {"help", "Show usage information"},
-    };
+    string cmdName;
+    string description;
+    SwitchableDeque<Expectation> expected = new SwitchableDeque<Expectation>(false);
+    Dictionary<string, Expectation> options = new Dictionary<string, Expectation>();
+    List<(string, string, string[])> optionHelp = new List<(string, string, string[])>();
 
-    public ArgumentParser() {
-        currentTree = tree;
-    }
+    public int OptionUsagePadding = 45;
 
-    public void AddOption(string option, string help) {
-        options[option] = help;
-    }
-
-    public void AddBranch(string name) {
-        ParserTree branch = new ParserTree(name, currentTree);
-        currentTree.AddNode(branch);
-        currentTree = branch;
-    }
-
-    public void AddLeaf(string name) {
-        ParserLeaf branch = new ParserLeaf(name, currentTree);
-        currentTree.AddNode(branch);
-    }
-
-    public void Up() {
-        currentTree = currentTree.GetParent();
+    public ArgumentParser(string cmdName, string description) {
+        this.cmdName = cmdName;
+        this.description = description;
+        AddOption(ShowHelp, "Show this text and exit", "h", "help");
     }
 
     public void DisplayProblem(string problem) {
         Console.WriteLine("Epsilon: "+problem);
-        Console.WriteLine("Use '-h' to view usage");
-        Environment.Exit(0);
-    }
-
-    void TestOption(string option) {
-        if (!options.ContainsKey(option)) {
-            DisplayProblem($"Invalid option '{option}'");
-        }
-    }
-
-    void ShowUsage(IParserNode node, string indent) {
-        string content = node.GetContent();
-        if (content.Length > 0) {
-            if (content[0] == '*') {
-                Console.WriteLine(indent+$"<{content.Substring(1)}>");
-            } else {
-                Console.WriteLine(indent+content);
-            }
-        }
-        ParserTree ctree = node as ParserTree;
-        if (ctree != null) {
-            List<IParserNode> nodes = ctree.GetNodes();
-            foreach (IParserNode sub in nodes)
-                ShowUsage(sub, indent+Utils.Tab);
-        }
-    }
-
-    public void ShowHelp() {
-        Console.WriteLine("Epsilon usage:");
-        ShowUsage(tree, "");
-        Console.WriteLine();
-        Console.WriteLine("Options:");
-        foreach (KeyValuePair<string, string> pair in options) {
-            string prefix = pair.Key.Length == 1 ? "-" : "--";
-            Console.WriteLine(prefix + pair.Key + ": " + pair.Value);
-        }
-        Environment.Exit(0);
-    }
-
-    string ShowTreeOptions(ParserTree t) {
-        return JSONTools.ENList(t.GetNodes().Select(node=>node.GetContent()).Select(
-            txt=>txt[0]=='*'?txt.Substring(1):txt
-        ).ToList(), "or");
+        Console.WriteLine("Use '--help' to view usage");
+        Environment.Exit(1);
     }
     
-    public ParserResults Parse(string[] args) {
-        if (args.Length == 0) ShowHelp();
-        List<string> usedOptions = new List<string>();
-        List<string> mode = new List<string>();
-        List<string> values = new List<string>();
-        ParserTree ctree = tree;
-        bool finished = false;
-        for (int i = 0; i < args.Length; i++) {
-            string arg = args[i];
-
-            if (arg == "-h" || arg == "--help")
-                ShowHelp();
-            
-            if (arg.StartsWith("-") && arg.Length >= 2) {
-                string sliced = arg.Substring(1);
-                if (sliced[0] == '-') {
-                    string option = sliced.Substring(1);
-                    TestOption(option);
-                    usedOptions.Add(option);
-                    continue;
+    public void ShowHelp() {
+        Console.WriteLine(description);
+        Console.WriteLine();
+        Console.WriteLine("Usage:");
+        Console.Write(cmdName + " [options] ");
+        foreach (Expectation expectation in expected) {
+            if (expectation.IsEmpty()) continue;
+            string help = expectation.GetHelp();
+            if (expectation.IsOptional()) help = $"[{help}]";
+            Console.Write(help + " ");
+        }
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine("Options:");
+        foreach ((string help, string expected, string[] names) in optionHelp) {
+            bool first = true;
+            string optionUsage = "";
+            foreach (string name in names) {
+                if (!first) optionUsage += ", ";
+                first = false;
+                if (name.Length == 1) {
+                    optionUsage += "-"+name;
                 } else {
+                    optionUsage += "--"+name;
+                }
+            }
+            if (expected != "") optionUsage += " "+expected;
+            Console.Write(optionUsage.PadRight(OptionUsagePadding));
+            Console.Write(" " + help);
+            Console.WriteLine();
+        }
+        Environment.Exit(0);
+    }
+
+    public T Expect<T>(T expectation) where T : Expectation {
+        expected.Add(expectation);
+        return expectation;
+    }
+
+    public T AddOption<T>(T expectation, string help, params string[] names) where T : Expectation {
+        optionHelp.Add((help, expectation.GetHelp(), names));
+        foreach (string name in names) {
+            options[name] = expectation;
+        }
+        return expectation;
+    }
+
+    public ActionExpectation AddOption(Action action, string help, params string[] names) {
+        optionHelp.Add((help, "", names));
+        ActionExpectation expectation = new ActionExpectation(action);
+        foreach (string name in names) {
+            options[name] = expectation;
+        }
+        return expectation;
+    }
+
+    public void UseOption(string option) {
+        if (!options.ContainsKey(option)) {
+            DisplayProblem($"Unknown option {JSONTools.ToLiteral(option)}");
+        }
+        Expect(options[option]);
+    }
+
+    public void Parse(string[] args) {
+        expected.ToStack();
+        bool positionalOnly = false;
+        foreach (string arg in args) {
+            if (arg == "--") {
+                positionalOnly = true;
+                continue;
+            }
+            
+            if (!positionalOnly && arg.Length >= 2 && arg[0] == '-') {
+                if (arg[1] == '-') {
+                    string option = arg.Substring(2);
+                    UseOption(option);
+                } else {
+                    string sliced = arg.Substring(1);
                     foreach (char chr in sliced) {
                         string option = chr.ToString();
-                        TestOption(option);
-                        usedOptions.Add(option);
+                        UseOption(option);
+                    }
+                }
+                continue;
+            }
+
+            while (true) {
+                if (expected.Count == 0) {
+                    DisplayProblem($"To many parameters: {JSONTools.ToLiteral(arg)}");
+                }
+                Expectation expectation = expected.Pop();
+                expectation.IsPresent = true;
+                if (expectation.IsEmpty()) {
+                    expectation.RunThens();
+                    continue;
+                }
+                bool matches = expectation.Matches(arg);
+                if (!matches) {
+                    if (!expectation.IsOptional()) {
+                        DisplayProblem("Expected " + expectation.GetHelp());
                     }
                     continue;
                 }
-            }
-
-            if (finished) {
-                if (i == args.Length-1) {
-                    break;
-                } else {
-                    DisplayProblem("To many arguments");
-                }
-            }
-            
-            bool foundMatch = false;
-            foreach (IParserNode node in ctree.GetNodes()) {
-                bool isValuePlaceholder = node.GetContent()[0] == '*';
-                if (isValuePlaceholder || node.GetContent() == arg) {
-                    foundMatch = true;
-                    if (isValuePlaceholder) {
-                        values.Add(arg);
-                    } else {
-                        mode.Add(arg);
-                    }
-                    ParserLeaf leaf = node as ParserLeaf;
-                    if (leaf != null) {
-                        finished = true;
-                    }
-                    ParserTree tree = node as ParserTree;
-                    if (tree != null) {
-                        ctree = tree;
-                    }
-                    break;
-                }
-            }
-            
-            if (!foundMatch) {
-                DisplayProblem($"Invalid argument {arg}, expected {ShowTreeOptions(ctree)}");
+                expectation.Matched = arg;
+                expectation.RunThens();
+                break;
             }
         }
-        if (!finished)
-            DisplayProblem($"Incomplete command, expected {ShowTreeOptions(ctree)}");
-        return new ParserResults(usedOptions, mode, values);
+
+        while (expected.Count > 0) {
+            Expectation expectation = expected.Pop();
+            if (expectation.IsEmpty() || expectation.IsOptional()) {
+                expectation.IsPresent = true;
+                expectation.RunThens();
+                continue;
+            }
+            DisplayProblem("Expected " + expectation.GetHelp());
+        }
     }
 }
