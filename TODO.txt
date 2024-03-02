@@ -1,6 +1,4 @@
 TODO:
 * update documentation
 * add caching of compiled .ll files
-* disalow circular imports
-* if A imports B and C, all three of which import D, D should only be compiled once
 * fix testing

@@ -9,18 +9,24 @@ public class Builder {
     string currentFile = "";
     string currentText = "";
     List<string> sections;
+    Dictionary<string, FileTree> files;
+    Dictionary<String, Func<string, IFileCompiler>> compilers = new Dictionary<string, Func<string, IFileCompiler>> {
+        {"epsl", path => new CodeFileCompiler(path)},
+        {"epslspec", path => new SPECFileCompiler(path)},
+    };
 
     public CompilationResult Build(string input) {
         return RunWrapped(() => {
-            projectDirectory = Path.GetDirectoryName(input);
+            projectDirectory = Path.GetFullPath(Path.GetDirectoryName(input));
+            files = new Dictionary<string, FileTree>();
             FileTree tree = LoadFile(input, true);
             LoadTree(tree);
-            TransferStructIDs(tree);
-            TransferStructs(tree);
-            TransferDeclarations(tree);
+            TransferStructIDs();
+            TransferStructs();
+            TransferDeclarations();
             sections = new List<string>();
             int i = 0;
-            foreach (FileTree file in tree.IterTree()) {
+            foreach (FileTree file in files.Values) {
                 currentFile = file.File;
                 currentText = file.Compiler.GetText();
                 sections.Add(file.Compiler.ToExecutable(Path.Combine(
@@ -72,23 +78,22 @@ public class Builder {
     FileTree LoadFile(string partialPath, bool directPath = false) {
         string path = directPath ? Path.GetFullPath(partialPath) : FindFile(partialPath);
         if (path == null) throw new FileNotFoundErrorException(partialPath);
-        string extention = path.Substring(path.LastIndexOf('.')+1);
-        IFileCompiler fileCompiler;
         currentFile = path;
-        if (extention == "epsl") {
-            fileCompiler = new CodeFileCompiler(path);
-        } else if (extention == "epslspec") {
-            fileCompiler = new SPECFileCompiler(path);
-        } else {
-            return null;
-        }
+        if (files.ContainsKey(path)) return files[path];
+        string extention = path.Substring(path.LastIndexOf('.')+1);
+        if (!compilers.ContainsKey(extention)) return null;
+        IFileCompiler fileCompiler = compilers[extention](path);
         currentText = fileCompiler.GetText();
-        return new FileTree(partialPath, fileCompiler, fileCompiler.ToImports());
+        FileTree result = new FileTree(
+            partialPath, fileCompiler, fileCompiler.ToImports()
+        );
+        files[path] = result;
+        return result;
     }
 
     string FindFile(string path) {
-        foreach (string extention in new string[] {".epsl", ".epslspec"}) {
-            string file = path + extention;
+        foreach (string extention in compilers.Keys) {
+            string file = path + "." + extention;
             string project = Path.Combine(projectDirectory, file);
             if (Utils.FileExists(project)) return project;
             string lib = Path.Combine(Utils.ProjectAbsolutePath(), "libs", file);
@@ -98,6 +103,8 @@ public class Builder {
     }
 
     void LoadTree(FileTree tree) {
+        if (tree.TreeLoaded) return;
+        tree.TreeLoaded = true;
         foreach (string path in tree.DependencyPaths) {
             FileTree sub = LoadFile(path);
             LoadTree(sub);
@@ -105,43 +112,37 @@ public class Builder {
         }
     }
 
-    HashSet<LocatedID> TransferStructIDs(FileTree tree) {
-        HashSet<LocatedID> baseTypes_ = new HashSet<LocatedID>();
-        foreach (FileTree dependency in tree.Dependencies) {
-            baseTypes_.UnionWith(TransferStructIDs(dependency));
+    void TransferStructIDs() {
+        foreach (FileTree file in files.Values) {
+            file.StructIDs = file.Compiler.ToStructIDs();
         }
-        currentFile = tree.File;
-        currentText = tree.Compiler.GetText();
-        HashSet<LocatedID> hereTypes_ = tree.Compiler.ToStructIDs();
-        tree.Compiler.AddStructIDs(baseTypes_);
-        baseTypes_.UnionWith(hereTypes_);
-        return baseTypes_;
+        foreach (FileTree file in files.Values) {
+            foreach (FileTree dependency in file.Dependencies) {
+                file.Compiler.AddStructIDs(dependency.StructIDs);
+            }
+        }
     }
 
-    List<Struct> TransferStructs(FileTree tree) {
-        List<Struct> structs = new List<Struct>();
-        foreach (FileTree dependency in tree.Dependencies) {
-            structs.AddRange(TransferStructs(dependency));
+    void TransferStructs() {
+        foreach (FileTree file in files.Values) {
+            file.Structs = file.Compiler.ToStructs();
         }
-        currentFile = tree.File;
-        currentText = tree.Compiler.GetText();
-        List<Struct> hereStructs = tree.Compiler.ToStructs();
-        tree.Compiler.AddStructs(structs);
-        structs.AddRange(hereStructs);
-        return structs;
+        foreach (FileTree file in files.Values) {
+            foreach (FileTree dependency in file.Dependencies) {
+                file.Compiler.AddStructs(dependency.Structs);
+            }
+        }
     }
 
-    List<RealFunctionDeclaration> TransferDeclarations(FileTree tree) {
-        List<RealFunctionDeclaration> declarations = new List<RealFunctionDeclaration>();
-        foreach (FileTree dependency in tree.Dependencies) {
-            declarations.AddRange(TransferDeclarations(dependency));
+    void TransferDeclarations() {
+        foreach (FileTree file in files.Values) {
+            file.Declarations = file.Compiler.ToDeclarations();
         }
-        currentFile = tree.File;
-        currentText = tree.Compiler.GetText();
-        List<RealFunctionDeclaration> hereDeclarations = tree.Compiler.ToDeclarations();
-        tree.Compiler.AddDeclarations(declarations);
-        declarations.AddRange(hereDeclarations);
-        return declarations;
+        foreach (FileTree file in files.Values) {
+            foreach (FileTree dependency in file.Dependencies) {
+                file.Compiler.AddDeclarations(dependency.Declarations);
+            }
+        }
     }
 
     void ShowCompilationError(SyntaxErrorException e, string text, string file) {

@@ -6,19 +6,15 @@ public class FileTree {
     public IFileCompiler Compiler;
     public List<FileTree> Dependencies = new List<FileTree>();
     public List<string> DependencyPaths;
+    public bool TreeLoaded = false;
+
+    public HashSet<LocatedID> StructIDs;
+    public List<Struct> Structs;
+    public List<RealFunctionDeclaration> Declarations;
 
     public FileTree(string file, IFileCompiler compiler, List<string> dependencyPaths) {
         File = file;
         Compiler = compiler;
         DependencyPaths = dependencyPaths;
-    }
-
-    public IEnumerable<FileTree> IterTree() {
-        yield return this;
-        foreach (FileTree sub in Dependencies) {
-            foreach (FileTree subsub in sub.IterTree()) {
-                yield return subsub;
-            }
-        }
     }
 }
