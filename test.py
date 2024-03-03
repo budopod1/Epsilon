@@ -147,6 +147,14 @@ TESTS = [
             {"arguments": [], "compare": "exact", "expect": 2}
         ]
     },
+    {
+        "file": "mathimport.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "float", "expect": 0.54}
+        ]
+    }
 ]
 
 
