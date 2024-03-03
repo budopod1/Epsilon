@@ -1,3 +1,6 @@
 [submodule "Cs-JSON-Tools"]
 	path = Cs-JSON-Tools
 	url = https://github.com/budopod1/Cs-JSON-Tools.git
+[submodule "Cs-Command-Line"]
+	path = Cs-Command-Line
+	url = https://github.com/budopod1/Cs-Command-Line.git
