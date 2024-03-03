@@ -185,11 +185,11 @@ public class SPECFileCompiler : IFileCompiler {
 
     public void AddDeclarations(List<RealFunctionDeclaration> declarations) {}
 
-    public string ToIR(string path) {
+    public string ToIR(string irPath) {
         string ir = obj["ir"].GetString();
         File.Copy(Utils.JoinPaths(
-            Utils.ProjectAbsolutePath(), "libs", ir
-        ), path+".bc", true);
-        return path+".bc";
+            Utils.GetDirectoryName(path), ir
+        ), irPath+".bc", true);
+        return irPath+".bc";
     }
 }

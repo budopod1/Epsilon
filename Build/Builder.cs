@@ -17,7 +17,7 @@ public class Builder {
     public CompilationResult Build(string input) {
         return RunWrapped(() => {
             currentFile = input;
-            projectDirectory = Utils.GetFullPath(Path.GetDirectoryName(input));
+            projectDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
             files = new Dictionary<string, FileTree>();
             FileTree tree = LoadFile(input, true);
             LoadTree(tree);

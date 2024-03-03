@@ -174,4 +174,12 @@ public static class Utils {
             throw new IOException(e.Message);
         }
     }
+
+    public static string GetDirectoryName(string path) {
+        try {
+            return Path.GetDirectoryName(path);
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
 }
