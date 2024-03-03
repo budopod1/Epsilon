@@ -8,5 +8,6 @@ cd "${0%/*}"
     which opt;
     which clang;
     which python;
-    which llvm-link
+    which llvm-link;
+    which llvm-dis;
 ) > commands.txt

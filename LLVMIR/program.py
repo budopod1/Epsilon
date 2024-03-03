@@ -218,6 +218,7 @@ class Program:
                 ir.VoidType(), [ir_type, make_type_(self, W64)]
             ), name=f"{self.path} check{len(self.check_funcs)}"
         )
+        func.attributes.add("alwaysinline")
         entry = func.append_basic_block(name="entry")
         builder = ir.IRBuilder(entry)
         val, refs = func.args

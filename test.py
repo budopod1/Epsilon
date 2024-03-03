@@ -11,7 +11,7 @@ engine = None
 TESTS = [
     {
         "file": "basic.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
@@ -19,15 +19,15 @@ TESTS = [
     },
     {
         "file": "mathtest.epsl",
-        "func": "func0",
-        "sig": CFUNCTYPE(c_float, c_float),
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_double),
         "tests": [
             {"arguments": [3], "compare": "float", "expect": 35.54}
         ]
     },
     {
         "file": "if.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [6], "compare": "exact", "expect": 1},
@@ -37,7 +37,7 @@ TESTS = [
     },
     {
         "file": "while.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [4], "compare": "exact", "expect": 10},
@@ -46,7 +46,7 @@ TESTS = [
     },
     {
         "file": "string.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_char, c_int),
         "tests": [
             {"arguments": [0], "compare": "exact", "expect": b"a"},
@@ -55,7 +55,7 @@ TESTS = [
     },
     {
         "file": "array.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int, c_int),
         "tests": [
             {"arguments": [0, 0], "compare": "exact", "expect": 1},
@@ -64,7 +64,7 @@ TESTS = [
     },
     {
         "file": "struct.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 5}
@@ -72,7 +72,7 @@ TESTS = [
     },
     {
         "file": "switch.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 2},
@@ -82,7 +82,7 @@ TESTS = [
     },
     {
         "file": "builtin.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [4], "compare": "exact", "expect": 2},
@@ -92,7 +92,7 @@ TESTS = [
     },
     {
         "file": "stringify.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [10], "compare": "exact", "expect": 2851}
@@ -100,7 +100,7 @@ TESTS = [
     },
     {
         "file": "equals.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 2}
@@ -108,7 +108,7 @@ TESTS = [
     },
     {
         "file": "bool.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
@@ -116,7 +116,7 @@ TESTS = [
     },
     {
         "file": "deepequals.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 10}
@@ -124,7 +124,7 @@ TESTS = [
     },
     {
         "file": "compound.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 14}
@@ -132,17 +132,25 @@ TESTS = [
     },
     {
         "file": "uninitvalue.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 42},
             {"arguments": [0], "compare": "exact", "expect": 24}
         ]
     },
+    {
+        "file": "circular1.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 2}
+        ]
+    },
 ]
 
 
-def get_func(path, func):
+def get_func(path, source, func_id):
     global engine
     
     with open(path) as file:
@@ -164,19 +172,18 @@ def get_func(path, func):
     engine.finalize_object()
     engine.run_static_constructors()
 
+    func = "main" if func_id == -1 else str(source.resolve()) + str(func_id)
+
     return engine.get_function_address(func)
 
 
 def compile_file(file):
     proccess = subprocess.run(
-        ["mono", "Epsilon.exe", "-w", "compile", str(file), "_"], capture_output=True
+        ["mono", "Epsilon.exe", "-t", "llvm-ll", "compile", str(file), "code.ll"], capture_output=True
     )
-    error_markers = [b"compilation error", b"Error in", b"Unhandled Exception"]
     output = proccess.stdout+proccess.stderr
-    for error_marker in error_markers:
-        if error_marker in output:
-            return False, output.decode('utf-8')
-    subprocess.run(["llvm-dis", "-o", "code-linked.ll", "code-linked.bc"])
+    if proccess.returncode:
+        return False, output.decode('utf-8')
     return True, ""
 
 
@@ -201,7 +208,8 @@ def main():
         file = group["file"]
         func = group["func"]
         print(f"\n🧪 Testing function {func} from file {file}...")
-        compiled, msg = compile_file(base_dir/file)
+        source = base_dir/file
+        compiled, msg = compile_file(source)
 
         if not compiled:
             print("❗ Compilation of function failed with error:")
@@ -209,7 +217,7 @@ def main():
             failed += len(group["tests"])
             continue
         
-        func_ptr = get_func("code-opt.ll", func)
+        func_ptr = get_func("code.ll", source, func)
         func = group["sig"](func_ptr)
         
         for test in group["tests"]:

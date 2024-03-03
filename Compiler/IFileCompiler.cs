@@ -10,6 +10,5 @@ public interface IFileCompiler {
     void AddStructs(List<Struct> structs);
     List<RealFunctionDeclaration> ToDeclarations();
     void AddDeclarations(List<RealFunctionDeclaration> declarations);
-    // TODO: change to` string ToExecutable();`
-    string ToExecutable(string path);
+    string ToIR(string path);
 }

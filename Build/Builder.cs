@@ -8,7 +8,6 @@ public class Builder {
     string projectDirectory = "";
     string currentFile = "";
     string currentText = "";
-    List<string> sections;
     Dictionary<string, FileTree> files;
     Dictionary<String, Func<string, IFileCompiler>> compilers = new Dictionary<string, Func<string, IFileCompiler>> {
         {"epsl", path => new CodeFileCompiler(path)},
@@ -24,16 +23,24 @@ public class Builder {
             TransferStructIDs();
             TransferStructs();
             TransferDeclarations();
-            sections = new List<string>();
+            
+            List<string> sections = new List<string>();
             int i = 0;
             foreach (FileTree file in files.Values) {
                 currentFile = file.File;
                 currentText = file.Compiler.GetText();
-                sections.Add(file.Compiler.ToExecutable(Path.Combine(
+                sections.Add(file.Compiler.ToIR(Path.Combine(
                     Utils.ProjectAbsolutePath(), "sections", $"section{i}"
                 )));
                 i++;
             }
+            
+            string builtins = Path.Combine(Utils.ProjectAbsolutePath(), "builtins.bc");
+            List<string> arguments = new List<string> {
+                "-o", Path.Combine(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--", builtins
+            };
+            arguments.AddRange(sections);
+            Utils.RunCommand("llvm-link", arguments);
         });
     }
     
@@ -248,12 +255,6 @@ public class Builder {
 
     public CompilationResult ToExecutable() {
         return RunWrapped(() => {
-            string builtins = Path.Combine(Utils.ProjectAbsolutePath(), "builtins.bc");
-            List<string> arguments = new List<string> {
-                "-o", $"{Utils.ProjectAbsolutePath()}/code-linked.bc", "--", builtins
-            };
-            arguments.AddRange(sections);
-            Utils.RunCommand("llvm-link", arguments);
             Utils.RunCommand("bash", new List<string> {
                 "--", Path.Combine(Utils.ProjectAbsolutePath(), "compileir.bash")
             });

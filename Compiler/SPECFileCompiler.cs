@@ -185,7 +185,7 @@ public class SPECFileCompiler : IFileCompiler {
 
     public void AddDeclarations(List<RealFunctionDeclaration> declarations) {}
 
-    public string ToExecutable(string path) {
+    public string ToIR(string path) {
         string ir = obj["ir"].GetString();
         File.Copy(Path.Combine(Utils.ProjectAbsolutePath(), "libs", ir), path+".bc", true);
         return path+".bc";

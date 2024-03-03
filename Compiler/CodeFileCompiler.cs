@@ -174,7 +174,7 @@ public class CodeFileCompiler : IFileCompiler {
         program.AddExternalDeclarations(declarations);
     }
 
-    public string ToExecutable(string path) {
+    public string ToIR(string path) {
         Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
         TimingStep();
@@ -226,10 +226,6 @@ public class CodeFileCompiler : IFileCompiler {
         File.Copy(Path.Combine(Utils.ProjectAbsolutePath(), "code.ll"), path+".ll", true);
 
         return path+".ll";
-
-        // Step("Optimizing and compiling IR...");
-        // OptimizeAndLinkIR();
-        // TimingStep();
     }
 
     Program TokenizeStrings(Program program) {
@@ -1772,49 +1768,4 @@ public class CodeFileCompiler : IFileCompiler {
             "--", $"{Utils.ProjectAbsolutePath()}/runpython.bash"
         });
     }
-
-    /*
-
-    void OptimizeAndLinkIR() {
-        System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
-        int exitCode = RunCommand($"cd {Utils.ProjectAbsolutePath()};./linkoptimize.bash 2> err.txt");
-        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
-            string log = file.ReadToEnd();
-            if (log.Length > 0) {
-                throw new BashExceptionException(log);
-            }
-        }
-        if (exitCode != 0)
-            throw new BashExceptionException("Something went wrong with optimization and linking creation");
-    }
-
-    public int CompileIR() {
-        if (CATCH_ERRS) {
-            try {
-                _CompileIR();
-                return 0;
-            } catch (BashExceptionException e) {
-                Console.WriteLine("Error in Bash code:");
-                Console.WriteLine(e.Message);
-                return 1;
-            }
-        } else {
-            _CompileIR();
-            return 0;
-        }
-    }
-
-    void _CompileIR() {
-        System.IO.File.WriteAllText(Utils.ProjectAbsolutePath()+"/err.txt", "");
-        int exitCode = RunCommand($"cd {Utils.ProjectAbsolutePath()};./compileir.bash 2> err.txt");
-        using (StreamReader file = new StreamReader(Utils.ProjectAbsolutePath()+"/err.txt")) {
-            string log = file.ReadToEnd();
-            if (log.Length > 0) {
-                throw new BashExceptionException(log);
-            }
-        }
-        if (exitCode != 0)
-            throw new BashExceptionException("Something went wrong with final compilation");
-    }
-    */
 }
