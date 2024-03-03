@@ -19,7 +19,7 @@ public class CodeFileCompiler : IFileCompiler {
             fileText = file.ReadToEnd();
         }
         program = new Program(
-            Path.GetFullPath(path), new List<IToken>()
+            Utils.GetFullPath(path), new List<IToken>()
         );
         program.span = new CodeSpan(0, fileText.Length-1);
         int i = 0;
@@ -223,7 +223,7 @@ public class CodeFileCompiler : IFileCompiler {
         CreateLLVMIR();
         TimingStep();
 
-        File.Copy(Path.Combine(Utils.ProjectAbsolutePath(), "code.ll"), path+".ll", true);
+        File.Copy(Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code.ll"), path+".ll", true);
 
         return path+".ll";
     }

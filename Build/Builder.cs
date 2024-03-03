@@ -16,7 +16,8 @@ public class Builder {
 
     public CompilationResult Build(string input) {
         return RunWrapped(() => {
-            projectDirectory = Path.GetFullPath(Path.GetDirectoryName(input));
+            currentFile = input;
+            projectDirectory = Utils.GetFullPath(Path.GetDirectoryName(input));
             files = new Dictionary<string, FileTree>();
             FileTree tree = LoadFile(input, true);
             LoadTree(tree);
@@ -29,15 +30,15 @@ public class Builder {
             foreach (FileTree file in files.Values) {
                 currentFile = file.File;
                 currentText = file.Compiler.GetText();
-                sections.Add(file.Compiler.ToIR(Path.Combine(
+                sections.Add(file.Compiler.ToIR(Utils.JoinPaths(
                     Utils.ProjectAbsolutePath(), "sections", $"section{i}"
                 )));
                 i++;
             }
             
-            string builtins = Path.Combine(Utils.ProjectAbsolutePath(), "builtins.bc");
+            string builtins = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "builtins.bc");
             List<string> arguments = new List<string> {
-                "-o", Path.Combine(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--", builtins
+                "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--", builtins
             };
             arguments.AddRange(sections);
             Utils.RunCommand("llvm-link", arguments);
@@ -83,7 +84,8 @@ public class Builder {
     }
 
     FileTree LoadFile(string partialPath, bool directPath = false) {
-        string path = directPath ? Path.GetFullPath(partialPath) : FindFile(partialPath);
+        currentFile = partialPath;
+        string path = directPath ? Utils.GetFullPath(partialPath) : FindFile(partialPath);
         if (path == null) throw new FileNotFoundErrorException(partialPath);
         currentFile = path;
         if (files.ContainsKey(path)) return files[path];
@@ -101,9 +103,10 @@ public class Builder {
     string FindFile(string path) {
         foreach (string extention in compilers.Keys) {
             string file = path + "." + extention;
-            string project = Path.Combine(projectDirectory, file);
+            currentFile = file;
+            string project = Utils.JoinPaths(projectDirectory, file);
             if (Utils.FileExists(project)) return project;
-            string lib = Path.Combine(Utils.ProjectAbsolutePath(), "libs", file);
+            string lib = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs", file);
             if (Utils.FileExists(lib)) return lib;
         }
         return null;
@@ -256,7 +259,7 @@ public class Builder {
     public CompilationResult ToExecutable() {
         return RunWrapped(() => {
             Utils.RunCommand("bash", new List<string> {
-                "--", Path.Combine(Utils.ProjectAbsolutePath(), "compileir.bash")
+                "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "compileir.bash")
             });
         });
     }

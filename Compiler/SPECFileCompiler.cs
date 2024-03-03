@@ -187,7 +187,9 @@ public class SPECFileCompiler : IFileCompiler {
 
     public string ToIR(string path) {
         string ir = obj["ir"].GetString();
-        File.Copy(Path.Combine(Utils.ProjectAbsolutePath(), "libs", ir), path+".bc", true);
+        File.Copy(Utils.JoinPaths(
+            Utils.ProjectAbsolutePath(), "libs", ir
+        ), path+".bc", true);
         return path+".bc";
     }
 }

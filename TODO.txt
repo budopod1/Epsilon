@@ -1,4 +1,3 @@
 TODO:
 * update documentation
 * add caching of compiled .ll files
-* deal with invalid paths being passed to Path.Combine and Path.GetAbsolutePath

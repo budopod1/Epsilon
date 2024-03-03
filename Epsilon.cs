@@ -44,7 +44,7 @@ public class Epsilon {
                 break;
             case "llvm-ll":
                 Utils.RunCommand("llvm-dis", new List<string> {
-                    "--", Path.Combine(Utils.ProjectAbsolutePath(), "code-linked.bc")
+                    "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc")
                 });
                 sourceFile = "code-linked.ll";
                 break;
@@ -56,7 +56,7 @@ public class Epsilon {
         }
         
         try {
-            string executable = Path.Combine(Utils.ProjectAbsolutePath(), sourceFile);
+            string executable = Utils.JoinPaths(Utils.ProjectAbsolutePath(), sourceFile);
             File.Copy(executable, outputFile.Matched, true);
         } catch (IOException) {
             parser.DisplayProblem("Could not write specified output file");

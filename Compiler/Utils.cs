@@ -158,4 +158,20 @@ public static class Utils {
             return false;
         }
     }
+
+    public static string GetFullPath(string path) {
+        try {
+            return Path.GetFullPath(path);
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string JoinPaths(params string[] segments) {
+        try {
+            return Path.Combine(segments);
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
 }
