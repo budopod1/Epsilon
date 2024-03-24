@@ -14,7 +14,10 @@ public class CodeFileCompiler : IFileCompiler {
     Program program;
     string fileText = null;
 
+    string srcPath;
+
     public CodeFileCompiler(string path) {
+        srcPath = path;
         using (StreamReader file = new StreamReader(path)) {
             fileText = file.ReadToEnd();
         }
@@ -174,7 +177,7 @@ public class CodeFileCompiler : IFileCompiler {
         program.AddExternalDeclarations(declarations);
     }
 
-    public string ToIR(string path) {
+    public string ToIR(string destPath) {
         Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
         TimingStep();
@@ -223,9 +226,18 @@ public class CodeFileCompiler : IFileCompiler {
         CreateLLVMIR();
         TimingStep();
 
-        File.Copy(Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code.ll"), path+".ll", true);
+        string dest = destPath + ".ll";
+        File.Copy(Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code.ll"), dest, true);
 
-        return path+".ll";
+        return dest;
+    }
+
+    public string GetSource() {
+        return srcPath;
+    }
+
+    public bool ShouldSaveSPEC() {
+        return true;
     }
 
     Program TokenizeStrings(Program program) {

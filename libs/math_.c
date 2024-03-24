@@ -102,10 +102,10 @@ int32_t math_prod(struct IntArray *nums) {
 }
 
 uint32_t math_GCD(uint32_t n, uint32_t m) {
-    if (m % n == 0) {
+    if (m == 0) {
         return n;
     } else {
-        return math_GCD(n, m % n);
+        return math_GCD(m, n % m);
     }
 }
 

@@ -1,3 +1,9 @@
 TODO:
 * update documentation
-* add caching of compiled .ll files
+* add command line switches to:
+    * allow the project file to be ignored
+    * make all files recompile
+    * remove all .epslspec and .bc files
+* add field to epslspec files to specify configuration to be sent to clang
+* remove loadcommands and related logic
+* add safe array access and safe unwrap

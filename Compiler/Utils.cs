@@ -56,28 +56,6 @@ public static class Utils {
         return true;
     }
 
-    /*
-    public static Dictionary<TValue, TKey> InvertDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary) {
-        return dictionary.ToDictionary(val => val.Value, val => val.Key);
-    }
-
-    public static Dictionary<char, string> EscapeReplacements = new Dictionary<char, string> {
-        {'\n', "\\n"},
-        {'\t', "\\t"},
-        {'\r', "\\r"},
-        {'\\', "\\\\"},
-        {'\0', "\\0"},
-        {'\a', "\\a"},
-        {'\b', "\\b"},
-        {'\f', "\\f"},
-        {'\v', "\\v"},
-    };
-
-    public static Dictionary<char, char> UnescapeReplacements = InvertDictionary(
-        EscapeReplacements
-    ).ToDictionary(val=>val.Key[1], val=>val.Value);
-    */
-
     public static string CammelToSnake(string str) {
         string result = "";
         bool first = true;
@@ -113,7 +91,7 @@ public static class Utils {
     }
 
     public static Process RunCommand(string command, List<string> arguments) {
-        ProcessStartInfo startInfo = new ProcessStartInfo(commands[command]);
+        ProcessStartInfo startInfo = new ProcessStartInfo(command);
         startInfo.CreateNoWindow = true;
         startInfo.UseShellExecute = false;
         startInfo.RedirectStandardOutput = true;
@@ -154,7 +132,7 @@ public static class Utils {
             return false;
         } catch (UnauthorizedAccessException) {
             return false;
-        } catch (Exception) {
+        } catch (ArgumentException) {
             return false;
         }
     }
@@ -162,6 +140,8 @@ public static class Utils {
     public static string GetFullPath(string path) {
         try {
             return Path.GetFullPath(path);
+        } catch (ArgumentNullException) {
+            return null;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
@@ -170,6 +150,8 @@ public static class Utils {
     public static string JoinPaths(params string[] segments) {
         try {
             return Path.Combine(segments);
+        } catch (ArgumentNullException e) {
+            throw e;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
@@ -178,8 +160,66 @@ public static class Utils {
     public static string GetDirectoryName(string path) {
         try {
             return Path.GetDirectoryName(path);
+        } catch (ArgumentNullException e) {
+            throw e;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
+    }
+
+    public static string GetFileName(string path) {
+        try {
+            return Path.GetFileName(path);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string GetFileNameWithoutExtension(string path) {
+        try {
+            return Path.GetFileNameWithoutExtension(path);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string RemoveExtention(string path) {
+        try {
+            return Path.ChangeExtension(path, null);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static bool TryDelete(string path) {
+        try {
+            File.Delete(path);
+            return true;
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException) {
+            return false;
+        } catch (IOException) {
+            return false;
+        } catch (NotSupportedException) {
+            return false;
+        } catch (UnauthorizedAccessException) {
+            return false;
+        }
+    }
+
+    public static (int, int) LongToInts(long num) {
+        return ((int)(num >> 32), (int)(num & ~(int)0));
+    }
+
+    public static long IntsToLong((int, int) vals) {
+        (int a, int b) = vals;
+        return ((long)a << 32) + (long)b;
     }
 }

@@ -10,5 +10,7 @@ public interface IFileCompiler {
     void AddStructs(List<Struct> structs);
     List<RealFunctionDeclaration> ToDeclarations();
     void AddDeclarations(List<RealFunctionDeclaration> declarations);
-    string ToIR(string path);
+    string ToIR(string suggestedPath);
+    string GetSource();
+    bool ShouldSaveSPEC();
 }

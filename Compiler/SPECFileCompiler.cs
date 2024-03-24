@@ -5,24 +5,14 @@ using System.Collections.Generic;
 
 public class SPECFileCompiler : IFileCompiler {
     string path;
+    string fileText;
     ShapedJSON obj;
-    string fileText = null;
     Dictionary<string, Type_> types_ = new Dictionary<string, Type_>();
-    
-    public SPECFileCompiler(string path) {
-        this.path = path;
-        using (StreamReader file = new StreamReader(path)) {
-            fileText = file.ReadToEnd();
-        }
-    }
+    public static IJSONShape Shape { get => _Shape; }
+    static IJSONShape _Shape;
 
-    public string GetText() {
-        return fileText;
-    }
-
-    public List<string> ToImports() {
-        IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
-        IJSONShape shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
+    static SPECFileCompiler() {
+        _Shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
             {"functions", new JSONListShape(new JSONObjectShape(
                 new Dictionary<string, IJSONShape> {
                     {"id", new JSONStringShape()},
@@ -57,10 +47,24 @@ public class SPECFileCompiler : IFileCompiler {
                     ))}
                 }
             ))},
-            {"ir", new JSONStringShape()}
+            {"imports", new JSONListShape(new JSONStringShape())},
+            {"ir", new JSONStringShape()},
+            {"source", new JSONNullableShape(new JSONStringShape())}
         });
-        obj = new ShapedJSON(jsonValue, shape);
-        return new List<string>();
+    }
+    
+    public SPECFileCompiler(string path, string fileText, ShapedJSON obj) {
+        this.path = path;
+        this.fileText = fileText;
+        this.obj = obj;
+    }
+
+    public string GetText() {
+        return fileText;
+    }
+
+    public List<string> ToImports() {
+        return obj["imports"].IterList().Select(str=>str.GetString()).ToList();
     }
 
     public HashSet<LocatedID> ToStructIDs() {
@@ -185,11 +189,16 @@ public class SPECFileCompiler : IFileCompiler {
 
     public void AddDeclarations(List<RealFunctionDeclaration> declarations) {}
 
-    public string ToIR(string irPath) {
+    public string ToIR(string _) {
         string ir = obj["ir"].GetString();
-        File.Copy(Utils.JoinPaths(
-            Utils.GetDirectoryName(path), ir
-        ), irPath+".bc", true);
-        return irPath+".bc";
+        return Utils.JoinPaths(Utils.GetDirectoryName(path), ir);
+    }
+
+    public string GetSource() {
+        return obj["source"].GetString();
+    }
+
+    public bool ShouldSaveSPEC() {
+        return false;
     }
 }
