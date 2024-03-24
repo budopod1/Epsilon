@@ -233,6 +233,7 @@ public class Builder {
     void DeleteUnusedGeneratedSPECs(List<string> lastGeneratedSPECs, List<string> generatedSPECs) {
         foreach (string path in lastGeneratedSPECs) {
             if (generatedSPECs.Contains(path)) continue;
+            currentFile = path;
             string fileText;
             using (StreamReader file = new StreamReader(path)) {
                 fileText = file.ReadToEnd();
