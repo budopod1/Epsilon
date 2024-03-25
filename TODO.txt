@@ -5,5 +5,4 @@ TODO:
     * make all files recompile
     * remove all .epslspec and .bc files
 * add field to epslspec files to specify configuration to be sent to clang
-* remove loadcommands and related logic
 * add safe array access and safe unwrap

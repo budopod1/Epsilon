@@ -78,18 +78,6 @@ public static class Utils {
         return Math.Abs(a-b)/(a+b) < 0.01;
     }
 
-    static Dictionary<string, string> commands;
-
-    public static void LoadCommands(List<string> names) {
-        commands = new Dictionary<string, string>();
-        string path = Utils.ProjectAbsolutePath()+"/commands.txt";
-        using (StreamReader sr = new StreamReader(path)) {
-            foreach (string name in names) {
-                commands[name] = sr.ReadLine();
-            }
-        }
-    }
-
     public static Process RunCommand(string command, List<string> arguments) {
         ProcessStartInfo startInfo = new ProcessStartInfo(command);
         startInfo.CreateNoWindow = true;

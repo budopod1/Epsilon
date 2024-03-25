@@ -15,6 +15,5 @@ vgcore.*
 lines.py
 *.bc
 *.ll
-commands.txt
 *.epslproj
 .*.epslspec

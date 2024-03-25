@@ -4,10 +4,6 @@ using System.Collections.Generic;
 
 public class Epsilon {
     public static int Main(string[] args) {
-        Utils.LoadCommands(new List<string> {
-            "bash", "python", "opt", "clang", "python", "llvm-link", "llvm-dis"
-        });
-        
         ArgumentParser parser = new ArgumentParser(
             "mono Epsilon.exe",
             "A compiler for the Epsilon programming language"
