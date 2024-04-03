@@ -8,6 +8,14 @@ public class Epsilon {
             "mono Epsilon.exe",
             "A compiler for the Epsilon programming language"
         );
+
+        bool alwaysProj = false;
+        bool neverProj = false;
+
+        parser.AddOption(() => {alwaysProj = true;}, "Always use project mode", 
+            "p", "project-mode");
+        parser.AddOption(() => {neverProj = true;}, "Never use project mode", 
+            "P", "no-project-mode");
         
         parser.Expect(new KeywordExpectation("compile", false));
         InputExpectation inputFile = parser.Expect(new InputExpectation("input file"));
@@ -19,8 +27,15 @@ public class Epsilon {
         );
         
         parser.Parse(args);
+
+        if (alwaysProj && neverProj) {
+            parser.DisplayProblem("The 'project-mode' and 'no-project-mode' options are mutually exclusive");
+        }
         
         Builder builder = new Builder();
+
+        builder.ALWAYS_PROJECT = alwaysProj;
+        builder.NEVER_PROJECT = neverProj;
         
         CompilationResult result = builder.Build(inputFile.Matched);
         if (result.GetStatus() == CompilationResultStatus.GOOD 

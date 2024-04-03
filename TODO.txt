@@ -6,3 +6,6 @@ TODO:
     * remove all .epslspec and .bc files
 * add field to epslspec files to specify configuration to be sent to clang
 * add safe array access and safe unwrap
+* either remove or improve lines.py
+* remove or redo command line auto syntax help
+* redo CLI

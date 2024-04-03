@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
 public class Builder {
+    public bool ALWAYS_PROJECT = false;
+    public bool NEVER_PROJECT = false;
+    
+    bool isProj = false;
     string currentFile = "";
     string currentText = "";
     long? lastBuildStartTime;
@@ -25,7 +29,7 @@ public class Builder {
             EPSLPROJ proj = null;
             lastBuildStartTime = null;
             List<string> lastGeneratedSPECs = new List<string>();
-            if (Utils.FileExists(projLocation)) {
+            if (!NEVER_PROJECT && Utils.FileExists(projLocation)) {
                 string fileText;
                 currentFile = projLocation;
                 using (StreamReader file = new StreamReader(projLocation)) {
@@ -35,6 +39,7 @@ public class Builder {
                 proj = EPSLPROJ.FromText(fileText);
                 lastBuildStartTime = proj.CompileStartTime;
                 lastGeneratedSPECs = proj.EPSLSPECS;
+                isProj = true;
             }
 
             currentFile = Utils.GetFullPath(Utils.RemoveExtention(input));
@@ -42,6 +47,7 @@ public class Builder {
             FileTree tree = LoadFile(entrypoint, projectDirectory);
 
             LoadTree(tree, projectDirectory);
+            DetermineIsProj();
             TransferStructIDs();
             TransferStructs();
             TransferDeclarations();
@@ -58,9 +64,15 @@ public class Builder {
             arguments.AddRange(sections);
             Utils.RunCommand("llvm-link", arguments);
 
-            EPSLPROJ newProj = new EPSLPROJ(buildStartTime, generatedSPECs);
-            newProj.ToFile(projLocation);
+            if (IsProjMode()) {
+                EPSLPROJ newProj = new EPSLPROJ(buildStartTime, generatedSPECs);
+                newProj.ToFile(projLocation);
+            }
         });
+    }
+
+    bool IsProjMode() {
+        return !NEVER_PROJECT && (ALWAYS_PROJECT || isProj);
     }
     
     public CompilationResult RunWrapped(Action action) {
@@ -113,20 +125,19 @@ public class Builder {
         currentText = file.Text;
     }
 
-    DispatchedFile DispatchByExtention(string path) {
-        string extention = path.Substring(path.LastIndexOf('.')+1);
-        currentFile = path;
-        if (extention == "epsl") {
-            return new DispatchedFile(new CodeFileCompiler(path), path);
+    void CleanupSPEC(string path, ShapedJSON obj) {
+        string ir = obj["ir"].GetString();
+        string source = obj["source"].GetString();
+        if (ir != null) {
+            string irPath = Utils.JoinPaths(Utils.GetDirectoryName(path), ir);
+            if (source != irPath) Utils.TryDelete(irPath);
         }
-        throw new IOException($"Invalid extention for source file '{extention}'");
+        Utils.TryDelete(path);
     }
 
-    DispatchedFile DispatchFile(string path) {
-        string extention = path.Substring(path.LastIndexOf('.')+1);
-        if (extention != "epslspec") {
-            return DispatchByExtention(path);
-        }
+    int LOAD_RETRY = 3;
+
+    public DispatchedFile DispatchEPSLSPEC(string path) {
         string fileText;
         currentFile = path;
         using (StreamReader file = new StreamReader(path)) {
@@ -138,6 +149,7 @@ public class Builder {
         string source = Utils.GetFullPath(obj["source"].GetString());
         string generatedEPSLSPEC = null;
         if (source != null) {
+            if (NEVER_PROJECT) return null;
             if (!Utils.FileExists(source)) {
                 throw new InvalidSPECResourceException(
                     obj, path, source
@@ -147,7 +159,7 @@ public class Builder {
             currentFile = source;
             long fileModified = new DateTimeOffset(File.GetLastWriteTime(source)).ToUnixTimeSeconds();
             if (lastBuildStartTime == null || fileModified > lastBuildStartTime.Value) {
-                return DispatchByExtention(source);
+                return DispatchFile(source);
             }
         }
         currentFile = path;
@@ -165,37 +177,61 @@ public class Builder {
         );
     }
 
-    void CleanupSPEC(string path, ShapedJSON obj) {
-        string ir = obj["ir"].GetString();
-        string source = obj["source"].GetString();
-        if (ir != null) {
-            string irPath = Utils.JoinPaths(Utils.GetDirectoryName(path), ir);
-            if (source != irPath) Utils.TryDelete(irPath);
-        }
-        Utils.TryDelete(path);
+    public DispatchedFile DispatchEPSL(string path) {
+        return new DispatchedFile(new CodeFileCompiler(path), path);
     }
 
-    int LOAD_RETRY = 3;
+    IEnumerable<string> FileLocations(string path, string projDirectory) {
+        foreach (string extention in extentions) {
+            foreach (string prefix in prefixes) {
+                string file = prefix + path + "." + extention;
+                currentFile = file;
+                string project = Utils.JoinPaths(projDirectory, file);
+                if (Utils.FileExists(project)) yield return project;
+                string lib = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs", file);
+                if (Utils.FileExists(lib)) yield return lib;
+            }
+        }
+    }
 
+    DispatchedFile DispatchFile(string path) {
+        string extention = path.Substring(path.LastIndexOf('.')+1);
+        switch (extention) {
+            case "epslspec":
+                return DispatchEPSLSPEC(path);
+            case "epsl":
+                return DispatchEPSL(path);
+            default:
+                return null;
+        }
+    }
+    
     FileTree LoadFile(string partialPath, string projDirectory) {
-        string path;
         DispatchedFile dispatched = null;
-        for (int i = 0; dispatched == null && i < LOAD_RETRY; i++) {
+        bool anyLocation = false;
+        for (int attempts = 0; dispatched == null && attempts < LOAD_RETRY; attempts++) {
             try {
-                currentFile = partialPath;
-                path = Utils.GetFullPath(FindFile(partialPath, projDirectory));
-                if (path == null) throw new ModuleNotFoundException(partialPath);
-                currentFile = path;
-                if (files.ContainsKey(path)) return files[path];
-                dispatched = DispatchFile(path);
+                anyLocation = false;
+                foreach (string location in FileLocations(partialPath, projDirectory)) {
+                    dispatched = DispatchFile(location);
+                    if (dispatched != null) {
+                        anyLocation = true;
+                        break;
+                    }
+                }
+                if (!anyLocation) break;
             } catch (InvalidSPECResourceException e) {
                 CleanupSPEC(e.GetEPSLSPEC(), e.GetObj());
             }
         }
         if (dispatched == null) {
-            throw new IOException($"Cannot load module '{partialPath}': to many retries");
+            if (anyLocation) {
+                throw new IOException($"Cannot load module '{partialPath}': too many retries");
+            } else {
+                throw new ModuleNotFoundException(partialPath);
+            }
         }
-        path = dispatched.Path;
+        string path = dispatched.Path;
         IFileCompiler fileCompiler = dispatched.Compiler;
         currentFile = path;
         currentText = fileCompiler.GetText();
@@ -204,20 +240,6 @@ public class Builder {
         );
         files[path] = result;
         return result;
-    }
-
-    string FindFile(string path, string projDirectory) {
-        foreach (string extention in extentions) {
-            foreach (string prefix in prefixes) {
-                string file = prefix + path + "." + extention;
-                currentFile = file;
-                string project = Utils.JoinPaths(projDirectory, file);
-                if (Utils.FileExists(project)) return project;
-                string lib = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs", file);
-                if (Utils.FileExists(lib)) return lib;
-            }
-        }
-        return null;
     }
 
     void LoadTree(FileTree tree, string projDirectory) {
@@ -242,6 +264,19 @@ public class Builder {
             IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
             ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
             CleanupSPEC(path, obj);
+        }
+    }
+
+    void DetermineIsProj() {
+        int saveSPECFiles = 0;
+        foreach (FileTree file in files.Values) {
+            if (file.GeneratedEPSLSPEC != null || file.Compiler.ShouldSaveSPEC()) {
+                saveSPECFiles++;
+                if (saveSPECFiles >= 2) {
+                    isProj = true;
+                    return;
+                }
+            }
         }
     }
 
@@ -299,6 +334,7 @@ public class Builder {
     }
 
     void SaveEPSLSPECS() {
+        if (!IsProjMode()) return;
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             if (file.Compiler.ShouldSaveSPEC()) {
