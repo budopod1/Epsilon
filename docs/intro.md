@@ -1,5 +1,11 @@
 # Epsilon Intro
 
+## Note
+
+This Epsilon compiler is currently slightly noncomformant.
+* The .unwrap function produces undefined behaviour when called on null
+* Indexing an array out of bounds produces undefined behaviour
+
 ## Types
 
 Epsilon is a strongly typed language, meaning all expressions have defined types at compile time. There are two kinds of types in Epsilon: reference types and value types. Value types are types whose values are stored locally on the stack, meaning that they must be copied when passed to or returned from functions. Reference types, however, have their data stored on the heap, so the stack only stores a pointer to the location of the data on the heap. As such, reference types must only copy the memory address of the data, instead of the data itself, when the data is moved around. This however comes with the downside that data stored on the heap is slower to access. Most types that store only a small amount of data&mdash;such as number types&mdash;are value types, while larger types&mdash;such as arrays&mdash;are reference types.
