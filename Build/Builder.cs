@@ -178,7 +178,7 @@ public class Builder {
     }
 
     public DispatchedFile DispatchEPSL(string path) {
-        return new DispatchedFile(new CodeFileCompiler(path), path);
+        return new DispatchedFile(new EPSLFileCompiler(path), path);
     }
 
     IEnumerable<string> FileLocations(string path, string projDirectory) {

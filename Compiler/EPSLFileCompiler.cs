@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Collections.Generic;
 
-public class CodeFileCompiler : IFileCompiler {
+public class EPSLFileCompiler : IFileCompiler {
     public bool POST_PARSE_PRINT_AST = false;
     public bool PRE_PARSE_PRINT_AST = false;
     public bool PRINT_STEPS = false;
@@ -16,7 +16,7 @@ public class CodeFileCompiler : IFileCompiler {
 
     string srcPath;
 
-    public CodeFileCompiler(string path) {
+    public EPSLFileCompiler(string path) {
         srcPath = path;
         using (StreamReader file = new StreamReader(path)) {
             fileText = file.ReadToEnd();
