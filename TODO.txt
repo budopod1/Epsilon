@@ -6,5 +6,4 @@ TODO:
     * remove all .epslspec and .bc files
 * add field to epslspec files to specify configuration to be sent to clang
 * add safe array access and safe unwrap
-* remove or redo command line auto syntax help
-* redo CLI
+* improve CLI

@@ -17,7 +17,6 @@ public class Epsilon {
         parser.AddOption(() => {neverProj = true;}, "Never use project mode", 
             "P", "no-project-mode");
         
-        parser.Expect(new KeywordExpectation("compile", false));
         InputExpectation inputFile = parser.Expect(new InputExpectation("input file"));
         InputExpectation outputFile = parser.Expect(new InputExpectation("output file"));
 
@@ -25,6 +24,8 @@ public class Epsilon {
             new PossibilitiesExpectation("executable", "llvm-ll", "llvm-bc"), 
             "The output file type", "t", "output-type"
         );
+
+        parser.AddDefaultUsage();
         
         parser.Parse(args);
 
