@@ -135,6 +135,18 @@ public class Builder {
         Utils.TryDelete(path);
     }
 
+    void CleanupSPEC(string path) {
+        currentFile = path;
+        string fileText;
+        using (StreamReader file = new StreamReader(path)) {
+            fileText = file.ReadToEnd();
+        }
+        currentText = fileText;
+        IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
+        ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
+        CleanupSPEC(path, obj);
+    }
+
     int LOAD_RETRY = 3;
 
     public DispatchedFile DispatchEPSLSPEC(string path) {
@@ -255,15 +267,7 @@ public class Builder {
     void DeleteUnusedGeneratedSPECs(List<string> lastGeneratedSPECs, List<string> generatedSPECs) {
         foreach (string path in lastGeneratedSPECs) {
             if (generatedSPECs.Contains(path)) continue;
-            currentFile = path;
-            string fileText;
-            using (StreamReader file = new StreamReader(path)) {
-                fileText = file.ReadToEnd();
-            }
-            currentText = fileText;
-            IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
-            ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
-            CleanupSPEC(path, obj);
+            CleanupSPEC(path);
         }
     }
 
@@ -463,6 +467,26 @@ public class Builder {
             Utils.RunCommand("bash", new List<string> {
                 "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "compileir.bash")
             });
+        });
+    }
+
+    public CompilationResult Teardown(string projFile) {
+        return RunWrapped(() => {
+            string projectDirectory = Utils.GetFullPath(Utils.GetDirectoryName(projFile));
+
+            string fileText;
+            currentFile = projFile;
+            using (StreamReader file = new StreamReader(projFile)) {
+                fileText = file.ReadToEnd();
+            }
+            currentText = fileText;
+            EPSLPROJ proj = EPSLPROJ.FromText(fileText);
+
+            foreach (string spec in proj.EPSLSPECS) {
+                CleanupSPEC(spec);
+            }
+
+            Utils.TryDelete(projFile);
         });
     }
 }
