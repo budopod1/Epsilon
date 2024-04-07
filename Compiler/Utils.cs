@@ -78,7 +78,7 @@ public static class Utils {
         return Math.Abs(a-b)/(a+b) < 0.01;
     }
 
-    public static Process RunCommand(string command, List<string> arguments) {
+    public static Process RunCommand(string command, IEnumerable<string> arguments) {
         ProcessStartInfo startInfo = new ProcessStartInfo(command);
         startInfo.CreateNoWindow = true;
         startInfo.UseShellExecute = false;

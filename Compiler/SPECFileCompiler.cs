@@ -47,6 +47,11 @@ public class SPECFileCompiler : IFileCompiler {
                     ))}
                 }
             ))},
+            {"clang_config", new JSONListShape(new JSONObjectShape(
+                new Dictionary<string, IJSONShape> {
+                    {"type", new JSONStringShape()}
+                }
+            ))},
             {"imports", new JSONListShape(new JSONStringShape())},
             {"ir", new JSONStringShape()},
             {"source", new JSONNullableShape(new JSONStringShape())}
@@ -200,5 +205,36 @@ public class SPECFileCompiler : IFileCompiler {
 
     public bool ShouldSaveSPEC() {
         return false;
+    }
+
+    public IEnumerable<IClangConfig> GetClangConfig() {
+        return obj["clang_config"].IterList().Select(ParseClangConfigFromJSON);
+    }
+
+    public static IClangConfig ParseClangConfigFromJSON(ShapedJSON obj) {
+        string type = obj["type"].GetString();
+        Dictionary<string, IJSONShape> fields;
+        
+        switch (type) {
+            case "constant":
+                fields = new Dictionary<string, IJSONShape> {
+                    {"config", new JSONStringShape()}
+                };
+                break;
+            default:
+                throw new InvalidJSONException(
+                    "Invalid type of clang config", 
+                    obj.GetJSON()
+                );
+        }
+
+        obj = obj.ToShape(new JSONObjectShape(fields));
+
+        switch (type) {
+            case "constant":
+                return new ConstantClangConfig(obj["config"].GetString());
+            default:
+                throw new InvalidOperationException();
+        }
     }
 }

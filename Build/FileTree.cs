@@ -85,6 +85,9 @@ public class FileTree {
         
         obj["types_"] = type_Creator.GetJSON();
 
+        obj["clang_config"] = new JSONList(Compiler.GetClangConfig().Select(
+            item => item.GetJSON()));
+
         obj["imports"] = new JSONList(Imports.Select(import => new JSONString(import)));
 
         obj["ir"] = new JSONString(IR);

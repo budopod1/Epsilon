@@ -240,6 +240,10 @@ public class EPSLFileCompiler : IFileCompiler {
         return true;
     }
 
+    public IEnumerable<IClangConfig> GetClangConfig() {
+        return new List<IClangConfig>();
+    }
+
     Program TokenizeStrings(Program program) {
         return (Program)PerformMatching(program, new StringMatcher(program));
     }

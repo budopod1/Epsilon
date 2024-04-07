@@ -13,4 +13,5 @@ public interface IFileCompiler {
     string ToIR(string suggestedPath);
     string GetSource();
     bool ShouldSaveSPEC();
+    IEnumerable<IClangConfig> GetClangConfig();
 }

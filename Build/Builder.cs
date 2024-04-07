@@ -169,10 +169,9 @@ public class Builder {
             }
             generatedEPSLSPEC = path;
             currentFile = source;
+            if (lastBuildStartTime == null) return DispatchFile(source);
             long fileModified = new DateTimeOffset(File.GetLastWriteTime(source)).ToUnixTimeSeconds();
-            if (lastBuildStartTime == null || fileModified > lastBuildStartTime.Value) {
-                return DispatchFile(source);
-            }
+            if (fileModified > lastBuildStartTime.Value) return DispatchFile(source);
         }
         currentFile = path;
         string ir = obj["ir"].GetString();
@@ -362,6 +361,12 @@ public class Builder {
         }
     }
 
+    IEnumerable<string> GetClangFlags() {
+        IEnumerable<IClangConfig> configs = files.Values.SelectMany(
+            file => file.Compiler.GetClangConfig());
+        return configs.Select(config => config.Stringify()).Distinct();
+    }
+
     void ShowCompilationError(SyntaxErrorException e, string text, string file) {
         CodeSpan span = e.span;
 
@@ -465,9 +470,14 @@ public class Builder {
 
     public CompilationResult ToExecutable() {
         return RunWrapped(() => {
-            Utils.RunCommand("bash", new List<string> {
-                "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "compileir.bash")
+            Utils.RunCommand("opt", new List<string> {
+                "-O3", "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-opt.bc"),
+                Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc")
             });
+            Utils.RunCommand("clang", GetClangFlags().Concat(new List<string> {
+                "-lc", "-lm", "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code"),
+                Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-opt.bc"),
+            }));
         });
     }
 
