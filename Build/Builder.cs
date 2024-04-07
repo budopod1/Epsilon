@@ -219,6 +219,7 @@ public class Builder {
     }
     
     FileTree LoadFile(string partialPath, string projDirectory) {
+        if (files.ContainsKey(partialPath)) return files[partialPath];
         DispatchedFile dispatched = null;
         bool anyLocation = false;
         for (int attempts = 0; dispatched == null && attempts < LOAD_RETRY; attempts++) {
@@ -250,7 +251,7 @@ public class Builder {
         FileTree result = new FileTree(
             path, fileCompiler, dispatched.GeneratedSPEC
         );
-        files[path] = result;
+        files[partialPath] = result;
         return result;
     }
 

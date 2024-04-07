@@ -3,9 +3,11 @@ from ctypes import CFUNCTYPE, c_double, c_float, c_int, c_uint, c_ushort, c_ulon
 import subprocess
 from pathlib import Path
 import sys
+import multiprocessing
 
 
 engine = None
+manager = multiprocessing.Manager()
 
 
 TESTS = [
@@ -157,6 +159,8 @@ TESTS = [
     }
 ]
 
+TIMEOUT = 15
+
 
 def get_func(path, source, func_id):
     global engine
@@ -187,7 +191,8 @@ def get_func(path, source, func_id):
 
 def compile_file(file):
     proccess = subprocess.run(
-        ["mono", "Epsilon.exe", "-t", "llvm-ll", "compile", str(file), "code.ll"], capture_output=True
+        ["mono", "Epsilon.exe", "-t", "llvm-ll", "compile", str(file), "-o", "code.ll", "-P"],
+        capture_output=True, timeout=TIMEOUT
     )
     output = proccess.stdout+proccess.stderr
     if proccess.returncode:
@@ -200,6 +205,13 @@ def equal(mode, a, b):
         return a == b
     elif mode == "float":
         return abs(a - b) < 0.005
+
+
+test_result = manager.dict()
+
+
+def run_test(func, args):
+    test_result["result"] = func(*args)
 
 
 def main():
@@ -217,11 +229,18 @@ def main():
         func = group["func"]
         print(f"\n🧪 Testing function {func} from file {file}...")
         source = base_dir/file
-        compiled, msg = compile_file(source)
 
-        if not compiled:
+        try:
+            did_compile, compile_message = compile_file(source)
+        except subprocess.TimeoutExpired:
+            print("❗ Compilation of function failed:")
+            print(f"Compliation did not complete within {TIMEOUT} seconds")
+            failed += len(group["tests"])
+            continue
+
+        if not did_compile:
             print("❗ Compilation of function failed with error:")
-            print(msg)
+            print(compile_message)
             failed += len(group["tests"])
             continue
         
@@ -230,16 +249,30 @@ def main():
         
         for test in group["tests"]:
             print(f"Running test {i}/{test_count}...")
-            result = func(*test["arguments"])
-            expect = test["expect"]
             
-            if equal(test["compare"], result, expect):
-                print("✅ Test passed")
-                succeeded += 1
-            else:
+            process = multiprocessing.Process(
+                target=run_test, args=(func, test["arguments"]))
+            process.start()
+            process.join(TIMEOUT)
+
+            if process.is_alive():
+                process.terminate()
+                process.join()
                 print("❌ Test failed!")
-                print(f"Expected {expect}, got {result}")
+                print(f"Test did not complete within {TIMEOUT} seconds")
                 failed += 1
+            else:
+                expect = test["expect"]
+
+                result = test_result["result"]
+                
+                if equal(test["compare"], result, expect):
+                    print("✅ Test passed")
+                    succeeded += 1
+                else:
+                    print("❌ Test failed!")
+                    print(f"Expected {expect}, got {result}")
+                    failed += 1
 
             i += 1
     

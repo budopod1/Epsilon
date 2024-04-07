@@ -28,12 +28,13 @@ Modes:
         
         InputExpectation inputFile = new InputExpectation("input file");
         InputExpectation outputFile = new InputExpectation("output file");
+        parser.AddOption(outputFile, "The path to output to", "o", "output");
         
         InputExpectation projFile = new InputExpectation("project file");
         
         mode.Then(() => {
             if (mode.Value() == "compile") {
-                parser.Expect(inputFile, outputFile);
+                parser.Expect(inputFile);
             } else if (mode.Value() == "teardown") {
                 parser.Expect(projFile);
             }
@@ -44,8 +45,8 @@ Modes:
             "The output file type", "t", "output-type"
         );
 
-        parser.AddUsageOption(mode, inputFile, outputFile);
-        parser.AddUsageOption(mode, projFile);
+        parser.AddUsageOption(mode.Usage("compile"), inputFile);
+        parser.AddUsageOption(mode.Usage("teardown"), projFile);
         
         parser.Parse(args);
 
@@ -55,11 +56,23 @@ Modes:
             if (alwaysProj && neverProj) {
                 parser.DisplayProblem("The 'project-mode' and 'no-project-mode' options are mutually exclusive");
             }
+
+            string input = Utils.GetFullPath(inputFile.Matched);
+
+            string output = null;
+            if (outputFile.IsPresent) {
+                output = outputFile.Matched;
+            } else {
+                string outputDir = Utils.GetDirectoryName(input);
+                string outputName = Utils.GetFileNameWithoutExtension(input);
+                if (outputName == "entry") outputName = "result";
+                output = Utils.JoinPaths(outputDir, outputName);
+            }
     
             builder.ALWAYS_PROJECT = alwaysProj;
             builder.NEVER_PROJECT = neverProj;
             
-            CompilationResult result = builder.Build(inputFile.Matched);
+            CompilationResult result = builder.Build(input);
             if (result.GetStatus() == CompilationResultStatus.GOOD 
                 && outputType.Value() == "executable") {
                 result = builder.ToExecutable();
@@ -90,7 +103,7 @@ Modes:
             
             try {
                 string executable = Utils.JoinPaths(Utils.ProjectAbsolutePath(), sourceFile);
-                File.Copy(executable, outputFile.Matched, true);
+                File.Copy(executable, output, true);
             } catch (IOException) {
                 parser.DisplayProblem("Could not write specified output file");
                 return 1;
@@ -104,6 +117,10 @@ Modes:
 
             if (outputType.IsPresent) {
                 parser.DisplayProblem("The 'output-type' option requires 'compile' mode");
+            }
+
+            if (outputFile.IsPresent) {
+                parser.DisplayProblem("The 'output' option requires 'compile' mode");
             }
 
             CompilationResult result = builder.Teardown(projFile.Matched);
