@@ -1,4 +1,3 @@
 TODO:
 * update documentation
-* add field to epslspec files to specify configuration to be sent to clang
 * add safe array access and safe unwrap
