@@ -13,6 +13,8 @@
     
     {"id": "math_expC", "callee": "math_expC", "return_type_": "C", "template": [{"type": "name", "name": "exp"}, {"type": "argument", "name": "val", "type_": "C"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
+    {"id": "math_exp", "callee": "exp", "return_type_": "Q64", "template": [{"type": "name", "name": "exp"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    
     {"id": "math_sum", "callee": "math_sum", "return_type_": "Z", "template": [{"type": "name", "name": "sum"}, {"type": "argument", "name": "nums", "type_": "Array<Z>"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
     {"id": "math_usum", "callee": "math_usum", "return_type_": "W", "template": [{"type": "name", "name": "sum"}, {"type": "argument", "name": "nums", "type_": "Array<W>"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
@@ -31,17 +33,17 @@
     
     {"id": "math_getE", "callee": "math_getE", "return_type_": "Q64", "template": [{"type": "name", "name": "e"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_isNaN32", "callee": "math_isNaN32", "return_type_": "Bool", "template": [{"type": "name", "name": "isNaN"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_isNaN32", "callee": "math_isNaN32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_NaN"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_isNaN64", "callee": "math_isNaN64", "return_type_": "Bool", "template": [{"type": "name", "name": "isNaN"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_isNaN64", "callee": "math_isNaN64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_NaN"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_isFinite32", "callee": "math_isFinite32", "return_type_": "Bool", "template": [{"type": "name", "name": "isFinite"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_isFinite32", "callee": "math_isFinite32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_finite"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_isFinite64", "callee": "math_isFinite64", "return_type_": "Bool", "template": [{"type": "name", "name": "isFinite"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_isFinite64", "callee": "math_isFinite64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_finite"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_isInfinite32", "callee": "math_isInfinite32", "return_type_": "Bool", "template": [{"type": "name", "name": "isInfinite"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_isInfinite32", "callee": "math_isInfinite32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_infinite"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_isInfinite64", "callee": "math_isInfinite64", "return_type_": "Bool", "template": [{"type": "name", "name": "isInfinite"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_isInfinite64", "callee": "math_isInfinite64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_infinite"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
     {"id": "math_sin", "callee": "llvm.sin.f64", "return_type_": "Q64", "template": [{"type": "name", "name": "sin"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 

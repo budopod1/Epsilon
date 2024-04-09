@@ -20,17 +20,17 @@ To setup and build Epsilon, run:
 
 ## Using Epsilon
 
-[A intro to Epsilon.](docs/intro.md)
+Epsilon has documentation avaliable [here](/docs/syntax.md).
 
 ## Running Code
 
-The file extention of an Epsilon file should be .epsl. To compile an Epsilon file, run the command:
+Epsilon files must use the extention `.epsl`. To compile them, run:
 
-    mono <path to Epsilon.exe> compile <input file path> <output file path>
+    mono <path to Epsilon.exe> compile <input file path> [-o <output file path>]
 
 ## Building
 
-After Epsilon has been setup, Epsilon's C# can be rebuilt with `./build.bash`, while Epsilon's builtins can be rebuilt with `./buildbuiltins.bash`.
+After Epsilon has been setup, Epsilon's C# can be rebuilt with `./build.bash`, Epsilon's builtins can be rebuilt with `./buildbuiltins.bash`, and Epsilon's standard library can be rebuilt with `./buildlibs.bash`.
 
 ## Testing
 

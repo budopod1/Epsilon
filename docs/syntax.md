@@ -1,55 +1,63 @@
-# Epsilon Intro
+# Epsilon Documentation
 
-## Note
+## Table of Content
+
+1. [Syntax](/docs/syntax.md)
+1. [Modules & CLI](/docs/modules.md)
+1. [Module Refrence](/docs/modref.md)
+
+## Syntax
+
+### Note
 
 This Epsilon compiler is currently slightly noncomformant.
 * The .unwrap function produces undefined behaviour when called on null
 * Indexing an array out of bounds produces undefined behaviour
 
-## Types
+### Types
 
 Epsilon is a strongly typed language, meaning all expressions have defined types at compile time. There are two kinds of types in Epsilon: reference types and value types. Value types are types whose values are stored locally on the stack, meaning that they must be copied when passed to or returned from functions. Reference types, however, have their data stored on the heap, so the stack only stores a pointer to the location of the data on the heap. As such, reference types must only copy the memory address of the data, instead of the data itself, when the data is moved around. This however comes with the downside that data stored on the heap is slower to access. Most types that store only a small amount of data&mdash;such as number types&mdash;are value types, while larger types&mdash;such as arrays&mdash;are reference types.
 
-### Bit Types & Generic Types
+#### Bit Types & Generic Types
 
 Some types have a varying width in memory, so you can suffix the type name with a number specifying the number of bits that should be used for the type. Some types take generics, and these generics can be specified with a syntax of the form `BaseType<T1, T2, etc>`.
 
-### Unsigned Integer Types
+#### Unsigned Integer Types
 
 There are four types of unsigned integers in Epsilon: `W`, `Byte`, `Bool`, and `L`. `W` (the name comes from the set of whole numbers, which contains all integers >= 0) is the general unsigned integer type, and is a bit type, with a default bit count of 32. `Byte` is equivalent in all but name to `W8` and represents a byte of data. `Bool` is equivalent to `W1`. The final unsigned integer type, `L` (the name comes from `long`) is an alias for `W64`.
 
-### The Signed Integer Type
+#### The Signed Integer Type
 
 There is only one signed integer type in Epsilon, `Z` (the name comes from ℤ, the symbol for the set of integers). `Z` is a bit type, with a default bit count of 32.
 
-### The Float Type
+#### The Float Type
 
-There is also only one floating point type, `Q`. `Q` is a bit type, but only bit counts of 16, 32 (the default), or 64 are guaranteed to be supported.
+There is also only one floating point type, `Q`. `Q` is a bit type, but only bit counts of 16, 32, or 64 (the default) are guaranteed to be supported.
 
-### Array Types
+#### Array Types
 
 The type `Array` in Epsilon is a generic type that takes one generic. It stores a variable-sized array on the heap, and is a reference type. `Str` is an alias for `Array<Byte>`.
 
-### The Optional Type
+#### The Optional Type
 
 The type `Optional` in Epsilon is a generic type that takes one generic, and that generic must be a reference type. It stores a reference or null, and is itself a reference type.
 
-### The File Type
+#### The File Type
 
 `File` in Epsilon stores a reference to a file on disk or null. It is a reference type.
 
-### Struct Types
+#### Struct Types
 
 Your programs in Epsilon can define structs, instances of which have the type of the struct itself. Struct types are always reference types.
 
-### Type Shortcuts
+#### Type Shortcuts
 
 Epsilon contains two type shortcuts, which are shorter syntaxes for generic types:
 * `[T]` -> `Array<T>`
 * `T?` -> `Optional<T>`
 
 
-### Implicit Type Conversion
+#### Implicit Type Conversion
 
 Some number types can be converted to each other. The conversions are transitive.
 * `Bool` -> `Byte`
@@ -59,7 +67,7 @@ Some number types can be converted to each other. The conversions are transitive
 
 For all reference types `T`, `T` is convertible to `Optional<T>` (but not the other way around).
 
-## Structs
+### Structs
 
 The only user-defined data structure in Epsilon is the struct. Structs can be created at the top level of your Epsilon program with the syntax:
 
@@ -71,7 +79,7 @@ The only user-defined data structure in Epsilon is the struct. Structs can be cr
 
 The struct can later be referenced as a type simply by the struct name.
 
-## Functions
+### Functions
 
 All code in Epsilon is contained within functions. The basic function syntax is:
 
@@ -81,7 +89,7 @@ All code in Epsilon is contained within functions. The basic function syntax is:
 
 If the function returns void the return type can be omitted.
 
-### Function Templates
+#### Function Templates
 
 Function templates dictate the way the function can be called. They can consist of literal text and symbols that must be matched at the call site, as well as function parameters. Function parameters can be specified with the syntax `<ParamType:param_name>` Here are some examples of functions and how they can be called:
 
@@ -104,11 +112,11 @@ Can be called by `[1] + [5]`
 
 Can be called by `output_numbers[1][2]`
 
-### The Main Function
+#### The Main Function
 
 Every standalone Epsilon program must have one and only one `main` function. The `main` function's return type must be `Z`, and its template must be simply `main`.
 
-## Comments
+### Comments
 
 There are two kinds of comments: single-line comments and multiline comments.
 
@@ -116,11 +124,11 @@ Single-line comments start with `//` and continue until the end of the line.
 
 Multiline comments start with `/*` and end at the next `*/`.
 
-## Code Blocks
+### Code Blocks
 
 Code blocks start with `{` and end with `}`. They consist of a series of lines. Each line must end with `;`.
 
-## Literals
+### Literals
 
 Literals are values defined exactly in the source code. Unsigned integer literals are written simply as a number, such as `0` or `100`. Positive float literals are just as simple. `1.2` and `3.1415926` are both float literals. Negative number literals do not exist in Epsilon: instead negative numbers are written by prefixing positive number literals with the negation operator. In other words, you write negative numbers just as you would expect.
 
@@ -143,7 +151,7 @@ Epsilon also has byte constants, which are single characters enclosed by `'`s. T
 
 Epsilon also supports fraction literals, so `1/3` (but not `-1/3`) is considered a single number (assuming the order of operations allows it to be one).
 
-## Arithmetic
+### Arithmetic
 
 Epsilon supports all basic arithmetic operators: `+` (addition), `-` (subtraction and negation), `*` (multiplication), `/` (division), and `%` (modulo). Both operands either have to be the same type or one has to be convertible to the type of the other. The result type of the operation will be the highest type between the two. The one exception to this rule is division, wherein the result type will always be `Q`. If you require the division to have an integer result, you can use the integer division operator, `~~/`.
 
@@ -151,13 +159,13 @@ Epsilon also supports exponentiation with the `**` operator. The result of expon
 
 Parentheses work normally in Epsilon.
 
-## Booleans
+### Booleans
 
-### Truthy Values
+#### Truthy Values
 
 All values are either truthy or falsy. A truthy value is a value that is considered true when used in a boolean context (eg. an `if` statement), and a falsy one is one that would be considered false. Arrays and structs are always truthy. Numbers that don't equal 0 are considered truthy. Optionals and Files are truthy if they don't contain null.
 
-### Boolean Operations
+#### Boolean Operations
 
 Boolean operations can take parameters of any type, and the truthy values will be treated as true, while the falsy values will be treated as false. Epsilon boolean operators are shown in the table below:
 
@@ -168,7 +176,7 @@ Boolean operations can take parameters of any type, and the truthy values will b
 | `\|\|`   | Logical Or       |
 | `^^`     | Logical XOR      |
 
-## Bitwise Operations
+### Bitwise Operations
 
 The result of a bitwise operation always has the type of its first operand, as such `a & b` is not equivalent to `b & a`. Here's the list of bitwise operations:
 
@@ -181,19 +189,19 @@ The result of a bitwise operation always has the type of its first operand, as s
 | `\|`     | Bitwise OR       |
 | `^`      | Bitwise XOR      |
 
-## Comparison
+### Comparison
 
-### Equality
+#### Equality
 
 The equality operator, `==`, checks that the two supplied values have equal value if they are of a value type, and that they are the same values if they are of a reference type.
 
 The inequality operator, `!=`, is the opposite of the equality operator. In fact, `a != b` iff `!(a == b)`.
 
-### Range
+#### Range
 
 There are four range comparison operators: `<` (less than), `>` (greater than), `<=` (less than or equal to), and `>=` (greater than or equal to). They can only be applied to numbers.
 
-## Keywords & Constants
+### Keywords & Constants
 
 Epsilon has several reserved keywords: `return`, `if`, `else`, `elif`, `while`, `switch`, `break`, `continue`, `null`, and `for`.
 
@@ -207,14 +215,14 @@ Here are the constants included in Epsilon:
 
 Constants are also considered reserved words.
 
-## Creating Arrays & Structs
+### Creating Arrays & Structs
 
 Structs can be instantiated with the syntax `StructName [field1Value, field2Value, etc]`. Arrays use a similar syntax: `ArrayType [value1, value2]` so both of these are valid:
 
     [Z] []; // empty array of integers
     Array<W> [1, 2]; // array of unsigned integers
 
-## Variables & Scoping
+### Variables & Scoping
 
 Variables can be declared with the syntax `VarType:varName`. They will be available in the scope enclosing the declaration and any scopes within that scope. Only value types can be declared without a value, so:
 
@@ -231,7 +239,7 @@ You can assign to variables with the `=` operator. A variable declaration and as
     number = 5;
     numbers = [Z] [6, 7, 8];
 
-## Array & Struct Access
+### Array & Struct Access
 
 Arrays can be accessed with the syntax `array[index]`, while struct values can be accessed via `struct.fieldName`. Both of these are assignable values so:
 
@@ -241,7 +249,7 @@ Arrays can be accessed with the syntax `array[index]`, while struct values can b
 
 Accessing an index out of bounds of the array will result in an invalid memory access.
 
-## Control Flow
+### Control Flow
 
 The code in an `if` statement will only be executed if the condition is truthy.
 
@@ -332,7 +340,7 @@ Some examples of `for` loops:
 
 The `for` loop variable is available in the scope of the loop's code block, but not in the scope enclosing the `for` statement itself.
 
-## Pre & Post Increment & Decrement
+### Pre & Post Increment & Decrement
 
 |           | Pre | Post |
 | --------- | --- | ---- |
@@ -343,7 +351,7 @@ The `for` loop variable is available in the scope of the loop's code block, but 
     Z:y = x++;
     // x now equals 4, while y equals 3
 
-## Compound Assignments
+### Compound Assignments
 
 The operators `+`, `-`, `*`, `/`, `%`, `&`, `|`, and `^` have compound assignment forms. In a compound assignment, the operation specified is performed on both the current value of the assignable and the value supplied to the compound assignment, and the resulting value is stored back into the assignable value.
 
@@ -353,11 +361,11 @@ The operators `+`, `-`, `*`, `/`, `%`, `&`, `|`, and `^` have compound assignmen
 
 Variables, array accesses, and struct field accesses are all assignable values.
 
-## The Cast Operator
+### The Cast Operator
 
 The cast operator, which uses the syntax `(NewType)value`, will cast `value` to the type `NewType`, if it is possible.
 
-## Continue, Break, and Return
+### Continue, Break, and Return
 
 The `continue` keyword will jump to the next iteration of the loop enclosing the statement. 
 
@@ -365,7 +373,7 @@ The `break` keyword will exit the loop enclosing the statement.
 
 The `return` keyword exits the function in which it is in. If the function has a void return type, then the `return` keyword must be used as a complete line. If the function has a non-void return type the `return` must be followed by the value to be returned from the function.
 
-## Builtin Functions
+### Builtin Functions
 
 There are currently 69 builtin functions:
 

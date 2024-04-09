@@ -18,8 +18,9 @@ public class Import : ITopLevel {
     }
 
     public string GetRealPath() {
-        return Utils.JoinPaths(
-            path.Select(part => part == "" ? ".." : part).ToArray()
+        return String.Join(
+            Path.DirectorySeparatorChar,
+            path.Select(part => part == "" ? ".." : part)
         );
     }
 }
