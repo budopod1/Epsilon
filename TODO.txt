@@ -2,5 +2,4 @@ TODO:
 * add safe array access and safe unwrap
 * change factor that determines script vs project mode to be > 1 user written file, not > 1 epsl file
 * make structs work across files (eg if A imports B which imports C, where C defines a struct, and a function from B returns that struct, then A shouldn't crash when calling that function)
-* when in script mode, automatically delete bc and ll files generated in the user's code's directory
 * make the default output filename's extention respect --output-type

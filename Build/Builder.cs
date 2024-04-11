@@ -16,6 +16,7 @@ public class Builder {
     Dictionary<string, FileTree> files;
     List<string> extentions = new List<string> {"epslspec", "epsl"};
     List<string> prefixes = new List<string> {"", "."};
+    List<string> IRInUserDir;
 
     public CompilationResult Build(string input) {
         return RunWrapped(() => {
@@ -51,6 +52,7 @@ public class Builder {
             TransferStructIDs();
             TransferStructs();
             TransferDeclarations();
+            IRInUserDir = new List<string>();
             List<string> sections = ToIR();
             SaveEPSLSPECS();
 
@@ -63,6 +65,12 @@ public class Builder {
             };
             arguments.AddRange(sections);
             Utils.RunCommand("llvm-link", arguments);
+
+            if (!IsProjMode()) {
+                foreach (string path in IRInUserDir) {
+                    Utils.TryDelete(path);
+                }
+            }
 
             if (IsProjMode()) {
                 EPSLPROJ newProj = new EPSLPROJ(buildStartTime, generatedSPECs);
@@ -328,9 +336,12 @@ public class Builder {
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             string directory = Utils.GetDirectoryName(currentFile);
-            string filename = file.GetName();
-            string path = Utils.JoinPaths(directory, "." + filename);
+            string filename = "." + file.GetName();
+            string path = Utils.JoinPaths(directory, filename);
             string ir = file.Compiler.ToIR(path);
+            if (path == Path.ChangeExtension(ir, null)) {
+                IRInUserDir.Add(ir);
+            }
             sections.Add(ir);
             file.IR = ir;
         }
