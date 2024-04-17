@@ -54,7 +54,8 @@ public class SPECFileCompiler : IFileCompiler {
             ))},
             {"imports", new JSONListShape(new JSONStringShape())},
             {"ir", new JSONStringShape()},
-            {"source", new JSONNullableShape(new JSONStringShape())}
+            {"source", new JSONNullableShape(new JSONStringShape())},
+            {"source_type", new JSONStringOptionsShape(new List<string> {"Library", "User"})}
         });
     }
     
@@ -236,5 +237,11 @@ public class SPECFileCompiler : IFileCompiler {
             default:
                 throw new InvalidOperationException();
         }
+    }
+
+    public FileSourceType GetFileSourceType() {
+        Enum.TryParse<FileSourceType>(obj["source_type"].GetString(), 
+            out FileSourceType source);
+        return source;
     }
 }

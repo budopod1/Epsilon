@@ -1,5 +1,7 @@
 TODO:
-* add safe array access and safe unwrap
-* change factor that determines script vs project mode to be > 1 user written file, not > 1 epsl file
-* make structs work across files (eg if A imports B which imports C, where C defines a struct, and a function from B returns that struct, then A shouldn't crash when calling that function)
-* make the default output filename's extention respect --output-type
+* before modules merge:
+    * make structs work across files (eg if A imports B which imports C, where C defines a struct, and a function from B returns that struct, then A shouldn't crash when calling that function)
+    * make the default output filename's extention respect --output-type
+* after modules merge:
+    * add safe array access and safe unwrap
+    * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)

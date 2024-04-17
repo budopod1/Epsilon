@@ -280,11 +280,11 @@ public class Builder {
     }
 
     void DetermineIsProj() {
-        int saveSPECFiles = 0;
+        int userFiles = 0;
         foreach (FileTree file in files.Values) {
-            if (file.GeneratedEPSLSPEC != null || file.Compiler.ShouldSaveSPEC()) {
-                saveSPECFiles++;
-                if (saveSPECFiles >= 2) {
+            if (file.Compiler.GetFileSourceType() == FileSourceType.User) {
+                userFiles++;
+                if (userFiles >= 2) {
                     isProj = true;
                     return;
                 }

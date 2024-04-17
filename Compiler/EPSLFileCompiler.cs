@@ -244,6 +244,10 @@ public class EPSLFileCompiler : IFileCompiler {
         return new List<IClangConfig>();
     }
 
+    public FileSourceType GetFileSourceType() {
+        return FileSourceType.User;
+    }
+
     Program TokenizeStrings(Program program) {
         return (Program)PerformMatching(program, new StringMatcher(program));
     }

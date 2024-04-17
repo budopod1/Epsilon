@@ -94,6 +94,8 @@ public class FileTree {
 
         obj["source"] = new JSONString(Compiler.GetSource());
 
+        obj["source_type"] = new JSONString(Compiler.GetFileSourceType().ToString());
+
         return obj;
     }
 

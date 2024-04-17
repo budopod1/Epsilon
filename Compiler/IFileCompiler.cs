@@ -14,4 +14,5 @@ public interface IFileCompiler {
     string GetSource();
     bool ShouldSaveSPEC();
     IEnumerable<IClangConfig> GetClangConfig();
+    FileSourceType GetFileSourceType();
 }
