@@ -14,7 +14,7 @@ public class Builder {
     string currentText = "";
     long? lastBuildStartTime;
     Dictionary<string, FileTree> files;
-    List<string> extentions = new List<string> {"epslspec", "epsl"};
+    List<string> extensions = new List<string> {"epslspec", "epsl"};
     List<string> prefixes = new List<string> {"", "."};
     List<string> IRInUserDir;
 
@@ -43,7 +43,7 @@ public class Builder {
                 isProj = true;
             }
 
-            currentFile = Utils.GetFullPath(Utils.RemoveExtention(input));
+            currentFile = Utils.GetFullPath(Utils.RemoveExtension(input));
             files = new Dictionary<string, FileTree>();
             FileTree tree = LoadFile(entrypoint, projectDirectory);
 
@@ -201,9 +201,9 @@ public class Builder {
     }
 
     IEnumerable<string> FileLocations(string path, string projDirectory) {
-        foreach (string extention in extentions) {
+        foreach (string extension in extensions) {
             foreach (string prefix in prefixes) {
-                string file = prefix + path + "." + extention;
+                string file = prefix + path + "." + extension;
                 currentFile = file;
                 string project = Utils.JoinPaths(projDirectory, file);
                 if (Utils.FileExists(project)) yield return project;
@@ -214,8 +214,8 @@ public class Builder {
     }
 
     DispatchedFile DispatchFile(string path) {
-        string extention = path.Substring(path.LastIndexOf('.')+1);
-        switch (extention) {
+        string extension = path.Substring(path.LastIndexOf('.')+1);
+        switch (extension) {
             case "epslspec":
                 return DispatchEPSLSPEC(path);
             case "epsl":

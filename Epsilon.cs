@@ -59,12 +59,29 @@ Modes:
 
             string input = Utils.GetFullPath(inputFile.Matched);
 
+            string extension;
+            
+            switch (outputType.Value()) {
+                case "llvm-bc":
+                    extension = ".bc";
+                    break;
+                case "llvm-ll":
+                    extension = ".ll";
+                    break;
+                case "executable":
+                    extension = null;
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
             string output = null;
             if (outputFile.IsPresent) {
                 output = outputFile.Matched;
             } else {
                 string outputDir = Utils.GetDirectoryName(input);
-                string outputName = Utils.GetFileNameWithoutExtension(input);
+                string outputName = Utils.SetExtension(
+                    Utils.GetFileName(input), extension);
                 if (outputName == "entry") outputName = "result";
                 output = Utils.JoinPaths(outputDir, outputName);
             }

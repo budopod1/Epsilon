@@ -1,7 +1,7 @@
 TODO:
 * before modules merge:
     * make structs work across files (eg if A imports B which imports C, where C defines a struct, and a function from B returns that struct, then A shouldn't crash when calling that function)
-    * make the default output filename's extention respect --output-type
 * after modules merge:
     * add safe array access and safe unwrap
     * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
+    * struct subclassing

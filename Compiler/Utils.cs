@@ -175,9 +175,19 @@ public static class Utils {
         }
     }
 
-    public static string RemoveExtention(string path) {
+    public static string RemoveExtension(string path) {
         try {
             return Path.ChangeExtension(path, null);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string SetExtension(string path, string extension) {
+        try {
+            return Path.ChangeExtension(path, extension);
         } catch (ArgumentNullException e) {
             throw e;
         } catch (ArgumentException e) {

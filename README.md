@@ -24,7 +24,7 @@ Epsilon has documentation avaliable [here](/docs/syntax.md).
 
 ## Running Code
 
-Epsilon files must use the extention `.epsl`. To compile them, run:
+Epsilon files must use the extension `.epsl`. To compile them, run:
 
     mono <path to Epsilon.exe> compile <input file path> [-o <output file path>]
 
