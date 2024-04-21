@@ -1,0 +1,5 @@
+#import chain2;
+
+Obj#foo {
+    return bar;
+}

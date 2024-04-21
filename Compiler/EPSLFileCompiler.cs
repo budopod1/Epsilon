@@ -120,7 +120,7 @@ public class EPSLFileCompiler : IFileCompiler {
         program.AddStructIDs(structIds);
     }
 
-    public List<Struct> ToStructs() {
+    public HashSet<Struct> ToStructs() {
         Step("Tokenizing base types...");
         program = TokenizeBaseTypes_(program);
         TimingStep();
@@ -148,7 +148,7 @@ public class EPSLFileCompiler : IFileCompiler {
         return program.GetStructs();
     }
 
-    public void AddStructs(List<Struct> structs) {
+    public void AddStructs(HashSet<Struct> structs) {
         program.AddStructs(structs);
     }
 
@@ -650,7 +650,7 @@ public class EPSLFileCompiler : IFileCompiler {
             new TextPatternSegment(","), typeof(VarDeclaration), 
             (token) => new Field((VarDeclaration)token)
         );
-        List<Struct> structs = new List<Struct>();
+        HashSet<Struct> structs = new HashSet<Struct>();
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
             if (token is StructHolder) {

@@ -306,15 +306,16 @@ public class Builder {
     }
 
     void TransferStructs() {
+        HashSet<Struct> structs = new HashSet<Struct>();
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
-            file.Structs = file.Compiler.ToStructs();
+            HashSet<Struct> structsHere = file.Compiler.ToStructs();
+            file.Structs = structsHere;
+            structs.UnionWith(structsHere);
         }
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
-            foreach (FileTree dependency in file.Dependencies) {
-                file.Compiler.AddStructs(dependency.Structs);
-            }
+            file.Compiler.AddStructs(structs);
         }
     }
 

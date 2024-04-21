@@ -6,8 +6,8 @@ public interface IFileCompiler {
     List<string> ToImports();
     HashSet<LocatedID> ToStructIDs();
     void AddStructIDs(HashSet<LocatedID> structIds);
-    List<Struct> ToStructs();
-    void AddStructs(List<Struct> structs);
+    HashSet<Struct> ToStructs();
+    void AddStructs(HashSet<Struct> structs);
     List<RealFunctionDeclaration> ToDeclarations();
     void AddDeclarations(List<RealFunctionDeclaration> declarations);
     string ToIR(string suggestedPath);

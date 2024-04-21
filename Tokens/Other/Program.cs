@@ -7,14 +7,14 @@ public class Program : TreeToken, IVerifier {
     HashSet<LocatedID> structIds = new HashSet<LocatedID>();
     int functionIDCounter = 0;
     int scopeVarIDCounter = 0;
-    List<Struct> structs = new List<Struct>();
+    HashSet<Struct> structs = new HashSet<Struct>();
     List<RealFunctionDeclaration> externalDeclarations = new List<RealFunctionDeclaration>();
 
     public Program(string path, List<IToken> tokens) : base(tokens) {
         this.path = path;
     }
 
-    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, int functionIDCounter, int scopeVarIDCounter, List<Struct> structs, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
+    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, int functionIDCounter, int scopeVarIDCounter, HashSet<Struct> structs, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
         this.path = path;
         this.structIds = structIds;
         this.functionIDCounter = functionIDCounter;
@@ -44,15 +44,15 @@ public class Program : TreeToken, IVerifier {
         return scopeVarIDCounter++;
     }
 
-    public void SetStructs(List<Struct> structs) {
+    public void SetStructs(HashSet<Struct> structs) {
         this.structs = structs;
     }
 
-    public void AddStructs(List<Struct> structs) {
-        this.structs.AddRange(structs);
+    public void AddStructs(HashSet<Struct> structs) {
+        this.structs.UnionWith(structs);
     }
 
-    public List<Struct> GetStructs() {
+    public HashSet<Struct> GetStructs() {
         return structs;
     }
 

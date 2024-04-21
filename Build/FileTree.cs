@@ -17,7 +17,7 @@ public class FileTree {
     } }
 
     public HashSet<LocatedID> StructIDs;
-    public List<Struct> Structs;
+    public HashSet<Struct> Structs;
     public List<RealFunctionDeclaration> Declarations;
 
     public string IR;

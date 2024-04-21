@@ -107,7 +107,7 @@ public class SPECFileCompiler : IFileCompiler {
         return types_[text];
     }
 
-    public List<Struct> ToStructs() {
+    public HashSet<Struct> ToStructs() {
         return obj["structs"].IterList().Select(
             sobj => new Struct(
                 path, sobj["name"].GetString(),
@@ -118,10 +118,10 @@ public class SPECFileCompiler : IFileCompiler {
                     )
                 ).ToList()
             )
-        ).ToList();
+        ).ToHashSet();
     }
 
-    public void AddStructs(List<Struct> structs) {}
+    public void AddStructs(HashSet<Struct> structs) {}
 
     public List<RealFunctionDeclaration> ToDeclarations() {
         return obj["functions"].IterList().Select(func => {

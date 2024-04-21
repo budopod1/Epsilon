@@ -1,0 +1,7 @@
+Obj {
+    Q:a
+}
+
+Obj#bar {
+    return Obj [1.1];
+}
