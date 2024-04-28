@@ -184,7 +184,7 @@ def get_func(path, source, func_id):
     engine.finalize_object()
     engine.run_static_constructors()
 
-    func = "main" if func_id == -1 else str(source.resolve()) + str(func_id)
+    func = "main" if func_id == -1 else f"{str(source.resolve())}/{str(func_id)}"
 
     return engine.get_function_address(func)
 
@@ -249,6 +249,8 @@ def main():
         
         for test in group["tests"]:
             print(f"Running test {i}/{test_count}...")
+
+            test_result["result"] = None
             
             process = multiprocessing.Process(
                 target=run_test, args=(func, test["arguments"]))
@@ -265,8 +267,11 @@ def main():
                 expect = test["expect"]
 
                 result = test_result["result"]
-                
-                if equal(test["compare"], result, expect):
+
+                if result is None:
+                    print("😬 Probable segmentation fault :(")
+                    failed += 1
+                elif equal(test["compare"], result, expect):
                     print("✅ Test passed")
                     succeeded += 1
                 else:

@@ -50,7 +50,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         this.arguments = arguments.Select(
             argument=>new FunctionArgument(argument)
         ).ToList();
-        id = program.GetPath() + program.GetFunctionID().ToString();
+        id = program.GetPath() + "/" + program.GetFunctionID().ToString();
         callee = isMain ? "main" : id;
     }
 
