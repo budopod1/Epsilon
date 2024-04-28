@@ -7,6 +7,7 @@ public class Program : TreeToken, IVerifier {
     HashSet<LocatedID> structIds = new HashSet<LocatedID>();
     int functionIDCounter = 0;
     int scopeVarIDCounter = 0;
+    HashSet<Struct> structsHere = new HashSet<Struct>();
     HashSet<Struct> structs = new HashSet<Struct>();
     List<RealFunctionDeclaration> externalDeclarations = new List<RealFunctionDeclaration>();
 
@@ -14,12 +15,13 @@ public class Program : TreeToken, IVerifier {
         this.path = path;
     }
 
-    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, int functionIDCounter, int scopeVarIDCounter, HashSet<Struct> structs, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
+    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, int functionIDCounter, int scopeVarIDCounter, HashSet<Struct> structs, HashSet<Struct> structsHere, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
         this.path = path;
         this.structIds = structIds;
         this.functionIDCounter = functionIDCounter;
         this.scopeVarIDCounter = scopeVarIDCounter;
         this.structs = structs;
+        this.structsHere = structsHere;
         this.externalDeclarations = externalDeclarations;
     }
 
@@ -44,16 +46,20 @@ public class Program : TreeToken, IVerifier {
         return scopeVarIDCounter++;
     }
 
+    public void SetStructsHere(HashSet<Struct> structs) {
+        structsHere = structs;
+    }
+
     public void SetStructs(HashSet<Struct> structs) {
         this.structs = structs;
     }
 
-    public void AddStructs(HashSet<Struct> structs) {
-        this.structs.UnionWith(structs);
-    }
-
     public HashSet<Struct> GetStructs() {
         return structs;
+    }
+
+    public HashSet<Struct> GetStructsHere() {
+        return structsHere;
     }
 
     public void AddExternalDeclarations(List<RealFunctionDeclaration> declarations) {
@@ -69,7 +75,7 @@ public class Program : TreeToken, IVerifier {
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structs, externalDeclarations);
+        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structs, structsHere, externalDeclarations);
     }
 
     public void Verify() {
@@ -99,7 +105,8 @@ public class Program : TreeToken, IVerifier {
         foreach (Struct struct_ in structs) {
             if (struct_.GetID() == name) return struct_;
         }
-        return null;
+        Console.WriteLine(path); // temp
+        throw new ArgumentException($"No struct found for type_ {type_.ToString()}");
     }
 
     public IJSONValue GetJSON() {

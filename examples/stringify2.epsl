@@ -1,0 +1,23 @@
+G {
+    Array<Z>:arr1,
+    Array<Z>:arr2
+}
+
+Z#main {
+    Z:num = 3;
+    G:g = G [Array<Z> [num], Array<Z> [num, num+1]];
+    Str:s = [g].stringify;
+    W:total = 0;
+    L:i = 0;
+    println[999];
+    println[s];
+    println[i];
+    println[[s].length];
+    println[999];
+    while (i < [s].length) {
+        total = total + s[i] + 1;
+        i = i + 1;
+    };
+    println[total];
+    return 0;
+}

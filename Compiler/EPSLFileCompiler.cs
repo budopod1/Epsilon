@@ -12,15 +12,13 @@ public class EPSLFileCompiler : IFileCompiler {
     public bool PRINT_STEPS = false;
 
     Program program;
-    string fileText = null;
+    string fileText;
 
     string srcPath;
 
-    public EPSLFileCompiler(string path) {
+    public EPSLFileCompiler(string path, string fileText) {
         srcPath = path;
-        using (StreamReader file = new StreamReader(path)) {
-            fileText = file.ReadToEnd();
-        }
+        this.fileText = fileText;
         program = new Program(
             Utils.GetFullPath(path), new List<IToken>()
         );
@@ -120,7 +118,7 @@ public class EPSLFileCompiler : IFileCompiler {
         program.AddStructIDs(structIds);
     }
 
-    public HashSet<Struct> ToStructs() {
+    public List<RealFunctionDeclaration> ToDeclarations() {
         Step("Tokenizing base types...");
         program = TokenizeBaseTypes_(program);
         TimingStep();
@@ -140,19 +138,7 @@ public class EPSLFileCompiler : IFileCompiler {
         Step("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
         TimingStep();
-
-        Step("Computing structs...");
-        program = ComputeStructs(program);
-        TimingStep();
-
-        return program.GetStructs();
-    }
-
-    public void AddStructs(HashSet<Struct> structs) {
-        program.AddStructs(structs);
-    }
-
-    public List<RealFunctionDeclaration> ToDeclarations() {
+        
         Step("Converting template arguments...");
         program = ConvertTemplateArguments(program);
         TimingStep();
@@ -177,7 +163,19 @@ public class EPSLFileCompiler : IFileCompiler {
         program.AddExternalDeclarations(declarations);
     }
 
-    public string ToIR(string destPath) {
+    public HashSet<Struct> ToStructs() {
+        Step("Computing structs...");
+        program = ComputeStructs(program);
+        TimingStep();
+
+        return new HashSet<Struct>(program.GetStructsHere());
+    }
+
+    public void SetStructs(HashSet<Struct> structs) {
+        program.SetStructs(structs);
+    }
+
+    public Dependencies ToDependencies(Func<string, FileTree> getFile) {
         Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
         TimingStep();
@@ -196,8 +194,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
         Step("Getting scope variables...");
         program = GetScopeVariables(program);
-        TimingStep();
-        
+
         if (PRE_PARSE_PRINT_AST) Console.WriteLine(program);
 
         Step("Parsing function code...");
@@ -210,6 +207,10 @@ public class EPSLFileCompiler : IFileCompiler {
         VerifyCode(program);
         TimingStep();
 
+        return GetDependencies(program);
+    }
+
+    public string ToIR(string destPath) {
         Step("Adding unused value wrappers...");
         AddUnusedValueWrappers(program);
         TimingStep();
@@ -234,6 +235,10 @@ public class EPSLFileCompiler : IFileCompiler {
 
     public string GetSource() {
         return srcPath;
+    }
+
+    public bool FromCache() {
+        return false;
     }
 
     public bool ShouldSaveSPEC() {
@@ -670,7 +675,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 structs.Add(new Struct(program.GetPath(), nameStr, fields));
             }
         }
-        program.SetStructs(structs);
+        program.SetStructsHere(structs);
         return (Program)program.Copy(program.Where(token => !(token is StructHolder)).ToList());
     }
 
@@ -1758,6 +1763,37 @@ public class EPSLFileCompiler : IFileCompiler {
         foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program, config)) {
             token.Verify();
         }
+    }
+
+    Dependencies GetDependencies(Program program) {
+        TraverseConfig config = new TraverseConfig(TraverseMode.DEPTH, invert: false);
+        List<RealFunctionDeclaration> declarationDependencies = new List<RealFunctionDeclaration>();
+        List<Struct> structDependencies = new List<Struct>();
+        
+        HashSet<Struct> structsHere = program.GetStructsHere();
+        HashSet<Function> functionsHere = new HashSet<Function>();
+        foreach (IToken token in program) {
+            Function function = token as Function;
+            if (function != null) functionsHere.Add(function);
+        }
+        
+        foreach (IValueToken token in TokenUtils.TraverseFind<IValueToken>(program, config)) {
+            FunctionCall call = token as FunctionCall;
+            if (call != null) {
+                RealFunctionDeclaration func = call.GetFunction() as RealFunctionDeclaration;
+                if (func != null && !functionsHere.Contains(func)) {
+                    declarationDependencies.Add(func);
+                }
+            }
+            
+            Type_ type_ = token.GetType_();
+            if (type_.GetBaseType_().IsBuiltin()) continue;
+            Struct struct_ = program.GetStructFromType_(type_);
+            if (structsHere.Contains(struct_)) continue;
+            structDependencies.Add(struct_);
+        }
+        
+        return new Dependencies(structDependencies, declarationDependencies);
     }
 
     void AddUnusedValueWrappers(Program program) {

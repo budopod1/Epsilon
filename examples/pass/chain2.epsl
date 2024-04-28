@@ -1,7 +1,7 @@
 Obj {
-    Q:a
+    Q:b
 }
 
 Obj#bar {
-    return Obj [1.1];
+    return Obj [3];
 }

@@ -212,6 +212,13 @@ public static class Utils {
         }
     }
 
+    public static string Stem(string path) {
+        string directory = GetDirectoryName(path);
+        string name = GetFileNameWithoutExtension(path);
+        if (name[0] == '.') name = name.Substring(1);
+        return JoinPaths(directory, name);
+    }
+
     public static (int, int) LongToInts(long num) {
         return ((int)(num >> 32), (int)(num & ~(int)0));
     }

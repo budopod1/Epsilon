@@ -28,6 +28,10 @@ public class FunctionCall : IParentToken, IValueToken {
         this.arguments = arguments;
     }
 
+    public FunctionDeclaration GetFunction() {
+        return function;
+    }
+
     public Type_ GetType_() {
         return function.GetReturnType_(arguments);
     }

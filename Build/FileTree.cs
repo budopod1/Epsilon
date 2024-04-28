@@ -3,37 +3,70 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class FileTree {
-    public string File;
+    public string PartialPath;
     public IFileCompiler Compiler;
+    public SPECFileCompiler OldCompiler;
     public string GeneratedEPSLSPEC = null;
-    public List<FileTree> Dependencies = new List<FileTree>();
+    public List<FileTree> Imported = new List<FileTree>();
     public List<string> Imports;
     public bool TreeLoaded = false;
 
     string _Text;
-    public string Text { get {
-        if (_Text == null) _Text = Compiler.GetText();
-        return _Text;
-    } }
+    public string Text { 
+        get {
+            if (_Text == null) _Text = Compiler.GetText();
+            return _Text;
+        } 
+        set {
+            _Text = value;
+        }
+    }
+
+    string _Path;
+    public string Stemmed;
+    public string Path { 
+        get {
+            return _Path;
+        } 
+        set {
+            _Path = value;
+            Stemmed = Utils.Stem(value);
+        }
+    }
+
+    public string OldText {
+        get {
+            return OldCompiler.GetText();
+        }
+    }
+
+    public string OldPath;
 
     public HashSet<LocatedID> StructIDs;
     public HashSet<Struct> Structs;
     public List<RealFunctionDeclaration> Declarations;
+    public Dependencies Dependencies;
+
+    public HashSet<Struct> OldStructs;
+    public List<RealFunctionDeclaration> OldDeclarations;
 
     public string IR;
 
-    public FileTree(string file, IFileCompiler compiler, string generatedEPSLSPEC) {
-        File = file;
+    public FileTree(string partialPath, string path, IFileCompiler compiler, string oldCompilerPath, SPECFileCompiler oldCompiler, string generatedEPSLSPEC) {
+        PartialPath = partialPath;
+        Path = path;
         Compiler = compiler;
+        OldPath = oldCompilerPath;
+        OldCompiler = oldCompiler;
         Imports = compiler.ToImports();
         GeneratedEPSLSPEC = generatedEPSLSPEC;
     }
 
-    public JSONObject ToSPEC() {
+    public JSONObject ToSPEC(Func<string, FileTree> getFile) {
         SPECType_Creator type_Creator = new SPECType_Creator();
-        
+
         JSONObject obj = new JSONObject();
-        
+
         obj["functions"] = new JSONList(Declarations.Select(declaration => {
             JSONObject dobj = new JSONObject();
             dobj["id"] = new JSONString(declaration.GetID());
@@ -69,7 +102,7 @@ public class FileTree {
             dobj["source"] = new JSONString(declaration.GetSource().ToString());
             return dobj;
         }));
-        
+
         obj["structs"] = new JSONList(Structs.Select(struct_ => {
             JSONObject sobj = new JSONObject();
             sobj["name"] = new JSONString(struct_.GetName());
@@ -82,8 +115,29 @@ public class FileTree {
             }));
             return sobj;
         }));
-        
+
         obj["types_"] = type_Creator.GetJSON();
+
+        obj["dependencies"] = new JSONList(
+            Dependencies.GetStructs().GroupBy(struct_ => struct_.GetPath()).ToDictionary(
+                group => group.Key, group => group.ToList()
+            ).MergeToPairs(
+                Dependencies.GetFunctions().GroupBy(func => func.GetSourcePath()).ToDictionary(
+                    group => group.Key, group => group.ToList()
+                ), () => new List<Struct>(), () => new List<RealFunctionDeclaration>()
+            ).Select((KeyValuePair<string, (List<Struct> structs, List<RealFunctionDeclaration> functions)> kvpair) => {
+                FileTree file = getFile(kvpair.Key);
+                JSONObject dobj = new JSONObject();
+                dobj["path"] = new JSONString(kvpair.Key);
+                dobj["functions"] = new JSONList(kvpair.Value.functions.Select(
+                    func => new JSONInt(file.Declarations.IndexOf(func))
+                ));
+                dobj["structs"] = new JSONList(kvpair.Value.structs.Select(
+                    struct_ => new JSONString(struct_.GetName())
+                ));
+                return dobj;
+            })
+        );
 
         obj["clang_config"] = new JSONList(Compiler.GetClangConfig().Select(
             item => item.GetJSON()));
@@ -92,7 +146,7 @@ public class FileTree {
 
         obj["ir"] = new JSONString(IR);
 
-        obj["source"] = new JSONString(Compiler.GetSource());
+        obj["source"] = new JSONString(Path);
 
         obj["source_type"] = new JSONString(Compiler.GetFileSourceType().ToString());
 
@@ -100,7 +154,7 @@ public class FileTree {
     }
 
     public string GetName() {
-        string name = Utils.GetFileNameWithoutExtension(File);
+        string name = Utils.GetFileNameWithoutExtension(Path);
         if (name[0] == '.') return name.Substring(1);
         return name;
     }

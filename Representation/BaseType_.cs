@@ -200,12 +200,12 @@ public class BaseType_ : IEquatable<BaseType_> {
         }
     }
 
-    public bool IsStructType_() {
-        return !BuiltInTypes_.Contains(name);
+    public bool IsBuiltin() {
+        return BuiltInTypes_.Contains(name);
     }
 
     public bool IsOptionable() {
-        return IsStructType_() || Optionable.Contains(name);
+        return Optionable.Contains(name) || !IsBuiltin();
     }
 
     public bool IsNullable() {

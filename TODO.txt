@@ -1,7 +1,11 @@
 TODO:
 * before modules merge:
-    * recompile files when struct dependencies change, or function signatures change
+    * Required action 4.txt
+    * make functions seperate file path and number with colon instead of nothing
+
 * after modules merge:
+    * add compressed JSON
     * add safe array access and safe unwrap
+    * add logging
     * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
     * struct subclassing

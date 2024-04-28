@@ -6,12 +6,14 @@ public interface IFileCompiler {
     List<string> ToImports();
     HashSet<LocatedID> ToStructIDs();
     void AddStructIDs(HashSet<LocatedID> structIds);
-    HashSet<Struct> ToStructs();
-    void AddStructs(HashSet<Struct> structs);
     List<RealFunctionDeclaration> ToDeclarations();
     void AddDeclarations(List<RealFunctionDeclaration> declarations);
+    HashSet<Struct> ToStructs();
+    void SetStructs(HashSet<Struct> structs);
+    Dependencies ToDependencies(Func<string, FileTree> getFile);
     string ToIR(string suggestedPath);
     string GetSource();
+    bool FromCache();
     bool ShouldSaveSPEC();
     IEnumerable<IClangConfig> GetClangConfig();
     FileSourceType GetFileSourceType();

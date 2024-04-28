@@ -23,7 +23,8 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
             block = ((CodeBlock)value);
         }
     }
-    
+
+    string sourcePath;
     PatternExtractor<List<IToken>> pattern;
     List<FunctionArgument> arguments;
     CodeBlock block;
@@ -34,9 +35,8 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     List<SerializationContext> contexts = new List<SerializationContext>();
     bool isMain;
     
-    public Function(Program program, PatternExtractor<List<IToken>> pattern, 
-                    List<FunctionArgumentToken> arguments, CodeBlock block,
-                    Type_ returnType_) {
+    public Function(Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_) {
+        this.sourcePath = program.GetPath();
         this.pattern = pattern;
         this.block = block;
         this.returnType_ = returnType_;
@@ -88,6 +88,10 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
 
     public override string GetCallee()  {
         return callee;
+    }
+    
+    public override string GetSourcePath() {
+        return sourcePath;
     }
 
     public override bool TakesOwnership() {

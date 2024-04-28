@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Struct {
+public class Struct : IEquatable<Struct> {
     LocatedID id;
     List<Field> fields;
 
@@ -53,5 +53,10 @@ public class Struct {
             field => field.GetJSON()
         ));
         return obj;
+    }
+
+    public bool Equals(Struct other) {
+        if (GetID() != other.GetID()) return false;
+        return Utils.ListEqual(fields, other.GetFields());
     }
 }

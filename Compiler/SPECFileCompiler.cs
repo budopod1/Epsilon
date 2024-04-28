@@ -47,6 +47,11 @@ public class SPECFileCompiler : IFileCompiler {
                     ))}
                 }
             ))},
+            {"dependencies", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
+                {"path", new JSONStringShape()},
+                {"functions", new JSONListShape(new JSONWholeShape())},
+                {"structs", new JSONListShape(new JSONStringShape())}
+            }))},
             {"clang_config", new JSONListShape(new JSONObjectShape(
                 new Dictionary<string, IJSONShape> {
                     {"type", new JSONStringShape()}
@@ -73,14 +78,21 @@ public class SPECFileCompiler : IFileCompiler {
         return obj["imports"].IterList().Select(str=>str.GetString()).ToList();
     }
 
+    Dictionary<string, string> structIds;
+
     public HashSet<LocatedID> ToStructIDs() {
         HashSet<LocatedID> result = new HashSet<LocatedID>();
-        Dictionary<string, string> structIds = new Dictionary<string, string>();
+        structIds = new Dictionary<string, string>();
         foreach (ShapedJSON struct_ in obj["structs"].IterList()) {
             string name = struct_["name"].GetString();
             result.Add(new LocatedID(path, name));
             structIds[name] = name + " " + path;
         }
+        LoadSPECTypes_();
+        return result;
+    }
+
+    public void LoadSPECTypes_() {
         foreach (ShapedJSON type_Data in obj["types_"].IterList()) {
             List<Type_> generics = new List<Type_>();
             foreach (ShapedJSON generic_Name in type_Data["generics"].IterList()) {
@@ -92,7 +104,6 @@ public class SPECFileCompiler : IFileCompiler {
             Type_ type_ = new Type_(type_Name, type_Bits, generics);
             types_[type_Data["given_name"].GetString()] = type_;
         }
-        return result;
     }
 
     public void AddStructIDs(HashSet<LocatedID> structIds) {}
@@ -121,7 +132,7 @@ public class SPECFileCompiler : IFileCompiler {
         ).ToHashSet();
     }
 
-    public void AddStructs(HashSet<Struct> structs) {}
+    public void SetStructs(HashSet<Struct> structs) {}
 
     public List<RealFunctionDeclaration> ToDeclarations() {
         return obj["functions"].IterList().Select(func => {
@@ -187,13 +198,60 @@ public class SPECFileCompiler : IFileCompiler {
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)
-                ), arguments, id, callee, returnType_, source,
+                ), arguments, id, path, callee, returnType_, source,
                 takesOwnership, resultInParams
             );
         }).ToList();
     }
 
     public void AddDeclarations(List<RealFunctionDeclaration> declarations) {}
+
+    public Dependencies ToDependencies(Func<string, FileTree> getFile) {
+        IEnumerable<(IEnumerable<Struct> structs, IEnumerable<RealFunctionDeclaration> declarations)> pairs = obj["dependencies"].IterList().Select(fobj => {
+            FileTree file = getFile(fobj["path"].GetString());
+            IFileCompiler oldCompiler;
+            HashSet<Struct> structs;
+            List<RealFunctionDeclaration> declarations;
+            if (file.Compiler.FromCache()) {
+                oldCompiler = file.Compiler;
+                structs = file.Structs;
+                declarations = file.Declarations;
+            } else {
+                oldCompiler = file.OldCompiler;
+                if (oldCompiler == null) throw new RecompilationRequiredException();
+                structs = file.OldStructs;
+                declarations = file.OldDeclarations;
+            }
+            IEnumerable<Struct> structDepedencies = fobj["structs"].IterList().Select(sstr => structs.First(
+                struct_ => struct_.GetName() == sstr.GetString()
+            ));
+            if (!file.Compiler.FromCache()) {
+                foreach (Struct structDependency in structDepedencies) {
+                    bool containsStruct = false;
+                    foreach (Struct structNow in file.Structs) {
+                        if (structNow.Equals(structDependency)) {
+                            containsStruct = true;
+                        }
+                    }
+                    if (!containsStruct) throw new RecompilationRequiredException();
+                }
+            }
+            IEnumerable<RealFunctionDeclaration> functionDependencies = fobj["functions"].IterList().Select(
+                dstr => declarations[dstr.GetWhole().Value]
+            );
+            if (!file.Compiler.FromCache()) {
+                foreach (RealFunctionDeclaration functionDependency in functionDependencies) {
+                    if (!file.Declarations.Contains(functionDependency))
+                        throw new RecompilationRequiredException();
+                }
+            }
+            return (structDepedencies, functionDependencies);
+        });
+        return new Dependencies(
+            pairs.SelectMany(pair => pair.structs).ToList(), 
+            pairs.SelectMany(pair => pair.declarations).ToList()
+        );
+    }
 
     public string ToIR(string _) {
         string ir = obj["ir"].GetString();
@@ -202,6 +260,10 @@ public class SPECFileCompiler : IFileCompiler {
 
     public string GetSource() {
         return obj["source"].GetString();
+    }
+
+    public bool FromCache() {
+        return GetSource() != null;
     }
 
     public bool ShouldSaveSPEC() {

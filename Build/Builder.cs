@@ -17,6 +17,7 @@ public class Builder {
     List<string> extensions = new List<string> {"epslspec", "epsl"};
     List<string> prefixes = new List<string> {"", "."};
     List<string> IRInUserDir;
+    HashSet<Struct> structs;
 
     public CompilationResult Build(string input) {
         return RunWrapped(() => {
@@ -50,11 +51,13 @@ public class Builder {
             LoadTree(tree, projectDirectory);
             DetermineIsProj();
             TransferStructIDs();
-            TransferStructs();
             TransferDeclarations();
+            TransferStructs();
+            SetupOldCompilers();
+            ConfirmDependencies(projectDirectory);
             IRInUserDir = new List<string>();
             List<string> sections = ToIR();
-            SaveEPSLSPECS();
+            SaveEPSLSPECs();
 
             List<string> generatedSPECs = GetGeneratedEPSLSPECs().ToList();
             DeleteUnusedGeneratedSPECs(lastGeneratedSPECs, generatedSPECs);
@@ -84,6 +87,15 @@ public class Builder {
     }
     
     public CompilationResult RunWrapped(Action action) {
+        /*
+        try {
+            action();
+        } catch (Exception e) {
+            Console.WriteLine(currentFile);
+            Console.WriteLine(currentText);
+            throw e;
+        }
+        */
         try {
             action();
         } catch (SyntaxErrorException e) {
@@ -129,8 +141,13 @@ public class Builder {
     }
 
     void SwitchFile(FileTree file) {
-        currentFile = file.File;
+        currentFile = file.Path;
         currentText = file.Text;
+    }
+
+    void SwitchToOldFile(FileTree file) {
+        currentFile = file.OldPath;
+        currentText = file.OldText;
     }
 
     void CleanupSPEC(string path, ShapedJSON obj) {
@@ -157,13 +174,14 @@ public class Builder {
 
     int LOAD_RETRY = 3;
 
-    public DispatchedFile DispatchEPSLSPEC(string path) {
+    public DispatchedFile DispatchEPSLSPEC(string path, string _1, SPECFileCompiler _2) {
         string fileText;
         currentFile = path;
         using (StreamReader file = new StreamReader(path)) {
             fileText = file.ReadToEnd();
         }
         currentText = fileText;
+        string stemmed = Utils.Stem(path);
         IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
         ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
         string source = Utils.GetFullPath(obj["source"].GetString());
@@ -177,9 +195,17 @@ public class Builder {
             }
             generatedEPSLSPEC = path;
             currentFile = source;
-            if (lastBuildStartTime == null) return DispatchFile(source);
+            if (lastBuildStartTime == null) {
+                return DispatchPath(source, path, new SPECFileCompiler(
+                    stemmed, fileText, obj
+                ));
+            }
             long fileModified = new DateTimeOffset(File.GetLastWriteTime(source)).ToUnixTimeSeconds();
-            if (fileModified > lastBuildStartTime.Value) return DispatchFile(source);
+            if (fileModified > lastBuildStartTime.Value) {
+                return DispatchPath(source, path, new SPECFileCompiler(
+                    stemmed, fileText, obj
+                ));
+            }
         }
         currentFile = path;
         string ir = obj["ir"].GetString();
@@ -192,12 +218,21 @@ public class Builder {
             }
         }
         return new DispatchedFile(
-            new SPECFileCompiler(path, fileText, obj), path, generatedEPSLSPEC
+            new SPECFileCompiler(stemmed, fileText, obj), path, null, null,
+            generatedEPSLSPEC
         );
     }
 
-    public DispatchedFile DispatchEPSL(string path) {
-        return new DispatchedFile(new EPSLFileCompiler(path), path);
+    public DispatchedFile DispatchEPSL(string path, string oldCompilerPath, SPECFileCompiler oldCompiler) {
+        string fileText;
+        currentFile = path;
+        using (StreamReader file = new StreamReader(path)) {
+            fileText = file.ReadToEnd();
+        }
+        currentText = fileText;
+        string stemmed = Utils.Stem(path);
+        IFileCompiler compiler = new EPSLFileCompiler(stemmed, fileText);
+        return new DispatchedFile(compiler, path, oldCompilerPath, oldCompiler);
     }
 
     IEnumerable<string> FileLocations(string path, string projDirectory) {
@@ -213,27 +248,28 @@ public class Builder {
         }
     }
 
-    DispatchedFile DispatchFile(string path) {
-        string extension = path.Substring(path.LastIndexOf('.')+1);
+    DispatchedFile DispatchPath(string path, string oldCompilerPath=null, SPECFileCompiler oldCompiler=null) {
+        string extension = Path.GetExtension(path);
         switch (extension) {
-            case "epslspec":
-                return DispatchEPSLSPEC(path);
-            case "epsl":
-                return DispatchEPSL(path);
+            case ".epslspec":
+                return DispatchEPSLSPEC(path, oldCompilerPath, oldCompiler);
+        case ".epsl":
+                return DispatchEPSL(path, oldCompilerPath, oldCompiler);
             default:
                 return null;
         }
     }
-    
-    FileTree LoadFile(string partialPath, string projDirectory) {
-        if (files.ContainsKey(partialPath)) return files[partialPath];
+
+    DispatchedFile DispatchPartialPath(string partialPath, string projDirectory, bool canBeSPEC=true) {
         DispatchedFile dispatched = null;
         bool anyLocation = false;
         for (int attempts = 0; dispatched == null && attempts < LOAD_RETRY; attempts++) {
             try {
                 anyLocation = false;
                 foreach (string location in FileLocations(partialPath, projDirectory)) {
-                    dispatched = DispatchFile(location);
+                    if (!canBeSPEC && Path.GetExtension(location) == ".epslspec")
+                        continue;
+                    dispatched = DispatchPath(location);
                     if (dispatched != null) {
                         anyLocation = true;
                         break;
@@ -251,15 +287,31 @@ public class Builder {
                 throw new ModuleNotFoundException(partialPath);
             }
         }
+        return dispatched;
+    }
+    
+    FileTree LoadFile(string partialPath, string projDirectory, bool canBeSPEC=true) {
+        if (files.ContainsKey(partialPath)) return files[partialPath];
+        DispatchedFile dispatched = DispatchPartialPath(partialPath, projDirectory, canBeSPEC);
         string path = dispatched.Path;
         IFileCompiler fileCompiler = dispatched.Compiler;
         currentFile = path;
         currentText = fileCompiler.GetText();
         FileTree result = new FileTree(
-            path, fileCompiler, dispatched.GeneratedSPEC
+            partialPath, path, fileCompiler, dispatched.OldCompilerPath, dispatched.OldCompiler,
+            dispatched.GeneratedSPEC
         );
         files[partialPath] = result;
         return result;
+    }
+
+    void RecompileFile(FileTree file, string projDirectory) {
+        DispatchedFile dispatched = DispatchPartialPath(file.PartialPath, projDirectory, false);
+        file.Compiler = dispatched.Compiler;
+        file.Path = dispatched.Path;
+        file.Text = file.Compiler.GetText();
+        SwitchFile(file);
+        file.Compiler.ToImports();
     }
 
     void LoadTree(FileTree tree, string projDirectory) {
@@ -268,7 +320,7 @@ public class Builder {
         foreach (string path in tree.Imports) {
             FileTree sub = LoadFile(path, projDirectory);
             LoadTree(sub, projDirectory);
-            tree.Dependencies.Add(sub);
+            tree.Imported.Add(sub);
         }
     }
 
@@ -282,6 +334,7 @@ public class Builder {
     void DetermineIsProj() {
         int userFiles = 0;
         foreach (FileTree file in files.Values) {
+            SwitchFile(file);
             if (file.Compiler.GetFileSourceType() == FileSourceType.User) {
                 userFiles++;
                 if (userFiles >= 2) {
@@ -299,23 +352,9 @@ public class Builder {
         }
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
-            foreach (FileTree dependency in file.Dependencies) {
-                file.Compiler.AddStructIDs(dependency.StructIDs);
+            foreach (FileTree imported in file.Imported) {
+                file.Compiler.AddStructIDs(imported.StructIDs);
             }
-        }
-    }
-
-    void TransferStructs() {
-        HashSet<Struct> structs = new HashSet<Struct>();
-        foreach (FileTree file in files.Values) {
-            SwitchFile(file);
-            HashSet<Struct> structsHere = file.Compiler.ToStructs();
-            file.Structs = structsHere;
-            structs.UnionWith(structsHere);
-        }
-        foreach (FileTree file in files.Values) {
-            SwitchFile(file);
-            file.Compiler.AddStructs(structs);
         }
     }
 
@@ -326,8 +365,63 @@ public class Builder {
         }
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
-            foreach (FileTree dependency in file.Dependencies) {
-                file.Compiler.AddDeclarations(dependency.Declarations);
+            foreach (FileTree imported in file.Imported) {
+                file.Compiler.AddDeclarations(imported.Declarations);
+            }
+        }
+    }
+
+    void TransferStructs() {
+        structs = new HashSet<Struct>();
+        foreach (FileTree file in files.Values) {
+            SwitchFile(file);
+            HashSet<Struct> structsHere = file.Compiler.ToStructs();
+            file.Structs = structsHere;
+            structs.UnionWith(structsHere);
+        }
+        foreach (FileTree file in files.Values) {
+            SwitchFile(file);
+            file.Compiler.SetStructs(structs);
+        }
+    }
+
+    FileTree GetFile(string path) {
+        foreach (FileTree file in files.Values) {
+            if (file.Stemmed == path) return file;
+        }
+        return null;
+    }
+
+    void SetupOldCompilers() {
+        foreach (FileTree file in files.Values) {
+            if (file.OldCompiler == null) continue;
+            SwitchToOldFile(file);
+            file.OldCompiler.ToStructIDs();
+            file.OldCompiler.LoadSPECTypes_();
+            file.OldStructs = file.OldCompiler.ToStructs();
+            file.OldDeclarations = file.OldCompiler.ToDeclarations();
+        }
+    }
+
+    void ConfirmDependencies(string projectDirectory) {
+        foreach (FileTree file in files.Values) {
+            SwitchFile(file);
+            try {
+                file.Dependencies = file.Compiler.ToDependencies(GetFile);
+            } catch (RecompilationRequiredException) {
+                RecompileFile(file, projectDirectory);
+                file.Compiler.ToImports();
+                file.Compiler.ToStructIDs();
+                foreach (FileTree imported in file.Imported) {
+                    file.Compiler.AddStructIDs(imported.StructIDs);
+                }
+                file.Compiler.ToDeclarations();
+                foreach (FileTree imported in file.Imported) {
+                    file.Compiler.AddDeclarations(imported.Declarations);
+                }
+                file.Compiler.ToStructs();
+                file.Compiler.SetStructs(structs);
+                file.Dependencies = file.Compiler.ToDependencies(GetFile);
             }
         }
     }
@@ -349,12 +443,12 @@ public class Builder {
         return sections;
     }
 
-    void SaveEPSLSPECS() {
+    void SaveEPSLSPECs() {
         if (!IsProjMode()) return;
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             if (file.Compiler.ShouldSaveSPEC()) {
-                JSONObject spec = file.ToSPEC();
+                JSONObject spec = file.ToSPEC(GetFile);
                 string directory = Utils.GetDirectoryName(currentFile);
                 string filename = file.GetName();
                 string path = Utils.JoinPaths(directory, $".{filename}.epslspec");
@@ -495,6 +589,8 @@ public class Builder {
 
     public CompilationResult Teardown(string projFile) {
         return RunWrapped(() => {
+            projFile = Utils.SetExtension(projFile, ".epslproj");
+            
             string projectDirectory = Utils.GetFullPath(Utils.GetDirectoryName(projFile));
 
             string fileText;

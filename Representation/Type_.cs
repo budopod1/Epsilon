@@ -23,7 +23,7 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public static bool AreCompatible(Type_ a, Type_ b) {
-        if (a.Equals(b)) return true;
+        if (a.Matches(b)) return true;
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
         if (abt.IsAny() && !bbt.IsNon()) 
@@ -38,7 +38,7 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public static Type_ Common(Type_ a, Type_ b) {
-        if (a.Equals(b)) return a;
+        if (a.Matches(b)) return a;
         if (a.HasGenerics() || b.HasGenerics()) 
             return Unknown();
         BaseType_ abt = a.GetBaseType_();
@@ -61,7 +61,10 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public static Type_ CommonSpecific(Type_ a, Type_ b, string name) {
-        if (a.Equals(b) && a.GetBaseType_().GetName()==name) return a;
+        if (a.Matches(b)) {
+            if (a.GetBaseType_().GetName()==name || b.GetBaseType_().GetName()==name)
+                return a;
+        }
         if (a.HasGenerics() || b.HasGenerics()) 
             return Unknown();
         int? abits = a.GetBaseType_().GetBits();
@@ -151,7 +154,7 @@ public class Type_ : IEquatable<Type_> {
 
     bool IsConvertibleOptionalTo(Type_ other) {
         if (other.GetBaseType_().GetName() != "Optional") return false;
-        return Equals(other.GetGeneric(0));
+        return Matches(other.GetGeneric(0));
     }
 
     bool IsConvertibleNullTo(Type_ other) {
@@ -168,7 +171,7 @@ public class Type_ : IEquatable<Type_> {
         if (IsConvertibleOptionalTo(other)) return true;
         if (IsConvertibleNullTo(other)) return true;
         if (HasGenerics())
-            return Equals(other);
+            return Matches(other);
         if (other.HasGenerics()) return false;
         if (baseType_.IsConvertibleTo(otherBaseType_))
             return true;
@@ -200,7 +203,7 @@ public class Type_ : IEquatable<Type_> {
         if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
             return true;
         if (IsEquivalentTo(other)) return true;
-        if (HasGenerics()) return Equals(other);
+        if (HasGenerics()) return Matches(other);
         if (other.HasGenerics()) return false;
         if (baseType_.IsCastableTo(otherBaseType_))
             return true;
@@ -208,15 +211,16 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool Equals(Type_ other) {
+        return baseType_.Equals(other.GetBaseType_()) && GenericsEqual(other);
+    }
+
+    public bool Matches(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
         if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
             return true;
         if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
             return true;
-        if (baseType_.Equals(otherBaseType_)) {
-            return GenericsEqual(other);
-        }
-        return false;
+        return baseType_.Equals(other.GetBaseType_()) && GenericsMatching(other);
     }
 
     public bool IsGreaterThan(Type_ other) {
@@ -232,6 +236,10 @@ public class Type_ : IEquatable<Type_> {
 
     public bool GenericsEqual(Type_ other) {
         return Utils.ListEqual<Type_>(generics, other.GetGenerics());
+    }
+
+    public bool GenericsMatching(Type_ other) {
+        return Enumerable.Zip(generics, other.GetGenerics(), (a, b) => a.Matches(b)).All(a => a);
     }
 
     public override string ToString() {

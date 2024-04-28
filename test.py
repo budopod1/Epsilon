@@ -244,7 +244,7 @@ def main():
             failed += len(group["tests"])
             continue
         
-        func_ptr = get_func("code.ll", source, func)
+        func_ptr = get_func("code.ll", source.with_suffix(""), func)
         func = group["sig"](func_ptr)
         
         for test in group["tests"]:

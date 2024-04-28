@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class FunctionArgument {
+public class FunctionArgument : IEquatable<FunctionArgument> {
     string name;
     Type_ type_;
     int id;
@@ -44,5 +44,11 @@ public class FunctionArgument {
         obj["type_"] = type_.GetJSON();
         obj["variable"] = new JSONInt(id);
         return obj;
+    }
+
+    public bool Equals(FunctionArgument other) {
+        if (name != other.GetName()) return false;
+        if (id != other.GetID()) return false;
+        return type_.Equals(other.GetType_());
     }
 }
