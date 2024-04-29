@@ -13,6 +13,8 @@
     
     {"id": "math_expC", "callee": "math_expC", "return_type_": "C", "template": [{"type": "name", "name": "exp"}, {"type": "argument", "name": "val", "type_": "C"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
+    {"id": "math_exponentToCmplx", "callee": "math_exponentToCmplx", "return_type_": "C", "template": [{"type": "name", "name": "cmplx"}, {"type": "argument", "name": "base", "type_": "Q64"}, {"type": "text", "text": "*"}, {"type": "text", "text": "*"}, {"type": "argument", "name": "exponent", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    
     {"id": "math_exp", "callee": "exp", "return_type_": "Q64", "template": [{"type": "name", "name": "exp"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
     {"id": "math_sum", "callee": "math_sum", "return_type_": "Z", "template": [{"type": "name", "name": "sum"}, {"type": "argument", "name": "nums", "type_": "Array<Z>"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},

@@ -156,6 +156,14 @@ TESTS = [
         "tests": [
             {"arguments": [1], "compare": "float", "expect": 0.54}
         ]
+    },
+    {
+        "file": "mathimport3.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_double),
+        "tests": [
+            {"arguments": [-4], "compare": "float", "expect": 2}
+        ]
     }
 ]
 

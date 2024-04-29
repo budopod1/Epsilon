@@ -69,6 +69,21 @@ struct C *math_expC(struct C *val) {
     return result;
 }
 
+struct C *math_exponentToCmplx(double base, double exponent) {
+    struct C *result = malloc(sizeof(struct C));
+    result->refCounter = 0;
+    if (base >= 0) {
+        result->real = pow(base, exponent);
+        result->imag = 0;
+        return result;
+    } else {
+        double m = pow(-base, exponent);
+        result->real = cos(exponent * M_PI) * m;
+        result->imag = sin(exponent * M_PI) * m;
+        return result;
+    }
+}
+
 uint32_t math_usum(struct UIntArray *nums) {
     uint32_t result = 0;
     for (int i = 0; i < nums->length; i++) {
