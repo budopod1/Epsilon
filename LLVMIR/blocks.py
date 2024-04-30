@@ -3,7 +3,7 @@ from llvmlite import ir
 import orjson
 from pathlib import Path
 from common import *
-from instructions import make_instruction, BaseInstruction, FlowInstruction
+from instructions import make_instruction, BaseInstruction, FlowInstruction, BranchInstruction
 
 
 class Block:
@@ -53,6 +53,17 @@ class Block:
         for instruction in self.instructions:
             instruction.finish(self)
         self.set_return_blocks()
+        self.add_sub_branch_instructions()
+
+    def add_sub_branch_instructions(self):
+        for instruction in self.instructions:
+            if isinstance(instruction, FlowInstruction):
+                instruction.add_sub_branch_instructions()
+
+    def set_branches_this_block(self):
+        for instruction in self.instructions:
+            if isinstance(instruction, BranchInstruction):
+                instruction.set_branch_this_block(self)
 
     def build(self):
         ir_instructions = []

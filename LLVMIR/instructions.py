@@ -49,6 +49,9 @@ class FlowInstruction(BaseInstruction):
     def create_sub_blocks(self):
         pass
 
+    def add_sub_branch_instructions(self):
+        pass
+
 
 class AddOneInstruction(CastToResultType_Instruction):
     def _build(self, builder, params):
@@ -219,6 +222,9 @@ class BranchInstruction(FlowInstruction):
         self.true_block = self.data["true_block"]
         self.false_block = self.data["false_block"]
 
+    def set_branch_this_block(self, this_block):
+        self.this_block = this_block
+
     def _build(self, builder, params, param_types_):
         param, = params
         param_type_, = param_types_
@@ -288,7 +294,7 @@ class Condition:
         self.return_block = return_block
         set_return_block(self.block, return_block)
 
-    def finish(self):
+    def add_sub_branch_instructions(self):
         final_block = last_block_chain_block(self.eval_block)
         final_block.instructions.append(BranchInstruction(
             self.program, self.function, 
@@ -325,6 +331,7 @@ class ConditionalInstruction(FlowInstruction):
             if self.data["else"] is not None 
             else None
         )
+        self.conditions[-1].set_else_block(self.else_block)
 
     def set_return_block(self):
         return_block = self.this_block.next_block
@@ -337,12 +344,9 @@ class ConditionalInstruction(FlowInstruction):
         for condition in self.conditions:
             condition.create_sub_block()
 
-    def finish(self, block):
-        super().finish(block)
-        if self.else_block is not None:
-            self.conditions[-1].set_else_block(self.else_block)
+    def add_sub_branch_instructions(self):
         for condition in self.conditions:
-            condition.finish()
+            condition.add_sub_branch_instructions()
 
     def _build(self, builder, params, param_types_):
         self.this_block.perpare_for_termination()
@@ -850,8 +854,7 @@ class WhileInstruction(FlowInstruction):
         )
         self.eval_block.create_instructions()
 
-    def finish(self, block):
-        super().finish(block)
+    def add_sub_branch_instructions(self):
         final_block = last_block_chain_block(self.eval_block)
         final_block.instructions.append(BranchInstruction(
             self.program, self.function, 

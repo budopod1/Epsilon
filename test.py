@@ -20,6 +20,23 @@ TESTS = [
         ]
     },
     {
+        "file": "if3.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 0}
+        ]
+    },
+    {
+        "file": "if2.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "exact", "expect": 1},
+            {"arguments": [2], "compare": "exact", "expect": 0}
+        ]
+    },
+    {
         "file": "mathtest.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_double, c_double),

@@ -42,6 +42,8 @@ class Function:
             i += 1
         for block in self.blocks:
             block.finish()
+        for block in self.blocks:
+            block.set_branches_this_block()
         self.special_allocs = self.blocks[0].add_special_allocs(
             self.special_alloc_types_
         )
