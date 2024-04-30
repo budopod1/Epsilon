@@ -1,6 +1,6 @@
 using System;
 
-public class Field {
+public class Field : IEquatable<Field> {
     string name;
     Type_ type_;
     
@@ -31,5 +31,9 @@ public class Field {
         obj["name"] = new JSONString(name);
         obj["type_"] = type_.GetJSON();
         return obj;
+    }
+
+    public bool Equals(Field other) {
+        return name == other.GetName() && type_.Equals(other.GetType_());
     }
 }

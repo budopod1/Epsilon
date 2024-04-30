@@ -4,19 +4,29 @@ using System.Collections.Generic;
 
 public class Program : TreeToken, IVerifier {
     string path;
-    List<string> baseType_Names = null;
-    
+    HashSet<LocatedID> structIds = new HashSet<LocatedID>();
+    int functionIDCounter = 0;
+    int scopeVarIDCounter = 0;
+    HashSet<Struct> structsHere = new HashSet<Struct>();
+    HashSet<Struct> structs = new HashSet<Struct>();
+    List<RealFunctionDeclaration> externalDeclarations = new List<RealFunctionDeclaration>();
+
     public Program(string path, List<IToken> tokens) : base(tokens) {
         this.path = path;
     }
-    
-    public Program(string path, List<IToken> tokens, List<string> baseType_Names) : base(tokens) {
+
+    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, int functionIDCounter, int scopeVarIDCounter, HashSet<Struct> structs, HashSet<Struct> structsHere, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
         this.path = path;
-        this.baseType_Names = baseType_Names;
+        this.structIds = structIds;
+        this.functionIDCounter = functionIDCounter;
+        this.scopeVarIDCounter = scopeVarIDCounter;
+        this.structs = structs;
+        this.structsHere = structsHere;
+        this.externalDeclarations = externalDeclarations;
     }
 
-    public List<string> GetBaseType_Names() {
-        return baseType_Names;
+    public HashSet<LocatedID> GetStructIDs() {
+        return structIds;
     }
 
     public void UpdateParents() {
@@ -24,12 +34,48 @@ public class Program : TreeToken, IVerifier {
         parent = null;
     }
 
-    public void SetBaseType_Names(List<string> baseType_Names) {
-        this.baseType_Names = baseType_Names;
+    public void AddStructIDs(HashSet<LocatedID> structIds) {
+        this.structIds.UnionWith(structIds);
     }
-    
+
+    public int GetFunctionID() {
+        return functionIDCounter++;
+    }
+
+    public int GetScopeVarID() {
+        return scopeVarIDCounter++;
+    }
+
+    public void SetStructsHere(HashSet<Struct> structs) {
+        structsHere = structs;
+    }
+
+    public void SetStructs(HashSet<Struct> structs) {
+        this.structs = structs;
+    }
+
+    public HashSet<Struct> GetStructs() {
+        return structs;
+    }
+
+    public HashSet<Struct> GetStructsHere() {
+        return structsHere;
+    }
+
+    public void AddExternalDeclarations(List<RealFunctionDeclaration> declarations) {
+        externalDeclarations.AddRange(declarations);
+    }
+
+    public List<RealFunctionDeclaration> GetExternalDeclarations() {
+        return externalDeclarations;
+    }
+
+    public string GetPath() {
+        return path;
+    }
+
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return new Program(path, tokens, baseType_Names);
+        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structs, structsHere, externalDeclarations);
     }
 
     public void Verify() {
@@ -56,47 +102,26 @@ public class Program : TreeToken, IVerifier {
 
     public Struct GetStructFromType_(Type_ type_) {
         string name = type_.GetBaseType_().GetName();
-        foreach (IToken token in this) {
-            Struct struct_ = token as Struct;
-            if (struct_ == null) continue;
-            if (struct_.GetName() == name) {
-                return struct_;
-            } 
+        foreach (Struct struct_ in structs) {
+            if (struct_.GetID() == name) return struct_;
         }
-        return null;
+        Console.WriteLine(path); // temp
+        throw new ArgumentException($"No struct found for type_ {type_.ToString()}");
     }
 
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         JSONList functions = new JSONList();
-        JSONList structs = new JSONList();
         foreach (IToken token in this) {
             if (token is Function) {
-                functions.Add(((Function)token).GetJSON());
-            } else if (token is Struct) {
-                structs.Add(((Struct)token).GetJSON());
+                functions.Add(((Function)token).GetFullJSON());
             }
         }
-        List<Type_> uniqueArrayTypes_ = new List<Type_>();
-        List<Type_> arrayTypes_ = Type_.FinalTypes_.Where(
-            type_=>type_.GetBaseType_().GetName()=="Array"
-        ).ToList();
-        foreach (Type_ type_ in arrayTypes_) {
-            bool unique = true;
-            foreach (Type_ otype_ in uniqueArrayTypes_) {
-                if (type_.Equals(otype_)) {
-                    unique = false;
-                    break;
-                }
-            }
-            if (unique) uniqueArrayTypes_.Add(type_);
-        }
-        Type_.FinalTypes_ = new List<Type_>();
         obj["functions"] = functions;
-        obj["structs"] = structs;
-        obj["arrays"] = new JSONList(uniqueArrayTypes_.Select(
-            type_=>type_.GetJSON(false)
-        ));
+        obj["module_functions"] = new JSONList(
+            externalDeclarations.Select(declaration => declaration.GetJSON())
+        );
+        obj["structs"] = new JSONList(structs.Select(struct_ => struct_.GetJSON()));
         obj["path"] = new JSONString(path);
         return obj;
     }

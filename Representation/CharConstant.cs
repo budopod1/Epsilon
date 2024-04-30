@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public class CharConstant : INumberConstant, IIntConstant {
+public class CharConstant : IIntConstant {
     byte value;
 
     public CharConstant(byte value) {
@@ -9,17 +9,14 @@ public class CharConstant : INumberConstant, IIntConstant {
     }
 
     public CharConstant(char value) {
+        if (value >= 128) {
+            throw new OverflowException("Character constants' codepoints must not exceed 127");
+        }
         this.value = Convert.ToByte(value);
     }
 
     public static CharConstant FromString(string value) {
-        if (value[1] == '\\') {
-            char chr = value[2];
-            if (chr == '\'') return new CharConstant('\'');
-            return new CharConstant(Utils.UnescapeReplacements[chr]);
-        } else {
-            return new CharConstant(value[1]);
-        }
+        return new CharConstant(JSONTools.FromLiteralChar(value));
     }
 
     public Type_ GetType_() {

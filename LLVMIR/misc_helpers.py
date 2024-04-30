@@ -8,7 +8,7 @@ def index_of(program, i, type_):
     func = ir.Function(
         program.module, ir.FunctionType(
             make_type_(program, Z64), [array_ir_type, ir_type]
-        ), name=f"index_of{i}"
+        ), name=f"{program.path} index_of{i}"
     )
     arr, target = func.args
     
@@ -59,7 +59,7 @@ def dedup(program, i, type_):
     func = ir.Function(
         program.module, ir.FunctionType(
             make_type_(program, VOID), [array_ir_type]
-        ), name=f"dedup{i}"
+        ), name=f"{program.path} dedup{i}"
     )
 
     entry = func.append_basic_block(name="entry")
@@ -145,7 +145,7 @@ def compare(program, i, type_, invert):
     func = ir.Function(
         program.module, ir.FunctionType(
             Z32_ir_type, [PointerW8_ir_type, PointerW8_ir_type]
-        ), name=f"comparer{i}"
+        ), name=f"{program.path} comparer{i}"
     )
     
     entry = func.append_basic_block(name="entry")

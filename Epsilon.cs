@@ -4,59 +4,152 @@ using System.Collections.Generic;
 
 public class Epsilon {
     public static int Main(string[] args) {
-        ArgumentParser parser = new ArgumentParser();
+        ArgumentParser parser = new ArgumentParser(
+            "mono Epsilon.exe",
+            @"
+A compiler for the Epsilon programming language
 
-        parser.AddOption("p", "Print the AST");
-        parser.AddOption("print-ast", "Print the AST");
-        parser.AddOption("s", "Print the compilation steps");
-        parser.AddOption("print-steps", "Print the compilation steps");
-        parser.AddOption("t", "Show step timings");
-        parser.AddOption("timings", "Show step timings");
-        parser.AddOption("c", "Do not catch errors");
-        parser.AddOption("do-not-catch-errs", "Do not catch errors");
-        parser.AddOption("w", "Do not write to the output file");
-        parser.AddOption("do-not-write-output", "Do not write to the output file");
+Modes:
+* compile: compile specified files
+* teardown: remove the cached compiling files
+            ".Trim()
+        );
+
+        bool alwaysProj = false;
+        bool neverProj = false;
+
+        parser.AddOption(() => {alwaysProj = true;}, "Always use project mode", 
+            "p", "project-mode");
+        parser.AddOption(() => {neverProj = true;}, "Never use project mode", 
+            "P", "no-project-mode");
+
+        PossibilitiesExpectation mode = parser.Expect(
+            new PossibilitiesExpectation("compile", "teardown"));
         
-        parser.AddBranch("compile");
-        parser.AddBranch("*input file");
-        parser.AddLeaf("*output file");
+        InputExpectation inputFile = new InputExpectation("input file");
+        InputExpectation outputFile = new InputExpectation("output file");
+        parser.AddOption(outputFile, "The path to output to", "o", "output");
         
-        ParserResults parseResults = parser.Parse(args);
-        List<string> mode = parseResults.GetMode();
-        List<string> values = parseResults.GetValues();
+        InputExpectation projFile = new InputExpectation("project file");
         
-        if (mode[0] == "compile") {
-            Compiler compiler = new Compiler();
-            compiler.PRINT_AST = parseResults.HasOption("p", "print-ast");
-            compiler.PRINT_STEPS = parseResults.HasOption("s", "print-steps");
-            compiler.SHOW_TIMINGS = parseResults.HasOption("t", "timings");
-            compiler.CATCH_ERRS = !parseResults.HasOption("c", "do-not-catch-errs");
-            bool doNotWriteOutput = parseResults.HasOption("w", "do-not-write-output");
+        mode.Then(() => {
+            if (mode.Value() == "compile") {
+                parser.Expect(inputFile);
+            } else if (mode.Value() == "teardown") {
+                parser.Expect(projFile);
+            }
+        });
+
+        PossibilitiesExpectation outputType = parser.AddOption(
+            new PossibilitiesExpectation("executable", "llvm-ll", "llvm-bc"), 
+            "The output file type", "t", "output-type"
+        );
+
+        parser.AddUsageOption(mode.Usage("compile"), inputFile);
+        parser.AddUsageOption(mode.Usage("teardown"), projFile);
+        
+        parser.Parse(args);
+
+        Builder builder = new Builder();
+
+        if (mode.Value() == "compile") {
+            if (alwaysProj && neverProj) {
+                parser.DisplayProblem("The 'project-mode' and 'no-project-mode' options are mutually exclusive");
+            }
+
+            string input = Utils.GetFullPath(inputFile.Matched);
+
+            string extension;
             
-            string input = values[0];
-            string output = values[1];
-            string content = null;
-            try {
-                using (StreamReader file = new StreamReader(input)) {
-                    content = file.ReadToEnd();
-                }
-            } catch (IOException) {
-                parser.DisplayProblem("Could not read specified input file");
+            switch (outputType.Value()) {
+                case "llvm-bc":
+                    extension = ".bc";
+                    break;
+                case "llvm-ll":
+                    extension = ".ll";
+                    break;
+                case "executable":
+                    extension = null;
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            string output = null;
+            if (outputFile.IsPresent) {
+                output = outputFile.Matched;
+            } else {
+                string outputDir = Utils.GetDirectoryName(input);
+                string outputName = Utils.SetExtension(
+                    Utils.GetFileName(input), extension);
+                if (outputName == "entry") outputName = "result";
+                output = Utils.JoinPaths(outputDir, outputName);
+            }
+    
+            builder.ALWAYS_PROJECT = alwaysProj;
+            builder.NEVER_PROJECT = neverProj;
+            
+            CompilationResult result = builder.Build(input);
+            if (result.GetStatus() == CompilationResultStatus.GOOD 
+                && outputType.Value() == "executable") {
+                result = builder.ToExecutable();
+            }
+            if (result.GetStatus() != CompilationResultStatus.GOOD) {
+                if (result.HasMessage()) parser.DisplayProblem(result.GetMessage());
                 return 1;
             }
-            CompilationResultStatus resultStatus = compiler.Compile(input, content);
-            if (resultStatus != CompilationResultStatus.GOOD) return 1;
-            if (doNotWriteOutput) return 0;
-            int status = compiler.CompileIR();
-            if (status > 0) return status;
+    
+            string sourceFile;
+            
+            switch (outputType.Value()) {
+                case "llvm-bc":
+                    sourceFile = "code-linked.bc";
+                    break;
+                case "llvm-ll":
+                    Utils.RunCommand("llvm-dis", new List<string> {
+                        "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc")
+                    });
+                    sourceFile = "code-linked.ll";
+                    break;
+                case "executable":
+                    sourceFile = "code";
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+            
             try {
-                File.Copy(Utils.ProjectAbsolutePath()+"/code", output, true);
+                string executable = Utils.JoinPaths(Utils.ProjectAbsolutePath(), sourceFile);
+                File.Copy(executable, output, true);
             } catch (IOException) {
                 parser.DisplayProblem("Could not write specified output file");
                 return 1;
             }
+            
             return 0;
+        } else if (mode.Value() == "teardown") {
+            if (alwaysProj || neverProj) {
+                parser.DisplayProblem("The 'project-mode' and 'no-project-mode' options require 'compile' mode");
+            }
+
+            if (outputType.IsPresent) {
+                parser.DisplayProblem("The 'output-type' option requires 'compile' mode");
+            }
+
+            if (outputFile.IsPresent) {
+                parser.DisplayProblem("The 'output' option requires 'compile' mode");
+            }
+
+            CompilationResult result = builder.Teardown(projFile.Matched);
+            
+            if (result.GetStatus() != CompilationResultStatus.GOOD) {
+                if (result.HasMessage()) parser.DisplayProblem(result.GetMessage());
+                return 1;
+            }
+
+            return 0;
+        } else {
+            throw new InvalidOperationException();
         }
-        return 0;
     }
 }

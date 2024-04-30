@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier {
+public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    static int id_ = 0;
     static List<IPatternSegment> mainPattern = new List<IPatternSegment> {
         new UnitPatternSegment<string>(typeof(Name), "main")
     };
+    public Dictionary<ISerializableToken, int> Serialized = new Dictionary<ISerializableToken, int>();
     
     public int Count {
         get { return 1; }
@@ -23,19 +23,20 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
             block = ((CodeBlock)value);
         }
     }
-    
+
+    string sourcePath;
     PatternExtractor<List<IToken>> pattern;
     List<FunctionArgument> arguments;
     CodeBlock block;
     Type_ returnType_;
     List<Type_> specialAllocs = new List<Type_>();
-    int id;
+    string id;
+    string callee;
     List<SerializationContext> contexts = new List<SerializationContext>();
     bool isMain;
     
-    public Function(PatternExtractor<List<IToken>> pattern, 
-                    List<FunctionArgumentToken> arguments, CodeBlock block,
-                    Type_ returnType_) {
+    public Function(Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_) {
+        this.sourcePath = program.GetPath();
         this.pattern = pattern;
         this.block = block;
         this.returnType_ = returnType_;
@@ -49,7 +50,8 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         this.arguments = arguments.Select(
             argument=>new FunctionArgument(argument)
         ).ToList();
-        id = id_++;
+        id = program.GetPath() + "/" + program.GetFunctionID().ToString();
+        callee = isMain ? "main" : id;
     }
 
     public override PatternExtractor<List<IToken>> GetPattern() {
@@ -68,7 +70,7 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         this.block = block;
     }
 
-    public Type_ GetReturnType_() {
+    public override Type_ GetReturnType_() {
         return returnType_;
     }
 
@@ -76,8 +78,28 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         return GetReturnType_();
     }
 
-    public override int GetID() {
+    public override string GetID() {
         return id;
+    }
+
+    public override FunctionSource GetSource() {
+        return FunctionSource.Program;
+    }
+
+    public override string GetCallee()  {
+        return callee;
+    }
+    
+    public override string GetSourcePath() {
+        return sourcePath;
+    }
+
+    public override bool TakesOwnership() {
+        return true;
+    }
+
+    public override bool ResultInParams() {
+        return true;
     }
 
     public override string ToString() {
@@ -103,13 +125,8 @@ public class Function : FunctionDeclaration, IParentToken, ITopLevel, IVerifier 
         return null;
     }
 
-    public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["id"] = new JSONInt(id);
-        obj["arguments"] = new JSONList(arguments.Select(
-            argument => argument.GetJSON()
-        ));
-        obj["return_type_"] = returnType_.GetJSON();
+    public JSONObject GetFullJSON() {
+        JSONObject obj = GetJSON();
         new SerializationContext(this).Serialize(block);
         obj["blocks"] = new JSONList(contexts.Select(
             context=>context.Serialize()

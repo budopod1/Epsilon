@@ -4,7 +4,8 @@ using System.Collections.Generic;
 public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
     public abstract PatternExtractor<List<IToken>> GetPattern();
     public abstract List<FunctionArgument> GetArguments();
-    public abstract int GetID();
+    public abstract string GetID();
+    public abstract FunctionSource GetSource();
     public abstract Type_ GetReturnType_(List<IValueToken> tokens);
 
     public int CompareTo(FunctionDeclaration other) {
@@ -23,12 +24,14 @@ public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
         for (int i = 0; i < aac; i++) {
             Type_ argaType_ = aa[i].GetType_();
             Type_ argbType_ = ba[i].GetType_();
-            bool aToB = argaType_.IsConvertibleTo(argbType_);
-            bool bToA = argbType_.IsConvertibleTo(argaType_);
-            if (aToB && bToA) continue;
-            if (aToB) return 1;
-            if (bToA) return -1;
+            bool aGtB = argaType_.IsGreaterThan(argbType_);
+            bool bGtA = argbType_.IsGreaterThan(argaType_);
+            if (aGtB && bGtA) continue;
+            if (aGtB) return -1;
+            if (bGtA) return 1;
         }
-        return b.GetID() - a.GetID();
+        FunctionSource aSrc = a.GetSource();
+        FunctionSource bSrc = b.GetSource();
+        return bSrc.CompareTo(aSrc);
     }
 }

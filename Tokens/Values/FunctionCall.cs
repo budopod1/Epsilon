@@ -28,6 +28,10 @@ public class FunctionCall : IParentToken, IValueToken {
         this.arguments = arguments;
     }
 
+    public FunctionDeclaration GetFunction() {
+        return function;
+    }
+
     public Type_ GetType_() {
         return function.GetReturnType_(arguments);
     }
@@ -41,7 +45,7 @@ public class FunctionCall : IParentToken, IValueToken {
     public int Serialize(SerializationContext context) {
         return context.AddInstruction(
             new SerializableInstruction(this, context)
-                .AddData("function", new JSONInt(function.GetID()))
+                .AddData("function", new JSONString(function.GetID()))
         );
     }
 }

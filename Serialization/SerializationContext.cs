@@ -74,12 +74,11 @@ public class SerializationContext {
         initialDeclarations.Add(new JSONInt(varID));
     }
 
-    static Dictionary<ISerializableToken, int> Serialized = new Dictionary<ISerializableToken, int>();
-
     public int SerializeInstruction(ISerializableToken token) {
-        if (Serialized.ContainsKey(token)) return Serialized[token];
+        if (function.Serialized.ContainsKey(token)) 
+            return function.Serialized[token];
         int id = token.Serialize(this);
-        Serialized[token] = id;
+        function.Serialized[token] = id;
         return id;
     }
 }

@@ -3,15 +3,16 @@ from common import *
 from stringify import make_stringify_func
 from equals import refrence_equals, value_equals_depth_1, value_equals
 from misc_helpers import index_of, compare, dedup
+from functions import ModuleFunction
 
 
 class Program:
-    def __init__(self, module):
+    def __init__(self, module, path):
         self.module = module
+        self.path = path
         self.functions = {}
+        self.module_functions = {}
         self.structs = {}
-        self.array_ids = {}
-        self.arrays = {}
         self.externs = {}
         self.extern_funcs = {}
         self.check_funcs = {}
@@ -25,8 +26,15 @@ class Program:
         self.dedup_funcs = {}
         self.comparer_funcs = {}
 
+    def add_module_functions(self, funcs):
+        for func in funcs:
+            self.module_functions[func["id"]] = ModuleFunction(self, func)
+
+    def get_function(self, id):
+        return self.functions.get(id) or self.module_functions.get(id)
+
     def is_builtin(self, id):
-        return id in self.builtins
+        return id.startswith("builtin")
 
     def call_builtin(self, id, builder, params, param_types_, result_type_):
         builtin = self.builtins[id]
@@ -51,10 +59,40 @@ class Program:
         if result_in_params:
             if not is_value_type_(type_):
                 dumb_decr_ref_counter(self, builder, result, type_)
-        
+
         if result_type_["name"] == "Void":
             return
         return convert_type_(self, builder, result, type_, result_type_)
+
+    def call_function(self, builder, func, params, param_types_):
+        converted_params = [
+            convert_type_(
+                self, builder, param, param_type_,
+                argument["type_"]
+            )
+            for param, param_type_, argument in zip(
+                params, param_types_, func.arguments
+            )
+        ]
+        
+        result = builder.call(func.ir, converted_params)
+
+        if not func.takes_ownership:
+            if func.result_in_params:
+                if not is_value_type_(func.return_type_):
+                    incr_ref_counter(
+                        self, builder, result, func.return_type_
+                    )
+            for param, param_type_ in zip(params, param_types_):
+                if not is_value_type_(param_type_):
+                    self.check_ref(builder, param, param_type_)
+            if func.result_in_params:
+                if not is_value_type_(func.return_type_):
+                    dumb_decr_ref_counter(
+                        self, builder, result, func.return_type_
+                    )
+
+        return result
 
     def add_extern_func(self, name, data):
         self.externs[name] = data
@@ -76,16 +114,9 @@ class Program:
         result = builder.call(self.extern_funcs[name], converted_params+vargs)
         if result_type_["name"] == "Void":
             return
-        if (func["return_type_"] == Z32 and result_type_ == Bool 
-            and func.get("bool_ret", False)):
-            # This is a special convienience case for boolean
-            # external functions as there is not i1 type
-            # in C
-            return builder.trunc(result, make_type_(self, Bool))
-        else:
-            return convert_type_(
-                self, builder, result, func["return_type_"], result_type_
-            )
+        return convert_type_(
+            self, builder, result, func["return_type_"], result_type_
+        )
 
     def nullptr(self, builder, ir_type):
         return builder.inttoptr(i64_of(0), ir_type)
@@ -116,10 +147,7 @@ class Program:
         self.functions[function.id_] = function
 
     def add_struct(self, struct):
-        self.structs[struct.name] = struct
-
-    def add_array(self, array):
-        self.arrays[array.id_] = array
+        self.structs[struct.id_] = struct
 
     def make_elem(self, builder, type_):
         ir_type = make_type_(self, type_)
@@ -146,7 +174,7 @@ class Program:
             length = builder.load(length_ptr)
             has_content = builder.icmp_unsigned("!=", length, i64_of(0))
             builder.cbranch(has_content, cont_branch, final_branch)
-    
+
             cont_builder = ir.IRBuilder(cont_branch)
             i = cont_builder.phi(ir.IntType(64))
             i.add_incoming(i64_of(0), block)
@@ -160,7 +188,7 @@ class Program:
 
             forward_builder = ir.IRBuilder(forward_branch)
             forward_builder.branch(cont_branch)
-            
+
             final_builder = ir.IRBuilder(final_branch)
             self.dumb_free(final_builder, val)
             self.dumb_free(final_builder, content_ptr)
@@ -188,8 +216,9 @@ class Program:
         func = ir.Function(
             self.module, ir.FunctionType(
                 ir.VoidType(), [ir_type, make_type_(self, W64)]
-            ), name=f"check{len(self.check_funcs)}"
+            ), name=f"{self.path} check{len(self.check_funcs)}"
         )
+        func.attributes.add("alwaysinline")
         entry = func.append_basic_block(name="entry")
         builder = ir.IRBuilder(entry)
         val, refs = func.args
@@ -366,7 +395,7 @@ class Program:
             )
             self.dedup_funcs[frozen] = func
         return builder.call(func, [arr])
-        
+
     def make_comparer_func(self, type_, invert=False):
         frozen = (freeze_json(type_), invert)
         if frozen in self.comparer_funcs:

@@ -2,17 +2,19 @@ from llvmlite import ir
 from common import *
 
 
-def stringify_type_(type_):
-    generics_inner = ", ".join(map(stringify_type_, type_["generics"]))
+def stringify_type_(program, type_):
+    generics_inner = ", ".join(stringify_type_(program, generic) for generic in type_["generics"])
     generics = f"<{generics_inner}>" if type_["generics"] else ""
-    return f"{type_['name']}{type_['bits'] or ''}{generics}"
+    type_name = type_['name']
+    name = program.structs[type_name].name if type_name in program.structs else type_name
+    return f"{name}{type_['bits'] or ''}{generics}"
 
 
 def make_stringify_func(program, type_, i):
     ir_type = make_type_(program, type_)
     func = ir.Function(
         program.module, ir.FunctionType(make_type_(program, String), [ir_type]),
-        name=f"stringify{i}"
+        name=f"{program.path} stringify{i}"
     )
     entry = func.append_basic_block(name="entry")
     val, = func.args
@@ -153,7 +155,7 @@ def make_stringify_func(program, type_, i):
         )
         init_ref_counter(builder, struct_mem)
         
-        start_str = f"{stringify_type_(type_)} ["
+        start_str = f"{stringify_type_(program, type_)} ["
         start_capacity = len(start_str)+1
         start_array_mem = program.string_literal_array(
             builder, start_str, start_capacity, unique=True, name="type_name"
@@ -287,8 +289,8 @@ def make_stringify_func(program, type_, i):
         init_ref_counter(builder, struct_mem)
         
         # It's a struct!
-        name = type_["name"]
-        struct = program.structs[name]
+        name = stringify_type_(program, type_)
+        struct = program.structs[type_["name"]]
         if len(struct.fields) == 0:
             result_str = f"{name} []"
             str_len = len(result_str)

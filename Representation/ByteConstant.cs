@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public class ByteConstant : INumberConstant, IIntConstant {
+public class ByteConstant : IIntConstant {
     byte value;
 
     public ByteConstant(byte value) {

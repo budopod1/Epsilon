@@ -13,14 +13,14 @@ class Function:
         self.is_main = data["is_main"]
         self.declarations = data["declarations"]
         self.special_alloc_types_ = data["special_allocs"]
+        self.takes_ownership = data["takes_ownership"]
+        self.result_in_params = data["result_in_params"]
+        self.callee = data["callee"]
         self.ir_type = make_function_type_(
             program, self.return_type_, 
             (argument["type_"] for argument in self.arguments)
         )
-        self.ir = ir.Function(
-            program.module, self.ir_type,
-            name=("main" if self.is_main else "func"+str(id_))
-        )
+        self.ir = ir.Function(program.module, self.ir_type, name=self.callee)
         self.blocks = [
             Block(program, self, i, block)
             for i, block in enumerate(data["blocks"])
@@ -75,3 +75,17 @@ class Function:
 
     def get_special_alloc(self, i):
         return self.special_allocs[i]
+
+
+class ModuleFunction:
+    def __init__(self, program, data):
+        self.id_ = data["id"]
+        self.return_type_= data["return_type_"]
+        self.arguments = data["arguments"]
+        self.ir_type = make_function_type_(
+            program, self.return_type_, 
+            (argument["type_"] for argument in self.arguments)
+        )
+        self.takes_ownership = data["takes_ownership"]
+        self.result_in_params = data["result_in_params"]
+        self.ir = ir.Function(program.module, self.ir_type, name=data["callee"])

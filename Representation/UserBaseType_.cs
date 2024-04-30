@@ -19,10 +19,13 @@ public class UserBaseType_ {
         "Null"
     };
 
-    public static UserBaseType_ ParseString(string content, List<string> structNames) {
-        if ((structNames.Contains(content) || BaseType_.BuiltInTypes_.Contains(content)
-            || SpecialFullBaseType_Names.Contains(content)) 
-            && !NonUserType_Names.Contains(content)) {
+    public static UserBaseType_ ParseString(string content, HashSet<LocatedID> structIds) {
+        foreach (LocatedID structId in structIds) {
+            if (content == structId.Name) return new UserBaseType_(structId.GetID());
+        }
+        if ((BaseType_.BuiltInTypes_.Contains(content) 
+            || SpecialFullBaseType_Names.Contains(content)
+            ) && !NonUserType_Names.Contains(content)) {
             return new UserBaseType_(content);
         }
         System.Text.RegularExpressions.Match match = Regex.Match(
@@ -44,7 +47,7 @@ public class UserBaseType_ {
     public Type_ ToType_(List<Type_> generics) {
         if (SpecialFullBaseType_Names.Contains(name)) {
             if (generics.Count > 0) {
-                throw new IllegalType_GenericsException(
+                throw new IllegalType_Exception(
                     $"Alias type {name} cannot have generics"
                 );
             }

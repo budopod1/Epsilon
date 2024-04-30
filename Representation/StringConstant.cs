@@ -16,7 +16,7 @@ public class StringConstant : IConstant {
     }
 
     public static StringConstant FromString(string value) {
-        return new StringConstant(Utils.UnescapeStringFromLiteral(value));
+        return new StringConstant(JSONTools.FromLiteral(value));
     }
 
     public Type_ GetType_() {

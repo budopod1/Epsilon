@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 
 public class Scope {
+    Program program;
     CodeBlock block;
     Dictionary<int, ScopeVar> variables = new Dictionary<int, ScopeVar>();
-    static int id = 0;
 
-    public Scope(CodeBlock block) {
+    public Scope(Program program, CodeBlock block) {
+        this.program = program;
         this.block = block;
     }
 
@@ -43,8 +44,9 @@ public class Scope {
     }
 
     public int AddVar(string name, Type_ type_) {
+        int id = program.GetScopeVarID();
         variables[id] = new ScopeVar(name, type_);
-        return id++;
+        return id;
     }
 
     public static Scope GetEnclosing(IToken token) {

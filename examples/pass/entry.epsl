@@ -1,0 +1,6 @@
+#import chain1;
+
+Z#main {
+    println[foo];
+    return 0;
+}

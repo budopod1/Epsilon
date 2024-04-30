@@ -40,7 +40,7 @@ public class Type_Matcher : IMatcher {
 
                 List<IToken> replacement = new List<IToken> {new Type_Token(type_)};
                 return new Match(i, j, replacement, replaced);
-            } catch (IllegalType_GenericsException e) {
+            } catch (IllegalType_Exception e) {
                 throw new SyntaxErrorException(
                     e.Message, TokenUtils.MergeSpans(replaced)
                 );

@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-public class IntConstant : INumberConstant, IIntConstant {
+public class IntConstant : IIntConstant {
     int value;
 
     public IntConstant(int value) {

@@ -57,10 +57,12 @@ def make_type_(program, data):
         case "Func", [ret, *params]:
             return ir.FunctionType(ret, params)
         case "Array", [sub]:
-            id_ = program.array_ids[freeze_json(data)]
-            return ir.global_context.get_identified_type(
-                "a"+str(id_)
-            ).as_pointer()
+            return ir.LiteralStructType([
+                REF_COUNTER_FIELD, 
+                ir.IntType(64), # capacity
+                ir.IntType(64), # element count
+                ir.PointerType(sub)
+            ]).as_pointer()
         case "Optional", [sub]:
             return sub
         case "File", []:

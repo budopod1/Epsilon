@@ -1,8 +1,12 @@
 using System;
 using System.Linq;
+using System.IO;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public static class Utils {
+    public static bool SUBPROCCESSOUTPUT = true;
+    
     public static string Tab = "    ";
     public static string Whitespace = "\r\n\t ";
     public static string Numbers = "1234567890";
@@ -52,66 +56,6 @@ public static class Utils {
         return true;
     }
 
-    public static Dictionary<TValue, TKey> InvertDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary) {
-        return dictionary.ToDictionary(val => val.Value, val => val.Key);
-    }
-
-    public static Dictionary<char, string> EscapeReplacements = new Dictionary<char, string> {
-        {'\n', "\\n"},
-        {'\t', "\\t"},
-        {'\r', "\\r"},
-        {'\\', "\\\\"},
-        {'\0', "\\0"},
-        {'\a', "\\a"},
-        {'\b', "\\b"},
-        {'\f', "\\f"},
-        {'\v', "\\v"},
-    };
-
-    public static Dictionary<char, char> UnescapeReplacements = InvertDictionary(
-        EscapeReplacements
-    ).ToDictionary(val=>val.Key[1], val=>val.Value);
-
-    public static string EscapeStringToLiteral(string str, char quote='"') {
-        string result = quote.ToString();
-        foreach (char chr in str) {
-            if (EscapeReplacements.ContainsKey(chr)) {
-                result += EscapeReplacements[chr];
-            } else if (chr == quote) {
-                result += "\\" + quote.ToString();
-            } else {
-                result += chr;
-            }
-        }
-        return result + quote;
-    }
-
-    public static string UnescapeStringFromLiteral(string str) {
-        char quote = str[0];
-        string quoteless = str.Substring(1, str.Length-2);
-        string result = "";
-        bool wbs = false;
-        foreach (char chr in quoteless) {
-            if (wbs) {
-                if (UnescapeReplacements.ContainsKey(chr)) {
-                    result += UnescapeReplacements[chr];
-                } else if (chr == quote) {
-                    result += quote;
-                } {
-                    result += chr;
-                }
-                wbs = false;
-            } else {
-                if (chr == '\\') {
-                    wbs = true;
-                } else {
-                    result += chr;
-                }
-            }
-        }
-        return result;
-    }
-
     public static string CammelToSnake(string str) {
         string result = "";
         bool first = true;
@@ -126,22 +70,161 @@ public static class Utils {
         return result;
     }
 
-    public static string ENList(List<string> list, string joiner="and") {
-        if (list.Count == 0) return "none";
-        if (list.Count == 1) return list[0];
-        if (list.Count == 2) return $"{list[0]} {joiner} {list[1]}";
-        string result = "";
-        for (int i = 0; i < list.Count-1; i++) {
-            result = list[i] + ", ";
-        }
-        return $"{result}{joiner} {list[list.Count-1]}";
-    }
-
     public static string ProjectAbsolutePath() {
         return AppDomain.CurrentDomain.BaseDirectory;
     }
 
     public static bool ApproxEquals(double a, double b) {
         return Math.Abs(a-b)/(a+b) < 0.01;
+    }
+
+    public static Process RunCommand(string command, IEnumerable<string> arguments) {
+        ProcessStartInfo startInfo = new ProcessStartInfo(command);
+        startInfo.CreateNoWindow = true;
+        startInfo.UseShellExecute = false;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        string argumentsStr = "";
+        // https://stackoverflow.com/questions/5510343
+        foreach (string argument in arguments) {
+            argumentsStr += "\"" + argument.Replace("\\", "\\\\")
+                .Replace("\"", "\\\"") + "\" ";
+        }
+        startInfo.Arguments = argumentsStr;
+        Process process = Process.Start(startInfo);
+        process.WaitForExit();
+        if (SUBPROCCESSOUTPUT || process.ExitCode != 0) {
+            Console.Write(process.StandardOutput.ReadToEnd());
+            Console.Write(process.StandardError.ReadToEnd());
+        }
+        if (process.ExitCode != 0) {
+            throw new CommandFailureException(
+                $"Command '{command}' exited with status code {process.ExitCode}"
+            );
+        }
+        return process;
+    }
+
+    public static Process RunCommand(string command) {
+        return RunCommand(command, new List<string>());
+    }
+
+    public static bool FileExists(string path) {
+        try {
+            FileStream file = File.Open(path, FileMode.Open);
+            file.Dispose();
+            return true;
+        } catch (FileNotFoundException) {
+            return false;
+        } catch (DirectoryNotFoundException) {
+            return false;
+        } catch (UnauthorizedAccessException) {
+            return false;
+        } catch (ArgumentException) {
+            return false;
+        }
+    }
+
+    public static string GetFullPath(string path) {
+        try {
+            return Path.GetFullPath(path);
+        } catch (ArgumentNullException) {
+            return null;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string JoinPaths(params string[] segments) {
+        try {
+            return Path.Combine(segments);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string GetDirectoryName(string path) {
+        try {
+            return Path.GetDirectoryName(path);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string GetFileName(string path) {
+        try {
+            return Path.GetFileName(path);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string GetFileNameWithoutExtension(string path) {
+        try {
+            return Path.GetFileNameWithoutExtension(path);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string RemoveExtension(string path) {
+        try {
+            return Path.ChangeExtension(path, null);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static string SetExtension(string path, string extension) {
+        try {
+            return Path.ChangeExtension(path, extension);
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException e) {
+            throw new IOException(e.Message);
+        }
+    }
+
+    public static bool TryDelete(string path) {
+        try {
+            File.Delete(path);
+            return true;
+        } catch (ArgumentNullException e) {
+            throw e;
+        } catch (ArgumentException) {
+            return false;
+        } catch (IOException) {
+            return false;
+        } catch (NotSupportedException) {
+            return false;
+        } catch (UnauthorizedAccessException) {
+            return false;
+        }
+    }
+
+    public static string Stem(string path) {
+        string directory = GetDirectoryName(path);
+        string name = GetFileNameWithoutExtension(path);
+        if (name[0] == '.') name = name.Substring(1);
+        return JoinPaths(directory, name);
+    }
+
+    public static (int, int) LongToInts(long num) {
+        return ((int)(num >> 32), (int)(num & ~(int)0));
+    }
+
+    public static long IntsToLong((int, int) vals) {
+        (int a, int b) = vals;
+        return ((long)a << 32) + (long)b;
     }
 }

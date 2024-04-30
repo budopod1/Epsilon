@@ -149,8 +149,8 @@ EXTERN_FUNCS = {
         "arguments": [ArrayW8, W64, W64, W64]
     },
     "arrayEqual": {
-        "name": "arrayEqual", "return_type_": Z32,
-        "arguments": [ArrayW8, ArrayW8], "bool_ret": True
+        "name": "arrayEqual", "return_type_": Bool,
+        "arguments": [ArrayW8, ArrayW8]
     },
     "countChr": {
         "name": "countChr", "return_type_": W64,
@@ -173,16 +173,16 @@ EXTERN_FUNCS = {
         "arguments": [ArrayW8, ArrayW8, W64]
     },
     "startsWith": {
-        "name": "startWith", "return_type_": Z32,
-        "arguments": [ArrayW8, ArrayW8, W64], "bool_ret": True
+        "name": "startWith", "return_type_": Bool,
+        "arguments": [ArrayW8, ArrayW8, W64]
     },
     "endsWith": {
-        "name": "endsWith", "return_type_": Z32,
-        "arguments": [ArrayW8, ArrayW8, W64], "bool_ret": True
+        "name": "endsWith", "return_type_": Bool,
+        "arguments": [ArrayW8, ArrayW8, W64]
     },
     "arrayEqual": {
-        "name": "arrayEqual", "return_type_": Z32,
-        "arguments": [ArrayW8, ArrayW8, W64], "bool_ret": True
+        "name": "arrayEqual", "return_type_": Bool,
+        "arguments": [ArrayW8, ArrayW8, W64]
     },
     "memcmp": {
         "name": "memcmp", "return_type_": Z32,
@@ -201,16 +201,16 @@ EXTERN_FUNCS = {
         "arguments": [String]
     },
     "isValidParsedInt": {
-        "name": "isValidParsedInt", "return_type_": Z32,
-        "arguments": [Z32], "bool_ret": True
+        "name": "isValidParsedInt", "return_type_": Bool,
+        "arguments": [Z32]
     },
     "parseFloat": {
         "name": "parseFloat", "return_type_": Q32,
         "arguments": [String]
     },
     "isValidParsedFloat": {
-        "name": "isValidParsedFloat", "return_type_": Z32,
-        "arguments": [Q32], "bool_ret": True
+        "name": "isValidParsedFloat", "return_type_": Bool,
+        "arguments": [Q32]
     },
     "readInputLine": {
         "name": "readInputLine", "return_type_": String,
@@ -237,16 +237,16 @@ EXTERN_FUNCS = {
         "arguments": []
     },
     "fileOpen": {
-        "name": "fileOpen", "return_type_": Z32,
-        "arguments": [File], "bool_ret": True
+        "name": "fileOpen", "return_type_": Bool,
+        "arguments": [File]
     },
     "fileMode": {
         "name": "fileMode", "return_type_": Z32,
         "arguments": [File]
     },
     "closeFile": {
-        "name": "closeFile", "return_type_": Z32,
-        "arguments": [File], "bool_ret": True
+        "name": "closeFile", "return_type_": Bool,
+        "arguments": [File]
     },
     "fileLength": {
         "name": "fileLength", "return_type_": Z64,
@@ -265,28 +265,28 @@ EXTERN_FUNCS = {
         "arguments": [File, W64]
     },
     "setFilePos": {
-        "name": "setFilePos", "return_type_": Z32,
-        "arguments": [File, W64], "bool_ret": True
+        "name": "setFilePos", "return_type_": Bool,
+        "arguments": [File, W64]
     },
     "jumpFilePos": {
-        "name": "jumpFilePos", "return_type_": Z32,
-        "arguments": [File, W64], "bool_ret": True
+        "name": "jumpFilePos", "return_type_": Bool,
+        "arguments": [File, W64]
     },
     "readFileLine": {
         "name": "readFileLine", "return_type_": OptionalString,
         "arguments": [File]
     },
     "readLineReachedEOF": {
-        "name": "readLineReachedEOF", "return_type_": Z32,
-        "arguments": [], "bool_ret": True
+        "name": "readLineReachedEOF", "return_type_": Bool,
+        "arguments": []
     },
     "readFileLines": {
         "name": "readFileLines", "return_type_": OptionalArrayString,
         "arguments": [File]
     },
     "writeToFile": {
-        "name": "writeToFile", "return_type_": Z32,
-        "arguments": [File, String], "bool_ret": True
+        "name": "writeToFile", "return_type_": Bool,
+        "arguments": [File, String]
     },
     "freeFile": {
         "name": "freeFile", "return_type_": VOID,
@@ -309,19 +309,15 @@ EXTERN_FUNCS = {
         "arguments": [ArrayW8, W64, W64]
     },
     "ffloor": {
-        "name": "llvm.floor.f32", "return_type_": Q32,
-        "arguments": [Q32]
+        "name": "llvm.floor.f64", "return_type_": Q64,
+        "arguments": [Q64]
     },
     "fceil": {
-        "name": "llvm.ceil.f32", "return_type_": Q32,
-        "arguments": [Q32]
+        "name": "llvm.ceil.f64", "return_type_": Q64,
+        "arguments": [Q64]
     },
     "round": {
-        "name": "llvm.lrint.i32.f32", "return_type_": Z32,
-        "arguments": [Q32]
+        "name": "llvm.lrint.i64.f64", "return_type_": Q64,
+        "arguments": [Q64]
     },
 }
-
-EXTERN_ARRAYS = [
-    ArrayW8, ArrayZ32, String, ArrayString
-]

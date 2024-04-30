@@ -3,9 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Type_ : IEquatable<Type_> {
-    // https://en.wikipedia.org/wiki/
-    // Set_(mathematics)#Special_sets_of_numbers_in_mathematics
-
     public static Type_ Unknown() {
         return new Type_("Unknown");
     }
@@ -17,17 +14,16 @@ public class Type_ : IEquatable<Type_> {
     public static Type_ String() {
         return new Type_("Array", new List<Type_> {new Type_("Byte")});
     }
-    
+
     BaseType_ baseType_;
     List<Type_> generics;
-    public static List<Type_> FinalTypes_ = new List<Type_>();
 
     public static Type_ Any() {
         return new Type_("Any");
     }
 
     public static bool AreCompatible(Type_ a, Type_ b) {
-        if (a.Equals(b)) return true;
+        if (a.Matches(b)) return true;
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
         if (abt.IsAny() && !bbt.IsNon()) 
@@ -42,7 +38,7 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public static Type_ Common(Type_ a, Type_ b) {
-        if (a.Equals(b)) return a;
+        if (a.Matches(b)) return a;
         if (a.HasGenerics() || b.HasGenerics()) 
             return Unknown();
         BaseType_ abt = a.GetBaseType_();
@@ -65,7 +61,10 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public static Type_ CommonSpecific(Type_ a, Type_ b, string name) {
-        if (a.Equals(b) && a.GetBaseType_().GetName()==name) return a;
+        if (a.Matches(b)) {
+            if (a.GetBaseType_().GetName()==name || b.GetBaseType_().GetName()==name)
+                return a;
+        }
         if (a.HasGenerics() || b.HasGenerics()) 
             return Unknown();
         int? abits = a.GetBaseType_().GetBits();
@@ -110,7 +109,7 @@ public class Type_ : IEquatable<Type_> {
 
     void CheckGenerics(BaseType_ baseType_, List<Type_> generics) {
         if (generics.Count != baseType_.GenericsAmount()) {
-            throw new IllegalType_GenericsException(
+            throw new IllegalType_Exception(
                 $"Incorrect number of generics on base type {baseType_} (got {generics.Count}, expected {baseType_.GenericsAmount()})"
             );
         }
@@ -121,7 +120,7 @@ public class Type_ : IEquatable<Type_> {
         Type_ result = baseType_.ToType_(generics);
         if (result.GetBaseType_().GetName() == "Optional") {
             if (!generics[0].GetBaseType_().IsOptionable()) {
-                throw new IllegalType_GenericsException(
+                throw new IllegalType_Exception(
                     $"Invalid generic {generics[0]} for Optional type"
                 );
             }
@@ -155,7 +154,7 @@ public class Type_ : IEquatable<Type_> {
 
     bool IsConvertibleOptionalTo(Type_ other) {
         if (other.GetBaseType_().GetName() != "Optional") return false;
-        return Equals(other.GetGeneric(0));
+        return Matches(other.GetGeneric(0));
     }
 
     bool IsConvertibleNullTo(Type_ other) {
@@ -172,7 +171,7 @@ public class Type_ : IEquatable<Type_> {
         if (IsConvertibleOptionalTo(other)) return true;
         if (IsConvertibleNullTo(other)) return true;
         if (HasGenerics())
-            return Equals(other);
+            return Matches(other);
         if (other.HasGenerics()) return false;
         if (baseType_.IsConvertibleTo(otherBaseType_))
             return true;
@@ -204,7 +203,7 @@ public class Type_ : IEquatable<Type_> {
         if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
             return true;
         if (IsEquivalentTo(other)) return true;
-        if (HasGenerics()) return Equals(other);
+        if (HasGenerics()) return Matches(other);
         if (other.HasGenerics()) return false;
         if (baseType_.IsCastableTo(otherBaseType_))
             return true;
@@ -212,19 +211,35 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool Equals(Type_ other) {
+        return baseType_.Equals(other.GetBaseType_()) && GenericsEqual(other);
+    }
+
+    public bool Matches(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
         if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
             return true;
         if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
             return true;
-        if (baseType_.Equals(otherBaseType_)) {
-            return GenericsEqual(other);
-        }
-        return false;
+        return baseType_.Equals(other.GetBaseType_()) && GenericsMatching(other);
+    }
+
+    public bool IsGreaterThan(Type_ other) {
+        if (!other.IsConvertibleTo(this)) return false;
+        if (!IsConvertibleTo(other)) return true;
+        BaseType_ otherBaseType_ = other.GetBaseType_();
+        if (baseType_.GetName() != otherBaseType_.GetName()) return false;
+        int? thisBits = baseType_.GetBits();
+        int? otherBits = otherBaseType_.GetBits();
+        if (!thisBits.HasValue || !otherBits.HasValue) return false;
+        return thisBits.Value > otherBits.Value;
     }
 
     public bool GenericsEqual(Type_ other) {
         return Utils.ListEqual<Type_>(generics, other.GetGenerics());
+    }
+
+    public bool GenericsMatching(Type_ other) {
+        return Enumerable.Zip(generics, other.GetGenerics(), (a, b) => a.Matches(b)).All(a => a);
     }
 
     public override string ToString() {
@@ -242,8 +257,7 @@ public class Type_ : IEquatable<Type_> {
         );
     }
 
-    public IJSONValue GetJSON(bool isFinalType_=true) {
-        if (isFinalType_) FinalTypes_.Add(this);
+    public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["name"] = new JSONString(baseType_.GetName());
         obj["bits"] = new JSONInt(baseType_.GetBitsOrDefaultIfMeaningful());

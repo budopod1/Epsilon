@@ -21,8 +21,8 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Byte", "W", "Z", "Q", "Bool"
     };
 
-    public static List<string> BitTypes_ = new List<string> {
-        "W", "Z", "Q"
+    public static Dictionary<string, int> BitTypes_ = new Dictionary<string, int> {
+        {"W", 32}, {"Z", 32}, {"Q", 64}
     };
 
     public static List<string> IntTypes_ = new List<string> {
@@ -83,14 +83,12 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Bool", "Byte", "W", "Z", "Q", "Null"
     };
 
-    public static int DefaultBits = 32;
-
     string name;
     int? bits;
 
     public BaseType_(string name, int? bits = null) {
-        if (BitTypes_.Contains(name)) {
-            if (bits == null) bits = DefaultBits;
+        if (BitTypes_.ContainsKey(name)) {
+            if (bits == null) bits = BitTypes_[name];
         } else if (bits != null) {
             throw new BaseType_BitsException(
                 $"You can't set the bits for {name}"
@@ -108,10 +106,12 @@ public class BaseType_ : IEquatable<BaseType_> {
         return bits;
     }
 
-    public int GetBitsOrDefault() {
-        int defaultBits = DefaultBits;
+    public int? GetBitsOrDefault() {
+        int defaultBits = 0;
         if (SpecialDefaultBits.ContainsKey(name)) {
             defaultBits = SpecialDefaultBits[name];
+        } else if (BitTypes_.ContainsKey(name)) {
+            defaultBits = BitTypes_[name];
         }
         return bits.GetValueOrDefault(defaultBits);
     }
@@ -200,12 +200,12 @@ public class BaseType_ : IEquatable<BaseType_> {
         }
     }
 
-    public bool IsStructType_() {
-        return !BuiltInTypes_.Contains(name);
+    public bool IsBuiltin() {
+        return BuiltInTypes_.Contains(name);
     }
 
     public bool IsOptionable() {
-        return IsStructType_() || Optionable.Contains(name);
+        return Optionable.Contains(name) || !IsBuiltin();
     }
 
     public bool IsNullable() {

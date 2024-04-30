@@ -3,31 +3,33 @@ from ctypes import CFUNCTYPE, c_double, c_float, c_int, c_uint, c_ushort, c_ulon
 import subprocess
 from pathlib import Path
 import sys
+import multiprocessing
 
 
 engine = None
+manager = multiprocessing.Manager()
 
 
 TESTS = [
     {
         "file": "basic.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
     },
     {
-        "file": "math.epsl",
-        "func": "func0",
-        "sig": CFUNCTYPE(c_float, c_float),
+        "file": "mathtest.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_double),
         "tests": [
             {"arguments": [3], "compare": "float", "expect": 35.54}
         ]
     },
     {
         "file": "if.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [6], "compare": "exact", "expect": 1},
@@ -37,7 +39,7 @@ TESTS = [
     },
     {
         "file": "while.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [4], "compare": "exact", "expect": 10},
@@ -46,7 +48,7 @@ TESTS = [
     },
     {
         "file": "string.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_char, c_int),
         "tests": [
             {"arguments": [0], "compare": "exact", "expect": b"a"},
@@ -55,7 +57,7 @@ TESTS = [
     },
     {
         "file": "array.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int, c_int),
         "tests": [
             {"arguments": [0, 0], "compare": "exact", "expect": 1},
@@ -64,7 +66,7 @@ TESTS = [
     },
     {
         "file": "struct.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 5}
@@ -72,7 +74,7 @@ TESTS = [
     },
     {
         "file": "switch.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 2},
@@ -82,7 +84,7 @@ TESTS = [
     },
     {
         "file": "builtin.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [4], "compare": "exact", "expect": 2},
@@ -92,7 +94,7 @@ TESTS = [
     },
     {
         "file": "stringify.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [10], "compare": "exact", "expect": 2851}
@@ -100,7 +102,7 @@ TESTS = [
     },
     {
         "file": "equals.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 2}
@@ -108,7 +110,7 @@ TESTS = [
     },
     {
         "file": "bool.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
@@ -116,7 +118,7 @@ TESTS = [
     },
     {
         "file": "deepequals.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 10}
@@ -124,7 +126,7 @@ TESTS = [
     },
     {
         "file": "compound.epsl",
-        "func": "main",
+        "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 14}
@@ -132,17 +134,43 @@ TESTS = [
     },
     {
         "file": "uninitvalue.epsl",
-        "func": "func0",
+        "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 42},
             {"arguments": [0], "compare": "exact", "expect": 24}
         ]
     },
+    {
+        "file": "circular1.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 2}
+        ]
+    },
+    {
+        "file": "mathimport.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "float", "expect": 0.54}
+        ]
+    },
+    {
+        "file": "mathimport3.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_double),
+        "tests": [
+            {"arguments": [-4], "compare": "float", "expect": 2}
+        ]
+    }
 ]
 
+TIMEOUT = 15
 
-def get_func(path, func):
+
+def get_func(path, source, func_id):
     global engine
     
     with open(path) as file:
@@ -164,19 +192,19 @@ def get_func(path, func):
     engine.finalize_object()
     engine.run_static_constructors()
 
+    func = "main" if func_id == -1 else f"{str(source.resolve())}/{str(func_id)}"
+
     return engine.get_function_address(func)
 
 
 def compile_file(file):
     proccess = subprocess.run(
-        ["mono", "Epsilon.exe", "-w", "compile", str(file), "_"], capture_output=True
+        ["mono", "Epsilon.exe", "-t", "llvm-ll", "compile", str(file), "-o", "code.ll", "-P"],
+        capture_output=True, timeout=TIMEOUT
     )
-    error_markers = [b"compilation error", b"Error in", b"Unhandled Exception"]
     output = proccess.stdout+proccess.stderr
-    for error_marker in error_markers:
-        if error_marker in output:
-            return False, output.decode('utf-8')
-    subprocess.run(["llvm-dis", "-o", "code-opt.ll", "code-opt.bc"])
+    if proccess.returncode:
+        return False, output.decode('utf-8')
     return True, ""
 
 
@@ -184,7 +212,14 @@ def equal(mode, a, b):
     if mode == "exact":
         return a == b
     elif mode == "float":
-        return round(a, 2) == round(b, 2)
+        return abs(a - b) < 0.005
+
+
+test_result = manager.dict()
+
+
+def run_test(func, args):
+    test_result["result"] = func(*args)
 
 
 def main():
@@ -201,29 +236,56 @@ def main():
         file = group["file"]
         func = group["func"]
         print(f"\n🧪 Testing function {func} from file {file}...")
-        compiled, msg = compile_file(base_dir/file)
+        source = base_dir/file
 
-        if not compiled:
+        try:
+            did_compile, compile_message = compile_file(source)
+        except subprocess.TimeoutExpired:
+            print("❗ Compilation of function failed:")
+            print(f"Compliation did not complete within {TIMEOUT} seconds")
+            failed += len(group["tests"])
+            continue
+
+        if not did_compile:
             print("❗ Compilation of function failed with error:")
-            print(msg)
+            print(compile_message)
             failed += len(group["tests"])
             continue
         
-        func_ptr = get_func("code-opt.ll", func)
+        func_ptr = get_func("code.ll", source.with_suffix(""), func)
         func = group["sig"](func_ptr)
         
         for test in group["tests"]:
             print(f"Running test {i}/{test_count}...")
-            result = func(*test["arguments"])
-            expect = test["expect"]
+
+            test_result["result"] = None
             
-            if equal(test["compare"], result, expect):
-                print("✅ Test passed")
-                succeeded += 1
-            else:
+            process = multiprocessing.Process(
+                target=run_test, args=(func, test["arguments"]))
+            process.start()
+            process.join(TIMEOUT)
+
+            if process.is_alive():
+                process.terminate()
+                process.join()
                 print("❌ Test failed!")
-                print(f"Expected {expect}, got {result}")
+                print(f"Test did not complete within {TIMEOUT} seconds")
                 failed += 1
+            else:
+                expect = test["expect"]
+
+                result = test_result["result"]
+
+                if result is None:
+                    print("😬 Probable segmentation fault :(")
+                    failed += 1
+                elif equal(test["compare"], result, expect):
+                    print("✅ Test passed")
+                    succeeded += 1
+                else:
+                    print("❌ Test failed!")
+                    print(f"Expected {expect}, got {result}")
+                    failed += 1
 
             i += 1
     

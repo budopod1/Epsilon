@@ -1,5 +1,5 @@
 using System;
 
-public interface IIntConstant : IConstant {
+public interface IIntConstant : INumberConstant {
     int GetIntValue();
 }
