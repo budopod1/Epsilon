@@ -1,11 +1,8 @@
 TODO:
-* before modules merge:
-    * Required action 4.txt
-
-* after modules merge:
-    * add compressed JSON
-    * add safe array access and safe unwrap
-    * add logging
-    * self host LLVMIR section?
-    * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
-    * struct subclassing
+* add message to alert user upon that without a main method, a project cannot be compiled to an executable
+* add compressed JSON
+* add safe array access and safe unwrap
+* add logging
+* self host LLVMIR section?
+* struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
+* struct subclassing
