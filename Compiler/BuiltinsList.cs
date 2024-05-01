@@ -282,7 +282,7 @@ public static class BuiltinsList {
                 new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "countChr"),
+                    new UnitPatternSegment<string>(typeof(Name), "count_chr"),
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {

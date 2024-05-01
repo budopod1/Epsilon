@@ -447,13 +447,17 @@ class ForInstruction(FlowInstruction):
         self.for_counter = self.FOR_COUNTER
         self.FOR_COUNTER += 1
         self.check_block = None
+        self.finish_block = None
         self.iter_var = self.data["iter_var"]
         self.iter_type_ = self.data["iter_type_"]
 
     def finish(self, block):
         super().finish(block)
         self.check_block = self.function.ir.append_basic_block(
-            f"for{self.for_counter}"
+            f"for_check{self.for_counter}"
+        )
+        self.finish_block = self.function.ir.append_basic_block(
+            f"for_finish{self.for_counter}"
         )
 
     def set_return_block(self):
@@ -463,10 +467,11 @@ class ForInstruction(FlowInstruction):
         self.block.continue_block = check_block_wrapped
 
     def _build(self, builder, params, param_types_):
+        
         iter_var = self.function.get_special_alloc(self.iter_var)
 
         loop_block = self.block.block
-        fail_block = self.this_block.next_block.block
+        exit_block = self.this_block.next_block.block
         
         is_in = "in" in self.clause_names
         is_enumerating = "enumerating" in self.clause_names
@@ -541,10 +546,10 @@ class ForInstruction(FlowInstruction):
                     incr_ref_counter(self.program, builder, value, self.type_)
                 builder.store(value, declaration)
                 builder.branch(loop_block)
-            builder.branch(fail_block)
+            builder.branch(self.finish_block)
         else:
             builder.store(start, declaration)
-            builder.cbranch(start_loop, loop_block, fail_block)
+            builder.cbranch(start_loop, loop_block, self.finish_block)
 
         builder = ir.IRBuilder(self.check_block)
 
@@ -573,10 +578,17 @@ class ForInstruction(FlowInstruction):
                     incr_ref_counter(self.program, builder, value, self.type_)
                 builder.store(value, declaration)
                 builder.branch(loop_block)
-            builder.branch(fail_block)
+            builder.branch(self.finish_block)
         else:
             builder.store(idx, declaration)
-            builder.cbranch(continue_, loop_block, fail_block)
+            builder.cbranch(continue_, loop_block, self.finish_block)
+
+        builder = ir.IRBuilder(self.finish_block)
+        
+        for param, param_type_ in zip(params, param_types_):
+            self.program.check_ref(builder, param, param_type_)
+            
+        builder.branch(exit_block)
 
 
 class FunctionCallInstruction(Typed_Instruction):

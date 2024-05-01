@@ -1,0 +1,6 @@
+Z#main {
+    for (Z:val in [Z] [1, 2, 3]) {
+        println[val];
+    };
+    return 0;
+}

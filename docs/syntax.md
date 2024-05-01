@@ -465,9 +465,9 @@ Usage: TODO<br>
 Usage: TODO<br>
 `Array<T>#<arr:Array<T>>.slice<start:W64><end:W64>` where `T` is `Any`
 
-**#23: countChr**<br>
+**#23: count_chr**<br>
 Usage: TODO<br>
-`W64#<str:Str>.countChr<chr:Byte>`
+`W64#<str:Str>.count_chr<chr:Byte>`
 
 **#24: count**<br>
 Usage: TODO<br>
