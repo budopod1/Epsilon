@@ -228,12 +228,10 @@ class BranchInstruction(FlowInstruction):
     def _build(self, builder, params, param_types_):
         param, = params
         param_type_, = param_types_
+        cond = truth_value(self.program, builder, param, param_type_)
+        self.program.check_ref(builder, param, param_type_)
         self.this_block.perpare_for_termination()
-        builder.cbranch(
-            truth_value(self.program, builder, param, param_type_),
-            self.true_block.block,
-            self.false_block.block
-        )
+        builder.cbranch(cond, self.true_block.block, self.false_block.block)
 
 
 class BreakInstruction(BaseInstruction):
