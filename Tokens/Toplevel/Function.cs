@@ -33,14 +33,12 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     string id;
     string callee;
     List<SerializationContext> contexts = new List<SerializationContext>();
-    bool isMain;
     
     public Function(Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_) {
         this.sourcePath = program.GetPath();
         this.pattern = pattern;
         this.block = block;
         this.returnType_ = returnType_;
-        isMain = Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments());
         Scope scope = block.GetScope();
         foreach (FunctionArgumentToken argument in arguments) {
             argument.SetID(scope.AddVar(
@@ -51,7 +49,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
             argument=>new FunctionArgument(argument)
         ).ToList();
         id = program.GetPath() + "/" + program.GetFunctionID().ToString();
-        callee = isMain ? "main" : id;
+        callee = Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments()) ? "main" : id;
     }
 
     public override PatternExtractor<List<IToken>> GetPattern() {
@@ -141,12 +139,12 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         obj["special_allocs"] = new JSONList(
             specialAllocs.Select(specialAlloc=>specialAlloc.GetJSON())
         );
-        obj["is_main"] = new JSONBool(isMain);
+        obj["is_main"] = new JSONBool(IsMain());
         return obj;
     }
 
     public void Verify() {
-        if (isMain) {
+        if (IsMain()) {
             if (!returnType_.Equals(new Type_("Z"))) {
                 throw new SyntaxErrorException(
                     "The main function must return type Z", this
@@ -169,10 +167,6 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
                 );
             }
         }
-    }
-
-    public bool IsMain() {
-        return isMain;
     }
 
     public int AddSpecialAlloc(Type_ type_) {

@@ -1,5 +1,4 @@
 TODO:
-* add message to alert user upon that without a main method, a project cannot be compiled to an executable
 * add compressed JSON
 * add safe array access and safe unwrap
 * add logging

@@ -18,6 +18,7 @@ public class Builder {
     List<string> prefixes = new List<string> {"", "."};
     List<string> IRInUserDir;
     HashSet<Struct> structs;
+    string fileWithMain;
 
     public CompilationResult Build(string input) {
         return RunWrapped(() => {
@@ -61,6 +62,18 @@ public class Builder {
 
             List<string> generatedSPECs = GetGeneratedEPSLSPECs().ToList();
             DeleteUnusedGeneratedSPECs(lastGeneratedSPECs, generatedSPECs);
+
+            fileWithMain = null;
+            foreach (FileTree file in files.Values) {
+                foreach (RealFunctionDeclaration declaration in file.Declarations) {
+                    if (!declaration.IsMain()) continue;
+                    if (fileWithMain == null) {
+                        fileWithMain = file.Stemmed;
+                    } else {
+                        throw new ProjectProblemException($"No more than one main function is allowed; main functions found in both {fileWithMain} and {file.Stemmed}");
+                    }
+                }
+            }
             
             string builtins = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "builtins.bc");
             List<string> arguments = new List<string> {
@@ -87,15 +100,6 @@ public class Builder {
     }
     
     public CompilationResult RunWrapped(Action action) {
-        /*
-        try {
-            action();
-        } catch (Exception e) {
-            Console.WriteLine(currentFile);
-            Console.WriteLine(currentText);
-            throw e;
-        }
-        */
         try {
             action();
         } catch (SyntaxErrorException e) {
@@ -134,6 +138,9 @@ public class Builder {
             return new CompilationResult(CompilationResultStatus.USERERR);
         } catch (ModuleNotFoundException e) {
             Console.WriteLine($"Cannot find requested module '{e.Path}'");
+            return new CompilationResult(CompilationResultStatus.USERERR);
+        } catch (ProjectProblemException e) {
+            Console.WriteLine(e.Problem);
             return new CompilationResult(CompilationResultStatus.USERERR);
         }
         
@@ -576,6 +583,9 @@ public class Builder {
 
     public CompilationResult ToExecutable() {
         return RunWrapped(() => {
+            if (fileWithMain == null) {
+                throw new ProjectProblemException("One main function is required when creating an executable; no main function found");
+            }
             Utils.RunCommand("opt", new List<string> {
                 "-O3", "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-opt.bc"),
                 Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc")

@@ -5,3 +5,8 @@ Obj {
 Obj#bar {
     return Obj [3];
 }
+
+Z#main {
+    println["no"];
+    return 0;
+}

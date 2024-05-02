@@ -31,4 +31,8 @@ public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<
         if (GetSource() != other.GetSource()) return false;
         return GetPattern().Equals(other.GetPattern());
     }
+
+    public bool IsMain() {
+        return GetCallee() == "main";
+    }
 }
