@@ -84,6 +84,17 @@ struct C *math_exponentToCmplx(double base, double exponent) {
     }
 }
 
+struct C *math_cmplxToExponent(struct C *base, double exponent) {
+    double theta = atan2(base->imag, base->real);
+    double r = sqrt(base->real*base->real + base->imag*base->imag);
+    double m = pow(r, exponent);
+    struct C *result = malloc(sizeof(struct C));
+    result->refCounter = 0;
+    result->real = cos(theta * exponent) * m;
+    result->imag = sin(theta * exponent) * m;
+    return result;
+}
+
 uint32_t math_usum(struct UIntArray *nums) {
     uint32_t result = 0;
     for (int i = 0; i < nums->length; i++) {

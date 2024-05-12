@@ -17,7 +17,7 @@ public class UninitVarDeclaration : ICompleteLine, ISerializableToken, IVerifier
         Type_ varType_ = svar.GetType_();
         if (!varType_.GetBaseType_().IsValueType_()) {
             throw new SyntaxErrorException(
-                $"Non-value type {svar} cannot be declared without an initial value", this
+                $"Non-value type {varType_} cannot be declared without an initial value", this
             );
         }
     }

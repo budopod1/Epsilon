@@ -7,10 +7,6 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class EPSLFileCompiler : IFileCompiler {
-    public bool POST_PARSE_PRINT_AST = false;
-    public bool PRE_PARSE_PRINT_AST = false;
-    public bool PRINT_STEPS = false;
-
     Program program;
     string fileText;
 
@@ -36,11 +32,7 @@ public class EPSLFileCompiler : IFileCompiler {
         return fileText;
     }
 
-    void Step(string text) {
-        if (PRINT_STEPS) {
-            Console.WriteLine(text);
-        }
-    }
+    void Step(string text) {}
 
     void TimingStep() {}
 
@@ -195,13 +187,9 @@ public class EPSLFileCompiler : IFileCompiler {
         Step("Getting scope variables...");
         program = GetScopeVariables(program);
 
-        if (PRE_PARSE_PRINT_AST) Console.WriteLine(program);
-
         Step("Parsing function code...");
         program = ParseFunctionCode(program);
         TimingStep();
-
-        if (POST_PARSE_PRINT_AST) Console.WriteLine(program);
 
         Step("Verifying code...");
         VerifyCode(program);

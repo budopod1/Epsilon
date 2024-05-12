@@ -7,6 +7,7 @@ Z#main {
             break;
         };
     };
+    println[["I got: "] + [[num].stringify]];
     println[["Floor: "] + [[[num].floor].stringify]];
     println[["Ceiling: "] + [[[num].ceil].stringify]];
     println[["Rounded: "] + [[[num].round].stringify]];

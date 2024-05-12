@@ -205,12 +205,12 @@ EXTERN_FUNCS = {
         "arguments": [Z32]
     },
     "parseFloat": {
-        "name": "parseFloat", "return_type_": Q32,
+        "name": "parseFloat", "return_type_": Q64,
         "arguments": [String]
     },
     "isValidParsedFloat": {
         "name": "isValidParsedFloat", "return_type_": Bool,
-        "arguments": [Q32]
+        "arguments": [Q64]
     },
     "readInputLine": {
         "name": "readInputLine", "return_type_": String,
@@ -317,7 +317,7 @@ EXTERN_FUNCS = {
         "arguments": [Q64]
     },
     "round": {
-        "name": "llvm.lrint.i64.f64", "return_type_": Q64,
+        "name": "llvm.lrint.i64.f64", "return_type_": Z64,
         "arguments": [Q64]
     },
 }

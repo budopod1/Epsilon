@@ -549,7 +549,7 @@ double parseFloat(const struct Array *str) {
         }
         return NAN;
     }
-    if (valid) return (result * sign);
+    if (valid) return result * sign;
     return NAN;
 }
 
