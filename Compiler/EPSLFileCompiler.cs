@@ -372,7 +372,7 @@ public class EPSLFileCompiler : IFileCompiler {
         return (Program)PerformMatching(program, new NumberMatcher(program));
     }
 
-    List<IToken> RemoveWhiteSpaceFilter(List<IToken> tokens) {
+    List<IToken> RemoveWhiteSpaceFilter(IEnumerable<IToken> tokens) {
         return tokens.Where(
             token => {
                 if (token is TextToken) {
@@ -390,18 +390,18 @@ public class EPSLFileCompiler : IFileCompiler {
             RawFuncSignature sig = ((RawFuncSignature)token);
             RawFuncReturnType_ ret = (RawFuncReturnType_)sig.GetReturnType_();
             sig.SetReturnType_(
-                (RawFuncReturnType_)ret.Copy(RemoveWhiteSpaceFilter(
-                    ret.GetTokens()
-                ))
+                (RawFuncReturnType_)ret.Copy(
+                    RemoveWhiteSpaceFilter(ret)
+                )
             );
             RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
             sig.SetTemplate(
-                (RawFuncTemplate)template.Copy(RemoveWhiteSpaceFilter(
-                    template.GetTokens()
-                ))
+                (RawFuncTemplate)template.Copy(
+                    RemoveWhiteSpaceFilter(template)
+                )
             );
         }
-        return (Program)program.Copy(RemoveWhiteSpaceFilter(program.GetTokens()));
+        return (Program)program.Copy(RemoveWhiteSpaceFilter(program));
     }
 
     Program TokenizeBlocks(Program program) {
@@ -868,14 +868,14 @@ public class EPSLFileCompiler : IFileCompiler {
                     new TypePatternSegment(typeof(RawGroup)),
                     new TypePatternSegment(typeof(CodeBlock))
                 }, new FuncPatternProcessor<List<IToken>>(tokens => {
-                    List<IToken> condition = ((RawGroup)tokens[1]).GetTokens();
+                    RawGroup condition = (RawGroup)tokens[1];
                     if (condition.Count <= 1) {
                         throw new SyntaxErrorException(
                             "For loop condition cannot be empty and must have at least one clause", tokens[1]
                         );
                     }
                     return new List<IToken> {new RawFor(
-                        condition, (CodeBlock)tokens[2]
+                        condition.GetTokens(), (CodeBlock)tokens[2]
                     )};
                 })
             )
@@ -1747,14 +1747,15 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     void VerifyCode(Program program) {
-        TraverseConfig config = new TraverseConfig(TraverseMode.DEPTH, invert: false);
+        TraverseConfig config = new TraverseConfig(
+            TraverseMode.DEPTH, invert: false, yieldFirst: true
+        );
         foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program, config)) {
             token.Verify();
         }
     }
 
     Dependencies GetDependencies(Program program) {
-        TraverseConfig config = new TraverseConfig(TraverseMode.DEPTH, invert: false);
         List<RealFunctionDeclaration> declarationDependencies = new List<RealFunctionDeclaration>();
         List<Struct> structDependencies = new List<Struct>();
         
@@ -1765,7 +1766,7 @@ public class EPSLFileCompiler : IFileCompiler {
             if (function != null) functionsHere.Add(function);
         }
         
-        foreach (IValueToken token in TokenUtils.TraverseFind<IValueToken>(program, config)) {
+        foreach (IValueToken token in TokenUtils.TraverseFind<IValueToken>(program)) {
             FunctionCall call = token as FunctionCall;
             if (call != null) {
                 RealFunctionDeclaration func = call.GetFunction() as RealFunctionDeclaration;

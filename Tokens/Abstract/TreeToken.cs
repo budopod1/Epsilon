@@ -56,7 +56,7 @@ public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
     }
 
     public IEnumerator<IToken> GetEnumerator() {
-        return new TokenList(tokens);
+        return tokens.GetEnumerator();
     }
     
     IEnumerator IEnumerable.GetEnumerator() {

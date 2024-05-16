@@ -38,6 +38,7 @@ public static class TokenUtils {
 
     public static IEnumerable<IToken> Traverse(IParentToken token, TraverseConfig config) {
         int i = config.Invert ? token.Count-1 : 0;
+        if (config.YieldFirst) yield return token;
         while (0 <= i && i < token.Count) {
             IToken sub = token[i];
             if (sub is IParentToken) {
@@ -49,7 +50,7 @@ public static class TokenUtils {
             }
             i += config.Invert ? -1 : 1;
         }
-        yield return token;
+        if (!config.YieldFirst) yield return token;
     }
 
     public static IEnumerable<IToken> Traverse(IParentToken token) {
