@@ -22,11 +22,10 @@ public class EPSLPROJ {
         EPSLSPECS = epslspecs;
     }
 
-    public static EPSLPROJ FromText(string fileText) {
-        IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
+    public static EPSLPROJ FromText(IJSONValue jsonValue) {
         ShapedJSON json = new ShapedJSON(jsonValue, Shape);
-        int a = json["compile_start_time_1"].GetInt().Value;
-        int b = json["compile_start_time_2"].GetInt().Value;
+        int a = json["compile_start_time_1"].GetInt();
+        int b = json["compile_start_time_2"].GetInt();
         long compileStartTime = Utils.IntsToLong((a, b));
         List<string> epslspecs = new List<string>();
         foreach (ShapedJSON epslspec in json["epslspecs"].IterList()) {

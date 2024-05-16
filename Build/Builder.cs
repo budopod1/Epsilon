@@ -33,13 +33,8 @@ public class Builder {
             lastBuildStartTime = null;
             List<string> lastGeneratedSPECs = new List<string>();
             if (!NEVER_PROJECT && Utils.FileExists(projLocation)) {
-                string fileText;
                 currentFile = projLocation;
-                using (StreamReader file = new StreamReader(projLocation)) {
-                    fileText = file.ReadToEnd();
-                }
-                currentText = fileText;
-                proj = EPSLPROJ.FromText(fileText);
+                proj = EPSLPROJ.FromText(ParseJSONFile(projLocation));
                 lastBuildStartTime = proj.CompileStartTime;
                 lastGeneratedSPECs = proj.EPSLSPECS;
                 isProj = true;
@@ -136,6 +131,9 @@ public class Builder {
         } catch (InvalidJSONException e) {
             JSONTools.ShowError(currentText, e, currentFile);
             return new CompilationResult(CompilationResultStatus.USERERR);
+        } catch (InvalidBJSONException e) {
+            Console.WriteLine($"Error while reading BJSON file: {e.Message}");
+            return new CompilationResult(CompilationResultStatus.FAIL);
         } catch (ModuleNotFoundException e) {
             Console.WriteLine($"Cannot find requested module '{e.Path}'");
             return new CompilationResult(CompilationResultStatus.USERERR);
@@ -169,12 +167,7 @@ public class Builder {
 
     void CleanupSPEC(string path) {
         currentFile = path;
-        string fileText;
-        using (StreamReader file = new StreamReader(path)) {
-            fileText = file.ReadToEnd();
-        }
-        currentText = fileText;
-        IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
+        IJSONValue jsonValue = ParseJSONFile(path);
         ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
         CleanupSPEC(path, obj);
     }
@@ -182,16 +175,11 @@ public class Builder {
     int LOAD_RETRY = 3;
 
     public DispatchedFile DispatchEPSLSPEC(string path, string _1, SPECFileCompiler _2) {
-        string fileText;
         currentFile = path;
-        using (StreamReader file = new StreamReader(path)) {
-            fileText = file.ReadToEnd();
-        }
-        currentText = fileText;
         string stemmed = Utils.Stem(path);
-        IJSONValue jsonValue = JSONTools.ParseJSON(fileText);
+        IJSONValue jsonValue = ParseJSONFile(path, out string fileText);
         ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
-        string source = Utils.GetFullPath(obj["source"].GetString());
+        string source = Utils.GetFullPath(obj["source"].GetStringOrNull());
         string generatedEPSLSPEC = null;
         if (source != null) {
             if (NEVER_PROJECT) return null;
@@ -460,9 +448,8 @@ public class Builder {
                 string filename = file.GetName();
                 string path = Utils.JoinPaths(directory, $".{filename}.epslspec");
                 file.GeneratedEPSLSPEC = path;
-                using (StreamWriter writer = new StreamWriter(path)) {
-                    writer.Write(spec.ToJSON());
-                }
+                currentFile = path;
+                BJSONEnv.WriteFile(path, spec);
             }
         }
     }
@@ -481,7 +468,18 @@ public class Builder {
     }
 
     void ShowCompilationError(SyntaxErrorException e, string text, string file) {
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.Write("compilation error in ");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Write(file);
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.Write(": ");
+        Console.ResetColor();
+        Console.WriteLine(e.Message);
+
         CodeSpan span = e.span;
+
+        if (span == null || text == null) return;
 
         int startLine = 1;
         int endLine = 1;
@@ -511,15 +509,6 @@ public class Builder {
                 if (stage == 0) startIndex++;
             }
         }
-
-        Console.ForegroundColor = ConsoleColor.DarkRed;
-        Console.Write("compilation error in ");
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.Write(file);
-        Console.ForegroundColor = ConsoleColor.DarkRed;
-        Console.Write(": ");
-        Console.ResetColor();
-        Console.WriteLine(e.Message);
 
         bool oneLine = startLine == endLine;
 
@@ -603,13 +592,8 @@ public class Builder {
             
             string projectDirectory = Utils.GetFullPath(Utils.GetDirectoryName(projFile));
 
-            string fileText;
             currentFile = projFile;
-            using (StreamReader file = new StreamReader(projFile)) {
-                fileText = file.ReadToEnd();
-            }
-            currentText = fileText;
-            EPSLPROJ proj = EPSLPROJ.FromText(fileText);
+            EPSLPROJ proj = EPSLPROJ.FromText(ParseJSONFile(projFile));
 
             foreach (string spec in proj.EPSLSPECS) {
                 CleanupSPEC(spec);
@@ -617,5 +601,25 @@ public class Builder {
 
             Utils.TryDelete(projFile);
         });
+    }
+    
+    public IJSONValue ParseJSONFile(string path) {
+        return ParseJSONFile(path, out string _);
+    }
+
+    public IJSONValue ParseJSONFile(string path, out string fileText) {
+        using (FileStream file = new FileStream(path, FileMode.Open)) {
+            BinaryReader bytes = new BinaryReader(file);
+            if (bytes.PeekChar() == 0x42) {
+                fileText = null;
+                return BJSONEnv.Deserialize(bytes);
+            }
+        }
+
+        using (StreamReader file = new StreamReader(path)) {
+            fileText = file.ReadToEnd();
+        }
+        currentText = fileText;
+        return JSONTools.ParseJSON(fileText);
     }
 }

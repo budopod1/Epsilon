@@ -1,5 +1,5 @@
 TODO:
-* add compressed JSON
+* remove TokenList
 * make abort a statement instead of a function, and make it a valid terminator for functions with a return value
 * add safe array access and safe unwrap
 * add logging

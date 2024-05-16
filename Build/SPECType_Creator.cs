@@ -33,7 +33,7 @@ public class SPECType_Creator {
                 tobj["given_name"] = new JSONString(text);
                 BaseType_ baseType_ = type_.GetBaseType_();
                 tobj["name"] = new JSONString(baseType_.GetName());
-                tobj["bits"] = new JSONInt(baseType_.GetBits());
+                tobj["bits"] = JSONInt.OrNull(baseType_.GetBits());
                 tobj["generics"] = generics;
                 list.Add(tobj);
                 appeared.Add(text);

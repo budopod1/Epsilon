@@ -100,7 +100,7 @@ public class SPECFileCompiler : IFileCompiler {
             }
             string type_Name = type_Data["name"].GetString();
             if (structIds.ContainsKey(type_Name)) type_Name = structIds[type_Name];
-            int? type_Bits = type_Data["bits"].GetInt();
+            int? type_Bits = type_Data["bits"].GetIntOrNull();
             Type_ type_ = new Type_(type_Name, type_Bits, generics);
             types_[type_Data["given_name"].GetString()] = type_;
         }
@@ -191,8 +191,8 @@ public class SPECFileCompiler : IFileCompiler {
             }
             string id = func["id"].GetString();
             string callee = func["callee"].GetString();
-            bool takesOwnership = func["takes_ownership"].GetBool().Value;
-            bool resultInParams = func["result_in_params"].GetBool().Value;
+            bool takesOwnership = func["takes_ownership"].GetBool();
+            bool resultInParams = func["result_in_params"].GetBool();
             Type_ returnType_ = MakeSPECType_(func["return_type_"]);
             Enum.TryParse<FunctionSource>(func["source"].GetString(), out FunctionSource source);
             return (RealFunctionDeclaration)new RealExternalFunction(
@@ -237,7 +237,7 @@ public class SPECFileCompiler : IFileCompiler {
                 }
             }
             IEnumerable<RealFunctionDeclaration> functionDependencies = fobj["functions"].IterList().Select(
-                dstr => declarations[dstr.GetWhole().Value]
+                dstr => declarations[dstr.GetWhole()]
             );
             if (!file.Compiler.FromCache()) {
                 foreach (RealFunctionDeclaration functionDependency in functionDependencies) {
@@ -259,7 +259,7 @@ public class SPECFileCompiler : IFileCompiler {
     }
 
     public string GetSource() {
-        return obj["source"].GetString();
+        return obj["source"].GetStringOrNull();
     }
 
     public bool FromCache() {

@@ -23,7 +23,7 @@ public class Break : IVerifier, ICompleteLine, IBlockEndOnly {
         ILoop loop = (ILoop)TokenUtils.GetParentWithCond(
             this, (IToken token) => (token is ILoop)
         );
-        int? id = context.GetFunction().GetContextIdByBlock(loop.GetBlock());
+        int id = context.GetFunction().GetContextIdByBlock(loop.GetBlock()).Value;
         return context.AddInstruction(
             new SerializableInstruction(this).AddData("block", new JSONInt(id))
         );

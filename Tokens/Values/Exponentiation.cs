@@ -46,7 +46,7 @@ public class Exponentiation : BinaryOperation<IValueToken, IValueToken>, IValueT
         }
         return context.AddInstruction(
             new SerializableInstruction(this, context).AddData("mode", new JSONString(mode))
-                .AddData("exponent_value", new JSONDouble(exponentValue))
+                .AddData("exponent_value", JSONDouble.OrNull(exponentValue))
         );
     }
 }

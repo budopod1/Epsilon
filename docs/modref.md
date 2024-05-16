@@ -51,9 +51,13 @@ Usage: Perform division between complex numbers<br>
 Usage: Computes $exp(z)$ for $z\in\mathbb{C}$<br>
 `C#exp<val:C>`
 
-**exponentation with a complex result**<br>
+**exponentiation with a complex result**<br>
 Usage: Computes exponentiation on real numbers, with the result being possibly complex.<br>
 `C#cmplx <base:Q> ** <exponent:Q>`
+
+**exponentiation of a complex number**<br>
+Usage: Raises a complex number to a real number, using De Moivre's Theorem.<br>
+`C#<base:C> ** <exponent:Q>`
 
 **$exp$**<br>
 Usage: Computes $exp(x)$<br>
