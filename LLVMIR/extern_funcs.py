@@ -320,4 +320,8 @@ EXTERN_FUNCS = {
         "name": "llvm.lrint.i64.f64", "return_type_": Z64,
         "arguments": [Q64]
     },
+    "exit": {
+        "name": "exit", "return_type_": VOID,
+        "arguments": [Z32]
+    },
 }

@@ -37,6 +37,23 @@ TESTS = [
         ]
     },
     {
+        "file": "multipath.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "exact", "expect": 2},
+            {"arguments": [3], "compare": "exact", "expect": 3}
+        ]
+    },
+    {
+        "file": "file.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 20}
+        ]
+    },
+    {
         "file": "mathtest.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_double, c_double),

@@ -1,6 +1,6 @@
 using System;
 
-public class Return : UnaryOperation<IValueToken>, IVerifier, ICompleteLine, IBlockEndOnly {
+public class Return : UnaryOperation<IValueToken>, IVerifier, IFunctionTerminator, IBlockEndOnly {
     public Return(IValueToken o) : base(o) {}
 
     public void Verify() {
@@ -11,5 +11,9 @@ public class Return : UnaryOperation<IValueToken>, IVerifier, ICompleteLine, IBl
                 $"Cannot return {o.GetType_()}; function expects {returnType_} return type", this
             );
         }
+    }
+
+    public bool DoesTerminateFunction() {
+        return true;
     }
 }

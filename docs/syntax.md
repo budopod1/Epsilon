@@ -621,46 +621,42 @@ Usage: TODO<br>
 Usage: TODO<br>
 `T#<optional:Optional<T>>.unwrap` where `T` is `Any`
 
-**#62: abort**<br>
-Usage: TODO<br>
-`Void#abort<string:Str>`
-
-**#63: blank_from_type**<br>
+**#62: blank_from_type**<br>
 Usage: TODO<br>
 `Array<T>#<array:Array<T>>.blank_from_type<amount:W64>` where `T` is `Any`
 
-**#64: unique**<br>
+**#63: unique**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.unique`
 
-**#65: sort**<br>
+**#64: sort**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.sort`
 
-**#66: sort_inverted**<br>
+**#65: sort_inverted**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.sort_inverted`
 
-**#67: dedup**<br>
+**#66: dedup**<br>
 Usage: TODO<br>
 `Void#<array:Array<Any>>.dedup`
 
-**#68: repeat**<br>
+**#67: repeat**<br>
 Usage: TODO<br>
 `Array<T>#<array:Array<T>>.repeat<times:W64>` where `T` is `Any`
 
-**#69: truthy**<br>
+**#68: truthy**<br>
 Usage: determines whether the specified value is truthy<br>
 `Bool#<value:Any>.truthy`
 
-**#70: floor**<br>
+**#69: floor**<br>
 Usage: computes the largest integer less than or equal to the given value.<br>
 `Z#<num:Q>.floor`
 
-**#71: ceil**<br>
+**#70: ceil**<br>
 Usage: computes the smallest integer greater than or equal to the given value.<br>
 `Z#<num:Q>.ceil`
 
-**#72: round**<br>
+**#71: round**<br>
 Usage: computes the integer with the smallest absolute distance from the given value.<br>
 `Z#<num:Q>.round`

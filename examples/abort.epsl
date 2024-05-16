@@ -1,0 +1,11 @@
+Z#main {
+    Str:input = read_input_line;
+    if ([input] equals ["foo"]) {
+        abort "you said foo";
+    } elif ([input] equals ["bar"]) {
+        abort;
+    } else {
+        println[input];
+        return 0;
+    };
+}

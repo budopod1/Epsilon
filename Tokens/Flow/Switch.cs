@@ -1,7 +1,8 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
-public class Switch : IFlowControl, IVerifier {
+public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
@@ -134,5 +135,12 @@ public class Switch : IFlowControl, IVerifier {
                 }
             }
         }
+    }
+
+    public bool DoesTerminateFunction() {
+        if (default_ == null) return false;
+        if (!default_.DoesTerminateFunction()) return false;
+        return arms.All(arm => 
+            arm.GetBlock().DoesTerminateFunction());
     }
 }

@@ -157,13 +157,9 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
                     "Functions with a non-void return value cannot be empty", block
                 );
             }
-            IToken token = block[block.Count-1];
-            Line line = token as Line;
-            if (line == null) return;
-            line.Verify(); // make sure line.Count == 1
-            if (!(line[0] is Return)) {
+            if (!block.DoesTerminateFunction()) {
                 throw new SyntaxErrorException(
-                    "Functions with a non-void return value must end with a return statement", line
+                    "Functions with a non-void return value must end with a function terminator", block
                 );
             }
         }

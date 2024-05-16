@@ -26,6 +26,10 @@ public class IntConstant : IIntConstant {
         return value;
     }
 
+    public bool IsTruthy() {
+        return value != 0;
+    }
+
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["type"] = new JSONString("int");

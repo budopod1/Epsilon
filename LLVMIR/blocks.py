@@ -23,6 +23,7 @@ class Block:
         self.param_offset = param_offset
         self.initial_declarations = block["initial_declarations"]
         self.parent_declarations = block["parent_declarations"]
+        self.does_terminate_function = block["does_terminate_function"]
 
     def create_instructions(self):
         self.instructions = [
@@ -90,8 +91,11 @@ class Block:
                 self.perpare_for_termination()
                 self.builder.branch(self.return_block.block)
             else:
-                self.prepare_for_return()
-                self.builder.ret_void()
+                if self.does_terminate_function:
+                    self.builder.unreachable()
+                else:
+                    self.prepare_for_return()
+                    self.builder.ret_void()
 
     def add_special_allocs(self, types_):
         return [
@@ -149,7 +153,8 @@ class Block:
             self.program, self.function, id_, {
                 "instructions": cut, 
                 "initial_declarations": self.initial_declarations,
-                "parent_declarations": self.parent_declarations
+                "parent_declarations": self.parent_declarations,
+                "does_terminate_function": self.does_terminate_function
             }, start + self.param_offset, True
         )
         self.initial_declarations = []

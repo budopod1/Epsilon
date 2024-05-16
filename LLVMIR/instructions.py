@@ -53,6 +53,17 @@ class FlowInstruction(BaseInstruction):
         pass
 
 
+class AbortInstruction(BaseInstruction):
+    def _build(self, builder, params, param_types_):
+        string, = params
+        self.program.call_extern(builder, "abort_", [string], [String], VOID)
+
+
+class AbortVoidInstruction(BaseInstruction):
+    def _build(self, builder, params, param_types_):
+        self.program.call_extern(builder, "exit", [i32_of(1)], [Z32], VOID)
+
+
 class AddOneInstruction(CastToResultType_Instruction):
     def _build(self, builder, params):
         value, = params
@@ -883,6 +894,8 @@ class WhileInstruction(FlowInstruction):
 
 def make_instruction(program, function, data):
     return {
+        "abort": AbortInstruction,
+        "abort_void": AbortVoidInstruction,
         "add_one": AddOneInstruction,
         "addition": ArithmeticInstruction,
         "and": LogicalInstruction,

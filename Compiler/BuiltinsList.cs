@@ -791,15 +791,6 @@ public static class BuiltinsList {
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
-                    new UnitPatternSegment<string>(typeof(Name), "abort"),
-                    new TypePatternSegment(typeof(RawSquareGroup))
-                }, new SlotPatternProcessor(new List<int> {1})
-            ), new List<FunctionArgument> {
-                new FunctionArgument("string", Type_.String()),
-            }, "builtin62", Type_.Void(), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                     new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "blank_from_type"),
@@ -808,7 +799,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("amount", new Type_("W", 64))
-            }, "builtin63", (List<Type_> types_) => {
+            }, "builtin62", (List<Type_> types_) => {
                 BaseType_ bt = types_[0].GetGeneric(0).GetBaseType_();
                 if (!bt.IsNumber() && !bt.IsNullable()) {
                     throw new FunctionCallTypes_Exception(
@@ -826,7 +817,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
-            }, "builtin64", Type_.Void(), FunctionSource.Builtin
+            }, "builtin63", Type_.Void(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -836,7 +827,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
-            }, "builtin65", (List<Type_> types_) => {
+            }, "builtin64", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
@@ -853,7 +844,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
-            }, "builtin66", (List<Type_> types_) => {
+            }, "builtin65", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
@@ -870,7 +861,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
-            }, "builtin67", Type_.Void(), FunctionSource.Builtin
+            }, "builtin66", Type_.Void(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -882,7 +873,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("times", new Type_("W", 64))
-            }, "builtin68", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            }, "builtin67", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -892,7 +883,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", Type_.Any())
-            }, "builtin69", new Type_("Bool"), FunctionSource.Builtin
+            }, "builtin68", new Type_("Bool"), FunctionSource.Builtin
         ),  new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -902,7 +893,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", new Type_("Q"))
-            }, "builtin70", new Type_("Z"), FunctionSource.Builtin
+            }, "builtin69", new Type_("Z"), FunctionSource.Builtin
         ),   new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -912,7 +903,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", new Type_("Q"))
-            }, "builtin71", new Type_("Z"), FunctionSource.Builtin
+            }, "builtin70", new Type_("Z"), FunctionSource.Builtin
         ),   new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -922,7 +913,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", new Type_("Q"))
-            }, "builtin72", new Type_("Z"), FunctionSource.Builtin
+            }, "builtin71", new Type_("Z"), FunctionSource.Builtin
         ), 
     };
 }

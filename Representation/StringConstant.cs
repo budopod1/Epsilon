@@ -27,6 +27,10 @@ public class StringConstant : IConstant {
         return value;
     }
 
+    public bool IsTruthy() {
+        return value.Length > 0;
+    }
+
     public IJSONValue GetJSON() {
         throw new InvalidOperationException("String constants cannot appear in the final IR");
     }

@@ -19,4 +19,14 @@ public class CodeBlock : Block {
     public Scope GetScope() {
         return scope;
     }
+
+    public bool DoesTerminateFunction() {
+        if (Count == 0) return false;
+        Line line = this[Count - 1] as Line;
+        if (line == null) return false;
+        line.Verify(); // make sure line.Count == 1
+        IFunctionTerminator terminator = line[0] as IFunctionTerminator;
+        if (terminator == null) return false;
+        return terminator.DoesTerminateFunction();
+    }
 }

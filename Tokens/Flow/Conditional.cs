@@ -1,7 +1,8 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
-public class Conditional : IFlowControl {
+public class Conditional : IFlowControl, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
@@ -88,5 +89,12 @@ public class Conditional : IFlowControl {
                 .AddData("conditions", conditionsJSON)
                 .AddData("else", elseJSON)
         );
+    }
+
+    public bool DoesTerminateFunction() {
+        if (elseBlock == null) return false;
+        if (!elseBlock.DoesTerminateFunction()) return false;
+        return conditions.All(condition => 
+            condition.GetBlock().DoesTerminateFunction());
     }
 }

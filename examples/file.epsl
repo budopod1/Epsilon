@@ -1,12 +1,11 @@
 Z#main {
     File:file = open_file["examples/test.txt"][FILE_READ_MODE];
     if ([file].is_null) {
-        abort["Cannot open file test.txt"];
+        abort "Cannot open file test.txt";
     };
-    [Str]?:lines = [file].read_lines;
-    if ([lines].is_null) {
-        abort["Cannot read file"];
+    Str?:text = [file].read_all;
+    if ([text].is_null) {
+        abort "Cannot read file";
     };
-    println[[[lines].unwrap].join[", "]];
-    return 0;
+    return [[text].unwrap].length;
 }

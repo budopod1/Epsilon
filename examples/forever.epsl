@@ -1,0 +1,11 @@
+Z#main {
+    println["String Length Measurer"];
+    println["Type 'q' to quit\n"];
+    while (true) {
+        Str:in = read_input_line;
+        if ([in] equals ["q"]) {
+            return 0;
+        };
+        println[[in].length];
+    };
+}

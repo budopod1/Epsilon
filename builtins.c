@@ -697,7 +697,7 @@ struct Array *readAllFile(const struct File *file) {
         char *content = malloc(capacity);
         result->content = content;
         size_t read = fread(content, remainingText, 1, file->file);
-        if (read < remainingText) {
+        if (read != 1) {
             free(result);
             free(content);
             return NULL;

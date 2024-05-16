@@ -350,6 +350,7 @@ public class EPSLFileCompiler : IFileCompiler {
             {"continue", typeof(ContinueKeyword)},
             {"null", typeof(NullValue)},
             {"for", typeof(ForKeyword)},
+            {"abort", typeof(AbortKeyword)},
         };
         return (Program)PerformMatching(
             program,
@@ -1592,6 +1593,26 @@ public class EPSLFileCompiler : IFileCompiler {
                         )
                     })
                 )
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(AbortKeyword)),
+                        new Type_PatternSegment(Type_.String())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(Abort)
+                    )
+                ),
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(AbortKeyword))
+                    }, new InstantiationPatternProcessor(
+                        typeof(AbortVoid)
+                    )
+                ),
             },
             new List<IMatcher> {
                 new PatternMatcher(

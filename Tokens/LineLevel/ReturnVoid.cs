@@ -1,6 +1,6 @@
 using System;
 
-public class ReturnVoid : IVerifier, ICompleteLine, IBlockEndOnly {
+public class ReturnVoid : IVerifier, IFunctionTerminator, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
     
@@ -20,5 +20,9 @@ public class ReturnVoid : IVerifier, ICompleteLine, IBlockEndOnly {
 
     public int Serialize(SerializationContext context) {
         return context.AddInstruction(new SerializableInstruction(this));
+    }
+
+    public bool DoesTerminateFunction() {
+        return true;
     }
 }

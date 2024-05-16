@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop {
+public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop, IFunctionTerminator {
     public While(IValueToken o1, CodeBlock o2) : base(o1, o2) {}
 
     public CodeBlock GetBlock() {
@@ -18,5 +18,11 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop {
                 .AddData("block", new JSONInt(sub.GetIndex()))
                 .AddData("condition", conditionCtx.Serialize())
         );
+    }
+
+    public bool DoesTerminateFunction() {
+        ConstantValue constantT = o1 as ConstantValue;
+        if (constantT == null) return false;
+        return constantT.GetValue().IsTruthy();
     }
 }

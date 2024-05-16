@@ -9,6 +9,7 @@ public class SerializationContext {
     bool hidden;
     JSONList parentDeclarations;
     JSONList initialDeclarations = new JSONList();
+    bool doesTerminateFunction = false;
 
     public SerializationContext(Function function, bool hidden=false, JSONList parentDeclarations=null) {
         if (parentDeclarations == null) parentDeclarations = new JSONList();
@@ -27,6 +28,7 @@ public class SerializationContext {
 
     public void Serialize(CodeBlock block) {
         this.block = block;
+        doesTerminateFunction = block.DoesTerminateFunction();
         foreach (IToken token in block) {
             if (token is Line) {
                 Line line = ((Line)token);
@@ -55,6 +57,7 @@ public class SerializationContext {
         obj["instructions"] = instructions;
         obj["initial_declarations"] = initialDeclarations;
         obj["parent_declarations"] = parentDeclarations;
+        obj["does_terminate_function"] = new JSONBool(doesTerminateFunction);
         return obj;
     }
 

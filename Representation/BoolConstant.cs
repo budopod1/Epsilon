@@ -32,6 +32,10 @@ public class BoolConstant : INumberConstant, IIntConstant {
         return GetIntValue();
     }
 
+    public bool IsTruthy() {
+        return value;
+    }
+
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         obj["type"] = new JSONString("bool");
