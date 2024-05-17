@@ -653,7 +653,7 @@ BUILTINS = {
     "builtin58": {"func": read_file_lines, "params": [File]},
     "builtin59": {"func": write_to_file, "params": [File, String]},
     "builtin60": {"func": is_null, "params": [None]},
-    "builtin61": {"func": unwrap, "params": [None]},
+    "builtin61": {"func": unwrap, "params": [None], "result_in_params": True},
     # "builtin62": {"func": abort, "params": [String]},
     "builtin62": {"func": blank_from_type, "params": [None, W64]},
     "builtin63": {"func": array_unique, "params": [None]},

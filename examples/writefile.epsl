@@ -1,0 +1,8 @@
+Z#main {
+    File:file = open_file["examples/test.txt"][FILE_APPEND_MODE];
+    if ([file].is_null) {
+        abort "Cannot open file test.txt";
+    };
+    [file].write[" appendee"];
+    return 0;
+}

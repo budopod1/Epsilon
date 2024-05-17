@@ -1,3 +1,5 @@
+#define __STDC_WANT_LIB_EXT2__ 1
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -720,7 +722,7 @@ struct Array *readSomeFile(const struct File *file, uint64_t amount) {
         char *content = malloc(capacity);
         result->content = content;
         size_t read = fread(content, amount, 1, file->file);
-        if (read < amount) {
+        if (read != 1) {
             free(result);
             free(content);
             return NULL;
@@ -802,7 +804,7 @@ struct Array *readFileLines(const struct File *file) {
 _Bool writeToFile(const struct File *file, const struct Array *text) {
     if (file != NULL && file->open) {
         uint64_t len = text->length;
-        return fwrite(text->content, len, 1, file->file) == len;
+        return fwrite(text->content, len, 1, file->file) == 1;
     } else {
         return false;
     }
