@@ -1,5 +1,4 @@
 TODO:
-* review is_valid_ functions
 * add safe array access and safe unwrap
 * add logging
 * self host LLVMIR section?
