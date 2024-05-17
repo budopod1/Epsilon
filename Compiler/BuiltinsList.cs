@@ -551,12 +551,9 @@ public static class BuiltinsList {
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
-                    new UnitPatternSegment<string>(typeof(Name), "is_valid_parsed_int"),
-                    new TypePatternSegment(typeof(RawSquareGroup)),
-                }, new SlotPatternProcessor(new List<int> {1})
-            ), new List<FunctionArgument> {
-                new FunctionArgument("int", new Type_("Z", 32)),
-            }, "builtin38", new Type_("Bool"), FunctionSource.Builtin
+                    new UnitPatternSegment<string>(typeof(Name), "invalid_parsed_int"),
+                }, new EmptyPatternProcessor()
+            ), new List<FunctionArgument> {}, "builtin38", new Type_("Z", 32), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -569,11 +566,11 @@ public static class BuiltinsList {
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
-                    new UnitPatternSegment<string>(typeof(Name), "is_valid_parsed_float"),
+                    new UnitPatternSegment<string>(typeof(Name), "is_NaN"),
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {1})
             ), new List<FunctionArgument> {
-                new FunctionArgument("int", new Type_("Q", 64)),
+                new FunctionArgument("val", new Type_("Q", 64)),
             }, "builtin40", new Type_("Bool"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(

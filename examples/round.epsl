@@ -1,11 +1,8 @@
 Z#main {
-    Q:num;
-    while (true) {
+    Q:num = NaN;
+    while (is_NaN[num]) {
         println["Please enter a number"];
         num = parse_float[read_input_line];
-        if (is_valid_parsed_float[num]) {
-            break;
-        };
     };
     println[["I got: "] + [[num].stringify]];
     println[["Floor: "] + [[[num].floor].stringify]];

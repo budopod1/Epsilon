@@ -157,20 +157,12 @@ double math_getE() {
     return M_E;
 }
 
-_Bool math_isNaN32(float val) {
-    return isnan(val) != 0;
-}
-
 _Bool math_isFinite32(float val) {
     return isfinite(val) != 0;
 }
 
 _Bool math_isInfinite32(float val) {
     return isinf(val) != 0;
-}
-
-_Bool math_isNaN64(double val) {
-    return isnan(val) != 0;
 }
 
 _Bool math_isFinite64(double val) {

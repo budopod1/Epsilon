@@ -200,16 +200,20 @@ EXTERN_FUNCS = {
         "name": "parseInt", "return_type_": Z32,
         "arguments": [String]
     },
-    "isValidParsedInt": {
-        "name": "isValidParsedInt", "return_type_": Bool,
-        "arguments": [Z32]
+    "getMagicInvalidParsedInt": {
+        "name": "getMagicInvalidParsedInt", "return_type_": Z32,
+        "arguments": []
     },
     "parseFloat": {
         "name": "parseFloat", "return_type_": Q64,
         "arguments": [String]
     },
-    "isValidParsedFloat": {
-        "name": "isValidParsedFloat", "return_type_": Bool,
+    "isNaN32": {
+        "name": "isNaN32", "return_type_": Bool,
+        "arguments": [Q32]
+    },
+    "isNaN64": {
+        "name": "isNaN64", "return_type_": Bool,
         "arguments": [Q64]
     },
     "readInputLine": {

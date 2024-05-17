@@ -522,20 +522,20 @@ Usage: TODO<br>
 `W64#<arr:Array<T>>.index_of_subsection<sub:Array<T>>` where `T` is `Any`
 
 **#37: parse_int**<br>
-Usage: TODO<br>
+Usage: Parses the given string into an integer. If the given string cannot be converted to an integer, the same value as is given by `invalid_parsed_int` is returned.<br>
 `Z32#parse_int<str:Str>`
 
-**#38: is_valid_parsed_int**<br>
-Usage: TODO<br>
-`Bool#is_valid_parsed_int<int:Z>`
+**#38: invalid_parsed_int**<br>
+Usage: Returns the value that is returned from `parse_int` when the given string is invalid.<br>
+`Z32#invalid_parsed_int`
 
 **#39: parse_float**<br>
 Usage: TODO<br>
 `Q32#parse_float<str:Str>`
 
-**#40: is_valid_parsed_float**<br>
-Usage: TODO<br>
-`Bool#is_valid_parsed_float<int:Q32>`
+**40: is_NaN**<br>
+Usage: Determines if the specified float is `NaN`<br>
+`Bool#is_NaN<val:T>` where `T` is `Q64` or `Q32`
 
 **#41: read_input_line**<br>
 Usage: TODO<br>

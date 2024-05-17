@@ -99,10 +99,6 @@ Usage: Computes the LCM of an array<br>
 Usage: Returns $e$'s value<br>
 `Q#e`
 
-**is NaN**<br>
-Usage: Determines if the specified float is `NaN`<br>
-`Bool#is_NaN<val:T>` where `T` is `Q64` or `Q32`
-
 **is finite**<br>
 Usage: Determines if the specified float is *not* $\pm\infty$ or `NaN`<br>
 `Bool#is_finite<val:T>` where `T` is `Q64` or `Q32`

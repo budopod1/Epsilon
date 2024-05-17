@@ -375,10 +375,9 @@ def parse_int(program, builder, params, param_types_):
     ), Z32
 
 
-def is_valid_parsed_int(program, builder, params, param_types_):
-    num, = params
+def invalid_parsed_int(program, builder, params, param_types_):
     return program.call_extern(
-        builder, "isValidParsedInt", [num], [Z32], Z32
+        builder, "getMagicInvalidParsedInt", [], [], Z32
     ), Z32
 
 
@@ -389,11 +388,15 @@ def parse_float(program, builder, params, param_types_):
     ), Q64
 
 
-def is_valid_parsed_float(program, builder, params, param_types_):
-    num, = params
+def is_nan(program, builder, params, param_types_):
+    value, = params
+    value_type_, = param_types_
+    if value_type_["name"] != "Q":
+        return i1_of(0), Bool
     return program.call_extern(
-        builder, "isValidParsedFloat", [num], [Q64], Z32
-    ), Z32
+        builder, "isNaN64" if value_type_["bits"] >= 64 else "isNaN32",
+        [value], [value_type_], Bool
+    ), Bool
 
 
 def read_input_line(program, builder, params, param_types_):
@@ -630,9 +633,9 @@ BUILTINS = {
     "builtin35": {"func": index_of, "params": [None, None]},
     "builtin36": {"func": index_of_subsection, "params": [ArrayW8, ArrayW8]},
     "builtin37": {"func": parse_int, "params": [String]},
-    "builtin38": {"func": is_valid_parsed_int, "params": [Z32]},
+    "builtin38": {"func": invalid_parsed_int, "params": []},
     "builtin39": {"func": parse_float, "params": [String]},
-    "builtin40": {"func": is_valid_parsed_float, "params": [Q64]},
+    "builtin40": {"func": is_nan, "params": [None]},
     "builtin41": {"func": read_input_line, "params": []},
     "builtin42": {"func": open_file, "params": [String, Z32]},
     "builtin43": paramless_func("FILE_READ_MODE", Z32),

@@ -469,6 +469,8 @@ int64_t indexOfSubsection(const struct Array *arr, const struct Array *sub, uint
     return -1;
 }
 
+const int32_t MAGIC_INVALID_PARSED_INT = -2147483647 + 69927;
+
 int32_t parseInt(const struct Array *str) {
     int32_t result = 0;
     int32_t multiplier = 1;
@@ -490,14 +492,14 @@ int32_t parseInt(const struct Array *str) {
             continue;
         }
         if (chr == '_' || chr == ',') continue;
-        return 2147483647;
+        return MAGIC_INVALID_PARSED_INT;
     }
-    if (valid) return (result * sign);
-    return 2147483647;
+    if (valid) return result * sign;
+    return MAGIC_INVALID_PARSED_INT;
 }
 
-_Bool isValidParsedInt(int32_t i) {
-    return i != 2147483647;
+int32_t getMagicInvalidParsedInt() {
+    return MAGIC_INVALID_PARSED_INT;
 }
 
 double parseFloat(const struct Array *str) {
@@ -513,8 +515,8 @@ double parseFloat(const struct Array *str) {
     }
     if (noDot) {
         int32_t ival = parseInt(str);
-        if (isValidParsedInt(ival)) return ival;
-        return NAN;
+        if (ival == MAGIC_INVALID_PARSED_INT) return NAN;
+        return ival;
     }
     if (length == 1) return NAN;
     int valid = 0;
@@ -555,8 +557,12 @@ double parseFloat(const struct Array *str) {
     return NAN;
 }
 
-_Bool isValidParsedFloat(double f) {
-    return !isnan(f);
+_Bool isNaN32(float val) {
+    return isnan(val) != 0;
+}
+
+_Bool isNaN64(double val) {
+    return isnan(val) != 0;
 }
 
 struct Array *readInputLine() {
@@ -747,7 +753,7 @@ int32_t jumpFilePos(const struct File *file, uint64_t amount) {
     return false;
 }
 
-_Bool readLineEOF = 0;
+_Bool readLineEOF = false;
 
 // returns: Str?
 struct Array *readFileLine(const struct File *file) {

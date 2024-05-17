@@ -37,10 +37,6 @@
     
     {"id": "math_getE", "callee": "math_getE", "return_type_": "Q64", "template": [{"type": "name", "name": "e"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_isNaN32", "callee": "math_isNaN32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_NaN"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
-    
-    {"id": "math_isNaN64", "callee": "math_isNaN64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_NaN"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
-    
     {"id": "math_isFinite32", "callee": "math_isFinite32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_finite"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
     {"id": "math_isFinite64", "callee": "math_isFinite64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_finite"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
