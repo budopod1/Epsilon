@@ -9,8 +9,6 @@ git submodule update --recursive --remote
 echo "Building executable..."
 ./build.bash
 echo "Executable built"
-echo "Setting up builtins..."
-./buildbuiltins.bash
 echo "Setting up libraries..."
 ./buildlibs.bash
 echo "Setting up venv..."

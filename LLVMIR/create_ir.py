@@ -17,7 +17,7 @@ epsilon_folder = Path.cwd()
 def create_ir(data):
     module = ir.Module(name="main")
 
-    with open(epsilon_folder / "builtins.ll") as builtins_file:
+    with open(epsilon_folder / "libs" / "builtins.ll") as builtins_file:
         builtins_text = builtins_file.read()
 
     module.data_layout = re.search("target datalayout ?= ?\"([:\\-a-zA-Z0-9]+)\"", builtins_text).group(1)

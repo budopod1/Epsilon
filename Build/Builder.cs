@@ -79,7 +79,7 @@ public class Builder {
                 }
             }
             
-            string builtins = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "builtins.bc");
+            string builtins = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs", "builtins.bc");
             List<string> arguments = new List<string> {
                 "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--", builtins
             };
