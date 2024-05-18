@@ -45,10 +45,17 @@ Modes:
             "The output file type", "t", "output-type"
         );
 
+        PossibilitiesExpectation verbosity = parser.AddOption(
+            new PossibilitiesExpectation((int)LogLevel.NONE, typeof(LogLevel)), 
+            "Logging verbosity (each option implies the previous)", "v", "verbosity"
+        );
+
         parser.AddUsageOption(mode.Usage("compile"), inputFile);
         parser.AddUsageOption(mode.Usage("teardown"), projFile);
         
         parser.Parse(args);
+
+        Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
         Builder builder = new Builder();
 

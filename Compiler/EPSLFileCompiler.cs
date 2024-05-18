@@ -34,32 +34,24 @@ public class EPSLFileCompiler : IFileCompiler {
 
     void Step(string text) {}
 
-    void TimingStep() {}
-
     public List<string> ToImports() {
         Step("Tokenizing strings...");
         program = TokenizeStrings(program);
-        TimingStep();
 
         Step("Tokenizing character constants...");
         program = TokenizeCharacterConstants(program);
-        TimingStep();
 
         Step("Removing comments...");
         program = RemoveComments(program);
-        TimingStep();
 
         Step("Tokenizing function signatures...");
         program = TokenizeFuncSignatures(program);
-        TimingStep();
 
         Step("Tokenizing names...");
         program = TokenizeNames(program);
-        TimingStep();
 
         Step("Tokenizing imports...");
         program = TokenizeImports(program);
-        TimingStep();
 
         return program.Where(token => token is Import).Select(
             token => (token as Import).GetRealPath()
@@ -69,39 +61,30 @@ public class EPSLFileCompiler : IFileCompiler {
     public HashSet<LocatedID> ToStructIDs() {
         Step("Tokenizing keywords...");
         program = TokenizeKeywords(program);
-        TimingStep();
         
         Step("Tokenizing numbers...");
         program = TokenizeNumbers(program);
-        TimingStep();
 
         Step("Removing whitespace...");
         program = RemoveWhitespace(program);
-        TimingStep();
 
         Step("Tokenizing blocks...");
         program = TokenizeBlocks(program);
-        TimingStep();
 
         Step("Tokenizing function arguments...");
         program = TokenizeFuncArguments(program);
-        TimingStep();
 
         Step("Tokenizing functions...");
         program = TokenizeFunctionHolders(program);
-        TimingStep();
 
         Step("Tokenizing structs...");
         program = TokenizeStructHolders(program);
-        TimingStep();
 
         Step("Converting function blocks...");
         program = ConvertFunctionBlocks(program);
-        TimingStep();
 
         Step("Computing base types_...");
         ComputeBaseTypes_(program);
-        TimingStep();
 
         return program.GetStructIDs();
     }
@@ -113,39 +96,30 @@ public class EPSLFileCompiler : IFileCompiler {
     public List<RealFunctionDeclaration> ToDeclarations() {
         Step("Tokenizing base types...");
         program = TokenizeBaseTypes_(program);
-        TimingStep();
 
         Step("Tokenizing constant keyword values...");
         program = TokenizeConstantKeywordValues(program);
-        TimingStep();
 
         Step("Tokenizing generics...");
         program = TokenizeGenerics(program);
-        TimingStep();
 
         Step("Tokenizing types_...");
         program = TokenizeTypes_(program);
-        TimingStep();
 
         Step("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
-        TimingStep();
         
         Step("Converting template arguments...");
         program = ConvertTemplateArguments(program);
-        TimingStep();
 
         Step("Parsing templates...");
         program = ParseFunctionTemplates(program);
-        TimingStep();
 
         Step("Parsing function signatures...");
         program = ParseFunctionSignatures(program);
-        TimingStep();
 
         Step("Objectifying functions...");
         program = ObjectifyingFunctions(program);
-        TimingStep();
 
         return program.Select(token => token as RealFunctionDeclaration)
             .Where(func => func != null).ToList();
@@ -158,7 +132,6 @@ public class EPSLFileCompiler : IFileCompiler {
     public HashSet<Struct> ToStructs() {
         Step("Computing structs...");
         program = ComputeStructs(program);
-        TimingStep();
 
         return new HashSet<Struct>(program.GetStructsHere());
     }
@@ -170,30 +143,24 @@ public class EPSLFileCompiler : IFileCompiler {
     public Dependencies ToDependencies(Func<string, FileTree> getFile) {
         Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
-        TimingStep();
 
         Step("Converting string literals...");
         program = ConvertStringLiterals(program);
-        TimingStep();
 
         Step("Tokenizing groups...");
         program = TokenizeGroups(program);
-        TimingStep();
 
         Step("Tokenizing for loops...");
         program = TokenizeForLoops(program);
-        TimingStep();
 
         Step("Getting scope variables...");
         program = GetScopeVariables(program);
 
         Step("Parsing function code...");
         program = ParseFunctionCode(program);
-        TimingStep();
 
         Step("Verifying code...");
         VerifyCode(program);
-        TimingStep();
 
         return GetDependencies(program);
     }
@@ -201,19 +168,15 @@ public class EPSLFileCompiler : IFileCompiler {
     public string ToIR(string destPath) {
         Step("Adding unused value wrappers...");
         AddUnusedValueWrappers(program);
-        TimingStep();
 
         Step("Getting JSON...");
         string json = GetJSON(program);
-        TimingStep();
 
         Step("Saving JSON...");
         SaveJSON(json);
-        TimingStep();
 
         Step("Creating LLVM IR...");
         CreateLLVMIR();
-        TimingStep();
 
         string dest = destPath + ".ll";
         File.Copy(Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code.ll"), dest, true);

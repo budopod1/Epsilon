@@ -21,6 +21,7 @@ public class Builder {
     string fileWithMain;
 
     public CompilationResult Build(string input) {
+        Log.Info("Starting build of", input);
         return RunWrapped(() => {
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
@@ -35,6 +36,7 @@ public class Builder {
             if (!NEVER_PROJECT && Utils.FileExists(projLocation)) {
                 currentFile = projLocation;
                 proj = EPSLPROJ.FromText(ParseJSONFile(projLocation));
+                Log.Info("Loaded EPSLPROJ");
                 lastBuildStartTime = proj.CompileStartTime;
                 lastGeneratedSPECs = proj.EPSLSPECS;
                 isProj = true;
@@ -44,15 +46,22 @@ public class Builder {
             files = new Dictionary<string, FileTree>();
             FileTree tree = LoadFile(entrypoint, projectDirectory);
 
+            Log.Status("Loading tree");
             LoadTree(tree, projectDirectory);
             DetermineIsProj();
+            Log.Status("Transfering struct IDs");
             TransferStructIDs();
+            Log.Status("Transfering declarations");
             TransferDeclarations();
+            Log.Status("Transfering struct");
             TransferStructs();
             SetupOldCompilers();
+            Log.Status("Confirming dependencies");
             ConfirmDependencies(projectDirectory);
             IRInUserDir = new List<string>();
+            Log.Status("Writing IR");
             List<string> sections = ToIR();
+            Log.Status("Saving EPSLSPECs");
             SaveEPSLSPECs();
 
             List<string> generatedSPECs = GetGeneratedEPSLSPECs().ToList();
@@ -75,6 +84,7 @@ public class Builder {
                 "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--", builtins
             };
             arguments.AddRange(sections);
+            Log.Status("Linking LLVM");
             Utils.RunCommand("llvm-link", arguments);
 
             if (!IsProjMode()) {
@@ -86,6 +96,7 @@ public class Builder {
             if (IsProjMode()) {
                 EPSLPROJ newProj = new EPSLPROJ(buildStartTime, generatedSPECs);
                 newProj.ToFile(projLocation);
+                Log.Info("Saved updated EPSLPROJ");
             }
         });
     }
@@ -575,10 +586,12 @@ public class Builder {
             if (fileWithMain == null) {
                 throw new ProjectProblemException("One main function is required when creating an executable; no main function found");
             }
+            Log.Status("Optimizing LLVM");
             Utils.RunCommand("opt", new List<string> {
                 "-O3", "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-opt.bc"),
                 Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc")
             });
+            Log.Status("Buiding executable");
             Utils.RunCommand("clang", GetClangFlags().Concat(new List<string> {
                 "-lc", "-lm", "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code"),
                 Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-opt.bc"),
@@ -595,10 +608,12 @@ public class Builder {
             currentFile = projFile;
             EPSLPROJ proj = EPSLPROJ.FromText(ParseJSONFile(projFile));
 
+            Log.Status("Cleaning up EPSLSPECs");
             foreach (string spec in proj.EPSLSPECS) {
                 CleanupSPEC(spec);
             }
 
+            Log.Status("Deleting project file");
             Utils.TryDelete(projFile);
         });
     }
