@@ -20,31 +20,66 @@ public class Builder {
     HashSet<Struct> structs;
     string fileWithMain;
 
-    public CompilationResult Build(string input) {
-        Log.Info("Starting build of", input);
+    public CompilationResult LoadEPSLPROJ(string input, out EPSLPROJ projOut) {
+        EPSLPROJ proj = null;
+
+        string projLocation = null;
+        CompilationResult result1 = RunWrapped(() => {
+            string projDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
+            string projName = Utils.GetFileNameWithoutExtension(input) + ".epslproj";
+            projLocation = Utils.JoinPaths(projDirectory, projName);
+        });
+        if (result1.GetStatus() != CompilationResultStatus.GOOD) {
+            projOut = null;
+            return result1;
+        }
+
+        if (NEVER_PROJECT) {
+            projOut = new EPSLPROJ(projLocation);
+            return result1;
+        }
+        
+        CompilationResult result2 = RunWrapped(() => {
+            if (Utils.FileExists(projLocation)) {
+                currentFile = projLocation;
+                proj = EPSLPROJ.FromText(projLocation, ParseJSONFile(projLocation));
+                Log.Info("Loaded EPSLPROJ");
+                isProj = true;
+            }
+        });
+
+        projOut = proj ?? new EPSLPROJ(projLocation);
+        return result2;
+    }
+
+    public CompilationResult GetOutputLocation(string input, string extension, out string outputOut) {
+        string output = null;
+        CompilationResult result = RunWrapped(() => {
+            string outputDir = Utils.GetDirectoryName(input);
+            string outputName = Utils.SetExtension(
+                Utils.GetFileName(input), extension);
+            if (outputName == "entry") outputName = "result";
+            output = Utils.JoinPaths(outputDir, outputName);
+        });
+        outputOut = output;
+        return result;
+    }
+
+    public CompilationResult Build(string inputRel, EPSLPROJ proj) {
+        Log.Info("Starting build of", inputRel);
         return RunWrapped(() => {
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            string projectDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
+            string input = Utils.GetFullPath(inputRel);
+            string projectDirectory = Utils.GetDirectoryName(input);
 
-            string entrypoint = Utils.GetFileNameWithoutExtension(input);
-            string projName = entrypoint+".epslproj";
-            string projLocation = Utils.JoinPaths(projectDirectory, projName);
-            EPSLPROJ proj = null;
-            lastBuildStartTime = null;
-            List<string> lastGeneratedSPECs = new List<string>();
-            if (!NEVER_PROJECT && Utils.FileExists(projLocation)) {
-                currentFile = projLocation;
-                proj = EPSLPROJ.FromText(ParseJSONFile(projLocation));
-                Log.Info("Loaded EPSLPROJ");
-                lastBuildStartTime = proj.CompileStartTime;
-                lastGeneratedSPECs = proj.EPSLSPECS;
-                isProj = true;
-            }
+            lastBuildStartTime = proj.CompileStartTime;
+            List<string> lastGeneratedSPECs = proj.EPSLSPECS;
+            isProj = !NEVER_PROJECT && proj.IsFromFile;
 
-            currentFile = Utils.GetFullPath(Utils.RemoveExtension(input));
+            currentFile = input;
             files = new Dictionary<string, FileTree>();
-            FileTree tree = LoadFile(entrypoint, projectDirectory);
+            FileTree tree = LoadFile(Utils.GetFileNameWithoutExtension(input), projectDirectory);
 
             Log.Status("Loading tree");
             LoadTree(tree, projectDirectory);
@@ -94,8 +129,9 @@ public class Builder {
             }
 
             if (IsProjMode()) {
-                EPSLPROJ newProj = new EPSLPROJ(buildStartTime, generatedSPECs);
-                newProj.ToFile(projLocation);
+                proj.CompileStartTime = buildStartTime;
+                proj.EPSLSPECS = generatedSPECs;
+                proj.ToFile();
                 Log.Info("Saved updated EPSLPROJ");
             }
         });
@@ -599,22 +635,24 @@ public class Builder {
         });
     }
 
-    public CompilationResult Teardown(string projFile) {
+    public CompilationResult Teardown(EPSLPROJ proj) {
         return RunWrapped(() => {
-            projFile = Utils.SetExtension(projFile, ".epslproj");
-            
-            string projectDirectory = Utils.GetFullPath(Utils.GetDirectoryName(projFile));
-
-            currentFile = projFile;
-            EPSLPROJ proj = EPSLPROJ.FromText(ParseJSONFile(projFile));
-
             Log.Status("Cleaning up EPSLSPECs");
             foreach (string spec in proj.EPSLSPECS) {
                 CleanupSPEC(spec);
             }
 
             Log.Status("Deleting project file");
-            Utils.TryDelete(projFile);
+            Utils.TryDelete(proj.Path);
+        });
+    }
+
+    public CompilationResult SetEPSLPROJOptionAndSave(EPSLPROJ proj, List<string> commandOptions) {
+        return RunWrapped(() => {
+            proj.CommandOptions = commandOptions;
+            Log.Info("Updated EPSLPROJ command options");
+            proj.ToFile();
+            Log.Info("Saved updated EPSLSPEC");
         });
     }
     

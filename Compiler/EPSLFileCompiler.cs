@@ -13,6 +13,7 @@ public class EPSLFileCompiler : IFileCompiler {
     string srcPath;
 
     public EPSLFileCompiler(string path, string fileText) {
+        Log.Info("compiling EPSL file", path);
         srcPath = path;
         this.fileText = fileText;
         program = new Program(

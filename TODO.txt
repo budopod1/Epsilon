@@ -1,6 +1,6 @@
 TODO:
+* mono Epsilon.exe compile should autodetect proj file in current directory
 * add safe array access and safe unwrap
-* EPSLPROJs should be able to pass params to compiler
 * self host LLVMIR section?
 * string interpolation
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)

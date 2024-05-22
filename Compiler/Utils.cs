@@ -219,12 +219,14 @@ public static class Utils {
         return JoinPaths(directory, name);
     }
 
-    public static (int, int) LongToInts(long num) {
-        return ((int)(num >> 32), (int)(num & ~(int)0));
+    public static (int?, int?) LongToInts(long? num) {
+        if (num == null) return (null, null);
+        return ((int)(num.Value >> 32), (int)(num.Value & ~(int)0));
     }
 
-    public static long IntsToLong((int, int) vals) {
-        (int a, int b) = vals;
-        return ((long)a << 32) + (long)b;
+    public static long? IntsToLong((int?, int?) vals) {
+        (int? a, int? b) = vals;
+        if (a == null || b == null) return null;
+        return ((long)a.Value << 32) + (long)b.Value;
     }
 }
