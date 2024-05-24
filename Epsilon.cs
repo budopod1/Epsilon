@@ -24,13 +24,13 @@ Modes:
         parser.AddOption(() => {neverProj = true;}, "Never use project mode", null, 
             "P", "no-project-mode");
 
+        InputExpectation outputFile = new InputExpectation("output file");
+        parser.AddOption(outputFile, "The path to output to", "o", "output");
+
         PossibilitiesExpectation mode = parser.Expect(
             new PossibilitiesExpectation("compile", "teardown", "command-line-options"));
         
-        InputExpectation sourceFile = new InputExpectation("source file");
-        
-        InputExpectation outputFile = new InputExpectation("output file");
-        parser.AddOption(outputFile, "The path to output to", "o", "output");
+        InputExpectation sourceFile = new InputExpectation("source file", true);
 
         MultiInputExpectation commandOptions = new MultiInputExpectation(parser, "command-options");
         
@@ -65,9 +65,10 @@ Modes:
 
         Builder builder = new Builder();
 
-        if (mode.Value() == "compile") {
-            string input = sourceFile.Matched;
+        string curDirectory = $".{Path.DirectorySeparatorChar}";
+        string input = curDirectory + (sourceFile.Matched ?? "entry");
 
+        if (mode.Value() == "compile") {
             builder.NEVER_PROJECT = neverProj;
             TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
             parser.ParseAdditionalOptions(proj.CommandOptions);
@@ -136,8 +137,7 @@ Modes:
             
             return 0;
         } else if (mode.Value() == "teardown") {
-            TestResult(builder.LoadEPSLPROJ(sourceFile.Matched, out EPSLPROJ proj));
-            parser.ParseAdditionalOptions(proj.CommandOptions);
+            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
             if (alwaysProj || neverProj) {
@@ -156,7 +156,7 @@ Modes:
 
             return 0;
         } else if (mode.Value() == "command-line-options") {
-            TestResult(builder.LoadEPSLPROJ(sourceFile.Matched, out EPSLPROJ proj));
+            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
 
             if (alwaysProj || neverProj) {
                 ArgumentParser.DisplayProblem("The 'project-mode' and 'no-project-mode' options require 'compile' mode");
