@@ -513,6 +513,9 @@ def unwrap(program, builder, params, param_types_):
     value, = params
     value_type_, = param_types_
     generic_type_ = value_type_["generics"][0]
+    program.call_extern(
+        builder, "verifyNotNull", [value], [value_type_], VOID
+    )
     return value, generic_type_
 
 
@@ -595,6 +598,13 @@ def round_(program, builder, params, param_types_):
     ), Z32
 
 
+def inner(program, builder, params, param_types_):
+    value, = params
+    value_type_, = param_types_
+    generic_type_ = value_type_["generics"][0]
+    return value, generic_type_
+
+
 BUILTINS = {
     "builtin1": {"func": length, "params": [ArrayW8]},
     "builtin2": {"func": capacity, "params": [ArrayW8]},
@@ -657,7 +667,6 @@ BUILTINS = {
     "builtin59": {"func": write_to_file, "params": [File, String]},
     "builtin60": {"func": is_null, "params": [None]},
     "builtin61": {"func": unwrap, "params": [None], "result_in_params": True},
-    # "builtin62": {"func": abort, "params": [String]},
     "builtin62": {"func": blank_from_type, "params": [None, W64]},
     "builtin63": {"func": array_unique, "params": [None]},
     "builtin64": {"func": sort_array, "params": [None]},
@@ -668,4 +677,5 @@ BUILTINS = {
     "builtin69": {"func": floor, "params": [Q64]},
     "builtin70": {"func": ceil, "params": [Q64]},
     "builtin71": {"func": round_, "params": [Q64]},
+    "builtin72": {"func": inner, "params": [None], "result_in_params": True},
 }

@@ -618,7 +618,7 @@ Usage: TODO<br>
 `Bool#<nullable:Any>.is_null`
 
 **#61: unwrap**<br>
-Usage: TODO<br>
+Usage: unwraps the given Optional. If the value is null, the program is aborted.<br>
 `T#<optional:Optional<T>>.unwrap` where `T` is `Any`
 
 **#62: blank_from_type**<br>
@@ -660,3 +660,7 @@ Usage: computes the smallest integer greater than or equal to the given value.<b
 **#71: round**<br>
 Usage: computes the integer with the smallest absolute distance from the given value.<br>
 `Z#<num:Q>.round`
+
+**#72: inner**<br>
+Usage: returns the non-Optional form of the given value. If the value is null, the results are undefined. **WARNING:** use of this function will nulls may have security implications.<br>
+`T#<optional:Optional<T>>.inner` where `T` is `Any`

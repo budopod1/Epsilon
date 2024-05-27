@@ -328,4 +328,8 @@ EXTERN_FUNCS = {
         "name": "exit", "return_type_": VOID,
         "arguments": [Z32]
     },
+    "verifyNotNull": {
+        "name": "verifyNotNull", "return_type_": VOID,
+        "arguments": [PointerW8]
+    }
 }

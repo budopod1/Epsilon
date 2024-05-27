@@ -881,7 +881,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", Type_.Any())
             }, "builtin68", new Type_("Bool"), FunctionSource.Builtin
-        ),  new ExternalFunction(
+        ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
@@ -891,7 +891,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", new Type_("Q"))
             }, "builtin69", new Type_("Z"), FunctionSource.Builtin
-        ),   new ExternalFunction(
+        ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
@@ -901,7 +901,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", new Type_("Q"))
             }, "builtin70", new Type_("Z"), FunctionSource.Builtin
-        ),   new ExternalFunction(
+        ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
@@ -911,6 +911,25 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", new Type_("Q"))
             }, "builtin71", new Type_("Z"), FunctionSource.Builtin
-        ), 
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "inner")
+                }, new SlotPatternProcessor(new List<int> {0})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("optional", new Type_(
+                    "Optional", new List<Type_> {Type_.Any()}
+                )),
+            }, "builtin72", (List<Type_> types_) => {
+                if (types_[0].GetBaseType_().GetName() != "Optional") {
+                    throw new FunctionCallTypes_Exception(
+                        $"Cannot get inner of non Optional type {types_[0]}", 0
+                    );
+                }
+                return types_[0].GetGeneric(0);
+            }, FunctionSource.Builtin
+        )
     };
 }

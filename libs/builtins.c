@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdbool.h>
 
+#define ERR_START "FATAL ERROR: "
+
 // elem types are 64 bit unsigned
 // upper 62 bits are the size
 // second to lowest bit is whether it's a pointer
@@ -862,4 +864,14 @@ struct Array *repeatArray(const struct Array *array, uint64_t times, uint64_t el
     result->content = content;
     incrementArrayRefCounts(result, elem);
     return result;
+}
+
+char *NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found null\n";
+
+void verifyNotNull(const char *val) {
+    if (val == NULL) {
+        fflush(stderr);
+        fwrite(NULL_FAIL_MESSAGE, strlen(NULL_FAIL_MESSAGE), 1, stderr);
+        exit(1);
+    }
 }
