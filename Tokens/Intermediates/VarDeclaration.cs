@@ -39,4 +39,8 @@ public class VarDeclaration : IVerifier {
             "Unmatched variable declaration", this
         );
     }
+
+    public override string ToString() {
+        return $"VarDeclaration({type_}:{name.GetValue()})";
+    }
 }

@@ -2,20 +2,22 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Program : TreeToken, IVerifier {
+public class Program : TreeToken, IVerifier, IHasScope {
     string path;
     HashSet<LocatedID> structIds = new HashSet<LocatedID>();
-    int functionIDCounter = 0;
-    int scopeVarIDCounter = 0;
+    IDCounter functionIDCounter = new IDCounter();
+    IDCounter scopeVarIDCounter = new IDCounter();
     HashSet<Struct> structsHere = new HashSet<Struct>();
     HashSet<Struct> structs = new HashSet<Struct>();
     List<RealFunctionDeclaration> externalDeclarations = new List<RealFunctionDeclaration>();
+    IScope scope;
 
     public Program(string path, List<IToken> tokens) : base(tokens) {
         this.path = path;
+        scope = new Scope(scopeVarIDCounter, null);
     }
 
-    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, int functionIDCounter, int scopeVarIDCounter, HashSet<Struct> structs, HashSet<Struct> structsHere, List<RealFunctionDeclaration> externalDeclarations) : base(tokens) {
+    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, IDCounter functionIDCounter, IDCounter scopeVarIDCounter, HashSet<Struct> structs, HashSet<Struct> structsHere, List<RealFunctionDeclaration> externalDeclarations, IScope scope) : base(tokens) {
         this.path = path;
         this.structIds = structIds;
         this.functionIDCounter = functionIDCounter;
@@ -23,6 +25,7 @@ public class Program : TreeToken, IVerifier {
         this.structs = structs;
         this.structsHere = structsHere;
         this.externalDeclarations = externalDeclarations;
+        this.scope = scope;
     }
 
     public HashSet<LocatedID> GetStructIDs() {
@@ -39,11 +42,11 @@ public class Program : TreeToken, IVerifier {
     }
 
     public int GetFunctionID() {
-        return functionIDCounter++;
+        return functionIDCounter.GetID();
     }
 
-    public int GetScopeVarID() {
-        return scopeVarIDCounter++;
+    public IDCounter GetScopeVarIDCounter() {
+        return scopeVarIDCounter;
     }
 
     public void SetStructsHere(HashSet<Struct> structs) {
@@ -70,12 +73,22 @@ public class Program : TreeToken, IVerifier {
         return externalDeclarations;
     }
 
+    public IScope GetScope() {
+        return scope;
+    }
+
+    public void AddGlobals(IEnumerable<Global> globals) {
+        foreach (Global global_ in globals) {
+            scope.AddVar(global_.GetName(), global_.GetType_());
+        }
+    }
+
     public string GetPath() {
         return path;
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structs, structsHere, externalDeclarations);
+        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structs, structsHere, externalDeclarations, scope);
     }
 
     public void Verify() {
@@ -123,6 +136,7 @@ public class Program : TreeToken, IVerifier {
         );
         obj["structs"] = new JSONList(structs.Select(struct_ => struct_.GetJSON()));
         obj["path"] = new JSONString(path);
+        obj["scope"] = new JSONList(Scope.GetVarsJSON(scope));
         return obj;
     }
 }

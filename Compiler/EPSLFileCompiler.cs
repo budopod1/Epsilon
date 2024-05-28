@@ -13,7 +13,7 @@ public class EPSLFileCompiler : IFileCompiler {
     string srcPath;
 
     public EPSLFileCompiler(string path, string fileText) {
-        Log.Info("compiling EPSL file", path);
+        Log.Info("Compiling EPSL file", path);
         srcPath = path;
         this.fileText = fileText;
         program = new Program(
@@ -60,9 +60,12 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     public HashSet<LocatedID> ToStructIDs() {
+        Step("Tokenzing globals...");
+        program = TokenizeGlobals(program);
+
         Step("Tokenizing keywords...");
         program = TokenizeKeywords(program);
-        
+
         Step("Tokenizing numbers...");
         program = TokenizeNumbers(program);
 
@@ -153,6 +156,9 @@ public class EPSLFileCompiler : IFileCompiler {
 
         Step("Tokenizing for loops...");
         program = TokenizeForLoops(program);
+
+        Step("Parsing globals...");
+        program = ParseGlobals(program);
 
         Step("Getting scope variables...");
         program = GetScopeVariables(program);
@@ -302,6 +308,20 @@ public class EPSLFileCompiler : IFileCompiler {
         return (Program)PerformMatching(program, new ImportMatcher());
     }
 
+    Program TokenizeGlobals(Program program) {
+        return (Program)PerformMatching(program, new GlobalsMatcher());
+    }
+
+    Program DoUnstructuredSyntaxMatching(Program program_, IMatcher matcher) {
+        Program program = (Program)PerformMatching(program_, matcher);
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (!(token is RawGlobal)) continue;
+            program[i] = PerformMatching((RawGlobal)token, matcher);
+        }
+        return program;
+    }
+
     Program TokenizeKeywords(Program program) {
         Dictionary<string, Type> keywords = new Dictionary<string, Type> {
             {"return", typeof(ReturnKeyword)},
@@ -316,7 +336,7 @@ public class EPSLFileCompiler : IFileCompiler {
             {"for", typeof(ForKeyword)},
             {"abort", typeof(AbortKeyword)},
         };
-        return (Program)PerformMatching(
+        return DoUnstructuredSyntaxMatching(
             program,
             new PatternMatcher(
                 new List<IPatternSegment> {
@@ -334,7 +354,7 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     Program TokenizeNumbers(Program program) {
-        return (Program)PerformMatching(program, new NumberMatcher(program));
+        return DoUnstructuredSyntaxMatching(program, new NumberMatcher(program));
     }
 
     List<IToken> RemoveWhiteSpaceFilter(IEnumerable<IToken> tokens) {
@@ -350,21 +370,26 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     Program RemoveWhitespace(Program program) {
-        foreach (IToken token in program) {
-            if (!(token is RawFuncSignature)) continue;
-            RawFuncSignature sig = ((RawFuncSignature)token);
-            RawFuncReturnType_ ret = (RawFuncReturnType_)sig.GetReturnType_();
-            sig.SetReturnType_(
-                (RawFuncReturnType_)ret.Copy(
-                    RemoveWhiteSpaceFilter(ret)
-                )
-            );
-            RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
-            sig.SetTemplate(
-                (RawFuncTemplate)template.Copy(
-                    RemoveWhiteSpaceFilter(template)
-                )
-            );
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (token is RawFuncSignature) {
+                RawFuncSignature sig = ((RawFuncSignature)token);
+                RawFuncReturnType_ ret = (RawFuncReturnType_)sig.GetReturnType_();
+                sig.SetReturnType_(
+                    (RawFuncReturnType_)ret.Copy(
+                        RemoveWhiteSpaceFilter(ret)
+                    )
+                );
+                RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
+                sig.SetTemplate(
+                    (RawFuncTemplate)template.Copy(
+                        RemoveWhiteSpaceFilter(template)
+                    )
+                );
+            } else if (token is RawGlobal) {
+                RawGlobal rawGlobal = (RawGlobal)token;
+                program[i] = rawGlobal.Copy(RemoveWhiteSpaceFilter(rawGlobal));
+            }
         }
         return (Program)program.Copy(RemoveWhiteSpaceFilter(program));
     }
@@ -378,8 +403,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program TokenizeFuncArguments(Program program) {
         IMatcher matcher = new FunctionArgumentMatcher();
-        for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
+        foreach (IToken token in program) {
             if (!(token is RawFuncSignature)) continue;
             RawFuncSignature sig = ((RawFuncSignature)token);
             RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
@@ -440,35 +464,43 @@ public class EPSLFileCompiler : IFileCompiler {
         program.AddStructIDs(structIds);
     }
 
-    Program TokenizeBaseTypes_(Program program) {
-        Func<string, UserBaseType_> converter = (string source) => 
-            UserBaseType_.ParseString(source, program.GetStructIDs());
-        IMatcher matcher = new UnitSwitcherMatcher<string, UserBaseType_>(
-            typeof(Name), converter, typeof(UserBaseType_Token)
-        );
-        foreach (IToken token in program) {
-            if (token is Holder) {
+    Program DoStructuredSyntaxMatching(Program program, IMatcher matcher, bool matchIntoTemplates) {
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (token is RawGlobal) {
+                program[i] = PerformTreeMatching((RawGlobal)token, matcher);
+            } else if (token is Holder) {
                 Holder holder = ((Holder)token);
                 Block block = holder.GetBlock();
                 if (block == null) continue;
                 TreeToken result = PerformTreeMatching(block, matcher);
                 holder.SetBlock((Block)result);
-                if (token is FunctionHolder) {
+                if (matchIntoTemplates && token is FunctionHolder) {
                     RawFuncSignature sig = ((FunctionHolder)token).GetRawSignature();
                     sig.SetReturnType_(PerformTreeMatching(
                         (TreeToken)sig.GetReturnType_(), matcher)
                     );
                     TreeToken template = (TreeToken)sig.GetTemplate();
-                    for (int i = 0; i < template.Count; i++) {
-                        IToken sub = template[i];
+                    for (int j = 0; j < template.Count; j++) {
+                        IToken sub = template[j];
                         if (sub is RawFunctionArgument) {
-                            template[i] = PerformTreeMatching((RawFunctionArgument)sub, matcher);
+                            template[j] = PerformTreeMatching((RawFunctionArgument)sub, matcher);
                         }
                     }
                 }
             }
         }
         return program;
+    }
+
+    Program TokenizeBaseTypes_(Program program) {
+        Func<string, UserBaseType_> converter = (string source) => 
+            UserBaseType_.ParseString(source, program.GetStructIDs());
+        return DoStructuredSyntaxMatching(
+            program, new UnitSwitcherMatcher<string, UserBaseType_>(
+                typeof(Name), converter, typeof(UserBaseType_Token)
+            ), true
+        );
     }
 
     Program TokenizeConstantKeywordValues(Program program) {
@@ -479,128 +511,78 @@ public class EPSLFileCompiler : IFileCompiler {
             {"NaN", () => new FloatConstant(Double.NaN)},
             {"pi", () => new FloatConstant(MathF.PI)},
         };
-        IMatcher matcher = new PatternMatcher(
-            new List<IPatternSegment> {
-                new UnitsPatternSegment<string>(
-                    typeof(Name), constantValues.Keys.ToList()
-                )
-            }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
-                string name = ((Name)tokens[0]).GetValue();
-                return new List<IToken> {
-                    new ConstantValue(constantValues[name]())
-                };
-            })
+        return DoStructuredSyntaxMatching(
+            program, new PatternMatcher(
+                new List<IPatternSegment> {
+                    new UnitsPatternSegment<string>(
+                        typeof(Name), constantValues.Keys.ToList()
+                    )
+                }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                    string name = ((Name)tokens[0]).GetValue();
+                    return new List<IToken> {
+                        new ConstantValue(constantValues[name]())
+                    };
+                })
+            ), false
         );
-        foreach (IToken token in program) {
-            if (token is FunctionHolder) {
-                FunctionHolder holder = ((FunctionHolder)token);
-                Block block = holder.GetBlock();
-                if (block == null) continue;
-                TreeToken result = PerformTreeMatching(block, matcher);
-                holder.SetBlock((Block)result);
-            }
-        }
-        return program;
     }
 
     Program TokenizeGenerics(Program program) {
-        IMatcher matcher = new BlockMatcher(
-            new TypePatternSegment(typeof(UserBaseType_Token)),
-            new TextPatternSegment("<"), new TextPatternSegment(">"),
-            typeof(Generics)
+        return DoStructuredSyntaxMatching(
+            program, new BlockMatcher(
+                new TypePatternSegment(typeof(UserBaseType_Token)),
+                new TextPatternSegment("<"), new TextPatternSegment(">"),
+                typeof(Generics)
+            ), true
         );
-        for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
-            if (!(token is FunctionHolder)) continue;
-            RawFuncSignature sig = ((FunctionHolder)token).GetRawSignature();
-            sig.SetReturnType_(
-                PerformTreeMatching((TreeToken)sig.GetReturnType_(), matcher)
-            );
-            sig.SetTemplate(
-                PerformTreeMatching((TreeToken)sig.GetTemplate(), matcher)
-            );
-        }
-        return (Program)PerformTreeMatching(program, matcher);
     }
 
     Program TokenizeTypes_(Program program) {
-        IMatcher matcher = new CombinedMatchersMatcher(new List<IMatcher> {
-            new PatternMatcher(
-                new List<IPatternSegment> {
-                    new TextPatternSegment("["),
-                    new TypePatternSegment(typeof(Type_Token)),
-                    new TextPatternSegment("]")
-                }, new FuncPatternProcessor<List<IToken>>(
-                    tokens => new List<IToken> {
-                        new Type_Token(new Type_("Array", new List<Type_> {
-                            ((Type_Token)tokens[1]).GetValue()
-                        }))
-                    }
-                )
-            ),
-            new PatternMatcher(
-                new List<IPatternSegment> {
-                    new TypePatternSegment(typeof(Type_Token)),
-                    new TextPatternSegment("?")
-                }, new FuncPatternProcessor<List<IToken>>(
-                    tokens => new List<IToken> {
-                        new Type_Token(new Type_("Optional", new List<Type_> {
-                            ((Type_Token)tokens[0]).GetValue()
-                        }))
-                    }
-                )
-            ),
-            new Type_Matcher(),
-        });
-        foreach (IToken token in program) {
-            if (token is Holder) {
-                Holder holder = ((Holder)token);
-                Block block = holder.GetBlock();
-                if (block == null) continue;
-                TreeToken result = PerformTreeMatching(block, matcher);
-                holder.SetBlock((Block)result);
-                if (token is FunctionHolder) {
-                    RawFuncSignature sig = ((FunctionHolder)token).GetRawSignature();
-                    sig.SetReturnType_(PerformTreeMatching(
-                        (TreeToken)sig.GetReturnType_(), matcher
-                    ));
-                    TreeToken template = (TreeToken)sig.GetTemplate();
-                    for (int i = 0; i < template.Count; i++) {
-                        IToken sub = template[i];
-                        if (sub is RawFunctionArgument) {
-                            template[i] = PerformTreeMatching(
-                                (RawFunctionArgument)sub, matcher
-                            );
+        return DoStructuredSyntaxMatching(
+            program, new CombinedMatchersMatcher(new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TextPatternSegment("["),
+                        new TypePatternSegment(typeof(Type_Token)),
+                        new TextPatternSegment("]")
+                    }, new FuncPatternProcessor<List<IToken>>(
+                        tokens => new List<IToken> {
+                            new Type_Token(new Type_("Array", new List<Type_> {
+                                ((Type_Token)tokens[1]).GetValue()
+                            }))
                         }
-                    }
-                }
-            }
-        }
-        return program;
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Type_Token)),
+                        new TextPatternSegment("?")
+                    }, new FuncPatternProcessor<List<IToken>>(
+                        tokens => new List<IToken> {
+                            new Type_Token(new Type_("Optional", new List<Type_> {
+                                ((Type_Token)tokens[0]).GetValue()
+                            }))
+                        }
+                    )
+                ),
+                new Type_Matcher(),
+            }), true
+        );
     }
 
     Program TokenizeVarDeclarations(Program program) {
-        foreach (IToken token in program) {
-            if (token is Holder) {
-                Holder holder = ((Holder)token);
-                Block block = holder.GetBlock();
-                if (block == null) continue;
-                TreeToken result = PerformTreeMatching(block,
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new TypePatternSegment(typeof(Type_Token)),
-                            new TextPatternSegment(":"),
-                            new TypePatternSegment(typeof(Name))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
-                            typeof(VarDeclaration)
-                        )
-                    )
-                );
-                holder.SetBlock((Block)result);
-            }
-        }
-        return program;
+        return DoStructuredSyntaxMatching(
+            program, new PatternMatcher(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(Type_Token)),
+                    new TextPatternSegment(":"),
+                    new TypePatternSegment(typeof(Name))
+                }, new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor(new List<int> {0, 2}),
+                    typeof(VarDeclaration)
+                )
+            ), false
+        );
     }
 
     Program ComputeStructs(Program program) {
@@ -847,6 +829,12 @@ public class EPSLFileCompiler : IFileCompiler {
         );
     }
 
+    Program ParseGlobals(Program program) {
+        (IEnumerable<IToken> progTokens, IEnumerable<RawGlobal> globals) = program.ParitionSubclass<IToken, RawGlobal>();
+        program.AddGlobals(globals.Select(rawGlobal => new Global(rawGlobal)));
+        return (Program)program.Copy(progTokens.ToList());
+    }
+
     Program GetScopeVariables(Program program) {
         program.UpdateParents();
         
@@ -856,7 +844,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 foreach (VarDeclaration declaration 
                         in TokenUtils.TraverseFind<VarDeclaration>(function)) {
                     string name = declaration.GetName().GetValue();
-                    Scope scope = Scope.GetEnclosing(declaration);
+                    IScope scope = Scope.GetEnclosing(declaration);
                     declaration.SetID(scope.AddVar(
                         name, declaration.GetType_()
                     ));

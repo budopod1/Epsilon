@@ -13,18 +13,30 @@ class Program:
         self.functions = {}
         self.module_functions = {}
         self.structs = {}
+        self.globals = {}
+        self.global_declarations = {}
         self.externs = {}
         self.extern_funcs = {}
         self.check_funcs = {}
         self.builtins = {}
         self.stringifiers = {}
-        self.const_counter = 0
+        self.global_counter = 0
         self.refrence_eq_funcs = {}
         self.value_eq_d1_funcs = {}
         self.value_eq_funcs = {}
         self.index_of_funcs = {}
         self.dedup_funcs = {}
         self.comparer_funcs = {}
+
+    def setup_scope(self, scope):
+        self.globals = scope
+        for var in scope:
+            global_ = ir.GlobalVariable(
+                self.module, make_type_(self, var["type_"]),
+                f"global{self.global_id()}"
+            )
+            global_.initializer = ir.Constant(make_type_(self, var["type_"]), None)
+            self.global_declarations[var["id"]] = global_
 
     def add_module_functions(self, funcs):
         for func in funcs:
@@ -292,9 +304,9 @@ class Program:
             self.stringifiers[frozen] = func
         return builder.call(func, [value])
 
-    def const_id(self):
-        result = self.const_counter
-        self.const_counter += 1
+    def global_id(self):
+        result = self.global_counter
+        self.global_counter += 1
         return result
 
     def string_literal_array(self, builder, value, size=None, unique=False, name=""):
@@ -317,7 +329,7 @@ class Program:
             ir_type = ir.ArrayType(make_type_(self, Byte), len(value))
             constant = ir.Constant(ir_type, bytearray(value, "utf-8"))
             global_var = ir.GlobalVariable(
-                self.module, ir_type, f"string{self.const_id()}"
+                self.module, ir_type, f"string{self.global_id()}"
             )
             global_var.global_constant = True
             global_var.unnamed_addr = True

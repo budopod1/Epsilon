@@ -26,6 +26,8 @@ def create_ir(data):
 
     program = Program(module, data["path"])
 
+    program.setup_scope(data["scope"])
+
     for struct in data["structs"]:
         program.add_struct(Struct(
             program, struct["id"], struct["name"], struct["fields"]

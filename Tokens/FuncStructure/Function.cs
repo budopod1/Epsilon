@@ -39,7 +39,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         this.pattern = pattern;
         this.block = block;
         this.returnType_ = returnType_;
-        Scope scope = block.GetScope();
+        IScope scope = block.GetScope();
         foreach (FunctionArgumentToken argument in arguments) {
             argument.SetID(scope.AddVar(
                 argument.GetName(), argument.GetType_()
@@ -131,7 +131,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         ));
         JSONList declarations = new JSONList();
         foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(this)) {
-            foreach (IJSONValue declaration in block.GetScope().GetVarsJSON()) {
+            foreach (IJSONValue declaration in Scope.GetVarsJSON(block.GetScope())) {
                 declarations.Add(declaration);
             }
         }

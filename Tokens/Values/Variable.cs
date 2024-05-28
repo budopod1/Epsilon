@@ -14,7 +14,7 @@ public class Variable : IAssignableValue {
     
     public Variable(Name source) {
         name = source.GetValue();
-        Scope scope = Scope.GetEnclosing(source);
+        IScope scope = Scope.GetEnclosing(source);
         id = scope.GetIDByName(name).Value;
     }
 
@@ -27,7 +27,7 @@ public class Variable : IAssignableValue {
     }
 
     public Type_ GetType_() {
-        Scope scope = Scope.GetEnclosing(this);
+        IScope scope = Scope.GetEnclosing(this);
         ScopeVar svar = scope.GetVarByID(id);
         if (svar == null) return Type_.Unknown();
         return svar.GetType_();

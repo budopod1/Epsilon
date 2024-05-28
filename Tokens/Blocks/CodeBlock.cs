@@ -1,22 +1,27 @@
 using System;
 using System.Collections.Generic;
 
-public class CodeBlock : Block {
-    Program program;
+public class CodeBlock : Block, IHasScope {
+    IDCounter scopeVarIDCounter;
     Scope scope;
     
     public CodeBlock(Program program, List<IToken> tokens) : base(tokens) {
-        scope = new Scope(program, this);
-        this.program = program;
+        scopeVarIDCounter = program.GetScopeVarIDCounter();
+        scope = new Scope(scopeVarIDCounter, this);
+    }
+
+    public CodeBlock(IDCounter scopeVarIDCounter, List<IToken> tokens) : base(tokens) {
+        this.scopeVarIDCounter = scopeVarIDCounter;
+        scope = new Scope(scopeVarIDCounter, this);
     }
     
     protected override TreeToken _Copy(List<IToken> tokens) {
-        CodeBlock newBlock = new CodeBlock(program, tokens);
+        CodeBlock newBlock = new CodeBlock(scopeVarIDCounter, tokens);
         newBlock.GetScope().CopyFrom(scope);
         return newBlock;
     }
 
-    public Scope GetScope() {
+    public IScope GetScope() {
         return scope;
     }
 

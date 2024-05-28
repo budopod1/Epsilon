@@ -1,5 +1,6 @@
 TODO:
-* add safe array access and safe unwrap
+* add `T#<T?> || <T>`, `T?#<T?> || <T?>`, `T#<T?> && <T>`, `T?#<T?> && <T?>` builtins (which act like JavaScript/Python operators on null /w short circuting)
+* add safe array access
 * self host LLVMIR section?
 * string interpolation
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)

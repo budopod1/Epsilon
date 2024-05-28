@@ -243,9 +243,10 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public override string ToString() {
+        if (generics.Count == 0) return baseType_.ToString();
         string genericStr = "";
         bool first = true;
-        foreach (Type_ generic in generics){
+        foreach (Type_ generic in generics) {
             if (!first) {
                 genericStr += ", ";
             }

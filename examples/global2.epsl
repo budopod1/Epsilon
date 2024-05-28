@@ -1,0 +1,22 @@
+Foo {
+    Z:a
+}
+
+#global Foo?:global_foo;
+
+#sub1 {
+    global_foo = Foo [2];
+}
+
+#sub2 {
+    Foo:foo = [global_foo].unwrap;
+    println[foo.a];
+}
+
+Z#main {
+    global_foo = Foo [1];
+    sub2;
+    sub1;
+    sub2;
+    return 0;
+}

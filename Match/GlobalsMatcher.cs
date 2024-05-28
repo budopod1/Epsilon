@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class ImportMatcher : IMatcher {
+public class GlobalsMatcher : IMatcher {
     public Match Match(IParentToken tokens) {
         bool wasNL = true;
         for (int i = 0; i < tokens.Count-2; i++) {
@@ -15,38 +15,21 @@ public class ImportMatcher : IMatcher {
                 } else if (wasNL && stext == "#") {
                     wasNL = false;
                     Name nntoken = tokens[i+1] as Name;
-                    if (nntoken == null || nntoken.GetValue() != "import") continue;
+                    if (nntoken == null || nntoken.GetValue() != "global") continue;
                     TextToken wtoken = tokens[i+2] as TextToken;
                     if (wtoken == null || !Utils.Whitespace.Contains(wtoken.GetText())) continue;
                     List<IToken> matched = new List<IToken> {stoken, nntoken, wtoken};
-                    List<string> path = new List<string> {""};
-                    bool anyContent = false;
-                    bool wasName = false;
+                    List<IToken> declaration = new List<IToken>();
                     for (int j = 3; j + i < tokens.Count; j++) {
                         IToken token = tokens[i+j];
                         TextToken ttoken = token as TextToken;
-                        Name ntoken = token as Name;
-                        string text = ttoken?.GetText();
-                        if (text == ".") {
-                            matched.Add(token);
-                            path.Add("");
-                            wasName = false;
-                        } else if (ntoken != null) {
-                            matched.Add(token);
-                            path[path.Count-1] = ntoken.GetValue();
-                            anyContent = true;
-                            wasName = true;
-                        } else if (text == ";" && anyContent) {
-                            if (!wasName) {
-                                throw new SyntaxErrorException(
-                                    "Import statement path must end with a target name", token
-                                );
-                            }
+                        if (ttoken?.GetText() == ";") {
                             return new Match(i, i+j, new List<IToken> {
-                                new Import(path)
+                                new RawGlobal(declaration)
                             }, matched);
                         } else {
-                            break;
+                            matched.Add(token);
+                            declaration.Add(token);
                         }
                     }
                 }

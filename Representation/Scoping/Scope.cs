@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-public class Scope {
-    Program program;
-    CodeBlock block;
+public class Scope : IScope {
+    IDCounter scopeVarIDCounter;
+    CodeBlock block; // FIXME: Scope should not store CodeBlock
     Dictionary<int, ScopeVar> variables = new Dictionary<int, ScopeVar>();
 
-    public Scope(Program program, CodeBlock block) {
-        this.program = program;
+    public Scope(IDCounter scopeVarIDCounter, CodeBlock block) {
+        this.scopeVarIDCounter = scopeVarIDCounter;
         this.block = block;
     }
 
-    bool containsVarLocal(int id) {
+    bool ContainsVarLocal(int id) {
         return variables.ContainsKey(id);
     }
 
@@ -19,13 +19,13 @@ public class Scope {
         foreach (ScopeVar svar in variables.Values) {
             if (svar.GetName() == name) return true; 
         }
-        Scope parent = GetParentScope();
+        IScope parent = GetParentScope();
         if (parent == null) return false;
         return parent.ContainsVar(name);
     }
     
     public ScopeVar GetVarByID(int id) {
-        if (!containsVarLocal(id)) return GetParentScope()?.GetVarByID(id);
+        if (!ContainsVarLocal(id)) return GetParentScope()?.GetVarByID(id);
         return variables[id];
     }
     
@@ -44,24 +44,25 @@ public class Scope {
     }
 
     public int AddVar(string name, Type_ type_) {
-        int id = program.GetScopeVarID();
+        int id = scopeVarIDCounter.GetID();
         variables[id] = new ScopeVar(name, type_);
         return id;
     }
 
-    public static Scope GetEnclosing(IToken token) {
+    public static IScope GetEnclosing(IToken token) {
         CodeBlock block = TokenUtils.GetParentOfType<CodeBlock>(token);
         return block?.GetScope();
     }
 
-    public IEnumerable<IJSONValue> GetVarsJSON() {
-        foreach (KeyValuePair<int, ScopeVar> pair in variables) {
+    public static IEnumerable<IJSONValue> GetVarsJSON(IScope scope) {
+        foreach (KeyValuePair<int, ScopeVar> pair in scope.GetAllVars()) {
             yield return pair.Value.GetJSON(pair.Key);
         }
     }
 
-    public Scope GetParentScope() {
-        CodeBlock parent = TokenUtils.GetParentOfType<CodeBlock>(block);
+    IScope GetParentScope() {
+        if (block == null) return null;
+        IHasScope parent = TokenUtils.GetParentOfType<IHasScope>(block);
         return parent?.GetScope();
     }
 
@@ -69,7 +70,7 @@ public class Scope {
         return variables;
     }
 
-    public void CopyFrom(Scope other) {
+    public void CopyFrom(IScope other) {
         variables = new Dictionary<int, ScopeVar>(other.GetAllVars());
     }
 }

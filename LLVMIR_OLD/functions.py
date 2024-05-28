@@ -65,7 +65,10 @@ class Function:
         return len(self.blocks)
 
     def get_variable_declaration(self, id_):
-        return self.variable_declarations[id_]
+        if id_ in self.variable_declarations:
+            return self.variable_declarations[id_]
+        else:
+            return self.program.global_declarations[id_]
 
     def get_argument_info(self):
         for arg in self.arguments:

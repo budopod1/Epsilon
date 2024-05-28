@@ -1,0 +1,25 @@
+Foo {
+    Z:a
+}
+
+#global Foo?:global_foo;
+
+#sub1 {
+    Foo:foo = [global_foo].unwrap;
+    foo.a = 3;
+}
+
+Z#sub2 {
+    Foo:foo = [global_foo].unwrap;
+    return foo.a;
+}
+
+Z#main {
+    if (![global_foo].is_null) {
+        return -1;
+    };
+    global_foo = Foo [1];
+    sub1;
+    Z:result = sub2;
+    return result;
+}

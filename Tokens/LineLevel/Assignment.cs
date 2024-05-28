@@ -10,7 +10,7 @@ public class Assignment : UnaryOperation<IValueToken>, IVerifier, ICompleteLine,
 
     public void Verify() {
         Type_ valueType_ = o.GetType_();
-        Scope scope = Scope.GetEnclosing(this);
+        IScope scope = Scope.GetEnclosing(this);
         ScopeVar svar = scope.GetVarByID(id);
         Type_ varType_ = svar.GetType_();
         if (!valueType_.IsConvertibleTo(varType_)) {
@@ -21,7 +21,7 @@ public class Assignment : UnaryOperation<IValueToken>, IVerifier, ICompleteLine,
     }
 
     public override int Serialize(SerializationContext context) {
-        Scope scope = Scope.GetEnclosing(this);
+        IScope scope = Scope.GetEnclosing(this);
         ScopeVar svar = scope.GetVarByID(id);
         return context.AddInstruction(
             new SerializableInstruction(this, context)
