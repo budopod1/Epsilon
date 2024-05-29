@@ -1,6 +1,0 @@
-Z#main {
-    Z:i = 0;
-    while (i < 5) {i++;};
-    println[i];
-    return 0;
-}

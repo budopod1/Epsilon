@@ -1,6 +1,0 @@
-Z#main {
-    print["What's your name? "];
-    Str:name = read_input_line;
-    println[[["Nice to meet you, "] + [name]] + ["!"]];
-    return 0;
-}

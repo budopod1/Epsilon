@@ -1,5 +1,4 @@
 TODO:
-* clean examples folder
 * unjankify `blank_from_type` builtin
 * add safe array access
 * self host LLVMIR section?

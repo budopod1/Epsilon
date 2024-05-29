@@ -265,7 +265,7 @@ def run_test(func, args):
 
 
 def main():
-    base_dir = Path("examples")
+    base_dir = Path("tests")
     
     print("🔬 Running tests...")
 

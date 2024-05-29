@@ -1,5 +1,0 @@
-Z#main {
-    Z:r = 3;
-    Z:n = r * 3 + 4;
-    return n;
-}

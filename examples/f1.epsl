@@ -1,7 +1,0 @@
-#import f2;
-#import f3;
-
-Z#main {
-    println[foo + bar];
-    return 0;
-}

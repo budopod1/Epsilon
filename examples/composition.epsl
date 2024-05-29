@@ -1,4 +1,0 @@
-Z#main {
-    println[[-1].abs];
-    return 0;
-}

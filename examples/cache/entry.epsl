@@ -1,5 +1,0 @@
-#import foobar;
-
-Z#main {
-    return do_foo;
-}

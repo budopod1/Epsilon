@@ -1,6 +1,0 @@
-#import math;
-
-Z#main {
-    println[exp[C [0, 2]].real];
-    return 0;
-}

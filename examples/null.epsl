@@ -1,8 +1,0 @@
-Z#main {
-    println[null];
-    Str?:str = null;
-    println[str];
-    str = "hello";
-    println[str];
-    return 0;
-}

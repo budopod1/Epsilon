@@ -1,8 +1,0 @@
-G {
-    Z:i
-}
-
-Z#foo {
-    G:g = G [1];
-    return g.i;
-}

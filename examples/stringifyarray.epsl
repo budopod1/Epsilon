@@ -1,4 +1,0 @@
-Z#main {
-    println[[Array<Z> [1]].stringify];
-    return 0;
-}

@@ -1,7 +1,0 @@
-Z#main {
-    [Z]:arr = [Z] [1, 2, 3, 2, 3, 4, 5, 5, 5, 6];
-    println[arr];
-    [arr].unique;
-    println[arr];
-    return 0;
-}

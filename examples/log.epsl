@@ -1,6 +1,0 @@
-#import math;
-
-Z#main {
-    println[log[100][10]];
-    return 0;
-}

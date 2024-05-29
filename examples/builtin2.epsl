@@ -1,4 +1,0 @@
-Z#main {
-    println[["hello, world"].ends_with["rld"]];
-    return 0;
-}

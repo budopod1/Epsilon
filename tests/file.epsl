@@ -1,5 +1,5 @@
 Z#main {
-    File:file = open_file["examples/test.txt"][FILE_READ_MODE];
+    File:file = open_file["tests/test.txt"][FILE_READ_MODE];
     if ([file].is_null) {
         abort "Cannot open file test.txt";
     };

@@ -1,8 +1,0 @@
-Z#main {
-    [Z]?:maybe_arr = null;// [Z] [1, 2];
-    [Z]:arr1 = [maybe_arr].unwrap;
-    [Z]:arr2 = [maybe_arr].inner;
-    println[arr1];
-    println[arr2];
-    return 0;
-}

@@ -1,8 +1,0 @@
-Z#main {
-    [Z]:arr = [[Z] []].blank_from_type[3];
-    arr[0] = 1;
-    arr[1] = -3;
-    arr[2] = 4;
-    println[arr[0] + arr[1] + arr[2]];
-    return 0;
-}

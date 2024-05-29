@@ -1,7 +1,0 @@
-Obj {
-    Q:b
-}
-
-Obj#bar {
-    return Obj [3];
-}

@@ -1,5 +1,0 @@
-#import math;
-
-Z#do_foo {
-    return GCD[1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1][18];
-}
