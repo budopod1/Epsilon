@@ -1,0 +1,8 @@
+Foo {
+    Z:a
+}
+
+Z#main {
+    Foo:f = [Foo [1]].unwrap;
+    return f.a;
+}

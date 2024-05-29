@@ -776,15 +776,9 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("optional", new Type_(
                     "Optional", new List<Type_> {Type_.Any()}
-                )),
-            }, "builtin61", (List<Type_> types_) => {
-                if (types_[0].GetBaseType_().GetName() != "Optional") {
-                    throw new FunctionCallTypes_Exception(
-                        $"Cannot unwrap non Optional type {types_[0]}", 0
-                    );
-                }
-                return types_[0].GetGeneric(0);
-            }, FunctionSource.Builtin
+                ), true),
+            }, "builtin61", (List<Type_> types_) => types_[0].GetGeneric(0),
+            FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -794,7 +788,9 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", new Type_(
+                    "Array", new List<Type_> {Type_.Any()}
+                ), true),
                 new FunctionArgument("amount", new Type_("W", 64))
             }, "builtin62", (List<Type_> types_) => {
                 BaseType_ bt = types_[0].GetGeneric(0).GetBaseType_();
@@ -813,7 +809,9 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "unique")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+                new FunctionArgument("array", new Type_(
+                    "Array", new List<Type_> {Type_.Any()}
+                )),
             }, "builtin63", Type_.Void(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -823,7 +821,9 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "sort")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+                new FunctionArgument("array", new Type_(
+                    "Array", new List<Type_> {Type_.Any()}
+                )),
             }, "builtin64", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
@@ -840,7 +840,9 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "sort_inverted")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+                new FunctionArgument("array", new Type_(
+                    "Array", new List<Type_> {Type_.Any()}
+                )),
             }, "builtin65", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
@@ -857,7 +859,9 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "dedup")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+                new FunctionArgument("array", new Type_(
+                    "Array", new List<Type_> {Type_.Any()}
+                )),
             }, "builtin66", Type_.Void(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -868,7 +872,9 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", new Type_(
+                    "Array", new List<Type_> {Type_.Any()}
+                )),
                 new FunctionArgument("times", new Type_("W", 64))
             }, "builtin67", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
@@ -921,15 +927,59 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("optional", new Type_(
                     "Optional", new List<Type_> {Type_.Any()}
-                )),
-            }, "builtin72", (List<Type_> types_) => {
-                if (types_[0].GetBaseType_().GetName() != "Optional") {
-                    throw new FunctionCallTypes_Exception(
-                        $"Cannot get inner of non Optional type {types_[0]}", 0
-                    );
+                ), true),
+            }, "builtin72", (List<Type_> types_) => types_[0].GetGeneric(0),
+            FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("|"),
+                    new TextPatternSegment("|"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_(
+                    "Optional", new List<Type_> {Type_.Any()}
+                ), true),
+                new FunctionArgument("b", Type_.Any()),
+            }, "builtin73", (List<Type_> types_) => {
+                if (types_[1].GetBaseType_().GetName() == "Optional") {
+                    if (!types_[1].IsConvertibleTo(types_[0])) {
+                        throw new FunctionCallTypes_Exception(
+                            $"Cannot convert {types_[1]} to {types_[0]}", 1
+                        );
+                    }
+                    return types_[0];
+                } else {
+                    if (!types_[1].IsConvertibleTo(types_[0].GetGeneric(0))) {
+                        throw new FunctionCallTypes_Exception(
+                            $"Cannot convert {types_[1]} to {types_[0].GetGeneric(0)}", 1
+                        );
+                    }
+                    return types_[0].GetGeneric(0);
                 }
-                return types_[0].GetGeneric(0);
             }, FunctionSource.Builtin
-        )
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("&"),
+                    new TextPatternSegment("&"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_(
+                    "Optional", new List<Type_> {Type_.Any()}
+                ), true),
+                new FunctionArgument("b", Type_.Any()),
+            }, "builtin74", (List<Type_> types_) => {
+                if (types_[1].GetBaseType_().GetName() == "Optional") {
+                    return types_[1];
+                } else {
+                    return new Type_("Optional", new List<Type_> {types_[1]});
+                }
+            }, FunctionSource.Builtin
+        ),
     };
 }

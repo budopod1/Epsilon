@@ -27,8 +27,8 @@ public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
             bool aGtB = argaType_.IsGreaterThan(argbType_);
             bool bGtA = argbType_.IsGreaterThan(argaType_);
             if (aGtB && bGtA) continue;
-            if (aGtB) return -1;
-            if (bGtA) return 1;
+            if (aGtB) return 1;
+            if (bGtA) return -1;
         }
         FunctionSource aSrc = a.GetSource();
         FunctionSource bSrc = b.GetSource();

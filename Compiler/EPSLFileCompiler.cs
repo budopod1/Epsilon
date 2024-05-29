@@ -945,17 +945,15 @@ public class EPSLFileCompiler : IFileCompiler {
                         }
 
                         foreach (FunctionDeclaration function in call.GetMatchingFunctions()) {
-                            List<Type_> argTypes_ = function.GetArguments().ConvertAll<Type_>(
-                                (FunctionArgument arg) => arg.GetType_()
-                            );
-                            if (paramTypes_.Count != argTypes_.Count) continue;
+                            List<FunctionArgument> args = function.GetArguments();
+                            if (paramTypes_.Count != args.Count) continue;
 
                             bool matches = true;
 
                             for (int i = 0; i < paramTypes_.Count; i++) {
-                                Type_ pt = paramTypes_[i];
-                                Type_ at = argTypes_[i];
-                                if (!pt.IsConvertibleTo(at)) {
+                                Type_ paramType_ = paramTypes_[i];
+                                FunctionArgument arg = args[i];
+                                if (!arg.IsCompatibleWith(paramType_)) {
                                     matches = false;
                                     break;
                                 }

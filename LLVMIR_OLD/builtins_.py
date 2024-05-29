@@ -605,6 +605,68 @@ def inner(program, builder, params, param_types_):
     return value, generic_type_
 
 
+def nullable_or(program, builder, params, param_types_):
+    a, b = params
+    a_type_, b_type_ = param_types_
+    null_ptr = program.nullptr(builder, make_type_(program, a_type_))
+    a_is_null = builder.icmp_unsigned("==", a, null_ptr)
+    if b_type_["name"] == "Optional":
+        result_type_ = a_type_
+    else:
+        result_type_ = a_type_["generics"][0]
+    b = convert_type_(program, builder, b, b_type_, result_type_)
+    return builder.select(a_is_null, b, a), result_type_
+
+
+def nullable_and(program, builder, params, param_types_):
+    a, b = params
+    a_type_, b_type_ = param_types_
+    a_null_ptr = program.nullptr(builder, make_type_(program, a_type_))
+    a_is_null = builder.icmp_unsigned("==", a, a_null_ptr)
+    if b_type_["name"] == "Optional":
+        result_type_ = b_type_
+    else:
+        result_type_ = {"name": "Optional", "bits": None, "generics": [b_type_]}
+    result_null = program.nullptr(builder, make_type_(program, result_type_))
+    return builder.select(a_is_null, result_null, b), result_type_
+
+
+def nullable_or_w_nonnull(program, builder, params, param_types_):
+    a, b = params
+    a_type_, b_type_ = param_types_
+    generic_type_ = a_type_["generics"][0]
+    b = convert_type_(program, builder, b, b_type_, generic_type_)
+    return builder.select(a_is_null, b, a), generic_type_
+
+
+def nullable_or_w_nullable(program, builder, params, param_types_):
+    a, b = params
+    a_type_, b_type_ = param_types_
+    null_ptr = program.nullptr(builder, make_type_(program, a_type_))
+    a_is_null = builder.icmp_unsigned("==", a, null_ptr)
+    b = convert_type_(program, builder, b, b_type_, a_type_)
+    return builder.select(a_is_null, b, a), a_type_
+
+
+def nullable_and_w_nonnull(program, builder, params, param_types_):
+    a, b = params
+    a_type_, b_type_ = param_types_
+    result_type_ = {"name": "Optional", "bits": None, "generics": [b_type_]}
+    a_null_ptr = program.nullptr(builder, make_type_(program, a_type_))
+    a_is_null = builder.icmp_unsigned("==", a, a_null_ptr)
+    result_null_ptr = program.nullptr(builder, make_type_(program, result_type_))
+    return builder.select(a_is_null, result_null_ptr, b), result_type_
+
+
+def nullable_and_w_nullable(program, builder, params, param_types_):
+    a, b = params
+    a_type_, b_type_ = param_types_
+    a_null_ptr = program.nullptr(builder, make_type_(program, a_type_))
+    a_is_null = builder.icmp_unsigned("==", a, a_null_ptr)
+    b_null_ptr = program.nullptr(builder, make_type_(program, b_type_))
+    return builder.select(a_is_null, b_null_ptr, b), b_type_
+
+
 BUILTINS = {
     "builtin1": {"func": length, "params": [ArrayW8]},
     "builtin2": {"func": capacity, "params": [ArrayW8]},
@@ -678,4 +740,6 @@ BUILTINS = {
     "builtin70": {"func": ceil, "params": [Q64]},
     "builtin71": {"func": round_, "params": [Q64]},
     "builtin72": {"func": inner, "params": [None], "result_in_params": True},
+    "builtin73": {"func": nullable_or, "params": [None, None]},
+    "builtin74": {"func": nullable_and, "params": [None, None]},
 }

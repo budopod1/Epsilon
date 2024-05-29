@@ -224,6 +224,10 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool IsGreaterThan(Type_ other) {
+        bool thisIsAny = baseType_.IsAny();
+        bool otherIsAny = other.GetBaseType_().IsAny();
+        if (thisIsAny && otherIsAny) return false;
+        if (thisIsAny) return true;
         if (!other.IsConvertibleTo(this)) return false;
         if (!IsConvertibleTo(other)) return true;
         BaseType_ otherBaseType_ = other.GetBaseType_();

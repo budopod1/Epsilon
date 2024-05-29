@@ -92,6 +92,7 @@ public class FileTree {
                     sobj["name"] = new JSONString(argument.GetName());
                     string type_ = type_Creator.MakeSPECType_(argument.GetType_());
                     sobj["type_"] = new JSONString(type_);
+                    // We don't need to save whether the argument uses exactType_Match, because only builtins should
                 } else {
                     throw new InvalidOperationException();
                 }

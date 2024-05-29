@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 
+// FIXME: rename to SplitTokensPatternProcessor
 public class SplitTokensProcessor : IPatternProcessor<List<IToken>> {
     Type wrapper;
     IPatternSegment seperator;

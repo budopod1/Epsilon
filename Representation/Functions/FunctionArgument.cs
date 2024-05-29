@@ -4,22 +4,33 @@ using System.Collections.Generic;
 public class FunctionArgument : IEquatable<FunctionArgument> {
     string name;
     Type_ type_;
+    bool exactType_Match;
     int id;
     
-    public FunctionArgument(string name, Type_ type_, int id = -1) {
+    public FunctionArgument(string name, Type_ type_, bool exactType_Match=false, int id = -1) {
         this.name = name;
         this.type_ = type_;
+        this.exactType_Match = exactType_Match;
         this.id = id;
     }
 
     public FunctionArgument(FunctionArgumentToken token) {
         this.name = token.GetName();
         this.type_ = token.GetType_();
+        exactType_Match = false;
         this.id = token.GetID();
     }
 
     public string GetName() {
         return name;
+    }
+
+    public bool IsCompatibleWith(Type_ other) {
+        if (exactType_Match) {
+            return other.Matches(type_);
+        } else {
+            return other.IsConvertibleTo(type_);
+        }
     }
 
     public Type_ GetType_() {
