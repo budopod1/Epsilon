@@ -1,5 +1,4 @@
 TODO:
-* all builtins that take Optional<T> should verify that passed values actually are Optionals
 * clean examples folder
 * unjankify `blank_from_type` builtin
 * add safe array access
