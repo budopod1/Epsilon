@@ -3,8 +3,8 @@
 ## Table of Content
 
 1. [Syntax](/docs/syntax.md)
-1. [Modules & CLI](/docs/modules.md)
-1. [Module Refrence](/docs/modref.md)
+2. [Modules & CLI](/docs/modules.md)
+3. [Module Refrence](/docs/modref.md)
 
 ## Modules
 

@@ -1128,6 +1128,16 @@ public class EPSLFileCompiler : IFileCompiler {
                         typeof(BitwiseNOT)
                     )
                 ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Type_Token)),
+                        new TextPatternSegment("*"),
+                        new Type_PatternSegment(new Type_("W"))
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(ZeroedArrayCreation)
+                    )
+                ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {

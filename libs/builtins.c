@@ -838,8 +838,7 @@ struct Array *makeBlankArray(uint64_t size, uint64_t elemSize) {
     result->capacity = size;
     result->length = size;
     uint64_t byteCount = size*elemSize;
-    void *content = malloc(byteCount);
-    memset(content, 0, byteCount);
+    void *content = calloc(1, byteCount);
     result->content = content;
     return result;
 }

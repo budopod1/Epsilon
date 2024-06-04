@@ -89,8 +89,6 @@ class ArithmeticInstruction(CastToResultType_Instruction):
 
 
 class ArrayAccessInstruction(Typed_Instruction):
-    REGISTER_RESULT = False
-    
     def _build(self, builder, params, param_types_):
         array, index = params
         _, index_type_ = param_types_
@@ -671,8 +669,6 @@ class LogicalInstruction(Typed_Instruction):
 
 
 class MemberAccessInstruction(Typed_Instruction):
-    REGISTER_RESULT = False
-    
     def __init__(self, *args):
         super().__init__(*args)
         self.member = self.data["member"]
@@ -844,8 +840,6 @@ class UnusedValueInstruction(BaseInstruction):
 
 
 class VariableInstruction(Typed_Instruction):
-    REGISTER_RESULT = False
-    
     def __init__(self, *args):
         super().__init__(*args)
         self.variable = self.data["variable"]
@@ -890,6 +884,18 @@ class WhileInstruction(FlowInstruction):
     def _build(self, builder, params, param_types_):
         self.this_block.perpare_for_termination()
         builder.branch(self.eval_block.block)
+
+
+class ZeroedArrayCreationInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        size, = params
+        size_type_, = param_types_
+        ir_generic_type_ = make_type_(self.program, self.type_["generics"][0])
+        elem_size = self.program.sizeof(builder, ir_generic_type_)
+        return self.program.call_extern(
+            builder, "makeBlankArray", [size, elem_size],
+            [size_type_, W64], self.type_
+        )
 
 
 def make_instruction(program, function, data):
@@ -947,4 +953,5 @@ def make_instruction(program, function, data):
         "variable": VariableInstruction,
         "while": WhileInstruction,
         "xor": LogicalInstruction,
+        "zeroed_array_creation": ZeroedArrayCreationInstruction,
     }[data["name"]](program, function, data)

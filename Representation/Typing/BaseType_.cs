@@ -212,6 +212,10 @@ public class BaseType_ : IEquatable<BaseType_> {
         return Nullable.Contains(name);
     }
 
+    public bool IsZeroInitializable() {
+        return IsNullable() || IsNumber();
+    }
+
     public bool IsValueType_() {
         return ValueTypes_.Contains(name);
     }

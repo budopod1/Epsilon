@@ -519,16 +519,6 @@ def unwrap(program, builder, params, param_types_):
     return value, generic_type_
 
 
-def blank_from_type(program, builder, params, param_types_):
-    _, size = params
-    result_type_, _ = param_types_
-    generic_type_ = result_type_["generics"][0]
-    elem_size = program.sizeof(builder, make_type_(program, generic_type_))
-    return program.call_extern(
-        builder, "makeBlankArray", [size, elem_size], [W64, W64], result_type_
-    ), result_type_
-
-
 def array_unique(program, builder, params, param_types_):
     arr, = params
     arr_type_, = param_types_
@@ -729,7 +719,6 @@ BUILTINS = {
     "builtin59": {"func": write_to_file, "params": [File, String]},
     "builtin60": {"func": is_null, "params": [None]},
     "builtin61": {"func": unwrap, "params": [None], "result_in_params": True},
-    "builtin62": {"func": blank_from_type, "params": [None, W64]},
     "builtin63": {"func": array_unique, "params": [None]},
     "builtin64": {"func": sort_array, "params": [None]},
     "builtin65": {"func": sort_array_inverted, "params": [None]},

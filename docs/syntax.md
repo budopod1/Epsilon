@@ -1,10 +1,14 @@
 # Epsilon Documentation
 
+## Warning
+
+This is an experimental version of Epsilon. This documentation may not be accurate, and there may be known bugs that are not fixed until an underlying system is redone.
+
 ## Table of Content
 
 1. [Syntax](/docs/syntax.md)
-1. [Modules & CLI](/docs/modules.md)
-1. [Module Refrence](/docs/modref.md)
+2. [Modules & CLI](/docs/modules.md)
+3. [Module Refrence](/docs/modref.md)
 
 ## Syntax
 
