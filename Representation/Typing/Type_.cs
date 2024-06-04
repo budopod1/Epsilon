@@ -3,10 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Type_ : IEquatable<Type_> {
-    public static Type_ Unknown() {
-        return new Type_("Unknown");
-    }
-
     public static Type_ Void() {
         return new Type_("Void");
     }
@@ -37,10 +33,9 @@ public class Type_ : IEquatable<Type_> {
         return aToB || bToA;
     }
 
-    public static Type_ Common(Type_ a, Type_ b) {
+    public static Type_ CommonOrNull(Type_ a, Type_ b) {
         if (a.Matches(b)) return a;
-        if (a.HasGenerics() || b.HasGenerics()) 
-            return Unknown();
+        if (a.HasGenerics() || b.HasGenerics()) return null;
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
         bool aToB = abt.IsConvertibleTo(bbt);
@@ -56,28 +51,47 @@ public class Type_ : IEquatable<Type_> {
         } else if (bToA) {
             return a;
         } else {
-            return Unknown();
+            return null;
         }
     }
 
-    public static Type_ CommonSpecific(Type_ a, Type_ b, string name) {
+    public static Type_ CommonNonNull(IToken token, Type_ a, Type_ b) {
+        Type_ result = CommonOrNull(a, b);
+        if (result == null) {
+            throw new SyntaxErrorException(
+                $"Cannot find common type between {a} and {b}", token
+            );
+        }
+        return result;
+    }
+
+    public static Type_ CommonSpecificNullable(Type_ a, Type_ b, string name) {
         if (a.Matches(b)) {
             if (a.GetBaseType_().GetName()==name || b.GetBaseType_().GetName()==name)
                 return a;
         }
-        if (a.HasGenerics() || b.HasGenerics()) 
-            return Unknown();
+        if (a.HasGenerics() || b.HasGenerics()) return null;
         int? abits = a.GetBaseType_().GetBits();
         int? bbits = b.GetBaseType_().GetBits();
         int? bits = null;
-        if (abits==null) {
+        if (abits == null) {
             bits = bbits;
-        } else if (bbits==null) {
+        } else if (bbits == null) {
             bits = abits;
         } else {
             bits = Math.Max(abits.Value, bbits.Value);
         }
         return new Type_(name, bits);
+    }
+
+    public static Type_ CommonSpecificNonNull(IToken token, Type_ a, Type_ b, string name) {
+        Type_ result = CommonSpecificNullable(a, b, name);
+        if (result == null) {
+            throw new SyntaxErrorException(
+                $"Cannot find common type '{name}' between {a} and {b}", token
+            );
+        }
+        return result;
     }
 
     public Type_(BaseType_ baseType_, List<Type_> generics = null) {

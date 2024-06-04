@@ -29,7 +29,11 @@ public class Variable : IAssignableValue {
     public Type_ GetType_() {
         IScope scope = Scope.GetEnclosing(this);
         ScopeVar svar = scope.GetVarByID(id);
-        if (svar == null) return Type_.Unknown();
+        if (svar == null) {
+            throw new SyntaxErrorException(
+                $"Cannot find variable with name '{name}' in scope", this
+            );
+        }
         return svar.GetType_();
     }
 

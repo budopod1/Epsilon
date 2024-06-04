@@ -9,7 +9,7 @@ public class Exponentiation : BinaryOperation<IValueToken, IValueToken>, IValueT
         if (expo.GetBaseType_().GetName() == "W") {
             return base_;
         }
-        return Type_.CommonSpecific(base_, expo, "Q");
+        return Type_.CommonSpecificNonNull(this, base_, expo, "Q");
     }
 
     public override int Serialize(SerializationContext context) {
@@ -45,7 +45,8 @@ public class Exponentiation : BinaryOperation<IValueToken, IValueToken>, IValueT
             }
         }
         return context.AddInstruction(
-            new SerializableInstruction(this, context).AddData("mode", new JSONString(mode))
+            new SerializableInstruction(this, context)
+                .AddData("mode", new JSONString(mode))
                 .AddData("exponent_value", JSONDouble.OrNull(exponentValue))
         );
     }

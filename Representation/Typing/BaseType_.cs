@@ -177,7 +177,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool IsNon() {
-        return name == "Unkown" || name == "Void";
+        return name == "Void";
     }
 
     public bool IsVoid() {

@@ -16,9 +16,10 @@ public abstract class Comparison : BinaryOperation<IValueToken, IValueToken>, IV
     }
 
     public override int Serialize(SerializationContext context) {
+        Type_ common = Type_.CommonNonNull(this, o1.GetType_(), o2.GetType_());
         return context.AddInstruction(
             new SerializableInstruction(this, context)
-                .AddData("common_type_", Type_.Common(o1.GetType_(), o2.GetType_()).GetJSON())
+                .AddData("common_type_", common.GetJSON())
         );
     }
 }
