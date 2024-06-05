@@ -72,10 +72,6 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         return returnType_;
     }
 
-    public override Type_ GetReturnType_(List<IValueToken> tokens) {
-        return GetReturnType_();
-    }
-
     public override string GetID() {
         return id;
     }

@@ -6,6 +6,7 @@ public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
     public abstract List<FunctionArgument> GetArguments();
     public abstract string GetID();
     public abstract FunctionSource GetSource();
+    public abstract bool DoesReturnVoid();
     public abstract Type_ GetReturnType_(List<IValueToken> tokens);
 
     public int CompareTo(FunctionDeclaration other) {

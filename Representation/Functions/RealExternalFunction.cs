@@ -33,10 +33,6 @@ public class RealExternalFunction : RealFunctionDeclaration {
         return arguments;
     }
 
-    public override Type_ GetReturnType_(List<IValueToken> tokens) {
-        return returnType_;
-    }
-
     public override Type_ GetReturnType_() {
         return returnType_;
     }

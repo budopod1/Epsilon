@@ -32,7 +32,15 @@ public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<
         return GetPattern().Equals(other.GetPattern());
     }
 
+    public sealed override Type_ GetReturnType_(List<IValueToken> tokens) {
+        return GetReturnType_();
+    }
+
     public bool IsMain() {
         return GetCallee() == "main";
+    }
+    
+    public override bool DoesReturnVoid() {
+        return GetReturnType_().GetBaseType_().IsVoid();
     }
 }

@@ -8,6 +8,7 @@ public class ExternalFunction : FunctionDeclaration {
     string id;
     Func<List<IValueToken>, Type_> returnType_;
     FunctionSource source;
+    bool doesReturnVoid = false;
 
     public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<Type_>, Type_> returnType_, FunctionSource source) {
         this.pattern = pattern;
@@ -38,6 +39,7 @@ public class ExternalFunction : FunctionDeclaration {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
+        doesReturnVoid = returnType_.GetBaseType_().IsVoid();
         this.returnType_ = (tokens) => returnType_;
         this.source = source;
     }
@@ -56,6 +58,10 @@ public class ExternalFunction : FunctionDeclaration {
     
     public override string GetID() {
         return id;
+    }
+
+    public override bool DoesReturnVoid() {
+        return doesReturnVoid;
     }
 
     public override FunctionSource GetSource() {

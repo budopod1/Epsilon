@@ -922,13 +922,13 @@ public class EPSLFileCompiler : IFileCompiler {
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(RawFunctionCall))
                     }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
-                        RawFunctionCall call = ((RawFunctionCall)(tokens[0]));
+                        RawFunctionCall rawCall = ((RawFunctionCall)(tokens[0]));
 
                         List<Type_> paramTypes_ = new List<Type_>();
                         List<IValueToken> parameters = new List<IValueToken>();
 
-                        for (int i = 0; i < call.Count; i++) {
-                            RawSquareGroup rparameter = (call[i]) as RawSquareGroup;
+                        for (int i = 0; i < rawCall.Count; i++) {
+                            RawSquareGroup rparameter = (rawCall[i]) as RawSquareGroup;
                             if (rparameter.Count == 0) {
                                 throw new SyntaxErrorException(
                                     "Function parameters cannot be empty", rparameter
@@ -944,7 +944,7 @@ public class EPSLFileCompiler : IFileCompiler {
                             parameters.Add(parameter);
                         }
 
-                        foreach (FunctionDeclaration function in call.GetMatchingFunctions()) {
+                        foreach (FunctionDeclaration function in rawCall.GetMatchingFunctions()) {
                             List<FunctionArgument> args = function.GetArguments();
                             if (paramTypes_.Count != args.Count) continue;
 
@@ -960,16 +960,18 @@ public class EPSLFileCompiler : IFileCompiler {
                             }
 
                             if (matches) {
-                                return new List<IToken> {
-                                    new FunctionCall(
-                                        function, parameters
-                                    )
-                                };
+                                IFunctionCall call;
+                                if (function.DoesReturnVoid()) {
+                                    call = new VoidFunctionCall(function, parameters);
+                                } else {
+                                    call = new FunctionCall(function, parameters);
+                                }
+                                return new List<IToken> {call};
                             }
                         }
 
                         throw new SyntaxErrorException(
-                            "Types supplied to function do not match any overload", call
+                            "Types supplied to function do not match any overload", rawCall
                         );
                     })
                 ),
@@ -1748,7 +1750,7 @@ public class EPSLFileCompiler : IFileCompiler {
         }
         
         foreach (IValueToken token in TokenUtils.TraverseFind<IValueToken>(program)) {
-            FunctionCall call = token as FunctionCall;
+            IFunctionCall call = token as IFunctionCall;
             if (call != null) {
                 RealFunctionDeclaration func = call.GetFunction() as RealFunctionDeclaration;
                 if (func != null && !functionsHere.Contains(func)) {

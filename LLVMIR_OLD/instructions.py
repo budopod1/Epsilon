@@ -839,6 +839,23 @@ class UnusedValueInstruction(BaseInstruction):
         self.program.check_ref(builder, param, param_type_)
 
 
+class VoidFunctionCallInstruction(BaseInstruction):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.callee = self.data["function"]
+    
+    def _build(self, builder, params, param_types_):
+        if self.program.is_builtin(self.callee):
+            self.program.call_builtin(
+                self.callee, builder, params, param_types_, VOID
+            )
+        else:
+            func = self.program.get_function(self.callee)
+            self.program.call_function(
+                builder, func, params, param_types_
+            )
+
+
 class VariableInstruction(Typed_Instruction):
     def __init__(self, *args):
         super().__init__(*args)
@@ -951,6 +968,7 @@ def make_instruction(program, function, data):
         "uninit_var_declaration": NoopInstruction,
         "unused_value_wrapper": UnusedValueInstruction,
         "variable": VariableInstruction,
+        "void_function_call": VoidFunctionCallInstruction,
         "while": WhileInstruction,
         "xor": LogicalInstruction,
         "zeroed_array_creation": ZeroedArrayCreationInstruction,
