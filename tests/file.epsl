@@ -1,9 +1,9 @@
 Z#main {
-    File?:maybeFile = open_file["tests/test.txt"][FILE_READ_MODE];
-    if ([maybeFile].is_null) {
+    File?:maybe_file = open_file["tests/test.txt"][FILE_READ_MODE];
+    if ([maybe_file].is_null) {
         abort "Cannot open file test.txt";
     };
-    File:file = [maybeFile].unwrap;
+    File:file = [maybe_file].unwrap;
     Str?:text = [file].read_all;
     if ([text].is_null) {
         abort "Cannot read file";

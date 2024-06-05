@@ -270,8 +270,8 @@ def make_stringify_func(program, type_, i):
         
         text = "File"
         capacity = len(text)
-        builder.store(capacity, capacity_field)
-        builder.store(capacity, length_field)
+        builder.store(i64_of(capacity), capacity_field)
+        builder.store(i64_of(capacity), length_field)
         builder.store(program.string_literal_array(
              builder, text, capacity, unique=True
         ), array_field)
