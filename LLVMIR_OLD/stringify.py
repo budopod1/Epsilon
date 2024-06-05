@@ -268,17 +268,13 @@ def make_stringify_func(program, type_, i):
         length_field = builder.gep(struct_mem, [i64_of(0), i32_of(2)])
         array_field = builder.gep(struct_mem, [i64_of(0), i32_of(3)])
         
-        null_ptr = self.nullptr(builder, make_type_(self, type_))
-        is_null = builder.icmp_unsigned("==", val, null_ptr)
-        with builder.if_else(is_null) as (then, otherwise):
-            for text, option in [("null File", then), ("File", otherwise)]:
-                with option:
-                    capacity = len(text)
-                    builder.store(capacity, capacity_field)
-                    builder.store(capacity, length_field)
-                    builder.store(program.string_literal_array(
-                         builder, text, capacity, unique=True
-                     ), array_field)
+        text = "File"
+        capacity = len(text)
+        builder.store(capacity, capacity_field)
+        builder.store(capacity, length_field)
+        builder.store(program.string_literal_array(
+             builder, text, capacity, unique=True
+        ), array_field)
         
         builder.ret(struct_mem)
         

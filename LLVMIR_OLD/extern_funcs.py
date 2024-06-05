@@ -221,7 +221,7 @@ EXTERN_FUNCS = {
         "arguments": []
     },
     "openFile": {
-        "name": "openFile", "return_type_": File,
+        "name": "openFile", "return_type_": OptionalFile,
         "arguments": [String, Z32]
     },
     "FILE_READ_MODE": {

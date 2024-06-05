@@ -591,9 +591,11 @@ int32_t _FILE_WRITE_MODE = 2;
 int32_t _FILE_APPEND_MODE = 4;
 int32_t _FILE_BINARY_MODE = 8;
 
+// returns File?
 struct File *openFile(struct Array *string, int32_t mode) {
     char modeStr[4];
     int i = 0;
+    
     if (mode&_FILE_WRITE_MODE) {
         if (mode&_FILE_APPEND_MODE)
             return NULL;
@@ -609,9 +611,11 @@ struct File *openFile(struct Array *string, int32_t mode) {
     } else {
         return NULL;
     }
+    
     if (mode&_FILE_BINARY_MODE) {
         modeStr[i++] = 'b';
     }
+    
     modeStr[i] = '\0';
 
     uint64_t len = string->length;
@@ -649,16 +653,15 @@ int32_t FILE_BINARY_MODE() {
 }
 
 _Bool fileOpen(const struct File *file) {
-    return file != NULL && file->open;
+    return file->open;
 }
 
 int32_t fileMode(const struct File *file) {
-    if (file == NULL) return 0;
     return file->mode;
 }
 
 _Bool closeFile(struct File *file) {
-    if (file != NULL && file->open) {
+    if (file->open) {
         if (fclose(file->file) == 0) {
             file->open = 0;
             return true;
@@ -670,7 +673,7 @@ _Bool closeFile(struct File *file) {
 }
 
 int64_t fileLength(const struct File *file) {
-    if (file != NULL && file->open) {
+    if (file->open) {
         FILE *fp = file->file;
         long startPos = ftell(fp);
         fseek(fp, 0, SEEK_END); 
@@ -683,7 +686,7 @@ int64_t fileLength(const struct File *file) {
 }
 
 int64_t filePos(const struct File *file) {
-    if (file != NULL && file->open) {
+    if (file->open) {
         return (uint64_t)ftell(file->file);
     } else {
         return -1;
@@ -692,7 +695,7 @@ int64_t filePos(const struct File *file) {
 
 // returns: Str?
 struct Array *readAllFile(const struct File *file) {
-    if (file != NULL && file->open) {
+    if (file->open) {
         uint64_t fileLen = fileLength(file);
         if (fileLen == -1) return emptyArray(sizeof(char));
         uint64_t curPos = filePos(file);
@@ -720,7 +723,7 @@ struct Array *readAllFile(const struct File *file) {
 
 // returns: Str?
 struct Array *readSomeFile(const struct File *file, uint64_t amount) {
-    if (file != NULL && file->open) {
+    if (file->open) {
         uint64_t capacity = amount;
         if (capacity == 0) capacity = 1;
         struct Array *result = malloc(sizeof(struct Array));
@@ -742,14 +745,14 @@ struct Array *readSomeFile(const struct File *file, uint64_t amount) {
 }
 
 int32_t setFilePos(const struct File *file, uint64_t pos) {
-    if (file != NULL && file->open) {
+    if (file->open) {
         return fseek(file->file, (long)pos, SEEK_SET) == 0;
     }
     return false;
 }
 
 int32_t jumpFilePos(const struct File *file, uint64_t amount) {
-    if (file != NULL && file->open) {
+    if (file->open) {
         return fseek(file->file, (long)amount, SEEK_CUR) == 0;
     }
     return false;
@@ -760,7 +763,7 @@ _Bool readLineEOF = false;
 // returns: Str?
 struct Array *readFileLine(const struct File *file) {
     readLineEOF = false;
-    if (file != NULL && file->open) {
+    if (file->open) {
         char *content = NULL;
         size_t capacity = 0;
         int64_t len = (int64_t)getline(&content, &capacity, file->file);
@@ -810,7 +813,7 @@ struct Array *readFileLines(const struct File *file) {
 }
 
 _Bool writeToFile(const struct File *file, const struct Array *text) {
-    if (file != NULL && file->open) {
+    if (file->open) {
         uint64_t len = text->length;
         return fwrite(text->content, len, 1, file->file) == 1;
     } else {
@@ -865,7 +868,7 @@ struct Array *repeatArray(const struct Array *array, uint64_t times, uint64_t el
     return result;
 }
 
-char *NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found null\n";
+const char *const NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found null\n";
 
 void verifyNotNull(const char *val) {
     if (val == NULL) {

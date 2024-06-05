@@ -115,7 +115,7 @@ def is_number_type_(type_):
 def is_nullable_type_(type_):
     name = type_["name"]
     assert name != "Null"
-    return name in ["File", "Optional"]
+    return name == "Optional"
 
 
 def convert_floating_type__bits(builder, val, old, new, new_type):
@@ -365,6 +365,7 @@ Byte = {"name": "Byte", "bits": 8, "generics": []}
 String = Array(Byte)
 Bool = {"name": "Bool", "bits": 1, "generics": []}
 File = {"name": "File", "bits": None, "generics": []}
+OptionalFile = Optional(File)
 OptionalString = Optional(String)
 ArrayString = Array(String)
 OptionalArrayString = Optional(ArrayString)

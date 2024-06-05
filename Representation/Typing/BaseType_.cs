@@ -58,7 +58,6 @@ public class BaseType_ : IEquatable<BaseType_> {
     public static Dictionary<string, List<string>> EquivalentToBesidesBits = new Dictionary<string, List<string>> {
         {"Bool", new List<string> {"W", "Z"}},
         {"W", new List<string> {"Bool", "Z", "Byte"}},
-        {"Z", new List<string> {"W", "Bool", "Byte"}},
         {"Byte", new List<string> {"W", "Z"}},
     };
 
@@ -68,15 +67,10 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"W", new List<string> {"Bool", "Byte", "Z", "Q"}},
         {"Z", new List<string> {"Bool", "Byte", "W", "Q"}},
         {"Q", new List<string> {"Bool", "Byte", "W", "Z"}},
-        {"Optional", new List<string> {"Bool"}},
     };
 
     public static List<string> Optionable = new List<string> {
         "Array"
-    };
-
-    public static List<string> Nullable = new List<string> {
-        "File", "Optional"
     };
 
     public static List<string> ValueTypes_ = new List<string> {
@@ -205,7 +199,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool IsNullable() {
-        return Nullable.Contains(name);
+        return name == "Optional";
     }
 
     public bool IsZeroInitializable() {

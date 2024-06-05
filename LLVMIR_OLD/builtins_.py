@@ -408,8 +408,8 @@ def read_input_line(program, builder, params, param_types_):
 def open_file(program, builder, params, param_types_):
     file, mode = params
     return program.call_extern(
-        builder, "openFile", [file, mode], [String, Z32], File
-    ), File
+        builder, "openFile", [file, mode], [String, Z32], OptionalFile
+    ), OptionalFile
 
 
 def paramless_func(name, type_):

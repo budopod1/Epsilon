@@ -588,7 +588,9 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("str", Type_.String()),
                 new FunctionArgument("mode", new Type_("Z", 32)),
-            }, "builtin42", new Type_("File"), FunctionSource.Builtin
+            }, "builtin42", new Type_("Optional", 
+                new List<Type_> {new Type_("File")}
+            ), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
