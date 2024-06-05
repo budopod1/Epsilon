@@ -981,7 +981,7 @@ public class EPSLFileCompiler : IFileCompiler {
                             (RawSquareGroup group) => !(group.parent is RawFunctionCall)
                         )
                     }, new WrapperPatternProcessor(
-                        new SplitTokensProcessor(
+                        new SplitTokensPatternProcessor(
                             new UnwrapperPatternProcessor(),
                             new TextPatternSegment(","),
                             typeof(ValueListItem)

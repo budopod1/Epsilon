@@ -2,20 +2,19 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 
-// FIXME: rename to SplitTokensPatternProcessor
-public class SplitTokensProcessor : IPatternProcessor<List<IToken>> {
+public class SplitTokensPatternProcessor : IPatternProcessor<List<IToken>> {
     Type wrapper;
     IPatternSegment seperator;
     IPatternProcessor<List<IToken>> subprocessor;
     
-    public SplitTokensProcessor(IPatternProcessor<List<IToken>> subprocessor,
+    public SplitTokensPatternProcessor(IPatternProcessor<List<IToken>> subprocessor,
                                 IPatternSegment seperator, Type wrapper) {
         this.wrapper = wrapper;
         this.seperator = seperator;
         this.subprocessor = subprocessor;
     }
     
-    public SplitTokensProcessor(IPatternSegment seperator, Type wrapper) {
+    public SplitTokensPatternProcessor(IPatternSegment seperator, Type wrapper) {
         this.wrapper = wrapper;
         this.seperator = seperator;
         this.subprocessor = null;
