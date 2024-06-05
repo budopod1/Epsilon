@@ -41,14 +41,15 @@ public static class TokenUtils {
         if (config.YieldFirst) yield return token;
         while (0 <= i && i < token.Count) {
             IToken sub = token[i];
+            i += config.Invert ? -1 : 1;
+            if (config.AvoidTokens(sub)) continue;
             if (sub is IParentToken) {
-                foreach (IToken subsub in Traverse((IParentToken)sub)) {
+                foreach (IToken subsub in Traverse((IParentToken)sub, config)) {
                     yield return subsub;
                 }
             } else {
                 yield return sub;
             }
-            i += config.Invert ? -1 : 1;
         }
         if (!config.YieldFirst) yield return token;
     }

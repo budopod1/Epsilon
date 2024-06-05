@@ -23,6 +23,13 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop, IFunctionTe
     public bool DoesTerminateFunction() {
         ConstantValue constantT = o1 as ConstantValue;
         if (constantT == null) return false;
-        return constantT.GetValue().IsTruthy();
+        if (!constantT.GetValue().IsTruthy()) return false;
+        TraverseConfig config = new TraverseConfig(
+            TraverseMode.DEPTH, false, false, token => token is ILoop
+        );
+        foreach (Break break_ in TokenUtils.TraverseFind<Break>(o2, config)) {
+            return false;
+        }
+        return true;
     }
 }

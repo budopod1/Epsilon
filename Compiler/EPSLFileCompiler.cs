@@ -1731,7 +1731,8 @@ public class EPSLFileCompiler : IFileCompiler {
 
     void VerifyCode(Program program) {
         TraverseConfig config = new TraverseConfig(
-            TraverseMode.DEPTH, invert: false, yieldFirst: true
+            TraverseMode.DEPTH, invert: false, yieldFirst: true, 
+            avoidTokens: token => false
         );
         foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program, config)) {
             token.Verify();
