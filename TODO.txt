@@ -1,6 +1,6 @@
 TODO:
-* remove `BaseType_.IsNon()` method
 * make `File` a non-nullable type_
+* remove `Void` BaseType_, instead use IMaybeType_ which Type_ and VoidType_ implement (this enforces the rule that only function return types_ can be void)
 * `Matrix` type?
 * top tracking so we can alloca instead of malloc
 * add safe array access

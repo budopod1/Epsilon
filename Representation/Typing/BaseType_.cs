@@ -129,16 +129,16 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool Equals(BaseType_ other) {
-        if (IsAny() && !other.IsNon()) return true;
-        if (other.IsAny() && !IsNon()) return true;
+        if (IsAny() && !other.IsVoid()) return true;
+        if (other.IsAny() && !IsVoid()) return true;
         return name == other.GetName() && bits == other.GetBits();
     }
 
     public bool IsConvertibleTo(BaseType_ other) {
         string oName = other.GetName();
-        if (IsAny() && !other.IsNon()) 
+        if (IsAny() && !other.IsVoid()) 
             return true;
-        if (other.IsAny() && !IsNon()) 
+        if (other.IsAny() && !IsVoid()) 
             return true;
         if (name == oName) return true;
         if (ConvertibleTo.ContainsKey(name))
@@ -159,9 +159,9 @@ public class BaseType_ : IEquatable<BaseType_> {
     public bool IsCastableTo(BaseType_ other) {
         string oName = other.GetName();
         if (name == oName) return true;
-        if (IsAny() && !other.IsNon()) 
+        if (IsAny() && !other.IsVoid()) 
             return true;
-        if (other.IsAny() && !IsNon()) 
+        if (other.IsAny() && !IsVoid()) 
             return true;
         if (CastableTo.ContainsKey(name))
             return CastableTo[name].Contains(oName);
@@ -174,10 +174,6 @@ public class BaseType_ : IEquatable<BaseType_> {
 
     public bool IsAny() {
         return name == "Any";
-    }
-
-    public bool IsNon() {
-        return name == "Void";
     }
 
     public bool IsVoid() {

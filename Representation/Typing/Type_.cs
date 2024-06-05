@@ -22,9 +22,9 @@ public class Type_ : IEquatable<Type_> {
         if (a.Matches(b)) return true;
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
-        if (abt.IsAny() && !bbt.IsNon()) 
+        if (abt.IsAny() && !bbt.IsVoid()) 
             return true;
-        if (bbt.IsAny() && !abt.IsNon()) 
+        if (bbt.IsAny() && !abt.IsVoid()) 
             return true;
         if (a.HasGenerics() || b.HasGenerics()) 
             return false;
@@ -172,15 +172,15 @@ public class Type_ : IEquatable<Type_> {
     }
 
     bool IsConvertibleNullTo(Type_ other) {
-        if (baseType_.GetName() != "Null") return false;
+        if (!baseType_.IsVoid()) return false;
         return other.GetBaseType_().GetName() == "Optional";
     }
 
     public bool IsConvertibleTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
+        if (baseType_.IsAny() && !otherBaseType_.IsVoid()) 
             return true;
-        if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
+        if (otherBaseType_.IsAny() && !baseType_.IsVoid()) 
             return true;
         if (IsConvertibleOptionalTo(other)) return true;
         if (IsConvertibleNullTo(other)) return true;
@@ -212,9 +212,9 @@ public class Type_ : IEquatable<Type_> {
 
     public bool IsCastableTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
+        if (baseType_.IsAny() && !otherBaseType_.IsVoid()) 
             return true;
-        if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
+        if (otherBaseType_.IsAny() && !baseType_.IsVoid()) 
             return true;
         if (IsEquivalentTo(other)) return true;
         if (HasGenerics()) return Matches(other);
@@ -230,9 +230,9 @@ public class Type_ : IEquatable<Type_> {
 
     public bool Matches(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() && !otherBaseType_.IsNon()) 
+        if (baseType_.IsAny() && !otherBaseType_.IsVoid()) 
             return true;
-        if (otherBaseType_.IsAny() && !baseType_.IsNon()) 
+        if (otherBaseType_.IsAny() && !baseType_.IsVoid()) 
             return true;
         return baseType_.Equals(other.GetBaseType_()) && GenericsMatching(other);
     }
