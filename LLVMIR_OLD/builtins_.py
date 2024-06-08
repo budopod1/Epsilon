@@ -23,7 +23,7 @@ def append(program, builder, params, param_types_):
     elem_size = program.sizeof(builder, make_type_(program, elem_type_))
     program.call_extern(
         builder, "incrementLength", [array, elem_size], 
-        [ArrayW8, W64], VOID
+        [ArrayW8, W64], None
     )
     content_ptr = builder.gep(array, [i64_of(0), i32_of(3)])
     content = builder.bitcast(
@@ -35,7 +35,7 @@ def append(program, builder, params, param_types_):
         incr_ref_counter(program, builder, value, value_type_)
     value_casted = convert_type_(program, builder, value, value_type_, elem_type_)
     builder.store(value_casted, end_ptr)
-    return None, VOID
+    return None, None
 
 
 def require_capacity(program, builder, params, param_types_):
@@ -45,9 +45,9 @@ def require_capacity(program, builder, params, param_types_):
     elem_size = program.sizeof(builder, make_type_(program, elem_type_))
     program.call_extern(
         builder, "requireCapacity", [], [array, capacity, elem_size], 
-        [ArrayW8, W64, W64], VOID
+        [ArrayW8, W64, W64], None
     )
-    return None, VOID
+    return None, None
 
 
 def shrink_mem(program, builder, params, param_types_):
@@ -58,9 +58,9 @@ def shrink_mem(program, builder, params, param_types_):
     program.call_extern(
         builder, "shrinkMem", [], [array, elem_size], [
             ArrayW8, W64
-        ], VOID
+        ], None
     )
-    return None, VOID
+    return None, None
 
 
 def pop(program, builder, params, param_types_):
@@ -76,7 +76,7 @@ def pop(program, builder, params, param_types_):
         builder, "removeAt", [], [array, idx, elem_size], [
             ArrayW8, W64, 
             W64
-        ], VOID
+        ], None
     )
     program.decr_ref(builder, elem, elem_type_)
     return elem, elem_type_
@@ -93,12 +93,12 @@ def insert(program, builder, params, param_types_):
         builder, "insertSpace", [], [array, idx, elem_size], [
             ArrayW8, W64, 
             W64
-        ], VOID
+        ], None
     )
     content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
     content_ptr_casted = builder.bicast(content_ptr, elem_ir_type.as_pointer())
     builder.store(casted_value, builder.gep(content_ptr_casted, [idx]))
-    return None, VOID
+    return None, None
 
 
 def clone(program, builder, params, param_types_):
@@ -115,9 +115,9 @@ def extend(program, builder, params, param_types_):
     program.call_extern(
         builder, "extend", [array1, array2, elem], [
             ArrayW8, ArrayW8, W64
-        ], VOID
+        ], None
     )
-    return None, VOID
+    return None, None
 
 
 def concat(program, builder, params, param_types_):
@@ -185,13 +185,13 @@ def print_(program, builder, params, param_types_):
         string = param
     else:
         string = program.stringify(builder, param, param_type_)
-    program.call_extern(builder, "print", [string], [String], VOID)
+    program.call_extern(builder, "print", [string], [String], None)
     if param_type_ != String:
         program.dumb_free(builder, builder.load(
             builder.gep(string, [i64_of(0), i32_of(3)])
         ))
         program.dumb_free(builder, string)
-    return None, VOID
+    return None, None
 
 
 def println(program, builder, params, param_types_):
@@ -201,25 +201,25 @@ def println(program, builder, params, param_types_):
         string = param
     else:
         string = program.stringify(builder, param, param_type_)
-    program.call_extern(builder, "println", [string], [String], VOID)
+    program.call_extern(builder, "println", [string], [String], None)
     if param_type_ != String:
         program.dumb_free(builder, builder.load(
             builder.gep(string, [i64_of(0), i32_of(3)])
         ))
         program.dumb_free(builder, string)
-    return None, VOID
+    return None, None
 
 
 def left_pad(program, builder, params, param_types_):
     arr, len, chr = params
-    program.call_extern(builder, "leftPad", [arr, len, chr], [String, W64, Byte], VOID)
-    return None, VOID
+    program.call_extern(builder, "leftPad", [arr, len, chr], [String, W64, Byte], None)
+    return None, None
 
 
 def right_pad(program, builder, params, param_types_):
     arr, len, chr = params
-    program.call_extern(builder, "rightPad", [arr, len, chr], [String, W64, Byte], VOID)
-    return None, VOID
+    program.call_extern(builder, "rightPad", [arr, len, chr], [String, W64, Byte], None)
+    return None, None
 
 
 def slice_(program, builder, params, param_types_):
@@ -436,8 +436,8 @@ def file_mode(program, builder, params, param_types_):
 
 def close_file(program, builder, params, param_types_):
     file, = params
-    program.call_extern(builder, "closeFile", [file], [File], VOID)
-    return None, VOID
+    program.call_extern(builder, "closeFile", [file], [File], None)
+    return None, None
 
 
 def file_length(program, builder, params, param_types_):
@@ -514,7 +514,7 @@ def unwrap(program, builder, params, param_types_):
     value_type_, = param_types_
     generic_type_ = value_type_["generics"][0]
     program.call_extern(
-        builder, "verifyNotNull", [value], [value_type_], VOID
+        builder, "verifyNotNull", [value], [value_type_], None
     )
     return value, generic_type_
 
@@ -525,21 +525,21 @@ def array_unique(program, builder, params, param_types_):
     generic_type_ = arr_type_["generics"][0]
     program.sort_array(builder, arr, arr_type_)
     program.dedup(builder, arr, generic_type_)
-    return None, VOID
+    return None, None
 
 
 def sort_array(program, builder, params, param_types_):
     arr, = params
     arr_type_, = param_types_
     program.sort_array(builder, arr, arr_type_)
-    return None, VOID
+    return None, None
 
 
 def sort_array_inverted(program, builder, params, param_types_):
     arr, = params
     arr_type_, = param_types_
     program.sort_array(builder, arr, arr_type_, invert=True)
-    return None, VOID
+    return None, None
 
 
 def dedup(program, builder, params, param_types_):
@@ -547,7 +547,7 @@ def dedup(program, builder, params, param_types_):
     arr_type_, = param_types_
     generic_type_ = arr_type_["generics"][0]
     program.dedup(builder, arr, generic_type_)
-    return None, VOID
+    return None, None
 
 
 def repeat_array(program, builder, params, param_types_):

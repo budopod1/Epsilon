@@ -9,9 +9,18 @@ public class RawFuncReturnType_ : TreeToken {
     }
 
     public Type_ GetType_() {
-        if (Count != 1) return Type_.Void();
+        if (Count == 0) return null;
+        if (Count > 1) {
+            throw new SyntaxErrorException(
+                "Invalid function return type", this
+            );
+        }
         Type_Token token = this[0] as Type_Token;
-        if (token == null) return Type_.Void();
+        if (token == null) {
+            throw new SyntaxErrorException(
+                "Invalid function return type", this
+            );
+        }
         return token.GetValue();
     }
 }

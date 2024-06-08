@@ -19,7 +19,7 @@ EXTERN_FUNCS = {
         "arguments": [W64]
     },
     "free": {
-        "name": "free", "return_type_": VOID,
+        "name": "free", "return_type_": None,
         "arguments": [PointerW8]
     },
     "len": {
@@ -31,27 +31,27 @@ EXTERN_FUNCS = {
         "arguments": [ArrayW8]
     },
     "incrementLength": {
-        "name": "incrementLength", "return_type_": VOID,
+        "name": "incrementLength", "return_type_": None,
         "arguments": [ArrayW8, W64]
     },
     "requireCapacity": {
-        "name": "requireCapacity", "return_type_": VOID,
+        "name": "requireCapacity", "return_type_": None,
         "arguments": [ArrayW8, W64, W64]
     },
     "shrinkMem": {
-        "name": "shrinkMem", "return_type_": VOID,
+        "name": "shrinkMem", "return_type_": None,
         "arguments": [ArrayW8, W64]
     },
     "removeAt": {
-        "name": "removeAt", "return_type_": VOID,
+        "name": "removeAt", "return_type_": None,
         "arguments": [ArrayW8, W64, W64]
     },
     "insertSpace": {
-        "name": "insertSpace", "return_type_": VOID,
+        "name": "insertSpace", "return_type_": None,
         "arguments": [ArrayW8, W64, W64]
     },
     "incrementArrayRefCounts": {
-        "name": "incrementArrayRefCounts", "return_type_": VOID,
+        "name": "incrementArrayRefCounts", "return_type_": None,
         "arguments": [ArrayW8, W64]
     },
     "clone": {
@@ -59,7 +59,7 @@ EXTERN_FUNCS = {
         "arguments": [ArrayW8, W64]
     },
     "extend": {
-        "name": "extend", "return_type_": VOID,
+        "name": "extend", "return_type_": None,
         "arguments": [ArrayW8, ArrayW8, W64]
     },
     "concat": {
@@ -87,11 +87,11 @@ EXTERN_FUNCS = {
         "arguments": [Q64]
     },
     "print": {
-        "name": "print", "return_type_": VOID,
+        "name": "print", "return_type_": None,
         "arguments": [String]
     },
     "println": {
-        "name": "println", "return_type_": VOID,
+        "name": "println", "return_type_": None,
         "arguments": [String]
     },
     "snprintf": {
@@ -104,7 +104,7 @@ EXTERN_FUNCS = {
         "arguments": [PointerW8, W64]
     },
     "memcpy": {
-        "name": "llvm.memcpy.p0.p0.i64", "return_type_": VOID,
+        "name": "llvm.memcpy.p0.p0.i64", "return_type_": None,
         "arguments": [PointerW8, PointerW8, W64, Bool]
     },
     "sprintf": {
@@ -137,11 +137,11 @@ EXTERN_FUNCS = {
         "name": "formatZ64", "return_type_": PointerW8, "arguments": []
     },
     "leftPad": {
-        "name": "leftPad", "return_type_": VOID, 
+        "name": "leftPad", "return_type_": None, 
         "arguments": [String, W64, Byte]
     },
     "rightPad": {
-        "name": "rightPad", "return_type_": VOID, 
+        "name": "rightPad", "return_type_": None, 
         "arguments": [String, W64, Byte]
     },
     "slice": {
@@ -293,11 +293,11 @@ EXTERN_FUNCS = {
         "arguments": [File, String]
     },
     "freeFile": {
-        "name": "freeFile", "return_type_": VOID,
+        "name": "freeFile", "return_type_": None,
         "arguments": [File]
     },
     "abort_": {
-        "name": "abort_", "return_type_": VOID,
+        "name": "abort_", "return_type_": None,
         "arguments": [String]
     },
     "makeBlankArray": {
@@ -305,7 +305,7 @@ EXTERN_FUNCS = {
         "arguments": [W64, W64]
     },
     "sortArray": {
-        "name": "sortArray", "return_type_": VOID,
+        "name": "sortArray", "return_type_": None,
         "arguments": [ArrayW8, W64, ComparerType_]
     },
     "repeatArray": {
@@ -325,11 +325,11 @@ EXTERN_FUNCS = {
         "arguments": [Q64]
     },
     "exit": {
-        "name": "exit", "return_type_": VOID,
+        "name": "exit", "return_type_": None,
         "arguments": [Z32]
     },
     "verifyNotNull": {
-        "name": "verifyNotNull", "return_type_": VOID,
+        "name": "verifyNotNull", "return_type_": None,
         "arguments": [PointerW8]
     }
 }

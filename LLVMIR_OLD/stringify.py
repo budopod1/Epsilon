@@ -144,7 +144,7 @@ def make_stringify_func(program, type_, i):
         program.call_extern(
             builder, "sprintf", [
                 array_mem, specifier
-            ], [PointerW8, PointerW8], VOID, [casted_value]
+            ], [PointerW8, PointerW8], None, [casted_value]
         )
         builder.store(array_mem, builder.gep(struct_mem, [i64_of(0), i32_of(3)]))
         builder.ret(struct_mem)
@@ -203,7 +203,7 @@ def make_stringify_func(program, type_, i):
             lbuilder, "memcpy", [
                 lbuilder.gep(new_array, [decr_cap]), segment_content,
                 segment_len, i1_of(0)
-            ], [PointerW8, PointerW8, W64, Bool], VOID
+            ], [PointerW8, PointerW8, W64, Bool], None
         )
         pos1 = shifted_cap
         lbuilder.store(i8_of(ord(",")), lbuilder.gep(new_array, [pos1], name="comma_idx"))
@@ -345,7 +345,7 @@ def make_stringify_func(program, type_, i):
             program.call_extern(
                 builder, "memcpy", [
                     array_mem, start_str_mem, i64_of(start_len), i1_of(0)
-                ],[PointerW8, PointerW8, W64, Bool], VOID
+                ],[PointerW8, PointerW8, W64, Bool], None
             )
             builder.store(i8_of(ord("]")), builder.gep(
                 array_mem, [last_index], name="closing_square_bracket_ptr"
@@ -356,7 +356,7 @@ def make_stringify_func(program, type_, i):
                     builder, "memcpy", [
                         builder.gep(array_mem, [idx]), item_content,
                         item_len, i1_of(0)
-                    ], [PointerW8, PointerW8, W64, Bool], VOID
+                    ], [PointerW8, PointerW8, W64, Bool], None
                 )
     
             for i, idx in enumerate(comma_starts[:-1]):

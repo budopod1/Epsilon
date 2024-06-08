@@ -10,10 +10,11 @@ public class ExternalFunction : FunctionDeclaration {
     FunctionSource source;
     bool doesReturnVoid = false;
 
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<Type_>, Type_> returnType_, FunctionSource source) {
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<Type_>, Type_> returnType_, FunctionSource source, bool doesReturnVoid=false) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
+        this.doesReturnVoid = doesReturnVoid;
         this.returnType_ = (tokens) => {
             List<Type_> types_ = tokens.Select(token=>token.GetType_()).ToList();
             try {
@@ -27,10 +28,11 @@ public class ExternalFunction : FunctionDeclaration {
         this.source = source;
     }
 
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<IValueToken>, Type_> returnType_, FunctionSource source) {
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<IValueToken>, Type_> returnType_, FunctionSource source, bool doesReturnVoid=false) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
+        this.doesReturnVoid = doesReturnVoid;
         this.returnType_ = returnType_;
         this.source = source;
     }
@@ -39,7 +41,7 @@ public class ExternalFunction : FunctionDeclaration {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
-        doesReturnVoid = returnType_.GetBaseType_().IsVoid();
+        doesReturnVoid = returnType_ == null;
         this.returnType_ = (tokens) => returnType_;
         this.source = source;
     }
@@ -52,7 +54,7 @@ public class ExternalFunction : FunctionDeclaration {
         return arguments;
     }
 
-    public override Type_ GetReturnType_(List<IValueToken> tokens) {
+    protected override Type_ _GetReturnType_(List<IValueToken> tokens) {
         return returnType_(tokens);
     }
     

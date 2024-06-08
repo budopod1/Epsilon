@@ -58,7 +58,7 @@ def dedup(program, i, type_):
     array_ir_type = make_type_(program, Array(type_))
     func = ir.Function(
         program.module, ir.FunctionType(
-            make_type_(program, VOID), [array_ir_type]
+            ir.VoidType(), [array_ir_type]
         ), name=f"{program.path} dedup{i}"
     )
 

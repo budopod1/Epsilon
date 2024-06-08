@@ -7,7 +7,15 @@ public abstract class FunctionDeclaration : IComparable<FunctionDeclaration> {
     public abstract string GetID();
     public abstract FunctionSource GetSource();
     public abstract bool DoesReturnVoid();
-    public abstract Type_ GetReturnType_(List<IValueToken> tokens);
+    protected abstract Type_ _GetReturnType_(List<IValueToken> tokens);
+
+    public Type_ GetReturnType_(List<IValueToken> tokens) {
+        if (DoesReturnVoid()) {
+            throw new InvalidOperationException("Void function has no return type_");
+        } else {
+            return _GetReturnType_(tokens);
+        }
+    }
 
     public int CompareTo(FunctionDeclaration other) {
         FunctionDeclaration a = this;

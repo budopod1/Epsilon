@@ -5,6 +5,11 @@ public class Return : UnaryOperation<IValueToken>, IVerifier, IFunctionTerminato
 
     public void Verify() {
         Function func = TokenUtils.GetParentOfType<Function>(this);
+        if (func.DoesReturnVoid()) {
+            throw new SyntaxErrorException(
+                $"Cannot return {o.GetType_()}; function expects no return value", this
+            );
+        }
         Type_ returnType_ = func.GetReturnType_();
         if (!o.GetType_().IsConvertibleTo(returnType_)) {
             throw new SyntaxErrorException(

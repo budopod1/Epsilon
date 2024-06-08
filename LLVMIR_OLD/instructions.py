@@ -56,12 +56,12 @@ class FlowInstruction(BaseInstruction):
 class AbortInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         string, = params
-        self.program.call_extern(builder, "abort_", [string], [String], VOID)
+        self.program.call_extern(builder, "abort_", [string], [String], None)
 
 
 class AbortVoidInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
-        self.program.call_extern(builder, "exit", [i32_of(1)], [Z32], VOID)
+        self.program.call_extern(builder, "exit", [i32_of(1)], [Z32], None)
 
 
 class AddOneInstruction(CastToResultType_Instruction):
@@ -177,7 +177,7 @@ class ArrayCreationInstruction(Typed_Instruction):
             self.program.call_extern(
                 builder, "incrementArrayRefCounts", 
                 [struct_mem, self.program.make_elem(builder, self.elem_type_)],
-                [self.type_, W64], VOID
+                [self.type_, W64], None
             )
         return struct_mem
 
@@ -847,7 +847,7 @@ class VoidFunctionCallInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         if self.program.is_builtin(self.callee):
             self.program.call_builtin(
-                self.callee, builder, params, param_types_, VOID
+                self.callee, builder, params, param_types_, None
             )
         else:
             func = self.program.get_function(self.callee)

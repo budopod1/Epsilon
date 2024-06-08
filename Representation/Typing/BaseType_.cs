@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class BaseType_ : IEquatable<BaseType_> {
     // https://en.wikipedia.org/wiki/Set_(mathematics)#Special_sets_of_numbers_in_mathematics
     public static List<string> BuiltInTypes_ = new List<string> {
-        "Void",
         "Bool", // equivalent to W1
         "Byte", // equivalent to W8
         "W", // whole numbers (unsigned ints)
@@ -123,17 +122,17 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool Equals(BaseType_ other) {
-        if (IsAny() && !other.IsVoid()) return true;
-        if (other.IsAny() && !IsVoid()) return true;
         return name == other.GetName() && bits == other.GetBits();
+    }
+
+    public bool Matches(BaseType_ other) {
+        if (IsAny() || other.IsAny()) return true;
+        return Equals(other);
     }
 
     public bool IsConvertibleTo(BaseType_ other) {
         string oName = other.GetName();
-        if (IsAny() && !other.IsVoid()) 
-            return true;
-        if (other.IsAny() && !IsVoid()) 
-            return true;
+        if (IsAny() || other.IsAny()) return true;
         if (name == oName) return true;
         if (ConvertibleTo.ContainsKey(name))
             return ConvertibleTo[name].Contains(oName);
@@ -153,10 +152,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     public bool IsCastableTo(BaseType_ other) {
         string oName = other.GetName();
         if (name == oName) return true;
-        if (IsAny() && !other.IsVoid()) 
-            return true;
-        if (other.IsAny() && !IsVoid()) 
-            return true;
+        if (IsAny() || other.IsAny()) return true;
         if (CastableTo.ContainsKey(name))
             return CastableTo[name].Contains(oName);
         return false;
@@ -170,8 +166,8 @@ public class BaseType_ : IEquatable<BaseType_> {
         return name == "Any";
     }
 
-    public bool IsVoid() {
-        return name == "Void";
+    public bool IsNull() {
+        return name == "Null";
     }
 
     public bool IsInt() {
@@ -199,7 +195,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool IsNullable() {
-        return name == "Optional";
+        return name == "Optional" || IsNull();
     }
 
     public bool IsZeroInitializable() {

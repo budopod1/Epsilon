@@ -50,8 +50,6 @@ def make_type_(program, data):
                     "W": 32, "Z": 32, "Bool": 1, "Byte": 8
                 }[name]
             return ir.IntType(bits)
-        case "Void", []:
-            return ir.VoidType()
         case "Pointer", [pointee]:
             return pointee.as_pointer()
         case "Func", [ret, *params]:
@@ -89,7 +87,7 @@ def make_constant(constant, ir_type):
 
 
 def is_value_type_(type_):
-    return type_["name"] in ["W", "Z", "Bool", "Byte", "Q", "Void", "Null"]
+    return type_["name"] in ["W", "Z", "Bool", "Byte", "Q", "Null"]
 
 
 def is_signed_integer_type_(type_):
@@ -250,7 +248,7 @@ class IRBlockWrapper:
 
 def make_function_type_(program, return_type_, arguments, vargs=False):
     return ir.FunctionType(
-        make_type_(program, return_type_),
+        make_type_(program, return_type_) if return_type_ else ir.VoidType(),
         [
             make_type_(program, argument) 
             for argument in arguments
@@ -350,7 +348,6 @@ bool_true = ir.IntType(1)(1)
 bool_false = ir.IntType(1)(0)
 
 
-VOID = {"name": "Void", "bits": None, "generics": []}
 Z32 = {"name": "Z", "bits": 32, "generics": []}
 Z64 = {"name": "Z", "bits": 64, "generics": []}
 W64 = {"name": "W", "bits": 64, "generics": []}

@@ -9,17 +9,19 @@ public class RealExternalFunction : RealFunctionDeclaration {
     string sourcePath;
     string callee;
     Type_ returnType_;
+    bool doesReturnVoid;
     FunctionSource source;
     bool takesOwnership;
     bool resultInParams;
 
-    public RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, string sourcePath, string callee, Type_ returnType_, FunctionSource source, bool takesOwnership=false, bool resultInParams=false) {
+    public RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, string sourcePath, string callee, Type_ returnType_, bool doesReturnVoid, FunctionSource source, bool takesOwnership=false, bool resultInParams=false) {
         this.pattern = pattern;
         this.arguments = arguments;
         this.id = id;
         this.sourcePath = sourcePath;
         this.callee = callee;
         this.returnType_ = returnType_;
+        this.doesReturnVoid = doesReturnVoid;
         this.source = source;
         this.takesOwnership = takesOwnership;
         this.resultInParams = resultInParams;
@@ -33,8 +35,12 @@ public class RealExternalFunction : RealFunctionDeclaration {
         return arguments;
     }
 
-    public override Type_ GetReturnType_() {
+    protected override Type_ _GetReturnType_() {
         return returnType_;
+    }
+
+    public override bool DoesReturnVoid() {
+        return doesReturnVoid;
     }
 
     public override string GetID() {

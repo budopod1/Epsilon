@@ -1,0 +1,10 @@
+Bool#do_check<File?:f> {
+    return [f].is_null;
+}
+
+Z#main {
+    Bool:a = do_check[null];
+    Str?:s = null;
+    Bool:b = [s].is_null;
+    return a && b;
+}

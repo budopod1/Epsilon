@@ -39,8 +39,8 @@ public static class BuiltinsList {
                 Type_ generic = types_[0].GetGeneric(0);
                 if (!value.IsConvertibleTo(generic))
                     throw new FunctionCallTypes_Exception($"Cannot append type {value} to an array of type {types_[0]}", 1);
-                return Type_.Void();
-            }, FunctionSource.Builtin
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -52,7 +52,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("value", new Type_("W", 64))
-            }, "buitlins4", Type_.Void(), FunctionSource.Builtin
+            }, "buitlins4", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -62,7 +62,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, "builtin5", Type_.Void(), FunctionSource.Builtin
+            }, "builtin5", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -95,8 +95,8 @@ public static class BuiltinsList {
                 Type_ generic = types_[0].GetGeneric(0);
                 if (!value.IsConvertibleTo(generic))
                     throw new FunctionCallTypes_Exception($"Cannot insert type {value} into an array of type {types_[0]}", 2);
-                return Type_.Void();
-            }, FunctionSource.Builtin
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -121,8 +121,8 @@ public static class BuiltinsList {
             }, "builtin9", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot extend array of type {types_[0]} with an array of type {types_[1]}", 1);
-                return Type_.Void();
-            }, FunctionSource.Builtin
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -225,7 +225,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {1})
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", Type_.Any()),
-            }, "builtin18", Type_.Void(), FunctionSource.Builtin
+            }, "builtin18", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -234,7 +234,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {1})
             ), new List<FunctionArgument> {
                 new FunctionArgument("value", Type_.Any()),
-            }, "builtin19", Type_.Void(), FunctionSource.Builtin
+            }, "builtin19", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -248,7 +248,7 @@ public static class BuiltinsList {
                 new FunctionArgument("str", Type_.String()),
                 new FunctionArgument("len", new Type_("W", 64)),
                 new FunctionArgument("chr", new Type_("Byte")),
-            }, "builtin20", Type_.Void(), FunctionSource.Builtin
+            }, "builtin20", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -262,7 +262,7 @@ public static class BuiltinsList {
                 new FunctionArgument("str", Type_.String()),
                 new FunctionArgument("len", new Type_("W", 64)),
                 new FunctionArgument("chr", new Type_("Byte")),
-            }, "builtin21", Type_.Void(), FunctionSource.Builtin
+            }, "builtin21", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -644,7 +644,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("file", new Type_("File")),
-            }, "builtin49", Type_.Void(), FunctionSource.Builtin
+            }, "builtin49", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -761,7 +761,13 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("nullable", Type_.Any()),
             }, "builtin60", (List<Type_> types_) => {
-                if (!types_[0].GetBaseType_().IsNullable()) {
+                BaseType_ bt = types_[0].GetBaseType_();
+                if (bt.IsNull()) {
+                    throw new FunctionCallTypes_Exception(
+                        "Value is always null", 0
+                    );
+                }
+                if (!bt.IsNullable()) {
                     throw new FunctionCallTypes_Exception(
                         $"Type {types_[0]} is never null", 0
                     );
@@ -792,7 +798,7 @@ public static class BuiltinsList {
                 new FunctionArgument("array", new Type_(
                     "Array", new List<Type_> {Type_.Any()}
                 )),
-            }, "builtin63", Type_.Void(), FunctionSource.Builtin
+            }, "builtin63", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -810,8 +816,8 @@ public static class BuiltinsList {
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
                     );
                 }
-                return Type_.Void();
-            }, FunctionSource.Builtin
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -829,8 +835,8 @@ public static class BuiltinsList {
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
                     );
                 }
-                return Type_.Void();
-            }, FunctionSource.Builtin
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -842,7 +848,7 @@ public static class BuiltinsList {
                 new FunctionArgument("array", new Type_(
                     "Array", new List<Type_> {Type_.Any()}
                 )),
-            }, "builtin66", Type_.Void(), FunctionSource.Builtin
+            }, "builtin66", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {

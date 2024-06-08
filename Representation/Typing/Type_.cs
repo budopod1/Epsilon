@@ -3,10 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Type_ : IEquatable<Type_> {
-    public static Type_ Void() {
-        return new Type_("Void");
-    }
-
     public static Type_ String() {
         return new Type_("Array", new List<Type_> {new Type_("Byte")});
     }
@@ -22,10 +18,7 @@ public class Type_ : IEquatable<Type_> {
         if (a.Matches(b)) return true;
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
-        if (abt.IsAny() && !bbt.IsVoid()) 
-            return true;
-        if (bbt.IsAny() && !abt.IsVoid()) 
-            return true;
+        if (abt.IsAny() || bbt.IsAny()) return true;
         if (a.HasGenerics() || b.HasGenerics()) 
             return false;
         bool aToB = abt.IsConvertibleTo(bbt);
@@ -172,15 +165,13 @@ public class Type_ : IEquatable<Type_> {
     }
 
     bool IsConvertibleNullTo(Type_ other) {
-        if (!baseType_.IsVoid()) return false;
+        if (baseType_.GetName() != "Null") return false;
         return other.GetBaseType_().GetName() == "Optional";
     }
 
     public bool IsConvertibleTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() && !otherBaseType_.IsVoid()) 
-            return true;
-        if (otherBaseType_.IsAny() && !baseType_.IsVoid()) 
+        if (baseType_.IsAny() || otherBaseType_.IsAny()) 
             return true;
         if (IsConvertibleOptionalTo(other)) return true;
         if (IsConvertibleNullTo(other)) return true;
@@ -212,9 +203,7 @@ public class Type_ : IEquatable<Type_> {
 
     public bool IsCastableTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() && !otherBaseType_.IsVoid()) 
-            return true;
-        if (otherBaseType_.IsAny() && !baseType_.IsVoid()) 
+        if (baseType_.IsAny() || otherBaseType_.IsAny()) 
             return true;
         if (IsEquivalentTo(other)) return true;
         if (HasGenerics()) return Matches(other);
@@ -230,9 +219,7 @@ public class Type_ : IEquatable<Type_> {
 
     public bool Matches(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() && !otherBaseType_.IsVoid()) 
-            return true;
-        if (otherBaseType_.IsAny() && !baseType_.IsVoid()) 
+        if (baseType_.IsAny() || otherBaseType_.IsAny()) 
             return true;
         return baseType_.Equals(other.GetBaseType_()) && GenericsMatching(other);
     }

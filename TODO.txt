@@ -1,7 +1,7 @@
 TODO:
-* remove `Void` BaseType_, instead use IMaybeType_ which Type_ and VoidType_ implement (this enforces the rule that only function return types_ can be void)
 * `Matrix` type?
 * top tracking so we can alloca instead of malloc
+* sort tests
 * add safe array access
 * self host LLVMIR section?
 * string interpolation

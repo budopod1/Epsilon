@@ -215,6 +215,14 @@ TESTS = [
             {"arguments": [], "compare": "exact", "expect": 3}
         ]
     },
+    {
+        "file": "nullkw.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 1}
+        ]
+    }
 ]
 
 TIMEOUT = 15

@@ -17,7 +17,7 @@ public class SPECFileCompiler : IFileCompiler {
                 new Dictionary<string, IJSONShape> {
                     {"id", new JSONStringShape()},
                     {"callee", new JSONStringShape()},
-                    {"return_type_", new JSONStringShape()},
+                    {"return_type_", new JSONNullableShape(new JSONStringShape())},
                     {"template", new JSONListShape(new JSONObjectShape(
                         new Dictionary<string, IJSONShape> {
                             {"type", new JSONStringShape()}
@@ -193,12 +193,15 @@ public class SPECFileCompiler : IFileCompiler {
             string callee = func["callee"].GetString();
             bool takesOwnership = func["takes_ownership"].GetBool();
             bool resultInParams = func["result_in_params"].GetBool();
-            Type_ returnType_ = MakeSPECType_(func["return_type_"]);
+            Type_ returnType_ = null;
+            bool doesReturnVoid = func["return_type_"].IsNull();
+            if (!doesReturnVoid)
+                returnType_ = MakeSPECType_(func["return_type_"]);
             Enum.TryParse<FunctionSource>(func["source"].GetString(), out FunctionSource source);
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)
-                ), arguments, id, path, callee, returnType_, source,
+                ), arguments, id, path, callee, returnType_, doesReturnVoid, source,
                 takesOwnership, resultInParams
             );
         }).ToList();

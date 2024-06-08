@@ -6,10 +6,9 @@ public class ReturnVoid : IVerifier, IFunctionTerminator, IBlockEndOnly {
     
     public void Verify() {
         Function func = TokenUtils.GetParentOfType<Function>(this);
-        Type_ returnType_ = func.GetReturnType_();
-        if (!func.GetReturnType_().GetBaseType_().IsVoid()) {
+        if (!func.DoesReturnVoid()) {
             throw new SyntaxErrorException(
-                $"Cannot return void; function expects {returnType_} return type", this
+                $"Cannot return nothing; function expects {func.GetReturnType_()} return type", this
             );
         }
     }

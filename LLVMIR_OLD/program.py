@@ -73,7 +73,7 @@ class Program:
                 if not is_value_type_(type_):
                     dumb_decr_ref_counter(self, builder, result, type_)
 
-        if result_type_["name"] == "Void":
+        if result_type_ is None:
             return
         return convert_type_(self, builder, result, type_, result_type_)
 
@@ -91,7 +91,7 @@ class Program:
         result = builder.call(func.ir, converted_params)
 
         if not func.takes_ownership:
-            if func.result_in_params:
+            if func.return_type_ is not None and func.result_in_params:
                 if not is_value_type_(func.return_type_):
                     incr_ref_counter(
                         self, builder, result, func.return_type_
@@ -99,7 +99,7 @@ class Program:
             for param, param_type_ in zip(params, param_types_):
                 if not is_value_type_(param_type_):
                     self.check_ref(builder, param, param_type_)
-            if func.result_in_params:
+            if func.return_type_ is not None and func.result_in_params:
                 if not is_value_type_(func.return_type_):
                     dumb_decr_ref_counter(
                         self, builder, result, func.return_type_
@@ -125,7 +125,7 @@ class Program:
             for param, param_type_, argument in zip(params, param_types_, func["arguments"])
         ]
         result = builder.call(self.extern_funcs[name], converted_params+vargs)
-        if result_type_["name"] == "Void":
+        if result_type_ is None:
             return
         return convert_type_(
             self, builder, result, func["return_type_"], result_type_
@@ -208,7 +208,7 @@ class Program:
             final_builder.ret_void()
 
     def _free_file(self, block, builder, val):
-        self.call_extern(builder, "freeFile", [val], [File], VOID)
+        self.call_extern(builder, "freeFile", [val], [File], None)
         builder.ret_void()
 
     def _free_struct(self, block, builder, val, type_):
@@ -322,7 +322,7 @@ class Program:
             mem = self.malloc(builder, make_type_(self, Byte), size)
             self.call_extern(
                 builder, "memcpy", [mem, constant_str, i64_of(len(value)), i1_of(0)],
-                [PointerW8, PointerW8, W64, Bool], VOID
+                [PointerW8, PointerW8, W64, Bool], None
             )
             return mem
         else:
@@ -427,7 +427,7 @@ class Program:
         comparer_func = self.make_comparer_func(generic_type_, invert)
         self.call_extern(
             builder, "sortArray", [arr, elem_size, comparer_func], 
-            [arr_type_, W64, ComparerType_], VOID
+            [arr_type_, W64, ComparerType_], None
         )
 
     def array_copy(self, builder, arr, arr_type_):

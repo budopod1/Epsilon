@@ -71,8 +71,12 @@ public class FileTree {
             JSONObject dobj = new JSONObject();
             dobj["id"] = new JSONString(declaration.GetID());
             dobj["callee"] = new JSONString(declaration.GetCallee());
-            string returnType_ = type_Creator.MakeSPECType_(declaration.GetReturnType_());
-            dobj["return_type_"] = new JSONString(returnType_);
+            if (declaration.DoesReturnVoid()) {
+                dobj["return_type_"] = new JSONNull();
+            } else {
+                string returnType_ = type_Creator.MakeSPECType_(declaration.GetReturnType_());
+                dobj["return_type_"] = new JSONString(returnType_);
+            }
             List<IPatternSegment> segments = declaration.GetPattern().GetSegments();
             List<FunctionArgument> arguments = declaration.GetArguments();
             int argumentCounter = 0;

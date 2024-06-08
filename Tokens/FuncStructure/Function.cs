@@ -29,6 +29,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     List<FunctionArgument> arguments;
     CodeBlock block;
     Type_ returnType_;
+    bool doesReturnVoid;
     List<Type_> specialAllocs = new List<Type_>();
     string id;
     string callee;
@@ -39,6 +40,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         this.pattern = pattern;
         this.block = block;
         this.returnType_ = returnType_;
+        this.doesReturnVoid = returnType_ == null;
         IScope scope = block.GetScope();
         foreach (FunctionArgumentToken argument in arguments) {
             argument.SetID(scope.AddVar(
@@ -68,8 +70,12 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         this.block = block;
     }
 
-    public override Type_ GetReturnType_() {
+    protected override Type_ _GetReturnType_() {
         return returnType_;
+    }
+
+    public override bool DoesReturnVoid() {
+        return doesReturnVoid;
     }
 
     public override string GetID() {
@@ -141,13 +147,13 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
 
     public void Verify() {
         if (IsMain()) {
-            if (!returnType_.Equals(new Type_("Z"))) {
+            if (doesReturnVoid || !returnType_.Equals(new Type_("Z"))) {
                 throw new SyntaxErrorException(
                     "The main function must return type Z", this
                 );
             }
         }
-        if (!returnType_.GetBaseType_().IsVoid()) {
+        if (!doesReturnVoid) {
             if (block.Count == 0) {
                 throw new SyntaxErrorException(
                     "Functions with a non-void return value cannot be empty", block
