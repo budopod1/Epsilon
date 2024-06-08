@@ -12,6 +12,15 @@ manager = multiprocessing.Manager()
 
 TESTS = [
     {
+        "file": "array.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_int, c_int, c_int),
+        "tests": [
+            {"arguments": [0, 0], "compare": "exact", "expect": 1},
+            {"arguments": [2, 1], "compare": "exact", "expect": 6},
+        ]
+    },
+    {
         "file": "basic.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_int),
@@ -20,29 +29,61 @@ TESTS = [
         ]
     },
     {
-        "file": "if3.epsl",
+        "file": "blankarray.epsl",
         "func": -1,
         "sig": CFUNCTYPE(c_int),
         "tests": [
-            {"arguments": [], "compare": "exact", "expect": 0}
+            {"arguments": [], "compare": "exact", "expect": 3}
         ]
     },
     {
-        "file": "if2.epsl",
-        "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
+        "file": "bool.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
         "tests": [
-            {"arguments": [1], "compare": "exact", "expect": 1},
-            {"arguments": [2], "compare": "exact", "expect": 0}
+            {"arguments": [], "compare": "exact", "expect": 1}
         ]
     },
     {
-        "file": "multipath.epsl",
+        "file": "builtin.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
-            {"arguments": [1], "compare": "exact", "expect": 2},
-            {"arguments": [3], "compare": "exact", "expect": 3}
+            {"arguments": [4], "compare": "exact", "expect": 2},
+            {"arguments": [5], "compare": "exact", "expect": 6},
+            {"arguments": [17], "compare": "exact", "expect": 72},
+        ]
+    },
+    {
+        "file": "circular1.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 2}
+        ]
+    },
+    {
+        "file": "compound.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 14}
+        ]
+    },
+    {
+        "file": "deepequals.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 10}
+        ]
+    },
+    {
+        "file": "equals.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 2}
         ]
     },
     {
@@ -54,11 +95,11 @@ TESTS = [
         ]
     },
     {
-        "file": "mathtest.epsl",
-        "func": 0,
-        "sig": CFUNCTYPE(c_double, c_double),
+        "file": "global.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
         "tests": [
-            {"arguments": [3], "compare": "float", "expect": 35.54}
+            {"arguments": [], "compare": "exact", "expect": 3}
         ]
     },
     {
@@ -72,12 +113,61 @@ TESTS = [
         ]
     },
     {
-        "file": "while.epsl",
+        "file": "if2.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
-            {"arguments": [4], "compare": "exact", "expect": 10},
-            {"arguments": [6], "compare": "exact", "expect": 21},
+            {"arguments": [1], "compare": "exact", "expect": 1},
+            {"arguments": [2], "compare": "exact", "expect": 0}
+        ]
+    },
+    {
+        "file": "if3.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 0}
+        ]
+    },
+    {
+        "file": "mathimport.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "float", "expect": 0.54}
+        ]
+    },
+    {
+        "file": "mathimport3.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_double),
+        "tests": [
+            {"arguments": [-4], "compare": "float", "expect": 2}
+        ]
+    },
+    {
+        "file": "mathtest.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_double, c_double),
+        "tests": [
+            {"arguments": [3], "compare": "float", "expect": 35.54}
+        ]
+    },
+    {
+        "file": "multipath.epsl",
+        "func": 0,
+        "sig": CFUNCTYPE(c_int, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "exact", "expect": 2},
+            {"arguments": [3], "compare": "exact", "expect": 3}
+        ]
+    },
+    {
+        "file": "nullkw.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 1}
         ]
     },
     {
@@ -90,12 +180,11 @@ TESTS = [
         ]
     },
     {
-        "file": "array.epsl",
+        "file": "stringify.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int, c_int),
+        "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
-            {"arguments": [0, 0], "compare": "exact", "expect": 1},
-            {"arguments": [2, 1], "compare": "exact", "expect": 6},
+            {"arguments": [10], "compare": "exact", "expect": 2851}
         ]
     },
     {
@@ -117,56 +206,6 @@ TESTS = [
         ]
     },
     {
-        "file": "builtin.epsl",
-        "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
-        "tests": [
-            {"arguments": [4], "compare": "exact", "expect": 2},
-            {"arguments": [5], "compare": "exact", "expect": 6},
-            {"arguments": [17], "compare": "exact", "expect": 72},
-        ]
-    },
-    {
-        "file": "stringify.epsl",
-        "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
-        "tests": [
-            {"arguments": [10], "compare": "exact", "expect": 2851}
-        ]
-    },
-    {
-        "file": "equals.epsl",
-        "func": -1,
-        "sig": CFUNCTYPE(c_int),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 2}
-        ]
-    },
-    {
-        "file": "bool.epsl",
-        "func": -1,
-        "sig": CFUNCTYPE(c_int),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 1}
-        ]
-    },
-    {
-        "file": "deepequals.epsl",
-        "func": -1,
-        "sig": CFUNCTYPE(c_int),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 10}
-        ]
-    },
-    {
-        "file": "compound.epsl",
-        "func": -1,
-        "sig": CFUNCTYPE(c_int),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 14}
-        ]
-    },
-    {
         "file": "uninitvalue.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_int, c_int),
@@ -176,51 +215,12 @@ TESTS = [
         ]
     },
     {
-        "file": "circular1.epsl",
-        "func": -1,
-        "sig": CFUNCTYPE(c_int),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 2}
-        ]
-    },
-    {
-        "file": "mathimport.epsl",
+        "file": "while.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_double, c_int),
+        "sig": CFUNCTYPE(c_int, c_int),
         "tests": [
-            {"arguments": [1], "compare": "float", "expect": 0.54}
-        ]
-    },
-    {
-        "file": "mathimport3.epsl",
-        "func": 0,
-        "sig": CFUNCTYPE(c_double, c_double),
-        "tests": [
-            {"arguments": [-4], "compare": "float", "expect": 2}
-        ]
-    },
-    {
-        "file": "global.epsl",
-        "func": -1,
-        "sig": CFUNCTYPE(c_int),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 3}
-        ]
-    },
-    {
-        "file": "blankarray.epsl",
-        "func": -1,
-        "sig": CFUNCTYPE(c_int),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 3}
-        ]
-    },
-    {
-        "file": "nullkw.epsl",
-        "func": -1,
-        "sig": CFUNCTYPE(c_int),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 1}
+            {"arguments": [4], "compare": "exact", "expect": 10},
+            {"arguments": [6], "compare": "exact", "expect": 21},
         ]
     }
 ]

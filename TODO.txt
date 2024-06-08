@@ -1,7 +1,6 @@
 TODO:
 * `Matrix` type?
 * top tracking so we can alloca instead of malloc
-* sort tests
 * add safe array access
 * self host LLVMIR section?
 * string interpolation
