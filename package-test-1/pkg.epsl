@@ -1,0 +1,5 @@
+#import sub;
+
+Q#example_func<Q:a> {
+    return sub_func[a] + 1;
+}

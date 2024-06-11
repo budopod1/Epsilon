@@ -2,6 +2,11 @@ TODO:
 * `Matrix` type?
 * top tracking so we can alloca instead of malloc
 * add safe array access
+* function annotations (the Java kind of annotation)
+    * @cname annotation which specifies function ID (underlying symbol name)
+* EPSLPROJ should store additional flags for clang
+* make BinJSON able to represent all JSON values by adding multityped-array
+* add option to ignore all cached epslspecs without disabling project mode, and while still creating new ones
 * self host LLVMIR section?
 * string interpolation
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)

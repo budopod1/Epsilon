@@ -18,11 +18,14 @@ Modes:
 
         bool alwaysProj = false;
         bool neverProj = false;
-
         parser.AddOption(() => {alwaysProj = true;}, "Always use project mode", null,
             "p", "project-mode");
         parser.AddOption(() => {neverProj = true;}, "Never use project mode", null, 
             "P", "no-project-mode");
+
+        bool linkBuiltins = true;
+        parser.AddOption(() => {linkBuiltins = false;}, "Don't link to Epsilon's builtins", null, 
+            "B", "no-builtins");
 
         InputExpectation outputFile = new InputExpectation("output file");
         parser.AddOption(outputFile, "The path to output to", "o", "output");
@@ -45,7 +48,7 @@ Modes:
         });
 
         PossibilitiesExpectation outputType = parser.AddOption(
-            new PossibilitiesExpectation("executable", "llvm-ll", "llvm-bc"), 
+            new PossibilitiesExpectation("executable", "package", "llvm-ll", "llvm-bc"), 
             "The output file type", "t", "output-type"
         );
 
@@ -78,45 +81,92 @@ Modes:
                 ArgumentParser.DisplayProblem("The 'project-mode' and 'no-project-mode' options are mutually exclusive");
             }
 
-            string extension;
-            switch (outputType.Value()) {
-                case "llvm-bc":
-                    extension = ".bc";
-                    break;
-                case "llvm-ll":
-                    extension = ".ll";
-                    break;
-                case "executable":
-                    extension = null;
-                    break;
-                default:
-                    throw new InvalidOperationException();
+            if (outputType.Value() == "package") {
+                if (neverProj) {
+                    ArgumentParser.DisplayProblem("The 'package' output type requires project mode, and thus forbids the 'no-project-mode' option");
+                }
+                alwaysProj = true;
+                linkBuiltins = false;
             }
 
-            string output = null;
-            if (outputFile.IsPresent) {
-                output = outputFile.Matched;
-            } else {
-                TestResult(builder.GetOutputLocation(input, extension, out output));
-            }
-    
             builder.ALWAYS_PROJECT = alwaysProj;
             builder.NEVER_PROJECT = neverProj;
-            
-            TestResult(builder.Build(input, proj));
-            if (outputType.Value() == "executable") {
-                TestResult(builder.ToExecutable());
+            builder.LINK_BUILTINS = linkBuiltins;
+
+            return DoCompilation(
+                builder, outputType.Value(), input,
+                outputFile.IsPresent ? outputFile.Matched : null,
+                proj
+            );
+        } else if (mode.Value() == "teardown") {
+            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
+            Log.Verbosity = verbosity.ToEnum<LogLevel>();
+
+            TestResult(builder.Teardown(proj));
+
+            return 0;
+        } else if (mode.Value() == "command-line-options") {
+            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
+
+            TestResult(builder.SetEPSLPROJOptionAndSave(proj, commandOptions.MatchedSegments));
+
+            return 0;
+        } else {
+            throw new InvalidOperationException();
+        }
+    }
+
+    static int DoCompilation(Builder builder, string outputType, string input, string providedOutput, EPSLPROJ proj) {
+        string extension;
+        switch (outputType) {
+            case "llvm-bc":
+                extension = ".bc";
+                break;
+            case "llvm-ll":
+                extension = ".ll";
+                break;
+            case "executable":
+                extension = null;
+                break;
+            case "package":
+                extension = null;
+                break;
+            default:
+                throw new InvalidOperationException();
+        }
+
+        TestResult(builder.GetOutputLocation(input, extension,
+            out string defaultOutput, out string outputName));
+        string output = providedOutput ?? defaultOutput;
+
+        TestResult(builder.Build(input, proj));
+        if (outputType == "executable") {
+            TestResult(builder.ToExecutable());
+        }
+
+        if (outputType == "package") {
+            TestResult(builder.ReadyPackageFolder(output));
+
+            try {
+                string bitcode = Utils.JoinPaths(
+                    Utils.ProjectAbsolutePath(), "code-linked.bc");
+                File.Copy(bitcode, Utils.JoinPaths(output, outputName+".bc"), true);
+            } catch (IOException) {
+                ArgumentParser.DisplayProblem("Could not write specified output file");
+                return 1;
             }
-    
+        } else {
             string resultSource;
-            
-            switch (outputType.Value()) {
+
+            switch (outputType) {
                 case "llvm-bc":
                     resultSource = "code-linked.bc";
                     break;
                 case "llvm-ll":
+                    string bcFile = Utils.JoinPaths(
+                        Utils.ProjectAbsolutePath(), "code-linked.bc");
                     Utils.RunCommand("llvm-dis", new List<string> {
-                        "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc")
+                        "--", bcFile
                     });
                     resultSource = "code-linked.ll";
                     break;
@@ -126,56 +176,18 @@ Modes:
                 default:
                     throw new InvalidOperationException();
             }
-            
+
             try {
-                string executable = Utils.JoinPaths(Utils.ProjectAbsolutePath(), resultSource);
-                File.Copy(executable, output, true);
+                string absoluteResultSource = Utils.JoinPaths(
+                    Utils.ProjectAbsolutePath(), resultSource);
+                File.Copy(absoluteResultSource, output, true);
             } catch (IOException) {
                 ArgumentParser.DisplayProblem("Could not write specified output file");
                 return 1;
             }
-            
-            return 0;
-        } else if (mode.Value() == "teardown") {
-            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
-            Log.Verbosity = verbosity.ToEnum<LogLevel>();
-
-            if (alwaysProj || neverProj) {
-                ArgumentParser.DisplayProblem("The 'project-mode' and 'no-project-mode' options require 'compile' mode");
-            }
-
-            if (outputType.IsPresent) {
-                ArgumentParser.DisplayProblem("The 'output-type' option requires 'compile' mode");
-            }
-
-            if (outputFile.IsPresent) {
-                ArgumentParser.DisplayProblem("The 'output' option requires 'compile' mode");
-            }
-
-            TestResult(builder.Teardown(proj));
-
-            return 0;
-        } else if (mode.Value() == "command-line-options") {
-            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
-
-            if (alwaysProj || neverProj) {
-                ArgumentParser.DisplayProblem("The 'project-mode' and 'no-project-mode' options require 'compile' mode");
-            }
-
-            if (outputType.IsPresent) {
-                ArgumentParser.DisplayProblem("The 'output-type' option requires 'compile' mode");
-            }
-
-            if (outputFile.IsPresent) {
-                ArgumentParser.DisplayProblem("The 'output' option requires 'compile' mode");
-            }
-
-            TestResult(builder.SetEPSLPROJOptionAndSave(proj, commandOptions.MatchedSegments));
-
-            return 0;
-        } else {
-            throw new InvalidOperationException();
         }
+
+        return 0;
     }
 
     static void TestResult(CompilationResult result) {

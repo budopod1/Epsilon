@@ -8,6 +8,7 @@ using System.Runtime.ExceptionServices;
 public class Builder {
     public bool ALWAYS_PROJECT = false;
     public bool NEVER_PROJECT = false;
+    public bool LINK_BUILTINS = true;
     
     bool isProj = false;
     string currentFile = "";
@@ -52,17 +53,39 @@ public class Builder {
         return result2;
     }
 
-    public CompilationResult GetOutputLocation(string input, string extension, out string outputOut) {
+    public CompilationResult GetOutputLocation(string input, string extension, out string outputOut, out string outputNameOut) {
         string output = null;
+        string outputName = null;
         CompilationResult result = RunWrapped(() => {
-            string outputDir = Utils.GetDirectoryName(input);
-            string outputName = Utils.SetExtension(
-                Utils.GetFileName(input), extension);
+            string outputDir = Utils.GetFullPath(Utils.GetDirectoryName(input));
+            outputName = Utils.SetExtension(Utils.GetFileName(input), null);
             if (outputName == "entry") outputName = "result";
-            output = Utils.JoinPaths(outputDir, outputName);
+            string outputFile = Utils.SetExtension(outputName, extension);
+            output = Utils.JoinPaths(outputDir, outputFile);
         });
         outputOut = output;
+        outputNameOut = outputName;
         return result;
+    }
+
+    public CompilationResult ReadyPackageFolder(string relFolder) {
+        return RunWrapped(() => {
+            string folder = Utils.GetFullPath(relFolder);
+            if (Directory.Exists(folder)) {
+                string[] subdirectories = Directory.GetDirectories(folder);
+                if (subdirectories.Length > 0) {
+                    throw new IOException("Cannot output package to folder with subdirectories");
+                }
+                string[] files = Directory.GetFiles(folder);
+                foreach (string file in files) {
+                    File.Delete(file);
+                }
+            } else if (File.Exists(folder)) {
+                throw new IOException($"File already exists at specified package output location, {folder}");
+            } else {
+                Directory.CreateDirectory(folder);
+            }
+        });
     }
 
     public CompilationResult Build(string inputRel, EPSLPROJ proj) {
@@ -113,11 +136,16 @@ public class Builder {
                     }
                 }
             }
-            
-            string builtins = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs", "builtins.bc");
+
             List<string> arguments = new List<string> {
-                "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--", builtins
+                "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--"
             };
+            if (LINK_BUILTINS) {
+                arguments.Add(Utils.JoinPaths(
+                    Utils.ProjectAbsolutePath(), "libs", "builtins.bc"
+                ));
+            }
+            
             arguments.AddRange(sections);
             Log.Status("Linking LLVM");
             Utils.RunCommand("llvm-link", arguments);
@@ -172,8 +200,7 @@ public class Builder {
             return new CompilationResult(CompilationResultStatus.USERERR);
         } catch (IOException e) {
             return new CompilationResult(
-                CompilationResultStatus.USERERR, 
-                $"{e.Message}: {currentFile}"
+                CompilationResultStatus.USERERR, e.Message
             );
         } catch (InvalidJSONException e) {
             JSONTools.ShowError(currentText, e, currentFile);
