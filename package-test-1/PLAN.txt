@@ -11,3 +11,4 @@ PLAN FOR PACKAGING:
     * don't link to an files not in project itself
     * clone EPSLSPEC of the package's entry file:
         * replace dependencies with all project dependencies that weren't linked
+        * pass clangOptions to EPSLSPEC's clang-options

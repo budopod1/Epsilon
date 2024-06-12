@@ -9,6 +9,7 @@ public class Builder {
     public bool ALWAYS_PROJECT = false;
     public bool NEVER_PROJECT = false;
     public bool LINK_BUILTINS = true;
+    public IEnumerable<string> EXTRA_CLANG_OPTIONS;
     
     bool isProj = false;
     string currentFile = "";
@@ -536,9 +537,10 @@ public class Builder {
     }
 
     IEnumerable<string> GetClangFlags() {
-        IEnumerable<IClangConfig> configs = files.Values.SelectMany(
-            file => file.Compiler.GetClangConfig());
-        return configs.Select(config => config.Stringify()).Distinct();
+        return files.Values
+            .SelectMany(file => file.Compiler.GetClangConfig())
+            .Select(config => config.Stringify())
+            .Concat(EXTRA_CLANG_OPTIONS);
     }
 
     void ShowCompilationError(SyntaxErrorException e, string text, string file) {

@@ -27,6 +27,11 @@ Modes:
         parser.AddOption(() => {linkBuiltins = false;}, "Don't link to Epsilon's builtins", null, 
             "B", "no-builtins");
 
+        DelimitedInputExpectation clangOptions = parser.AddOption(
+            new DelimitedInputExpectation(parser, "clang-options", "END"), 
+            "Options for the clang compiler", "c", "clang-options"
+        );
+
         InputExpectation outputFile = new InputExpectation("output file");
         parser.AddOption(outputFile, "The path to output to", "o", "output");
 
@@ -60,7 +65,7 @@ Modes:
         parser.AddUsageOption(mode.Usage("compile"), sourceFile);
         parser.AddUsageOption(mode.Usage("teardown"), sourceFile);
         parser.AddUsageOption(mode.Usage("command-line-options"), sourceFile, 
-            new CmdUsagePart("--"), commandOptions);
+            commandOptions);
         
         parser.Parse(args);
 
@@ -92,6 +97,7 @@ Modes:
             builder.ALWAYS_PROJECT = alwaysProj;
             builder.NEVER_PROJECT = neverProj;
             builder.LINK_BUILTINS = linkBuiltins;
+            builder.EXTRA_CLANG_OPTIONS = clangOptions.MatchedSegments;
 
             return DoCompilation(
                 builder, outputType.Value(), input,
