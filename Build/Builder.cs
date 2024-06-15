@@ -9,7 +9,8 @@ public class Builder {
     public bool ALWAYS_PROJECT = false;
     public bool NEVER_PROJECT = false;
     public bool LINK_BUILTINS = true;
-    public IEnumerable<string> EXTRA_CLANG_OPTIONS;
+    public bool LINK_LIBRARIES = true;
+    public IEnumerable<string> EXTRA_CLANG_OPTIONS = Enumerable.Empty<string>();
     
     bool isProj = false;
     string currentFile = "";
@@ -19,6 +20,7 @@ public class Builder {
     List<string> extensions = new List<string> {"epslspec", "epsl"};
     List<string> prefixes = new List<string> {"", "."};
     List<string> IRInUserDir;
+    List<FileTree> unlinkedFiles;
     HashSet<Struct> structs;
 
     public CompilationResult LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
@@ -136,6 +138,7 @@ public class Builder {
             Log.Status("Confirming dependencies");
             ConfirmDependencies(projectDirectory);
             IRInUserDir = new List<string>();
+            unlinkedFiles = new List<FileTree>();
             Log.Status("Writing IR");
             List<string> sections = ToIR();
             Log.Status("Saving EPSLSPECs");
@@ -188,7 +191,7 @@ public class Builder {
                 .SelectMany(file => file.Compiler.GetClangConfig())
                 .Concat(extraClangConfig);
             _buildInfo = new BuildInfo(
-                tree, clangConfig, Enumerable.Empty<FileTree>(), fileWithMain
+                tree, clangConfig, unlinkedFiles, fileWithMain
             );
         });
 
@@ -530,16 +533,20 @@ public class Builder {
     List<string> ToIR() {
         List<string> sections = new List<string>();
         foreach (FileTree file in files.Values) {
-            SwitchFile(file);
-            string directory = Utils.GetDirectoryName(currentFile);
-            string filename = "." + file.GetName();
-            string path = Utils.JoinPaths(directory, filename);
-            string ir = file.Compiler.ToIR(path);
-            if (path == Path.ChangeExtension(ir, null)) {
-                IRInUserDir.Add(ir);
+            if (!LINK_LIBRARIES && file.SourceType == FileSourceType.Library) {
+                unlinkedFiles.Add(file);
+            } else {
+                SwitchFile(file);
+                string directory = Utils.GetDirectoryName(currentFile);
+                string filename = "." + file.GetName();
+                string path = Utils.JoinPaths(directory, filename);
+                string ir = file.Compiler.ToIR(path);
+                if (path == Path.ChangeExtension(ir, null)) {
+                    IRInUserDir.Add(ir);
+                }
+                sections.Add(ir);
+                file.IR = ir;
             }
-            sections.Add(ir);
-            file.IR = ir;
         }
         return sections;
     }

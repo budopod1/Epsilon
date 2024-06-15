@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 public class Epsilon {
@@ -26,6 +27,10 @@ Modes:
         bool linkBuiltins = true;
         parser.AddOption(() => {linkBuiltins = false;}, "Don't link to Epsilon's builtins", null, 
             "B", "no-builtins");
+
+        bool linkLibraries = true;
+        parser.AddOption(() => {linkLibraries = false;}, "Don't link to Epsilon libraries", null, 
+            "L", "no-libraries");
 
         DelimitedInputExpectation clangOptions = parser.AddOption(
             new DelimitedInputExpectation(parser, "clang-options", "END", needsOne: true), 
@@ -97,11 +102,13 @@ Modes:
                 }
                 alwaysProj = true;
                 linkBuiltins = false;
+                linkLibraries = false;
             }
 
             builder.ALWAYS_PROJECT = alwaysProj;
             builder.NEVER_PROJECT = neverProj;
             builder.LINK_BUILTINS = linkBuiltins;
+            builder.LINK_LIBRARIES = linkLibraries;
             builder.EXTRA_CLANG_OPTIONS = clangOptions.MatchedSegments;
 
             return DoCompilation(
@@ -167,10 +174,13 @@ Modes:
                 return 1;
             }
 
+            IEnumerable<string> unlinkedImports = buildInfo.UnlinkedFiles
+                .Select(file => file.PartialPath);
+
             EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
             EPSLSPEC newEPSLSPEC = new EPSLSPEC(
                 entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
-                buildInfo.ClangConfig, new List<string>() /* TEMP */, 
+                buildInfo.ClangConfig, unlinkedImports, 
                 outputName+".bc", null, FileSourceType.Library
             );
 

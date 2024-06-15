@@ -16,7 +16,7 @@ public class FileTree {
         get {
             if (_Text == null) _Text = Compiler.GetText();
             return _Text;
-        } 
+        }
         set {
             _Text = value;
         }
@@ -44,6 +44,8 @@ public class FileTree {
 
     public string OldPath;
 
+    public FileSourceType SourceType;
+
     public HashSet<LocatedID> StructIDs;
     public HashSet<Struct> Structs;
     public List<RealFunctionDeclaration> Declarations;
@@ -59,6 +61,7 @@ public class FileTree {
         Path = path;
         Compiler = compiler;
         OldPath = oldCompilerPath;
+        SourceType = compiler.GetFileSourceType();
         OldCompiler = oldCompiler;
         Imports = compiler.ToImports();
         GeneratedEPSLSPEC = generatedEPSLSPEC;
@@ -67,7 +70,7 @@ public class FileTree {
     EPSLSPEC MakeSPEC() {
         return new EPSLSPEC(
             Declarations, Structs, Dependencies, Compiler.GetClangConfig(),
-            Imports, IR, Path, Compiler.GetFileSourceType()
+            Imports, IR, Path, SourceType
         );
     }
 
