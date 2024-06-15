@@ -10,8 +10,7 @@ public class InitialAssignment : UnaryOperation<IValueToken>, IVerifier, IComple
 
     public void Verify() {
         Type_ valueType_ = o.GetType_();
-        IScope scope = Scope.GetEnclosing(this);
-        ScopeVar svar = scope.GetVarByID(id);
+        ScopeVar svar = Scope.GetVarByID(this, id);
         Type_ varType_ = svar.GetType_();
         if (!valueType_.IsConvertibleTo(varType_)) {
             throw new SyntaxErrorException(
@@ -22,8 +21,7 @@ public class InitialAssignment : UnaryOperation<IValueToken>, IVerifier, IComple
 
     public override int Serialize(SerializationContext context) {
         context.AddDeclaration(id);
-        IScope scope = Scope.GetEnclosing(this);
-        ScopeVar svar = scope.GetVarByID(id);
+        ScopeVar svar = Scope.GetVarByID(this, id);
         return context.AddInstruction(
             new SerializableInstruction(this, context)
                 .AddData("variable", new JSONInt(id))

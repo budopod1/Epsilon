@@ -14,7 +14,7 @@ public class Program : TreeToken, IVerifier, IHasScope {
 
     public Program(string path, List<IToken> tokens) : base(tokens) {
         this.path = path;
-        scope = new Scope(scopeVarIDCounter, null);
+        scope = new Scope(scopeVarIDCounter);
     }
 
     public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, IDCounter functionIDCounter, IDCounter scopeVarIDCounter, HashSet<Struct> structs, HashSet<Struct> structsHere, List<RealFunctionDeclaration> externalDeclarations, IScope scope) : base(tokens) {

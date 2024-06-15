@@ -1,5 +1,5 @@
 using System;
 
-public interface IHasScope {
+public interface IHasScope : IToken {
     IScope GetScope();
 }

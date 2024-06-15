@@ -908,8 +908,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new FuncPatternSegment<Name>(
-                            (Name name) => Scope.GetEnclosing(name)
-                                                .ContainsVar(name.GetValue())
+                            (Name name) => Scope.ContainsVar(name, name.GetValue())
                         ),
                     }, new Wrapper2PatternProcessor(
                         typeof(Variable)

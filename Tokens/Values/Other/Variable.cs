@@ -13,9 +13,7 @@ public class Variable : IAssignableValue {
     }
     
     public Variable(Name source) {
-        name = source.GetValue();
-        IScope scope = Scope.GetEnclosing(source);
-        id = scope.GetIDByName(name).Value;
+        id = Scope.GetIDByName(source, source.GetValue()).Value;
     }
 
     public string GetName() {
@@ -27,8 +25,7 @@ public class Variable : IAssignableValue {
     }
 
     public Type_ GetType_() {
-        IScope scope = Scope.GetEnclosing(this);
-        ScopeVar svar = scope.GetVarByID(id);
+        ScopeVar svar = Scope.GetVarByID(this, id);
         if (svar == null) {
             throw new SyntaxErrorException(
                 $"Cannot find variable with name '{name}' in scope", this

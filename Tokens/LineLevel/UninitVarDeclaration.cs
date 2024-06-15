@@ -12,8 +12,7 @@ public class UninitVarDeclaration : ICompleteLine, ISerializableToken, IVerifier
     }
 
     public void Verify() {
-        IScope scope = Scope.GetEnclosing(this);
-        ScopeVar svar = scope.GetVarByID(id);
+        ScopeVar svar = Scope.GetVarByID(this, id);
         Type_ varType_ = svar.GetType_();
         if (!varType_.GetBaseType_().IsValueType_()) {
             throw new SyntaxErrorException(
