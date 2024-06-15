@@ -1,20 +1,25 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class Dependencies {
-    List<Struct> structs;
-    List<RealFunctionDeclaration> functions;
+    IEnumerable<Struct> structs;
+    IEnumerable<RealFunctionDeclaration> functions;
 
-    public Dependencies(List<Struct> structs, List<RealFunctionDeclaration> functions) {
+    public Dependencies(IEnumerable<Struct> structs, IEnumerable<RealFunctionDeclaration> functions) {
         this.structs = structs;
         this.functions = functions;
     }
 
-    public List<Struct> GetStructs() {
+    public static Dependencies Empty() {
+        return new Dependencies(Enumerable.Empty<Struct>(), Enumerable.Empty<RealFunctionDeclaration>());
+    }
+
+    public IEnumerable<Struct> GetStructs() {
         return structs;
     }
 
-    public List<RealFunctionDeclaration> GetFunctions() {
+    public IEnumerable<RealFunctionDeclaration> GetFunctions() {
         return functions;
     }
 }

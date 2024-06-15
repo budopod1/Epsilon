@@ -145,22 +145,32 @@ Modes:
             out string defaultOutput, out string outputName));
         string output = providedOutput ?? defaultOutput;
 
-        TestResult(builder.Build(input, proj));
+        TestResult(builder.Build(input, proj, out BuildInfo buildInfo));
         if (outputType == "executable") {
-            TestResult(builder.ToExecutable());
+            TestResult(builder.ToExecutable(buildInfo));
         }
 
         if (outputType == "package") {
             TestResult(builder.ReadyPackageFolder(output));
-
+            
             try {
-                string bitcode = Utils.JoinPaths(
+                string bitcodeSrc = Utils.JoinPaths(
                     Utils.ProjectAbsolutePath(), "code-linked.bc");
-                File.Copy(bitcode, Utils.JoinPaths(output, outputName+".bc"), true);
+                File.Copy(bitcodeSrc, Utils.JoinPaths(output, outputName+".bc"), true);
             } catch (IOException) {
                 ArgumentParser.DisplayProblem("Could not write specified output file");
                 return 1;
             }
+
+            EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
+            EPSLSPEC newEPSLSPEC = new EPSLSPEC(
+                entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
+                buildInfo.ClangConfig, new List<string>() /* TEMP */, 
+                outputName+".bc", null, FileSourceType.Library
+            );
+
+            string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");
+            TestResult(builder.SaveEPSLSPEC(epslspecDest, newEPSLSPEC));
         } else {
             string resultSource;
 

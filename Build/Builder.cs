@@ -20,7 +20,6 @@ public class Builder {
     List<string> prefixes = new List<string> {"", "."};
     List<string> IRInUserDir;
     HashSet<Struct> structs;
-    string fileWithMain;
 
     public CompilationResult LoadEPSLPROJ(string input, out EPSLPROJ projOut) {
         EPSLPROJ proj = null;
@@ -89,9 +88,19 @@ public class Builder {
         });
     }
 
-    public CompilationResult Build(string inputRel, EPSLPROJ proj) {
-        Log.Info("Starting build of", inputRel);
+    public CompilationResult SaveEPSLSPEC(string path, EPSLSPEC epslspec) {
         return RunWrapped(() => {
+            JSONObject json = epslspec.ToJSON(this);
+            BJSONEnv.WriteFile(path, json);
+        });
+    }
+
+    public CompilationResult Build(string inputRel, EPSLPROJ proj, out BuildInfo buildInfo) {
+        Log.Info("Starting build of", inputRel);
+        
+        BuildInfo _buildInfo = null;
+        
+        CompilationResult result = RunWrapped(() => {
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             string input = Utils.GetFullPath(inputRel);
@@ -126,7 +135,7 @@ public class Builder {
             List<string> generatedSPECs = GetGeneratedEPSLSPECs().ToList();
             DeleteUnusedGeneratedSPECs(lastGeneratedSPECs, generatedSPECs);
 
-            fileWithMain = null;
+            string fileWithMain = null;
             foreach (FileTree file in files.Values) {
                 foreach (RealFunctionDeclaration declaration in file.Declarations) {
                     if (!declaration.IsMain()) continue;
@@ -163,7 +172,20 @@ public class Builder {
                 proj.ToFile();
                 Log.Info("Saved updated EPSLPROJ");
             }
+
+            IEnumerable<IClangConfig> extraClangConfig = EXTRA_CLANG_OPTIONS
+                .Select(option => new ConstantClangConfig(option));
+            IEnumerable<IClangConfig> clangConfig = files.Values
+                .SelectMany(file => file.Compiler.GetClangConfig())
+                .Concat(extraClangConfig);
+            _buildInfo = new BuildInfo(
+                tree, clangConfig, Enumerable.Empty<FileTree>(), fileWithMain
+            );
         });
+
+        buildInfo = _buildInfo;
+
+        return result;
     }
 
     bool IsProjMode() {
@@ -323,7 +345,7 @@ public class Builder {
         switch (extension) {
             case ".epslspec":
                 return DispatchEPSLSPEC(path, oldCompilerPath, oldCompiler);
-        case ".epsl":
+            case ".epsl":
                 return DispatchEPSL(path, oldCompilerPath, oldCompiler);
             default:
                 return null;
@@ -455,7 +477,7 @@ public class Builder {
         }
     }
 
-    FileTree GetFile(string path) {
+    public FileTree GetFile(string path) {
         foreach (FileTree file in files.Values) {
             if (file.Stemmed == path) return file;
         }
@@ -518,7 +540,7 @@ public class Builder {
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             if (file.Compiler.ShouldSaveSPEC()) {
-                JSONObject spec = file.ToSPEC(GetFile);
+                JSONObject spec = file.EPSLSPEC.ToJSON(this);
                 string directory = Utils.GetDirectoryName(currentFile);
                 string filename = file.GetName();
                 string path = Utils.JoinPaths(directory, $".{filename}.epslspec");
@@ -534,13 +556,6 @@ public class Builder {
             if (file.GeneratedEPSLSPEC != null)
                 yield return file.GeneratedEPSLSPEC;
         }
-    }
-
-    IEnumerable<string> GetClangFlags() {
-        return files.Values
-            .SelectMany(file => file.Compiler.GetClangConfig())
-            .Select(config => config.Stringify())
-            .Concat(EXTRA_CLANG_OPTIONS);
     }
 
     void ShowCompilationError(SyntaxErrorException e, string text, string file) {
@@ -646,9 +661,9 @@ public class Builder {
         }
     }
 
-    public CompilationResult ToExecutable() {
+    public CompilationResult ToExecutable(BuildInfo buildInfo) {
         return RunWrapped(() => {
-            if (fileWithMain == null) {
+            if (buildInfo.FileWithMain == null) {
                 throw new ProjectProblemException("One main function is required when creating an executable; no main function found");
             }
             Log.Status("Optimizing LLVM");
@@ -657,7 +672,9 @@ public class Builder {
                 Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc")
             });
             Log.Status("Buiding executable");
-            Utils.RunCommand("clang", GetClangFlags().Concat(new List<string> {
+            IEnumerable<string> clangFlags = buildInfo.ClangConfig
+                .Select(config => config.Stringify());
+            Utils.RunCommand("clang", clangFlags.Concat(new List<string> {
                 "-lc", "-lm", "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code"),
                 Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-opt.bc"),
             }));
