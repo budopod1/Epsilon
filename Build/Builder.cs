@@ -21,7 +21,7 @@ public class Builder {
     List<string> IRInUserDir;
     HashSet<Struct> structs;
 
-    public CompilationResult LoadEPSLPROJ(string input, out EPSLPROJ projOut) {
+    public CompilationResult LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
         EPSLPROJ proj = null;
 
         string projLocation = null;
@@ -49,7 +49,16 @@ public class Builder {
             }
         });
 
+        // This C# version does not support the ??= operator
         projOut = proj ?? new EPSLPROJ(projLocation);
+
+        if (!allowNew && proj == null) {
+            projOut = null;
+            return new CompilationResult(
+                CompilationResultStatus.USERERR, "Cannot find requested EPSLPROJ"
+            );
+        }
+        
         return result2;
     }
 

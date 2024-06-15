@@ -110,7 +110,7 @@ Modes:
                 proj
             );
         } else if (mode.Value() == "teardown") {
-            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
+            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj, allowNew: false));
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
             TestResult(builder.Teardown(proj));

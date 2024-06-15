@@ -1,5 +1,4 @@
 TODO:
-* stop `teardown` mode from failing silently when in an empty folder
 * `Matrix` type?
 * top tracking so we can alloca instead of malloc
 * add safe array access
