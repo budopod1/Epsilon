@@ -33,7 +33,7 @@ Modes:
         );
 
         parser.AddOption(
-            new CaptureExpectation(parser, val => clangOptions.Matched = val, "clang-option"),
+            new CaptureExpectation(val => clangOptions.Matched = val, "clang-option"),
             "An option for the clang compiler", "clang-option"
         );
 
