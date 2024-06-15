@@ -177,7 +177,7 @@ public class EPSLFileCompiler : IFileCompiler {
         AddUnusedValueWrappers(program);
 
         Step("Getting JSON...");
-        string json = GetJSON(program);
+        string json = GetJSONString(program);
 
         Step("Saving JSON...");
         SaveJSON(json);
@@ -1780,8 +1780,8 @@ public class EPSLFileCompiler : IFileCompiler {
         }
     }
 
-    string GetJSON(Program program) {
-        return program.GetJSON().ToJSON();
+    string GetJSONString(Program program) {
+        return program.GetJSON().Stringify();
     }
 
     void SaveJSON(string json) {

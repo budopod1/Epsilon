@@ -66,7 +66,7 @@ public class EPSLPROJ {
         obj["command_options"] = new JSONList(CommandOptions.Select(
             commandOption => new JSONString(commandOption)
         ));
-        string fileText = obj.ToJSON();
+        string fileText = obj.Stringify();
         using (StreamWriter file = new StreamWriter(Path)) {
             file.Write(fileText);
         }
