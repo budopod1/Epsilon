@@ -28,8 +28,13 @@ Modes:
             "B", "no-builtins");
 
         DelimitedInputExpectation clangOptions = parser.AddOption(
-            new DelimitedInputExpectation(parser, "clang-options", "END"), 
+            new DelimitedInputExpectation(parser, "clang-options", "END", needsOne: true), 
             "Options for the clang compiler", "c", "clang-options"
+        );
+
+        parser.AddOption(
+            new CaptureExpectation(parser, val => clangOptions.Matched = val, "clang-option"),
+            "An option for the clang compiler", "clang-option"
         );
 
         InputExpectation outputFile = new InputExpectation("output file");
