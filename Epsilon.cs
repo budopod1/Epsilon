@@ -25,11 +25,11 @@ Modes:
 
         bool linkBuiltins = true;
         parser.AddOption(() => {linkBuiltins = false;}, "Don't link to Epsilon's builtins", null, 
-            "B", "no-builtins");
+            "no-builtins");
 
         bool linkLibraries = true;
         parser.AddOption(() => {linkLibraries = false;}, "Don't link to Epsilon libraries", null, 
-            "L", "no-libraries");
+            "no-libraries");
 
         DelimitedInputExpectation clangOptions = parser.AddOption(
             new DelimitedInputExpectation(parser, "clang-options", "END", needsOne: true), 
@@ -39,6 +39,13 @@ Modes:
         parser.AddOption(
             new CaptureExpectation(val => clangOptions.Matched = val, "clang-option"),
             "An option for the clang compiler", "clang-option"
+        );
+
+        List<string> libraries = new List<string>();
+
+        parser.AddOption(
+            new CaptureExpectation(val => libraries.Add(val), "library-path"),
+            "An additional library to load", "l", "library"
         );
 
         InputExpectation outputFile = new InputExpectation("output file");
@@ -97,6 +104,10 @@ Modes:
                 linkBuiltins = false;
                 linkLibraries = false;
             }
+
+            libraries.AddRange(proj.Libraries);
+
+            TestResult(builder.RegisterLibraries(libraries));
 
             builder.ALWAYS_PROJECT = alwaysProj;
             builder.NEVER_PROJECT = neverProj;

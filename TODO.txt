@@ -1,4 +1,5 @@
 TODO:
+* rename `CompilationResult`
 * `Matrix` type?
 * top tracking so we can alloca instead of malloc
 * add safe array access

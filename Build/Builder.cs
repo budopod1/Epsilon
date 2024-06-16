@@ -11,17 +11,23 @@ public class Builder {
     public bool LINK_BUILTINS = true;
     public bool LINK_LIBRARIES = true;
     public IEnumerable<string> EXTRA_CLANG_OPTIONS = Enumerable.Empty<string>();
+    public string EPSLLIBS;
     
     bool isProj = false;
     string currentFile = "";
     string currentText = "";
     long? lastBuildStartTime;
+    Dictionary<string, string> libraries;
     Dictionary<string, FileTree> files;
     List<string> extensions = new List<string> {"epslspec", "epsl"};
     List<string> prefixes = new List<string> {"", "."};
     List<string> IRInUserDir;
     List<FileTree> unlinkedFiles;
     HashSet<Struct> structs;
+
+    public Builder() {
+        EPSLLIBS = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs");
+    }
 
     public CompilationResult LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
         EPSLPROJ proj = null;
@@ -106,6 +112,21 @@ public class Builder {
         });
     }
 
+    public CompilationResult RegisterLibraries(IEnumerable<string> relPaths) {
+        return RunWrapped(() => {
+            IEnumerable<string> paths = relPaths
+                .Select(path => Utils.GetFullPath(path.Replace("%EPSLLIBS%", EPSLLIBS)))
+                .Distinct();
+            try {
+                libraries = paths.ToDictionary2((path) => Utils.GetFileNameWithoutExtension(path));
+            } catch (DuplicateKeyException<string, string> e) {
+                throw new ProjectProblemException(
+                    $"All libraries must have distinct names. Libaries '{e.Initial}' and '{e.Duplicate}' both have name '{e.Key}'."
+                );
+            }
+        });
+    }
+
     public CompilationResult Build(string inputRel, EPSLPROJ proj, out BuildInfo buildInfo) {
         Log.Info("Starting build of", inputRel);
         
@@ -163,9 +184,7 @@ public class Builder {
                 "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--"
             };
             if (LINK_BUILTINS) {
-                arguments.Add(Utils.JoinPaths(
-                    Utils.ProjectAbsolutePath(), "libs", "builtins.bc"
-                ));
+                arguments.Add(Utils.JoinPaths(EPSLLIBS, "builtins.bc"));
             }
             
             arguments.AddRange(sections);
@@ -346,7 +365,7 @@ public class Builder {
                 currentFile = file;
                 string project = Utils.JoinPaths(projDirectory, file);
                 if (Utils.FileExists(project)) yield return project;
-                string lib = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs", file);
+                string lib = Utils.JoinPaths(EPSLLIBS, file);
                 if (Utils.FileExists(lib)) yield return lib;
             }
         }

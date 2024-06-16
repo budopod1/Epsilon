@@ -13,6 +13,18 @@ public static class Extensions {
         return dict.ContainsKey(key) ? dict[key] : default_();
     }
 
+    public static Dictionary<TKey, TSource> ToDictionary2<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
+        var result = new Dictionary<TKey, TSource>();
+        foreach (TSource val in source) {
+            TKey key = keySelector(val);
+            if (result.ContainsKey(key)) {
+                throw new DuplicateKeyException<TKey, TSource>(key, result[key], val);
+            }
+            result[key] = val;
+        }
+        return result;
+    }
+
     public static (IEnumerable<T>, IEnumerable<TSub>) ParitionSubclass<T, TSub>(this IEnumerable<T> vals) where TSub : T {
         SubclassPartitioningManager<T, TSub> manager = new SubclassPartitioningManager<T, TSub>(vals);
         return (PartitionSubclassOther(manager), PartitionSubclassSub(manager));
