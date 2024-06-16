@@ -1,7 +1,0 @@
-#import math;
-#import pkg;
-
-Z#main {
-    println[sin[example_func[5]]]; // should output sin(cos(5) + 1)
-    return 0;
-}

@@ -1,5 +1,0 @@
-#import math;
-
-Q#sub_func<Q:a> {
-    return cos[a];
-}
