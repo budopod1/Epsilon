@@ -66,7 +66,8 @@ public class EPSLPROJ {
         obj["command_options"] = new JSONList(CommandOptions.Select(
             commandOption => new JSONString(commandOption)
         ));
-        string fileText = obj.Stringify();
+        PrettyPrintConfig printConfig = new PrettyPrintConfig(4, 60);
+        string fileText = obj.PrettyPrint(printConfig);
         using (StreamWriter file = new StreamWriter(Path)) {
             file.Write(fileText);
         }
