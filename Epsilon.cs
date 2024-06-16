@@ -13,7 +13,6 @@ A compiler for the Epsilon programming language
 Modes:
 * compile: compile specified file
 * teardown: remove the cached compilation files
-* command-line-options: specifies the command line options to be used with a project
             ".Trim()
         );
 
@@ -46,19 +45,15 @@ Modes:
         parser.AddOption(outputFile, "The path to output to", "o", "output");
 
         PossibilitiesExpectation mode = parser.Expect(
-            new PossibilitiesExpectation("compile", "teardown", "command-line-options"));
+            new PossibilitiesExpectation("compile", "teardown"));
         
         InputExpectation sourceFile = new InputExpectation("source file", true);
-
-        MultiInputExpectation commandOptions = new MultiInputExpectation(parser, "command-options");
         
         mode.Then(() => {
             if (mode.Value() == "compile") {
                 parser.Expect(sourceFile);
             } else if (mode.Value() == "teardown") {
                 parser.Expect(sourceFile);
-            } else if (mode.Value() == "command-line-options") {
-                parser.Expect(sourceFile, commandOptions);
             }
         });
 
@@ -74,8 +69,6 @@ Modes:
 
         parser.AddUsageOption(mode.Usage("compile"), sourceFile);
         parser.AddUsageOption(mode.Usage("teardown"), sourceFile);
-        parser.AddUsageOption(mode.Usage("command-line-options"), sourceFile, 
-            commandOptions);
         
         parser.Parse(args);
 
@@ -121,12 +114,6 @@ Modes:
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
             TestResult(builder.Teardown(proj));
-
-            return 0;
-        } else if (mode.Value() == "command-line-options") {
-            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
-
-            TestResult(builder.SetEPSLPROJOptionAndSave(proj, commandOptions.MatchedSegments));
 
             return 0;
         } else {
