@@ -219,9 +219,8 @@ Modes:
         return 0;
     }
 
-    static void TestResult(CompilationResult result) {
-        if (result.GetStatus() != CompilationResultStatus.GOOD) {
-            if (result.HasMessage()) ArgumentParser.DisplayProblem(result.GetMessage());
+    static void TestResult(ResultStatus result) {
+        if (result != ResultStatus.GOOD) {
             Environment.Exit(1);
         }
     }

@@ -1,5 +1,5 @@
 using System;
 
-public enum CompilationResultStatus {
+public enum ResultStatus {
     GOOD, USERERR, FAIL
 }

@@ -29,26 +29,26 @@ public class Builder {
         EPSLLIBS = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs");
     }
 
-    public CompilationResult LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
+    public ResultStatus LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
         EPSLPROJ proj = null;
 
         string projLocation = null;
-        CompilationResult result1 = RunWrapped(() => {
+        ResultStatus status1 = RunWrapped(() => {
             string projDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
             string projName = Utils.GetFileNameWithoutExtension(input) + ".epslproj";
             projLocation = Utils.JoinPaths(projDirectory, projName);
         });
-        if (result1.GetStatus() != CompilationResultStatus.GOOD) {
+        if (status1 != ResultStatus.GOOD) {
             projOut = null;
-            return result1;
+            return status1;
         }
 
         if (NEVER_PROJECT) {
             projOut = new EPSLPROJ(projLocation);
-            return result1;
+            return status1;
         }
         
-        CompilationResult result2 = RunWrapped(() => {
+        ResultStatus status2 = RunWrapped(() => {
             if (Utils.FileExists(projLocation)) {
                 currentFile = projLocation;
                 proj = EPSLPROJ.FromText(projLocation, ParseJSONFile(projLocation));
@@ -62,18 +62,17 @@ public class Builder {
 
         if (!allowNew && proj == null) {
             projOut = null;
-            return new CompilationResult(
-                CompilationResultStatus.USERERR, "Cannot find requested EPSLPROJ"
-            );
+            Console.WriteLine("Cannot find requested EPSLPROJ");
+            return ResultStatus.USERERR;
         }
         
-        return result2;
+        return status2;
     }
 
-    public CompilationResult GetOutputLocation(string input, string extension, out string outputOut, out string outputNameOut) {
+    public ResultStatus GetOutputLocation(string input, string extension, out string outputOut, out string outputNameOut) {
         string output = null;
         string outputName = null;
-        CompilationResult result = RunWrapped(() => {
+        ResultStatus status = RunWrapped(() => {
             string outputDir = Utils.GetFullPath(Utils.GetDirectoryName(input));
             outputName = Utils.SetExtension(Utils.GetFileName(input), null);
             if (outputName == "entry") outputName = "result";
@@ -82,10 +81,10 @@ public class Builder {
         });
         outputOut = output;
         outputNameOut = outputName;
-        return result;
+        return status;
     }
 
-    public CompilationResult ReadyPackageFolder(string relFolder) {
+    public ResultStatus ReadyPackageFolder(string relFolder) {
         return RunWrapped(() => {
             string folder = Utils.GetFullPath(relFolder);
             if (Directory.Exists(folder)) {
@@ -105,14 +104,14 @@ public class Builder {
         });
     }
 
-    public CompilationResult SaveEPSLSPEC(string path, EPSLSPEC epslspec) {
+    public ResultStatus SaveEPSLSPEC(string path, EPSLSPEC epslspec) {
         return RunWrapped(() => {
             JSONObject json = epslspec.ToJSON(this);
             BJSONEnv.WriteFile(path, json);
         });
     }
 
-    public CompilationResult RegisterLibraries(IEnumerable<string> relPaths) {
+    public ResultStatus RegisterLibraries(IEnumerable<string> relPaths) {
         return RunWrapped(() => {
             IEnumerable<string> paths = relPaths
                 .Select(path => Utils.GetFullPath(path.Replace("%EPSLLIBS%", EPSLLIBS)))
@@ -127,12 +126,12 @@ public class Builder {
         });
     }
 
-    public CompilationResult Build(string inputRel, EPSLPROJ proj, out BuildInfo buildInfo) {
+    public ResultStatus Build(string inputRel, EPSLPROJ proj, out BuildInfo buildInfo) {
         Log.Info("Starting build of", inputRel);
         
         BuildInfo _buildInfo = null;
         
-        CompilationResult result = RunWrapped(() => {
+        ResultStatus status = RunWrapped(() => {
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             string input = Utils.GetFullPath(inputRel);
@@ -216,61 +215,61 @@ public class Builder {
 
         buildInfo = _buildInfo;
 
-        return result;
+        return status;
     }
 
     bool IsProjMode() {
         return !NEVER_PROJECT && (ALWAYS_PROJECT || isProj);
     }
     
-    public CompilationResult RunWrapped(Action action) {
+    public ResultStatus RunWrapped(Action action) {
         try {
             action();
         } catch (SyntaxErrorException e) {
             ShowCompilationError(e, currentText, currentFile);
-            return new CompilationResult(CompilationResultStatus.USERERR);
+            return ResultStatus.USERERR;
         } catch (TargetInvocationException e) {
             Exception inner = e.InnerException;
             if (inner is SyntaxErrorException) {
                 ShowCompilationError(
                     (SyntaxErrorException)inner, currentText, currentFile
                 );
-                return new CompilationResult(CompilationResultStatus.USERERR);
+                return ResultStatus.USERERR;
             } else {
                 ExceptionDispatchInfo.Capture(inner).Throw();
                 // The next line won't be called, we just need it to keep the
                 // C# compiler happy
-                return new CompilationResult(CompilationResultStatus.FAIL);
+                return ResultStatus.FAIL;
             }
         } catch (CommandFailureException e) {
             Console.WriteLine(e.Message);
-            return new CompilationResult(CompilationResultStatus.FAIL);
+            return ResultStatus.FAIL;
         } catch (FileNotFoundException e) {
             Console.Write(e.Message);
             if (e.FileName != null) {
                 Console.Write(": " + e.FileName);
             }
             Console.WriteLine();
-            return new CompilationResult(CompilationResultStatus.USERERR);
+            return ResultStatus.USERERR;
         } catch (IOException e) {
-            return new CompilationResult(
-                CompilationResultStatus.USERERR, e.Message
-            );
+            Console.Write("IO Error: ");
+            Console.WriteLine(e.Message);
+            return ResultStatus.USERERR;
         } catch (InvalidJSONException e) {
             JSONTools.ShowError(currentText, e, currentFile);
-            return new CompilationResult(CompilationResultStatus.USERERR);
+            return ResultStatus.USERERR;
         } catch (InvalidBJSONException e) {
             Console.WriteLine($"Error while reading BJSON file: {e.Message}");
-            return new CompilationResult(CompilationResultStatus.FAIL);
+            return ResultStatus.FAIL;
         } catch (ModuleNotFoundException e) {
             Console.WriteLine($"Cannot find requested module '{e.Path}'");
-            return new CompilationResult(CompilationResultStatus.USERERR);
+            return ResultStatus.USERERR;
         } catch (ProjectProblemException e) {
             Console.WriteLine(e.Problem);
-            return new CompilationResult(CompilationResultStatus.USERERR);
+            return ResultStatus.USERERR;
         }
         
-        return new CompilationResult(CompilationResultStatus.GOOD);
+        return ResultStatus.GOOD;
     }
 
     void SwitchFile(FileTree file) {
@@ -696,7 +695,7 @@ public class Builder {
         }
     }
 
-    public CompilationResult ToExecutable(BuildInfo buildInfo) {
+    public ResultStatus ToExecutable(BuildInfo buildInfo) {
         return RunWrapped(() => {
             if (buildInfo.FileWithMain == null) {
                 throw new ProjectProblemException("One main function is required when creating an executable; no main function found");
@@ -716,7 +715,7 @@ public class Builder {
         });
     }
 
-    public CompilationResult Teardown(EPSLPROJ proj) {
+    public ResultStatus Teardown(EPSLPROJ proj) {
         return RunWrapped(() => {
             Log.Status("Cleaning up EPSLSPECs");
             foreach (string spec in proj.EPSLSPECS) {
@@ -725,15 +724,6 @@ public class Builder {
 
             Log.Status("Deleting project file");
             Utils.TryDelete(proj.Path);
-        });
-    }
-
-    public CompilationResult SetEPSLPROJOptionAndSave(EPSLPROJ proj, List<string> commandOptions) {
-        return RunWrapped(() => {
-            proj.CommandOptions = commandOptions;
-            Log.Info("Updated EPSLPROJ command options");
-            proj.ToFile();
-            Log.Info("Saved updated EPSLSPEC");
         });
     }
     
