@@ -13,6 +13,7 @@ A compiler for the Epsilon programming language
 Modes:
 * compile: compile specified file
 * teardown: remove the cached compilation files
+* create-proj: create a new EPSLPROJ file
             ".Trim()
         );
 
@@ -52,15 +53,19 @@ Modes:
         parser.AddOption(outputFile, "The path to output to", "o", "output");
 
         PossibilitiesExpectation mode = parser.Expect(
-            new PossibilitiesExpectation("compile", "teardown"));
+            new PossibilitiesExpectation("compile", "teardown", "create-proj"));
         
         InputExpectation sourceFile = new InputExpectation("source file", true);
+
+        InputExpectation projFile = new InputExpectation("proj file location");
         
         mode.Then(() => {
             if (mode.Value() == "compile") {
                 parser.Expect(sourceFile);
             } else if (mode.Value() == "teardown") {
                 parser.Expect(sourceFile);
+            } else if (mode.Value() == "create-proj") {
+                parser.Expect(projFile);
             }
         });
 
@@ -76,6 +81,7 @@ Modes:
 
         parser.AddUsageOption(mode.Usage("compile"), sourceFile);
         parser.AddUsageOption(mode.Usage("teardown"), sourceFile);
+        parser.AddUsageOption(mode.Usage("create-proj"), projFile);
         
         parser.Parse(args);
 
@@ -125,6 +131,10 @@ Modes:
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
             TestResult(builder.Teardown(proj));
+
+            return 0;
+        } else if (mode.Value() == "create-proj") {
+            TestResult(builder.CreateEPSLPROJ(projFile.Matched));
 
             return 0;
         } else {

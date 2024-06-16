@@ -730,6 +730,13 @@ public class Builder {
             Utils.TryDelete(proj.Path);
         });
     }
+
+    public ResultStatus CreateEPSLPROJ(string path) {
+        return RunWrapped(() => {
+            EPSLPROJ proj = new EPSLPROJ(Utils.GetFullPath(path));
+            proj.ToFile();
+        });
+    }
     
     public IJSONValue ParseJSONFile(string path) {
         return ParseJSONFile(path, out string _);
