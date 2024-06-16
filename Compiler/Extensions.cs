@@ -15,12 +15,30 @@ public static class Extensions {
 
     public static Dictionary<TKey, TSource> ToDictionary2<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
         var result = new Dictionary<TKey, TSource>();
-        foreach (TSource val in source) {
-            TKey key = keySelector(val);
+        foreach (TSource item in source) {
+            TKey key = keySelector(item);
             if (result.ContainsKey(key)) {
-                throw new DuplicateKeyException<TKey, TSource>(key, result[key], val);
+                throw new DuplicateKeyException<TKey, TSource>(
+                    key, result[key], item
+                );
             }
-            result[key] = val;
+            result[key] = item;
+        }
+        return result;
+    }
+
+    public static Dictionary<TKey, TValue> ToDictionary2<TSource, TKey, TValue>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TValue> valueSelector) {
+        var result = new Dictionary<TKey, TValue>();
+        var sourceItems = new Dictionary<TKey, TSource>();
+        foreach (TSource item in source) {
+            TKey key = keySelector(item);
+            if (sourceItems.ContainsKey(key)) {
+                throw new DuplicateKeyException<TKey, TSource>(
+                    key, sourceItems[key], item
+                );
+            }
+            result[key] = valueSelector(item);
+            sourceItems[key] = item;
         }
         return result;
     }

@@ -357,15 +357,19 @@ public class Builder {
         return new DispatchedFile(compiler, path, oldCompilerPath, oldCompiler);
     }
 
-    IEnumerable<string> FileLocations(string path, string projDirectory) {
+    IEnumerable<string> FileLocations(string partialPath, string projDirectory) {
         foreach (string extension in extensions) {
             foreach (string prefix in prefixes) {
-                string file = prefix + path + "." + extension;
-                currentFile = file;
-                string project = Utils.JoinPaths(projDirectory, file);
-                if (Utils.FileExists(project)) yield return project;
-                string lib = Utils.JoinPaths(EPSLLIBS, file);
-                if (Utils.FileExists(lib)) yield return lib;
+                string filename = prefix + partialPath + "." + extension;
+                currentFile = filename;
+                List<string> folders = new List<string> {projDirectory, EPSLLIBS};
+                if (libraries.ContainsKey(partialPath)) {
+                    folders.Add(libraries[partialPath]);
+                }
+                foreach (string folder in folders) {
+                    string file = Utils.JoinPaths(folder, filename);
+                    if (Utils.FileExists(file)) yield return file;
+                }
             }
         }
     }

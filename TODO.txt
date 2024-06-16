@@ -1,4 +1,5 @@
 TODO:
+* add `create-proj` mode
 * `Matrix` type?
 * top tracking so we can alloca instead of malloc
 * add safe array access

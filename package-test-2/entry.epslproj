@@ -1,0 +1,7 @@
+{
+    "compile_start_time_1": 0,
+    "compile_start_time_2": 1718572081,
+    "epslspecs": ["/home/runner/Epsilon/package-test-2/.entry.epslspec"],
+    "command_options": [],
+    "libraries": ["../package-test-1/pkg"]
+}
