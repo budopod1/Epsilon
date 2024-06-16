@@ -1,20 +1,27 @@
-*.pyc
-.ackrc
+# Replit stuff
 .cache
 .local
 .replit
-Epsilon.exe
-Epsilon.pdb
-code
-code.json
-err.txt
-output.mlpd
 replit.nix
-result
+
+# Misc tools
+.ackrc
 vgcore.*
-lines.py
+Epsilon.pdb
+
+# Executable output
+Epsilon.exe
+code
+result
+
+# Intermediate files
+*.pyc
 *.bc
 *.ll
-*.epslproj
-.*.epslspec
-current.epsl
+/code.json
+
+# Epsilon specific
+/current.epsl
+*.epslspec
+!/libs/*.epslspec
+/libs/.*.epslspec
