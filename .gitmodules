@@ -4,3 +4,6 @@
 [submodule "Cs-Command-Line"]
 	path = Cs-Command-Line
 	url = https://github.com/budopod1/Cs-Command-Line.git
+[submodule "EPSL-BinJSON"]
+	path = EPSL-BinJSON
+	url = https://github.com/budopod1/EPSL-BinJSON

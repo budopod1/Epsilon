@@ -10,12 +10,13 @@ def stringify_type_(program, type_):
     return f"{name}{type_['bits'] or ''}{generics}"
 
 
-def make_stringify_func(program, type_, i):
+def make_stringify_func(program, key, type_, i):
     ir_type = make_type_(program, type_)
     func = ir.Function(
         program.module, ir.FunctionType(make_type_(program, String), [ir_type]),
         name=f"{program.path} stringify{i}"
     )
+    program.stringifiers[key] = func
     entry = func.append_basic_block(name="entry")
     val, = func.args
     builder = ir.IRBuilder(entry)

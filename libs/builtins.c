@@ -47,8 +47,15 @@ void shrinkMem(struct Array *array, uint64_t elemSize) {
     array->capacity = newCapacity;
 }
 
+const char *const REMOVEAT_IDX_ERR = ERR_START "Cannot remove item at index outside bounds of array\n";
+
 void removeAt(struct Array *array, uint64_t idx, uint64_t elemSize) {
     uint64_t length = array->length;
+    if (idx >= length) {
+        fflush(stdout);
+        fwrite(REMOVEAT_IDX_ERR, strlen(REMOVEAT_IDX_ERR), 1, stderr);
+        exit(1);
+    }
     array->length = length-1;
     char* content = array->content;
     char* deststart = content+idx*elemSize;
@@ -56,8 +63,15 @@ void removeAt(struct Array *array, uint64_t idx, uint64_t elemSize) {
     memmove((void*)deststart, (void*)srcstart, elemSize*(length-idx-1));
 }
 
+const char *const INSERTSPACE_IDX_ERR = ERR_START "Cannot insert space outside bounds of array\n";
+
 void insertSpace(struct Array *array, uint64_t idx, uint64_t elemSize) {
     uint64_t length = array->length;
+    if (idx > length) {
+        fflush(stdout);
+        fwrite(INSERTSPACE_IDX_ERR, strlen(INSERTSPACE_IDX_ERR), 1, stderr);
+        exit(1);
+    }
     incrementLength(array, elemSize);
     char* content = array->content;
     char* srcstart = content+idx*elemSize;
@@ -196,12 +210,11 @@ struct Array *rangeArray3(int32_t start, int32_t end, int32_t step) {
 }
 
 void print(const struct Array *string) {
-    fflush(stdout);
     fwrite(string->content, string->length, 1, stdout);
+    fflush(stdout);
 }
 
 void println(const struct Array *string) {
-    fflush(stdout);
     fwrite(string->content, string->length, 1, stdout);
     putc('\n', stdout);
 }
@@ -269,8 +282,20 @@ void rightPad(struct Array *str, uint64_t length, char chr) {
         memset(content, chr, reqLen);
     }
 }
+const char *const SLICE_NEG_LEN_ERR = ERR_START "Slice end index must be after slice start index\n";
+const char *const SLICE_INDEX_ERR = ERR_START "Slice end index out of range\n";
 
 struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
+    if (start > end) {
+        fflush(stdout);
+        fwrite(SLICE_NEG_LEN_ERR, strlen(SLICE_NEG_LEN_ERR), 1, stderr);
+        exit(1);
+    }
+    if (end >= array->length) {
+        fflush(stdout);
+        fwrite(SLICE_INDEX_ERR, strlen(SLICE_INDEX_ERR), 1, stderr);
+        exit(1);
+    }
     struct Array *slice = malloc(sizeof(struct Array));
     slice->refCounter = 0;
     uint64_t len = end - start + 1;
@@ -285,7 +310,7 @@ struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uin
     return slice;
 }
 
-_Bool arrayEqual(const struct Array *array1, const struct Array *array2, uint64_t elemSize) {
+bool arrayEqual(const struct Array *array1, const struct Array *array2, uint64_t elemSize) {
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
     if (len1 == len2) {
@@ -424,13 +449,13 @@ struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t e
     return result;
 }
 
-_Bool startsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+bool startsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
     uint64_t subLen = sub->length;
     if (subLen > arr->length) return 0;
     return memcmp(arr->content, sub->content, subLen*elemSize) == 0;
 }
 
-_Bool endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
+bool endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
     uint64_t subLen = sub->length;
     uint64_t arrLen = arr->length;
     if (subLen > arrLen) return 0;
@@ -559,11 +584,11 @@ double parseFloat(const struct Array *str) {
     return NAN;
 }
 
-_Bool isNaN32(float val) {
+bool isNaN32(float val) {
     return isnan(val) != 0;
 }
 
-_Bool isNaN64(double val) {
+bool isNaN64(double val) {
     return isnan(val) != 0;
 }
 
@@ -652,7 +677,7 @@ int32_t FILE_BINARY_MODE() {
     return _FILE_BINARY_MODE;
 }
 
-_Bool fileOpen(const struct File *file) {
+bool fileOpen(const struct File *file) {
     return file->open;
 }
 
@@ -660,7 +685,7 @@ int32_t fileMode(const struct File *file) {
     return file->mode;
 }
 
-_Bool closeFile(struct File *file) {
+bool closeFile(struct File *file) {
     if (file->open) {
         if (fclose(file->file) == 0) {
             file->open = 0;
@@ -758,7 +783,7 @@ int32_t jumpFilePos(const struct File *file, uint64_t amount) {
     return false;
 }
 
-_Bool readLineEOF = false;
+bool readLineEOF = false;
 
 // returns: Str?
 struct Array *readFileLine(const struct File *file) {
@@ -783,7 +808,7 @@ struct Array *readFileLine(const struct File *file) {
     return NULL;
 }
 
-_Bool readLineReachedEOF() {
+bool readLineReachedEOF() {
     return readLineEOF;
 }
 
@@ -812,7 +837,7 @@ struct Array *readFileLines(const struct File *file) {
     }
 }
 
-_Bool writeToFile(const struct File *file, const struct Array *text) {
+bool writeToFile(const struct File *file, const struct Array *text) {
     if (file->open) {
         uint64_t len = text->length;
         return fwrite(text->content, len, 1, file->file) == 1;
@@ -829,7 +854,7 @@ void freeFile(struct File *file) {
 }
 
 void abort_(const struct Array *string) {
-    fflush(stderr);
+    fflush(stdout);
     fwrite(string->content, string->length, 1, stderr);
     putc('\n', stderr);
     exit(1);
@@ -872,7 +897,7 @@ const char *const NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found 
 
 void verifyNotNull(const char *val) {
     if (val == NULL) {
-        fflush(stderr);
+        fflush(stdout);
         fwrite(NULL_FAIL_MESSAGE, strlen(NULL_FAIL_MESSAGE), 1, stderr);
         exit(1);
     }

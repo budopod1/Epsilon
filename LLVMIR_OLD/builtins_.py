@@ -68,9 +68,6 @@ def pop(program, builder, params, param_types_):
     array_type_, _ = param_types_
     elem_type_ = array_type_["generics"][0]
     elem_ir_type = make_type_(program, elem_type_)
-    content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
-    content_ptr_casted = builder.bicast(content_ptr, elem_ir_type.as_pointer())
-    elem = builder.load(builder.gep(content_ptr_casted, [idx]))
     elem_size = program.sizeof(builder, elem_ir_type)
     program.call_extern(
         builder, "removeAt", [], [array, idx, elem_size], [
@@ -78,6 +75,9 @@ def pop(program, builder, params, param_types_):
             W64
         ], None
     )
+    content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
+    content_ptr_casted = builder.bicast(content_ptr, elem_ir_type.as_pointer())
+    elem = builder.load(builder.gep(content_ptr_casted, [idx]))
     program.decr_ref(builder, elem, elem_type_)
     return elem, elem_type_
 

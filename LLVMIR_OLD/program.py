@@ -33,7 +33,7 @@ class Program:
         for var in scope:
             global_ = ir.GlobalVariable(
                 self.module, make_type_(self, var["type_"]),
-                f"global{self.global_id()}"
+                f"{self.path}/global{self.global_id()}"
             )
             global_.initializer = ir.Constant(make_type_(self, var["type_"]), None)
             self.global_declarations[var["id"]] = global_
@@ -221,7 +221,7 @@ class Program:
         self.dumb_free(builder, val)
         builder.ret_void()
 
-    def make_check_func(self, type_):
+    def make_check_func(self, key, type_):
         assert type_["name"] != "Optional"
         if is_value_type_(type_):
             return
@@ -229,8 +229,9 @@ class Program:
         func = ir.Function(
             self.module, ir.FunctionType(
                 ir.VoidType(), [ir_type, make_type_(self, W64)]
-            ), name=f"{self.path} check{len(self.check_funcs)}"
+            ), name=f"{self.path}/check{len(self.check_funcs)}"
         )
+        self.check_funcs[key] = func
         func.attributes.add("alwaysinline")
         entry = func.append_basic_block(name="entry")
         builder = ir.IRBuilder(entry)
@@ -271,9 +272,7 @@ class Program:
         if frozen in self.check_funcs:
             func = self.check_funcs[frozen]
         else:
-            self.check_funcs[frozen] = None
-            func = self.make_check_func(type_)
-            self.check_funcs[frozen] = func
+            func = self.make_check_func(frozen, type_)
         builder.call(func, [value, refs])
 
     def decr_ref(self, builder, value, type_, no_nulls=False):
@@ -299,9 +298,7 @@ class Program:
         if frozen in self.stringifiers:
             func = self.stringifiers[frozen]
         else:
-            self.stringifiers[frozen] = None
-            func = make_stringify_func(self, type_, len(self.stringifiers))
-            self.stringifiers[frozen] = func
+            func = make_stringify_func(self, frozen, type_, len(self.stringifiers)+1)
         return builder.call(func, [value])
 
     def global_id(self):
@@ -329,7 +326,7 @@ class Program:
             ir_type = ir.ArrayType(make_type_(self, Byte), len(value))
             constant = ir.Constant(ir_type, bytearray(value, "utf-8"))
             global_var = ir.GlobalVariable(
-                self.module, ir_type, f"string{self.global_id()}"
+                self.module, ir_type, f"{self.path}/string{self.global_id()}"
             )
             global_var.global_constant = True
             global_var.unnamed_addr = True
