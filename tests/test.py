@@ -95,6 +95,14 @@ TESTS = [
         ]
     },
     {
+        "file": "format.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 352},
+        ]
+    },
+    {
         "file": "global.epsl",
         "func": -1,
         "sig": CFUNCTYPE(c_int),

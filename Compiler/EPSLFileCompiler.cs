@@ -1256,6 +1256,26 @@ public class EPSLFileCompiler : IFileCompiler {
                         )
                     ),
                 }),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new Type_PatternSegment(Type_.String()),
+                        new TextPatternSegment("%"),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(FormatChain)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(FormatChain)),
+                        new TextPatternSegment("%"),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(FormatChain)
+                    )
+                ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
@@ -1607,7 +1627,7 @@ public class EPSLFileCompiler : IFileCompiler {
         foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(program)) {
             DoBlockCodeRules(block, rules);
         }
-
+        
         return program;
     }
     

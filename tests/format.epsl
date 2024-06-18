@@ -1,0 +1,10 @@
+Z#main {
+    Str:s = "{}: {}" % "hi" % 5;
+
+    W:total = 0;
+    for (Byte:b in s) {
+        total += b;
+    };
+
+    return total;
+}

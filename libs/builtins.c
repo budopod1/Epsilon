@@ -902,3 +902,59 @@ void verifyNotNull(const char *val) {
         exit(1);
     }
 }
+
+const char *const TOO_FEW_PLACEHOLDERS_MESSAGE = ERR_START "Not enough placeholders for given number of values";
+const char *const TOO_MANY_PLACEHOLDERS_MESSAGE = ERR_START "Too many placeholders for given number of values";
+const char *const FORMAT_STRING_PLACEHOLDER = "{}";
+
+struct Array *formatString(struct Array *template_, struct Array *values[], uint32_t valueCount) {
+    size_t placeholder_len = strlen(FORMAT_STRING_PLACEHOLDER);
+    uint32_t template_Len = template_->length;
+    char *template_Content = template_->content;
+    uint64_t resultLen = template_Len - valueCount * placeholder_len;
+    for (uint32_t i = 0; i < valueCount; i++) {
+        resultLen += values[i]->length;
+    }
+
+    uint64_t resultCap = resultLen + 1;
+    uint32_t valueIdx = 0;
+    char *result = malloc(resultCap);
+    uint64_t resultIdx = 0;
+    uint64_t segStart = 0;
+    for (uint64_t i = 0; i < template_Len; i++) {
+        if (memcmp(template_Content + i, FORMAT_STRING_PLACEHOLDER, placeholder_len) == 0) {
+            if (valueIdx == valueCount) {
+                fflush(stdout);
+                fwrite(TOO_FEW_PLACEHOLDERS_MESSAGE, strlen(TOO_FEW_PLACEHOLDERS_MESSAGE), 1, stderr);
+                exit(1);
+            }
+            
+            uint64_t segLen = i - segStart;
+            memcpy(result + resultIdx, template_Content + segStart, segLen);
+            resultIdx += segLen;
+            
+            struct Array *value = values[valueIdx++];
+            uint64_t valueLen = value->length;
+            memcpy(result + resultIdx, value->content, valueLen);
+            resultIdx += valueLen;
+
+            segStart = i + placeholder_len;
+            i = segStart - 1;
+        }
+    }
+    
+    if (valueIdx < valueCount) {
+        fflush(stdout);
+        fwrite(TOO_MANY_PLACEHOLDERS_MESSAGE, strlen(TOO_MANY_PLACEHOLDERS_MESSAGE), 1, stderr);
+        exit(1);
+    }
+
+    memcpy(result + resultIdx, template_Content + segStart, template_Len - segStart);
+    
+    struct Array *resultArr = malloc(sizeof(struct Array));
+    resultArr->refCounter = 0;
+    resultArr->capacity = resultCap;
+    resultArr->length = resultLen;
+    resultArr->content = result;
+    return resultArr;
+}

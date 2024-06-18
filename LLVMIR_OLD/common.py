@@ -360,6 +360,7 @@ Q64 = {"name": "Q", "bits": 64, "generics": []}
 Q32 = {"name": "Q", "bits": 32, "generics": []}
 Byte = {"name": "Byte", "bits": 8, "generics": []}
 String = Array(Byte)
+StringPointer = Pointer(String)
 Bool = {"name": "Bool", "bits": 1, "generics": []}
 File = {"name": "File", "bits": None, "generics": []}
 OptionalFile = Optional(File)

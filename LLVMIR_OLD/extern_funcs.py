@@ -331,5 +331,9 @@ EXTERN_FUNCS = {
     "verifyNotNull": {
         "name": "verifyNotNull", "return_type_": None,
         "arguments": [PointerW8]
+    },
+    "formatString": {
+        "name": "formatString", "return_type_": String,
+        "arguments": [String, StringPointer, W32]
     }
 }

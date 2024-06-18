@@ -598,6 +598,41 @@ class ForInstruction(FlowInstruction):
         builder.branch(exit_block)
 
 
+class FormatChainInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        template, *params = params
+        _, *param_types_ = param_types_
+        
+        arr_type_ = ir.ArrayType(make_type_(self.program, String), len(params))
+        value_array = builder.alloca(arr_type_)
+        
+        strs_to_check_ref = [template]
+        strs_to_free = []
+        
+        for i, (param, param_type_) in enumerate(zip(params, param_types_)):
+            if param_type_ == String:
+                strs_to_check_ref.append(param)
+            else:
+                param = self.program.stringify(builder, param, param_type_)
+                self.program.check_ref(builder, param, param_type_)
+                strs_to_free.append(param)
+            builder.store(param, builder.gep(value_array, [i64_of(0), i64_of(i)]))
+
+        result = builder.call(self.program.extern_funcs["formatString"], [
+            template, builder.gep(value_array, [i64_of(0), i64_of(0)]), i32_of(len(params))
+        ])
+
+        for str in strs_to_check_ref:
+            self.program.check_ref(builder, str, String)
+
+        for str in strs_to_free:
+            arr_content = builder.load(builder.gep(str, [i64_of(0), i32_of(3)]))
+            self.program.dumb_free(builder, arr_content)
+            self.program.dumb_free(builder, str)
+
+        return result
+
+
 class FunctionCallInstruction(Typed_Instruction):
     def __init__(self, *args):
         super().__init__(*args)
@@ -942,6 +977,7 @@ def make_instruction(program, function, data):
         "equals": EqInstruction,
         "exponentiation": ExponentiationInstruction,
         "for": ForInstruction,
+        "format_chain": FormatChainInstruction,
         "function_call": FunctionCallInstruction,
         "greater": ComparisonInstruction,
         "greater_equal": ComparisonInstruction,
