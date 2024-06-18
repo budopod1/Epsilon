@@ -18,18 +18,23 @@ Modes:
         );
 
         bool alwaysProj = false;
-        bool neverProj = false;
-        parser.AddOption(() => {alwaysProj = true;}, "Always use project mode", null,
+        parser.AddOption(() => alwaysProj = true, "Always use project mode", null,
             "p", "project-mode");
-        parser.AddOption(() => {neverProj = true;}, "Never use project mode", null, 
+        
+        bool neverProj = false;
+        parser.AddOption(() => neverProj = true, "Never use project mode", null, 
             "P", "no-project-mode");
 
+        bool disableCache = false;
+        parser.AddOption(() => disableCache = true, "Disable loading modules from compilation cache",
+            null, "disable-cache");
+
         bool linkBuiltins = true;
-        parser.AddOption(() => {linkBuiltins = false;}, "Don't link to Epsilon's builtins", null, 
+        parser.AddOption(() => linkBuiltins = false, "Don't link to Epsilon's builtins", null, 
             "no-builtins");
 
         bool linkLibraries = true;
-        parser.AddOption(() => {linkLibraries = false;}, "Don't link to Epsilon libraries", null, 
+        parser.AddOption(() => linkLibraries = false, "Don't link to Epsilon libraries", null, 
             "no-libraries");
 
         DelimitedInputExpectation clangOptions = parser.AddOption(
@@ -117,6 +122,7 @@ Modes:
 
             builder.ALWAYS_PROJECT = alwaysProj;
             builder.NEVER_PROJECT = neverProj;
+            builder.DISABLE_CACHE = disableCache;
             builder.LINK_BUILTINS = linkBuiltins;
             builder.LINK_LIBRARIES = linkLibraries;
             builder.EXTRA_CLANG_OPTIONS = clangOptions.MatchedSegments;

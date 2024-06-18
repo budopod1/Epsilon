@@ -8,7 +8,6 @@ TODO:
 * function annotations (the Java kind of annotation)
     * @cname annotation which specifies function ID (underlying symbol name)
 * make Builder static?
-* add option to ignore all cached epslspecs without disabling project mode, and while still creating new ones
 * self host LLVMIR section?
 * string interpolation
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)

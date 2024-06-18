@@ -8,6 +8,7 @@ using System.Runtime.ExceptionServices;
 public class Builder {
     public bool ALWAYS_PROJECT = false;
     public bool NEVER_PROJECT = false;
+    public bool DISABLE_CACHE = false;
     public bool LINK_BUILTINS = true;
     public bool LINK_LIBRARIES = true;
     public IEnumerable<string> EXTRA_CLANG_OPTIONS = Enumerable.Empty<string>();
@@ -309,7 +310,7 @@ public class Builder {
         string source = Utils.GetFullPath(obj["source"].GetStringOrNull());
         string generatedEPSLSPEC = null;
         if (source != null) {
-            if (NEVER_PROJECT) return null;
+            if (NEVER_PROJECT || DISABLE_CACHE) return null;
             if (!Utils.FileExists(source)) {
                 throw new InvalidSPECResourceException(
                     obj, path, source
