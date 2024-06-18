@@ -907,6 +907,17 @@ public class EPSLFileCompiler : IFileCompiler {
             new List<IMatcher> {
                 new PatternMatcher(
                     new List<IPatternSegment> {
+                        new TextPatternSegment("."),
+                        new TypePatternSegment(typeof(Name))
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {1}),
+                        typeof(MemberAccessPostfix)
+                    )
+                )
+            },
+            new List<IMatcher> {
+                new PatternMatcher(
+                    new List<IPatternSegment> {
                         new FuncPatternSegment<Name>(
                             (Name name) => Scope.ContainsVar(name, name.GetValue())
                         ),
@@ -1016,10 +1027,8 @@ public class EPSLFileCompiler : IFileCompiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new Type_PatternSegment(Type_.Any()),
-                        new TextPatternSegment("."),
-                        new TypePatternSegment(typeof(Name))
+                        new TypePatternSegment(typeof(MemberAccessPostfix))
                     }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
                         typeof(MemberAccess)
                     )
                 ),

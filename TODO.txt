@@ -1,6 +1,7 @@
 TODO:
 * `Matrix` type?
 * `Map` type
+* add option for string constants to be statically allocated
 * remove `make_range_array`
 * intermediate results should be stored in their own folder
 * top tracking so we can alloca instead of malloc

@@ -21,22 +21,36 @@ struct Array {
     void *content;
 };
 
+inline uint64_t calcNewCapacity(uint64_t cap) {
+    return 1+(cap*3)/2;
+}
+
 void incrementLength(struct Array *array, uint64_t elemSize) {
     uint64_t length = array->length;
     uint64_t capacity = array->capacity;
     array->length = length+1;
     if (capacity == length) {
         // Current growth factor: 1.5
-        uint64_t newCapacity = 1+(capacity*3)/2;
+        uint64_t newCapacity = calcNewCapacity(capacity);
         array->capacity = newCapacity;
         array->content = realloc(array->content, elemSize*newCapacity);
     }
 }
 
-void requireCapacity(struct Array *array, uint64_t capacity, uint64_t elemSize) {
-    if (array->capacity < capacity) {
-        array->capacity = capacity;
-        array->content = realloc(array->content, elemSize*capacity);
+// Will grow capacity only to required amount
+void requireCapacity(struct Array *array, uint64_t required, uint64_t elemSize) {
+    if (array->capacity < required) {
+        array->capacity = required;
+        array->content = realloc(array->content, elemSize*required);
+    }
+}
+
+// Will grow capacity and then apply growth factor
+void increaceCapacity(struct Array *array, uint64_t required, uint64_t elemSize) {
+    if (array->capacity < required) {
+        uint newCapacity = calcNewCapacity(required);
+        array->capacity = newCapacity;
+        array->content = realloc(array->content, elemSize*newCapacity);
     }
 }
 
@@ -113,7 +127,7 @@ void extend(struct Array *array1, const struct Array *array2, uint64_t elem) {
     uint64_t len2 = array2->length;
     uint64_t newLen = len1 + len2;
     uint64_t elemSize = elem >> 2;
-    requireCapacity(array1, newLen, elemSize);
+    increaceCapacity(array1, newLen, elemSize);
     array1->length = newLen;
     incrementArrayRefCounts(array2, elem);
     memcpy(array1->content+len1, array2->content, len2*elemSize);
@@ -126,8 +140,7 @@ struct Array *concat(const struct Array *array1, const struct Array *array2, uin
     uint64_t len2 = array2->length;
     uint64_t newLen = len1 + len2;
     newArray->length = newLen;
-    uint64_t newCap = newLen;
-    if (newCap < 1) newCap = 1;
+    uint64_t newCap = calcNewCapacity(newLen);
     newArray->capacity = newCap;
     uint64_t elemSize = elem >> 2;
     void *content = malloc(elemSize*newCap);

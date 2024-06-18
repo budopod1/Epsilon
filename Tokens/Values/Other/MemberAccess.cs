@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class MemberAccess : UnaryOperation<IValueToken>, IAssignableValue, IVerifier {
     string member;
     
-    public MemberAccess(IValueToken o, Name member) : base(o) {
+    public MemberAccess(IValueToken o, MemberAccessPostfix member) : base(o) {
         this.member = member.GetValue();
     }
 
