@@ -1,6 +1,8 @@
 TODO:
 * `Matrix` type?
 * `Map` type
+* add way to apply operation to every element of array (like Linq Select)
+* improve all "malformed" errors
 * add option for string constants to be statically allocated
 * remove `make_range_array`
 * intermediate results should be stored in their own folder

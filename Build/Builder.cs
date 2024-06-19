@@ -294,6 +294,7 @@ public class Builder {
     }
 
     void CleanupSPEC(string path) {
+        if (!File.Exists(path)) return;
         currentFile = path;
         IJSONValue jsonValue = ParseJSONFile(path);
         ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
