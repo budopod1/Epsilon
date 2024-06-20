@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public interface IFileCompiler {
     string GetText();
+    string GetIDPath();
     List<string> ToImports();
     HashSet<LocatedID> ToStructIDs();
     void AddStructIDs(HashSet<LocatedID> structIds);
@@ -10,7 +11,7 @@ public interface IFileCompiler {
     void AddDeclarations(List<RealFunctionDeclaration> declarations);
     HashSet<Struct> ToStructs();
     void SetStructs(HashSet<Struct> structs);
-    Dependencies ToDependencies(Func<string, FileTree> getFile);
+    Dependencies ToDependencies(Builder builder);
     string ToIR(string suggestedPath);
     string GetSource();
     bool FromCache();

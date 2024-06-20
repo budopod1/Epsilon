@@ -11,6 +11,7 @@ public class EPSLSPEC {
     public string IR;
     public string Source;
     public FileSourceType SourceType;
+    public string IDPath;
 
     public EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions,
         IEnumerable<Struct> structs,
@@ -19,7 +20,8 @@ public class EPSLSPEC {
         IEnumerable<string> imports,
         string IR,
         string source,
-        FileSourceType sourceType) {
+        FileSourceType sourceType,
+        string idPath) {
         Functions = functions;
         Structs = structs;
         Dependencies = dependencies;
@@ -28,6 +30,7 @@ public class EPSLSPEC {
         this.IR = IR;
         Source = source;
         SourceType = sourceType;
+        IDPath = idPath;
     }
 
     public JSONObject ToJSON(Builder builder) {
@@ -99,7 +102,7 @@ public class EPSLSPEC {
                     group => group.Key, group => group.ToList()
                 ), () => new List<Struct>(), () => new List<RealFunctionDeclaration>()
             ).Select((KeyValuePair<string, (List<Struct> structs, List<RealFunctionDeclaration> functions)> kvpair) => {
-                FileTree file = builder.GetFile(kvpair.Key);
+                FileTree file = builder.GetFileByIDPath(kvpair.Key);
                 JSONObject dobj = new JSONObject();
                 dobj["path"] = new JSONString(kvpair.Key);
                 dobj["functions"] = new JSONList(kvpair.Value.functions.Select(
@@ -122,6 +125,8 @@ public class EPSLSPEC {
         obj["source"] = JSONString.OrNull(Source);
 
         obj["source_type"] = new JSONString(SourceType.ToString());
+
+        obj["id_path"] = new JSONString(IDPath);
 
         return obj;
     }

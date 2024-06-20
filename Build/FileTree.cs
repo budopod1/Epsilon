@@ -42,6 +42,11 @@ public class FileTree {
         get => _spec = _spec ?? MakeSPEC();
     }
 
+    string _idPath = null;
+    public string IDPath {
+        get => _idPath = _idPath ?? Compiler.GetIDPath();
+    }
+
     public string OldPath;
 
     public FileSourceType SourceType;
@@ -70,7 +75,7 @@ public class FileTree {
     EPSLSPEC MakeSPEC() {
         return new EPSLSPEC(
             Declarations, Structs, Dependencies, Compiler.GetClangConfig(),
-            Imports, IR, Path, SourceType
+            Imports, IR, Path, SourceType, IDPath
         );
     }
 

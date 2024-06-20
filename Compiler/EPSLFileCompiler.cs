@@ -33,6 +33,10 @@ public class EPSLFileCompiler : IFileCompiler {
         return fileText;
     }
 
+    public string GetIDPath() {
+        return srcPath;
+    }
+
     void Step(string text) {}
 
     public List<string> ToImports() {
@@ -144,7 +148,7 @@ public class EPSLFileCompiler : IFileCompiler {
         program.SetStructs(structs);
     }
 
-    public Dependencies ToDependencies(Func<string, FileTree> getFile) {
+    public Dependencies ToDependencies(Builder builder) {
         Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
 
@@ -459,7 +463,7 @@ public class EPSLFileCompiler : IFileCompiler {
             IToken nameToken = token[0];
             if (!(nameToken is Name)) continue;
             string name = ((Name)nameToken).GetValue();
-            structIds.Add(new LocatedID(program.GetPath(), name));
+            structIds.Add(new LocatedID(GetIDPath(), name));
         }
         program.AddStructIDs(structIds);
     }
@@ -607,7 +611,7 @@ public class EPSLFileCompiler : IFileCompiler {
                         "Malformed struct", token
                     );
                 }
-                structs.Add(new Struct(program.GetPath(), nameStr, fields));
+                structs.Add(new Struct(GetIDPath(), nameStr, fields));
             }
         }
         program.SetStructsHere(structs);
@@ -723,7 +727,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 FuncTemplate template = sig.GetTemplate();
                 return new List<IToken> {
                     new Function(
-                        program, template.GetValue(), template.GetArguments(),
+                        GetIDPath(), program, template.GetValue(), template.GetArguments(),
                         (CodeBlock)holder.GetBlock(), sig.GetReturnType_()
                     )
                 };

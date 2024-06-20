@@ -1,0 +1,13 @@
+#import irgen;
+#import binjson;
+
+Z#main {
+    IRType:ret_type = IRType [null, IRIntType [32], null, null, null, null, null];
+    IRInstruction:instruction = IRInstruction [null, null, IRRetInstruction [IRValue [null, IRConstant [ret_type, IRIntConstant [5], null, null]]]];
+    IRFuncBody:body = IRFuncBody [[IRBasicBlock] [IRBasicBlock [0, [IRInstruction] [instruction]]]];
+    IRFunc:func = IRFunc [ret_type, "main", [IRRegister] [], body];
+
+    println[[func].stringify];
+
+    return 0;
+}

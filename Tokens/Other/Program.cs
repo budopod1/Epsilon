@@ -83,10 +83,6 @@ public class Program : TreeToken, IVerifier, IHasScope {
         }
     }
 
-    public string GetPath() {
-        return path;
-    }
-
     protected override TreeToken _Copy(List<IToken> tokens) {
         return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structs, structsHere, externalDeclarations, scope);
     }

@@ -4,7 +4,8 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class SPECFileCompiler : IFileCompiler {
-    string path;
+    string curPath;
+    string idPath;
     string fileText;
     ShapedJSON obj;
     Dictionary<string, Type_> types_ = new Dictionary<string, Type_>();
@@ -60,18 +61,24 @@ public class SPECFileCompiler : IFileCompiler {
             {"imports", new JSONListShape(new JSONStringShape())},
             {"ir", new JSONStringShape()},
             {"source", new JSONNullableShape(new JSONStringShape())},
-            {"source_type", new JSONStringOptionsShape(new List<string> {"Library", "User"})}
+            {"source_type", new JSONStringOptionsShape(new List<string> {"Library", "User"})},
+            {"id_path", new JSONStringShape()}
         });
     }
     
     public SPECFileCompiler(string path, string fileText, ShapedJSON obj) {
-        this.path = path;
+        curPath = path;
+        idPath = obj["id_path"].GetString();
         this.fileText = fileText;
         this.obj = obj;
     }
 
     public string GetText() {
         return fileText;
+    }
+
+    public string GetIDPath() {
+        return idPath;
     }
 
     public List<string> ToImports() {
@@ -85,8 +92,9 @@ public class SPECFileCompiler : IFileCompiler {
         structIds = new Dictionary<string, string>();
         foreach (ShapedJSON struct_ in obj["structs"].IterList()) {
             string name = struct_["name"].GetString();
-            result.Add(new LocatedID(path, name));
-            structIds[name] = name + " " + path;
+            LocatedID id = new LocatedID(idPath, name);
+            result.Add(id);
+            structIds[name] = id.GetID();
         }
         LoadSPECTypes_();
         return result;
@@ -121,7 +129,7 @@ public class SPECFileCompiler : IFileCompiler {
     public HashSet<Struct> ToStructs() {
         return obj["structs"].IterList().Select(
             sobj => new Struct(
-                path, sobj["name"].GetString(),
+                idPath, sobj["name"].GetString(),
                 sobj["fields"].IterList().Select(
                     fobj => new Field(
                         fobj["name"].GetString(), 
@@ -201,17 +209,17 @@ public class SPECFileCompiler : IFileCompiler {
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)
-                ), arguments, id, path, callee, returnType_, doesReturnVoid, source,
-                takesOwnership, resultInParams
+                ), arguments, id, idPath, callee, returnType_, doesReturnVoid,
+                source, takesOwnership, resultInParams
             );
         }).ToList();
     }
 
     public void AddDeclarations(List<RealFunctionDeclaration> declarations) {}
 
-    public Dependencies ToDependencies(Func<string, FileTree> getFile) {
+    public Dependencies ToDependencies(Builder builder) {
         IEnumerable<(IEnumerable<Struct> structs, IEnumerable<RealFunctionDeclaration> declarations)> pairs = obj["dependencies"].IterList().Select(fobj => {
-            FileTree file = getFile(fobj["path"].GetString());
+            FileTree file = builder.GetFileByIDPath(fobj["path"].GetString());
             IFileCompiler oldCompiler;
             HashSet<Struct> structs;
             List<RealFunctionDeclaration> declarations;
@@ -258,7 +266,7 @@ public class SPECFileCompiler : IFileCompiler {
 
     public string ToIR(string _) {
         string ir = obj["ir"].GetString();
-        return Utils.JoinPaths(Utils.GetDirectoryName(path), ir);
+        return Utils.JoinPaths(Utils.GetDirectoryName(curPath), ir);
     }
 
     public string GetSource() {

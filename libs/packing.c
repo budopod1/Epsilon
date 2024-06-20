@@ -39,19 +39,20 @@ struct ByteArray *packing_packDouble(double d) {
     return arr;
 }
 
-const char *const BAD_LEN_FOR_DOUBLE_ERR = ERR_START "Array is not the correct length to be decoded into a double";
+const char *const BAD_LEN_FOR_DOUBLE_ERR = ERR_START "Array is not long enough, given the starting point, to be converted to a double";
 
-double packing_unpackDouble(struct ByteArray *arr) {
-    if (arr->length != sizeof(double)) {
+double packing_unpackDouble(struct ByteArray *arr, uint64_t pos) {
+    if (pos + sizeof(double) >= arr->length) {
         fflush(stdout);
         fwrite(BAD_LEN_FOR_DOUBLE_ERR, strlen(BAD_LEN_FOR_DOUBLE_ERR), 1, stderr);
         exit(1);
     }
+    char *data = arr->content + pos;
     double d;
     if (_packing_isNetworkByteOrder()) {
-        memcpy(&d, arr->content, sizeof(double));
+        memcpy(&d, data, sizeof(double));
     } else {
-        _packing_memcpyReversed(&d, arr->content, sizeof(double));
+        _packing_memcpyReversed(&d, data, sizeof(double));
     }
     return d;
 }

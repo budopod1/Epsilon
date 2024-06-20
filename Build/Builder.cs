@@ -513,9 +513,9 @@ public class Builder {
         }
     }
 
-    public FileTree GetFile(string path) {
+    public FileTree GetFileByIDPath(string path) {
         foreach (FileTree file in files.Values) {
-            if (file.Stemmed == path) return file;
+            if (file.IDPath == path) return file;
         }
         return null;
     }
@@ -535,7 +535,7 @@ public class Builder {
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             try {
-                file.Dependencies = file.Compiler.ToDependencies(GetFile);
+                file.Dependencies = file.Compiler.ToDependencies(this);
             } catch (RecompilationRequiredException) {
                 RecompileFile(file, projectDirectory);
                 file.Compiler.ToImports();
@@ -549,7 +549,7 @@ public class Builder {
                 }
                 file.Compiler.ToStructs();
                 file.Compiler.SetStructs(structs);
-                file.Dependencies = file.Compiler.ToDependencies(GetFile);
+                file.Dependencies = file.Compiler.ToDependencies(this);
             }
         }
     }

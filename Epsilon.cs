@@ -195,7 +195,8 @@ Modes:
             EPSLSPEC newEPSLSPEC = new EPSLSPEC(
                 entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
                 buildInfo.ClangConfig, unlinkedImports, 
-                outputName+".bc", null, FileSourceType.Library
+                outputName+".bc", null, FileSourceType.Library,
+                entryEPSLSPEC.IDPath
             );
 
             string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");

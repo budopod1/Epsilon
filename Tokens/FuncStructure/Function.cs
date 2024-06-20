@@ -35,8 +35,8 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     string callee;
     List<SerializationContext> contexts = new List<SerializationContext>();
     
-    public Function(Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_) {
-        this.sourcePath = program.GetPath();
+    public Function(string idPath, Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_) {
+        this.sourcePath = idPath;
         this.pattern = pattern;
         this.block = block;
         this.returnType_ = returnType_;
@@ -50,7 +50,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         this.arguments = arguments.Select(
             argument=>new FunctionArgument(argument)
         ).ToList();
-        id = program.GetPath() + "/" + program.GetFunctionID().ToString();
+        id = $"{idPath}/{program.GetFunctionID()}";
         callee = Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments()) ? "main" : id;
     }
 

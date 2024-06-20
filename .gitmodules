@@ -7,3 +7,6 @@
 [submodule "EPSL-BinJSON"]
 	path = EPSL-BinJSON
 	url = https://github.com/budopod1/EPSL-BinJSON
+[submodule "EPSL-IR-Gen"]
+	path = EPSL-IR-Gen
+	url = https://github.com/budopod1/EPSL-IR-Gen.git
