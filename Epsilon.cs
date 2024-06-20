@@ -181,7 +181,7 @@ Modes:
             
             try {
                 string bitcodeSrc = Utils.JoinPaths(
-                    Utils.ProjectAbsolutePath(), "code-linked.bc");
+                    Utils.TempDir(), "code-linked.bc");
                 File.Copy(bitcodeSrc, Utils.JoinPaths(output, outputName+".bc"), true);
             } catch (IOException) {
                 ArgumentParser.DisplayProblem("Could not write specified output file");
@@ -210,7 +210,7 @@ Modes:
                     break;
                 case "llvm-ll":
                     string bcFile = Utils.JoinPaths(
-                        Utils.ProjectAbsolutePath(), "code-linked.bc");
+                        Utils.TempDir(), "code-linked.bc");
                     Utils.RunCommand("llvm-dis", new List<string> {
                         "--", bcFile
                     });
@@ -225,7 +225,7 @@ Modes:
 
             try {
                 string absoluteResultSource = Utils.JoinPaths(
-                    Utils.ProjectAbsolutePath(), resultSource);
+                    Utils.TempDir(), resultSource);
                 File.Copy(absoluteResultSource, output, true);
             } catch (IOException) {
                 ArgumentParser.DisplayProblem("Could not write specified output file");

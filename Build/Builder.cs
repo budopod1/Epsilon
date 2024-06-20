@@ -181,7 +181,7 @@ public class Builder {
             }
 
             List<string> arguments = new List<string> {
-                "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc"), "--"
+                "-o", Utils.JoinPaths(Utils.TempDir(), "code-linked.bc"), "--"
             };
             if (LINK_BUILTINS) {
                 arguments.Add(Utils.JoinPaths(EPSLLIBS, "builtins.bc"));
@@ -708,15 +708,15 @@ public class Builder {
             }
             Log.Status("Optimizing LLVM");
             Utils.RunCommand("opt", new List<string> {
-                "-O3", "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-opt.bc"),
-                Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-linked.bc")
+                "-O3", "-o", Utils.JoinPaths(Utils.TempDir(), "code-opt.bc"),
+                Utils.JoinPaths(Utils.TempDir(), "code-linked.bc")
             });
             Log.Status("Buiding executable");
             IEnumerable<string> clangFlags = buildInfo.ClangConfig
                 .Select(config => config.Stringify());
             Utils.RunCommand("clang", clangFlags.Concat(new List<string> {
-                "-lc", "-lm", "-o", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code"),
-                Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code-opt.bc"),
+                "-lc", "-lm", "-o", Utils.JoinPaths(Utils.TempDir(), "code"),
+                Utils.JoinPaths(Utils.TempDir(), "code-opt.bc"),
             }));
         });
     }

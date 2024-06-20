@@ -190,7 +190,7 @@ public class EPSLFileCompiler : IFileCompiler {
         CreateLLVMIR();
 
         string dest = destPath + ".ll";
-        File.Copy(Utils.JoinPaths(Utils.ProjectAbsolutePath(), "code.ll"), dest, true);
+        File.Copy(Utils.JoinPaths(Utils.TempDir(), "code.ll"), dest, true);
 
         return dest;
     }
@@ -1818,14 +1818,14 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     void SaveJSON(string json) {
-        using (StreamWriter file = new StreamWriter(Utils.ProjectAbsolutePath()+"code.json")) {
+        using (StreamWriter file = new StreamWriter(Utils.JoinPaths(Utils.TempDir(), "code.json"))) {
             file.Write(json);
         }
     }
 
     void CreateLLVMIR() {
         Utils.RunCommand("bash", new List<string> {
-            "--", $"{Utils.ProjectAbsolutePath()}/runpython.bash"
+            "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "runpython.bash")
         });
     }
 }

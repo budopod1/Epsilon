@@ -58,7 +58,7 @@ def main(*, print_ir=False):
     global epsilon_folder
     
     epsilon_folder = Path(__file__).parent.parent
-    with open(epsilon_folder / "code.json") as file:
+    with open(epsilon_folder / "temp" / "code.json") as file:
         data = orjson.loads(file.read())
 
     module = create_ir(data)
@@ -66,7 +66,7 @@ def main(*, print_ir=False):
     if print_ir:
         print(module)
 
-    with open(epsilon_folder / "code.ll", "w") as file:
+    with open(epsilon_folder / "temp" / "code.ll", "w") as file:
         file.write(str(module))
 
 

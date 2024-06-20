@@ -212,6 +212,10 @@ public static class Utils {
         }
     }
 
+    public static string TempDir() {
+        return JoinPaths(ProjectAbsolutePath(), "temp");
+    }
+
     public static string Stem(string path) {
         string directory = GetDirectoryName(path);
         string name = GetFileNameWithoutExtension(path);

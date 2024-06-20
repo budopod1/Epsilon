@@ -11,14 +11,13 @@ Epsilon.pdb
 
 # Executable output
 Epsilon.exe
-code
 LLVMIR/result
 
 # Intermediate files
 *.pyc
 *.bc
 *.ll
-/code.json
+/temp/*
 
 # Epsilon specific
 *.epslspec

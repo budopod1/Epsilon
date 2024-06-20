@@ -5,7 +5,6 @@ TODO:
 * improve all "malformed" errors
 * add option for string constants to be statically allocated
 * remove `make_range_array`
-* intermediate results should be stored in their own folder
 * top tracking so we can alloca instead of malloc
 * add safe array access
 * function annotations (the Java kind of annotation)
