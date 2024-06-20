@@ -2,7 +2,7 @@ TODO:
 * `Matrix` type?
 * `Map` type
 * add way to apply operation to every element of array (like Linq Select)
-* improve all "malformed" errors
+* add `Internal` type which acts like `void*` and is a value type_
 * add option for string constants to be statically allocated
 * top tracking so we can alloca instead of malloc
 * add safe array access
