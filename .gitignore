@@ -12,6 +12,7 @@ Epsilon.pdb
 # Executable output
 Epsilon.exe
 code
+LLVMIR/result
 
 # Intermediate files
 *.pyc
