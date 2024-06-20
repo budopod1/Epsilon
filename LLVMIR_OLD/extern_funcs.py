@@ -66,18 +66,6 @@ EXTERN_FUNCS = {
         "name": "concat", "return_type_": ArrayW8,
         "arguments": [ArrayW8, ArrayW8, W64]
     },
-    "rangeArray1": {
-        "name": "rangeArray1", "return_type_": ArrayZ32,
-        "arguments": [Z32]
-    },
-    "rangeArray2": {
-        "name": "rangeArray2", "return_type_": ArrayZ32,
-        "arguments": [Z32, Z32]
-    },
-    "rangeArray3": {
-        "name": "rangeArray3", "return_type_": ArrayZ32,
-        "arguments": [Z32, Z32, Z32]
-    },
     "abs": {
         "name": "llvm.abs.i32", "return_type_": W32,
         "arguments": [Z32, Bool]

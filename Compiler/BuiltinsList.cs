@@ -142,39 +142,6 @@ public static class BuiltinsList {
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
-                    new UnitPatternSegment<string>(typeof(Name), "make_range_array"),
-                    new TypePatternSegment(typeof(RawSquareGroup))
-                }, new SlotPatternProcessor(new List<int> {1})
-            ), new List<FunctionArgument> {
-                new FunctionArgument("end", new Type_("Z", 32)),
-            }, "builtin11", new Type_("Array", new List<Type_> {new Type_("Z", 32)}), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                new List<IPatternSegment> {
-                    new UnitPatternSegment<string>(typeof(Name), "make_range_array"),
-                    new TypePatternSegment(typeof(RawSquareGroup)),
-                    new TypePatternSegment(typeof(RawSquareGroup))
-                }, new SlotPatternProcessor(new List<int> {1, 2})
-            ), new List<FunctionArgument> {
-                new FunctionArgument("start", new Type_("Z", 32)),
-                new FunctionArgument("end", new Type_("Z", 32)),
-            }, "builtin12", new Type_("Array", new List<Type_> {new Type_("Z", 32)}), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                new List<IPatternSegment> {
-                    new UnitPatternSegment<string>(typeof(Name), "make_range_array"),
-                    new TypePatternSegment(typeof(RawSquareGroup)),
-                    new TypePatternSegment(typeof(RawSquareGroup)),
-                    new TypePatternSegment(typeof(RawSquareGroup))
-                }, new SlotPatternProcessor(new List<int> {1, 2, 3})
-            ), new List<FunctionArgument> {
-                new FunctionArgument("start", new Type_("Z", 32)),
-                new FunctionArgument("end", new Type_("Z", 32)),
-                new FunctionArgument("step", new Type_("Z", 32))
-            }, "builtin13", new Type_("Array", new List<Type_> {new Type_("Z", 32)}), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                     new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "abs")

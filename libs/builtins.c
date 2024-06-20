@@ -169,59 +169,6 @@ struct Array *blankArray(uint64_t elemSize) {
     return array;
 }
 
-struct Array *rangeArray1(int32_t end) {
-    if (end <= 0) return emptyArray(sizeof(int32_t));
-    struct Array *array = malloc(sizeof(struct Array));
-    array->refCounter = 0;
-    array->length = end;
-    int32_t capacity = end;
-    if (capacity < 1) capacity = 1;
-    array->capacity = capacity;
-    int32_t *content = malloc(sizeof(int32_t)*capacity);
-    array->content = content;
-    for (int32_t i = 0; i < end; i++) {
-        content[i] = i;
-    }
-    return array;
-}
-
-struct Array *rangeArray2(int32_t start, int32_t end) {
-    int32_t length = end - start;
-    if (length <= 0) return emptyArray(sizeof(int32_t));
-    struct Array *array = malloc(sizeof(struct Array));
-    array->refCounter = 0;
-    array->length = length;
-    int32_t capacity = length;
-    if (capacity < 1) capacity = 1;
-    array->capacity = capacity;
-    int32_t *content = malloc(sizeof(int32_t)*capacity);
-    array->content = content;
-    for (int32_t i = 0; i < length; i++) {
-        content[i] = start + i;
-    }
-    return array;
-}
-
-struct Array *rangeArray3(int32_t start, int32_t end, int32_t step) {
-    if (step == 0) return emptyArray(sizeof(int32_t));
-    int32_t absstep = abs(step);
-    int32_t dif = end - start;
-    if (dif <= 0) return emptyArray(sizeof(int32_t));
-    int32_t length = dif/absstep + (dif%absstep > 0);
-    struct Array *array = malloc(sizeof(struct Array));
-    array->refCounter = 0;
-    array->length = length;
-    int32_t capacity = length;
-    if (capacity < 1) capacity = 1;
-    array->capacity = capacity;
-    int32_t *content = malloc(sizeof(int32_t)*capacity);
-    array->content = content;
-    for (int32_t i = 0; i < length; i++) {
-        content[i] = (step>0?start:end) + step*i;
-    }
-    return array;
-}
-
 void print(const struct Array *string) {
     fwrite(string->content, string->length, 1, stdout);
     fflush(stdout);

@@ -45,16 +45,6 @@ TESTS = [
         ]
     },
     {
-        "file": "builtin.epsl",
-        "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
-        "tests": [
-            {"arguments": [4], "compare": "exact", "expect": 2},
-            {"arguments": [5], "compare": "exact", "expect": 6},
-            {"arguments": [17], "compare": "exact", "expect": 72},
-        ]
-    },
-    {
         "file": "circular1.epsl",
         "func": -1,
         "sig": CFUNCTYPE(c_int),

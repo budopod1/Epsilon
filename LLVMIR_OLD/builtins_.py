@@ -132,34 +132,6 @@ def concat(program, builder, params, param_types_):
     ), array_type_
 
 
-def make_range_array_1(program, builder, params, param_types_):
-    end, = params
-    return program.call_extern(
-        builder, "rangeArray1", [end], [
-            Z32
-        ], ArrayW8
-    ), ArrayW8
-
-
-def make_range_array_2(program, builder, params, param_types_):
-    start, end, = params
-    return program.call_extern(
-        builder, "rangeArray2", [start, end], [
-            Z32, Z32
-        ], ArrayW8
-    ), ArrayW8
-
-
-def make_range_array_3(program, builder, params, param_types_):
-    start, end, step = params
-    return program.call_extern(
-        builder, "rangeArray3", [start, end, step], [
-            Z32, Z32,
-            Z32
-        ], ArrayW8
-    ), ArrayW8
-
-
 def abs_(program, builder, params, param_types_):
     value, = params
     return program.call_extern(
@@ -668,9 +640,6 @@ BUILTINS = {
     "builtin8": {"func": clone, "params": [None]},
     "builtin9": {"func": extend, "params": [ArrayW8, ArrayW8]},
     "builtin10": {"func": concat, "params": [ArrayW8, ArrayW8]},
-    "builtin11": {"func": make_range_array_1, "params": [Z32]},
-    "builtin12": {"func": make_range_array_2, "params": [Z32, Z32]},
-    "builtin13": {"func": make_range_array_3, "params": [Z32, Z32, Z32]},
     "builtin14": {"func": abs_, "params": [Z32]},
     "builtin15": {"func": fabs, "params": [Q64]},
     "builtin16": {"func": concat, "params": [ArrayW8, ArrayW8]},
