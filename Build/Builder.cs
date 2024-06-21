@@ -6,14 +6,6 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
 public class Builder {
-    public bool ALWAYS_PROJECT = false;
-    public bool NEVER_PROJECT = false;
-    public bool DISABLE_CACHE = false;
-    public bool LINK_BUILTINS = true;
-    public bool LINK_LIBRARIES = true;
-    public IEnumerable<string> EXTRA_CLANG_OPTIONS = Enumerable.Empty<string>();
-    public string EPSLLIBS;
-    
     bool isProj = false;
     string currentFile = "";
     string currentText = "";
@@ -22,15 +14,9 @@ public class Builder {
     Dictionary<string, FileTree> files;
     List<string> extensions = new List<string> {"epslspec", "epsl"};
     List<string> prefixes = new List<string> {"", "."};
-    List<string> IRInUserDir;
-    List<FileTree> unlinkedFiles;
     HashSet<Struct> structs;
 
-    public Builder() {
-        EPSLLIBS = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "libs");
-    }
-
-    public ResultStatus LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
+    public ResultStatus LoadEPSLPROJ(string input, bool neverProj, out EPSLPROJ projOut, bool allowNew=true) {
         EPSLPROJ proj = null;
 
         string projLocation = null;
@@ -44,7 +30,7 @@ public class Builder {
             return status1;
         }
 
-        if (NEVER_PROJECT) {
+        if (neverProj) {
             projOut = new EPSLPROJ(projLocation);
             return status1;
         }
@@ -115,7 +101,8 @@ public class Builder {
     public ResultStatus RegisterLibraries(IEnumerable<string> relPaths) {
         return RunWrapped(() => {
             IEnumerable<string> paths = relPaths
-                .Select(path => Utils.GetFullPath(path.Replace("%EPSLLIBS%", EPSLLIBS)))
+                .Select(path => Utils.GetFullPath(path.Replace(
+                    "%EPSLLIBS%", Utils.EPSLLIBS())))
                 .Distinct();
             try {
                 libraries = paths.ToDictionary2((path) => Utils.GetFileNameWithoutExtension(path));
@@ -127,27 +114,30 @@ public class Builder {
         });
     }
 
-    public ResultStatus Build(string inputRel, EPSLPROJ proj, out BuildInfo buildInfo) {
-        Log.Info("Starting build of", inputRel);
+    public ResultStatus Build(BuildSettings settings, out BuildInfo buildInfo) {
+        Log.Info("Starting build of", settings.InputPath);
         
         BuildInfo _buildInfo = null;
         
         ResultStatus status = RunWrapped(() => {
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            string input = Utils.GetFullPath(inputRel);
+            EPSLPROJ proj = settings.Proj;
+
+            string input = Utils.GetFullPath(settings.InputPath);
             string projectDirectory = Utils.GetDirectoryName(input);
 
             lastBuildStartTime = proj.CompileStartTime;
             List<string> lastGeneratedSPECs = proj.EPSLSPECS;
-            isProj = !NEVER_PROJECT && proj.IsFromFile;
+            isProj = !settings.NeverProject && proj.IsFromFile;
 
             currentFile = input;
             files = new Dictionary<string, FileTree>();
-            FileTree tree = LoadFile(Utils.GetFileNameWithoutExtension(input), projectDirectory);
+            FileTree tree = LoadFile(settings, Utils.GetFileNameWithoutExtension(input),
+                projectDirectory);
 
             Log.Status("Loading tree");
-            LoadTree(tree, projectDirectory);
+            LoadTree(settings, tree, projectDirectory);
             DetermineIsProj();
             Log.Status("Transfering struct IDs");
             TransferStructIDs();
@@ -157,13 +147,14 @@ public class Builder {
             TransferStructs();
             SetupOldCompilers();
             Log.Status("Confirming dependencies");
-            ConfirmDependencies(projectDirectory);
-            IRInUserDir = new List<string>();
-            unlinkedFiles = new List<FileTree>();
+            ConfirmDependencies(settings, projectDirectory);
             Log.Status("Writing IR");
-            List<string> sections = ToIR();
-            Log.Status("Saving EPSLSPECs");
-            SaveEPSLSPECs();
+            List<string> sections = ToIR(settings, out List<string> IRInUserDir, 
+                out List<FileTree> unlinkedFiles);
+            if (IsProjMode(settings)) {
+                Log.Status("Saving EPSLSPECs");
+                SaveEPSLSPECs();
+            }
 
             List<string> generatedSPECs = GetGeneratedEPSLSPECs().ToList();
             DeleteUnusedGeneratedSPECs(lastGeneratedSPECs, generatedSPECs);
@@ -183,28 +174,26 @@ public class Builder {
             List<string> arguments = new List<string> {
                 "-o", Utils.JoinPaths(Utils.TempDir(), "code-linked.bc"), "--"
             };
-            if (LINK_BUILTINS) {
-                arguments.Add(Utils.JoinPaths(EPSLLIBS, "builtins.bc"));
+            if (settings.LinkBuiltins) {
+                arguments.Add(Utils.JoinPaths(Utils.EPSLLIBS(), "builtins.bc"));
             }
             
             arguments.AddRange(sections);
             Log.Status("Linking LLVM");
             Utils.RunCommand("llvm-link", arguments);
 
-            if (!IsProjMode()) {
+            if (IsProjMode(settings)) {
+                proj.CompileStartTime = buildStartTime;
+                proj.EPSLSPECS = generatedSPECs;
+                proj.ToFile();
+                Log.Info("Saved updated EPSLPROJ");
+            } else {
                 foreach (string path in IRInUserDir) {
                     Utils.TryDelete(path);
                 }
             }
 
-            if (IsProjMode()) {
-                proj.CompileStartTime = buildStartTime;
-                proj.EPSLSPECS = generatedSPECs;
-                proj.ToFile();
-                Log.Info("Saved updated EPSLPROJ");
-            }
-
-            IEnumerable<IClangConfig> extraClangConfig = EXTRA_CLANG_OPTIONS
+            IEnumerable<IClangConfig> extraClangConfig = settings.ExtraClangOptions
                 .Select(option => new ConstantClangConfig(option));
             IEnumerable<IClangConfig> clangConfig = files.Values
                 .SelectMany(file => file.Compiler.GetClangConfig())
@@ -219,8 +208,8 @@ public class Builder {
         return status;
     }
 
-    bool IsProjMode() {
-        return !NEVER_PROJECT && (ALWAYS_PROJECT || isProj);
+    bool IsProjMode(BuildSettings settings) {
+        return !settings.NeverProject && (settings.AlwaysProject || isProj);
     }
     
     public ResultStatus RunWrapped(Action action) {
@@ -303,7 +292,7 @@ public class Builder {
 
     int LOAD_RETRY = 3;
 
-    public DispatchedFile DispatchEPSLSPEC(string path, string _1, SPECFileCompiler _2) {
+    public DispatchedFile DispatchEPSLSPEC(BuildSettings settings, string path, string _1, SPECFileCompiler _2) {
         currentFile = path;
         string stemmed = Utils.Stem(path);
         IJSONValue jsonValue = ParseJSONFile(path, out string fileText);
@@ -311,7 +300,7 @@ public class Builder {
         string source = Utils.GetFullPath(obj["source"].GetStringOrNull());
         string generatedEPSLSPEC = null;
         if (source != null) {
-            if (NEVER_PROJECT || DISABLE_CACHE) return null;
+            if (settings.NeverProject || settings.DisableCache) return null;
             if (!Utils.FileExists(source)) {
                 throw new InvalidSPECResourceException(
                     obj, path, source
@@ -320,13 +309,13 @@ public class Builder {
             generatedEPSLSPEC = path;
             currentFile = source;
             if (lastBuildStartTime == null) {
-                return DispatchPath(source, path, new SPECFileCompiler(
+                return DispatchPath(settings, source, path, new SPECFileCompiler(
                     stemmed, fileText, obj
                 ));
             }
             long fileModified = new DateTimeOffset(File.GetLastWriteTime(source)).ToUnixTimeSeconds();
             if (fileModified > lastBuildStartTime.Value) {
-                return DispatchPath(source, path, new SPECFileCompiler(
+                return DispatchPath(settings, source, path, new SPECFileCompiler(
                     stemmed, fileText, obj
                 ));
             }
@@ -347,7 +336,7 @@ public class Builder {
         );
     }
 
-    public DispatchedFile DispatchEPSL(string path, string oldCompilerPath, SPECFileCompiler oldCompiler) {
+    public DispatchedFile DispatchEPSL(BuildSettings _, string path, string oldCompilerPath, SPECFileCompiler oldCompiler) {
         string fileText;
         currentFile = path;
         using (StreamReader file = new StreamReader(path)) {
@@ -364,7 +353,9 @@ public class Builder {
             foreach (string prefix in prefixes) {
                 string filename = prefix + partialPath + "." + extension;
                 currentFile = filename;
-                List<string> folders = new List<string> {projDirectory, EPSLLIBS};
+                List<string> folders = new List<string> {
+                    projDirectory, Utils.EPSLLIBS()
+                };
                 if (libraries.ContainsKey(partialPath)) {
                     folders.Add(libraries[partialPath]);
                 }
@@ -376,19 +367,19 @@ public class Builder {
         }
     }
 
-    DispatchedFile DispatchPath(string path, string oldCompilerPath=null, SPECFileCompiler oldCompiler=null) {
+    DispatchedFile DispatchPath(BuildSettings settings, string path, string oldCompilerPath=null, SPECFileCompiler oldCompiler=null) {
         string extension = Path.GetExtension(path);
         switch (extension) {
             case ".epslspec":
-                return DispatchEPSLSPEC(path, oldCompilerPath, oldCompiler);
+                return DispatchEPSLSPEC(settings, path, oldCompilerPath, oldCompiler);
             case ".epsl":
-                return DispatchEPSL(path, oldCompilerPath, oldCompiler);
+                return DispatchEPSL(settings, path, oldCompilerPath, oldCompiler);
             default:
                 return null;
         }
     }
 
-    DispatchedFile DispatchPartialPath(string partialPath, string projDirectory, bool canBeSPEC=true) {
+    DispatchedFile DispatchPartialPath(BuildSettings settings, string partialPath, string projDirectory, bool canBeSPEC=true) {
         DispatchedFile dispatched = null;
         bool anyLocation = false;
         for (int attempts = 0; dispatched == null && attempts < LOAD_RETRY; attempts++) {
@@ -397,7 +388,7 @@ public class Builder {
                 foreach (string location in FileLocations(partialPath, projDirectory)) {
                     if (!canBeSPEC && Path.GetExtension(location) == ".epslspec")
                         continue;
-                    dispatched = DispatchPath(location);
+                    dispatched = DispatchPath(settings, location);
                     if (dispatched != null) {
                         anyLocation = true;
                         break;
@@ -418,9 +409,9 @@ public class Builder {
         return dispatched;
     }
     
-    FileTree LoadFile(string partialPath, string projDirectory, bool canBeSPEC=true) {
+    FileTree LoadFile(BuildSettings settings, string partialPath, string projDirectory, bool canBeSPEC=true) {
         if (files.ContainsKey(partialPath)) return files[partialPath];
-        DispatchedFile dispatched = DispatchPartialPath(partialPath, projDirectory, canBeSPEC);
+        DispatchedFile dispatched = DispatchPartialPath(settings, partialPath, projDirectory, canBeSPEC);
         string path = dispatched.Path;
         IFileCompiler fileCompiler = dispatched.Compiler;
         currentFile = path;
@@ -433,8 +424,8 @@ public class Builder {
         return result;
     }
 
-    void RecompileFile(FileTree file, string projDirectory) {
-        DispatchedFile dispatched = DispatchPartialPath(file.PartialPath, projDirectory, false);
+    void RecompileFile(BuildSettings settings, FileTree file, string projDirectory) {
+        DispatchedFile dispatched = DispatchPartialPath(settings, file.PartialPath, projDirectory, false);
         file.Compiler = dispatched.Compiler;
         file.Path = dispatched.Path;
         file.Text = file.Compiler.GetText();
@@ -442,12 +433,12 @@ public class Builder {
         file.Compiler.ToImports();
     }
 
-    void LoadTree(FileTree tree, string projDirectory) {
+    void LoadTree(BuildSettings settings, FileTree tree, string projDirectory) {
         if (tree.TreeLoaded) return;
         tree.TreeLoaded = true;
         foreach (string path in tree.Imports) {
-            FileTree sub = LoadFile(path, projDirectory);
-            LoadTree(sub, projDirectory);
+            FileTree sub = LoadFile(settings, path, projDirectory);
+            LoadTree(settings, sub, projDirectory);
             tree.Imported.Add(sub);
         }
     }
@@ -531,13 +522,13 @@ public class Builder {
         }
     }
 
-    void ConfirmDependencies(string projectDirectory) {
+    void ConfirmDependencies(BuildSettings settings, string projectDirectory) {
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             try {
                 file.Dependencies = file.Compiler.ToDependencies(this);
             } catch (RecompilationRequiredException) {
-                RecompileFile(file, projectDirectory);
+                RecompileFile(settings, file, projectDirectory);
                 file.Compiler.ToImports();
                 file.Compiler.ToStructIDs();
                 foreach (FileTree imported in file.Imported) {
@@ -554,10 +545,12 @@ public class Builder {
         }
     }
 
-    List<string> ToIR() {
+    List<string> ToIR(BuildSettings settings, out List<string> IRInUserDir, out List<FileTree> unlinkedFiles) {
+        IRInUserDir = new List<string>();
+        unlinkedFiles = new List<FileTree>();
         List<string> sections = new List<string>();
         foreach (FileTree file in files.Values) {
-            if (!LINK_LIBRARIES && file.SourceType == FileSourceType.Library) {
+            if (!settings.LinkLibraries && file.SourceType == FileSourceType.Library) {
                 unlinkedFiles.Add(file);
             } else {
                 SwitchFile(file);
@@ -576,7 +569,6 @@ public class Builder {
     }
 
     void SaveEPSLSPECs() {
-        if (!IsProjMode()) return;
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             if (file.Compiler.ShouldSaveSPEC()) {

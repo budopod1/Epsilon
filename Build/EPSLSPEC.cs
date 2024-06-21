@@ -13,15 +13,7 @@ public class EPSLSPEC {
     public FileSourceType SourceType;
     public string IDPath;
 
-    public EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions,
-        IEnumerable<Struct> structs,
-        Dependencies dependencies,
-        IEnumerable<IClangConfig> clangConfig,
-        IEnumerable<string> imports,
-        string IR,
-        string source,
-        FileSourceType sourceType,
-        string idPath) {
+    public EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerable<Struct> structs, Dependencies dependencies, IEnumerable<IClangConfig> clangConfig, IEnumerable<string> imports, string IR, string source, FileSourceType sourceType, string idPath) {
         Functions = functions;
         Structs = structs;
         Dependencies = dependencies;

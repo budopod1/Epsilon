@@ -216,6 +216,10 @@ public static class Utils {
         return JoinPaths(ProjectAbsolutePath(), "temp");
     }
 
+    public static string EPSLLIBS() {
+        return JoinPaths(ProjectAbsolutePath(), "libs");
+    }
+
     public static string Stem(string path) {
         string directory = GetDirectoryName(path);
         string name = GetFileNameWithoutExtension(path);

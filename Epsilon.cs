@@ -98,8 +98,7 @@ Modes:
         string input = curDirectory + (sourceFile.Matched ?? "entry");
 
         if (mode.Value() == "compile") {
-            builder.NEVER_PROJECT = neverProj;
-            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
+            TestResult(builder.LoadEPSLPROJ(input, neverProj, out EPSLPROJ proj));
             parser.ParseAdditionalOptions(proj.CommandOptions);
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
             
@@ -120,20 +119,14 @@ Modes:
 
             TestResult(builder.RegisterLibraries(libraries));
 
-            builder.ALWAYS_PROJECT = alwaysProj;
-            builder.NEVER_PROJECT = neverProj;
-            builder.DISABLE_CACHE = disableCache;
-            builder.LINK_BUILTINS = linkBuiltins;
-            builder.LINK_LIBRARIES = linkLibraries;
-            builder.EXTRA_CLANG_OPTIONS = clangOptions.MatchedSegments;
+            BuildSettings settings = new BuildSettings(input, proj, alwaysProj, neverProj, disableCache, linkBuiltins, linkLibraries, clangOptions.MatchedSegments);
 
             return DoCompilation(
-                builder, outputType.Value(), input,
-                outputFile.IsPresent ? outputFile.Matched : null,
-                proj
+                builder, settings, outputType.Value(),
+                outputFile.IsPresent ? outputFile.Matched : null
             );
         } else if (mode.Value() == "teardown") {
-            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj, allowNew: false));
+            TestResult(builder.LoadEPSLPROJ(input, false, out EPSLPROJ proj, allowNew: false));
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
             TestResult(builder.Teardown(proj));
@@ -148,7 +141,7 @@ Modes:
         }
     }
 
-    static int DoCompilation(Builder builder, string outputType, string input, string providedOutput, EPSLPROJ proj) {
+    static int DoCompilation(Builder builder, BuildSettings settings, string outputType, string providedOutput) {
         string extension;
         switch (outputType) {
             case "llvm-bc":
@@ -167,11 +160,11 @@ Modes:
                 throw new InvalidOperationException();
         }
 
-        TestResult(builder.GetOutputLocation(input, extension,
+        TestResult(builder.GetOutputLocation(settings.InputPath, extension,
             out string defaultOutput, out string outputName));
         string output = providedOutput ?? defaultOutput;
 
-        TestResult(builder.Build(input, proj, out BuildInfo buildInfo));
+        TestResult(builder.Build(settings, out BuildInfo buildInfo));
         if (outputType == "executable") {
             TestResult(builder.ToExecutable(buildInfo));
         }
