@@ -12,6 +12,14 @@ manager = multiprocessing.Manager()
 
 TESTS = [
     {
+        "file": Path("Internal") / "entry.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 12}
+        ]
+    },
+    {
         "file": "array.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_int, c_int, c_int),

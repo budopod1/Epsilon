@@ -52,7 +52,7 @@ def make_stringify_func(program, key, type_, i):
             ), array_field)
             abuilder.ret(struct_mem)
 
-    elif type_ == Null:
+    elif type_ == Null or type_ == Internal:
         struct_mem = program.malloc(
             builder, make_type_(program, String).pointee, name="struct_mem"
         )
@@ -61,7 +61,7 @@ def make_stringify_func(program, key, type_, i):
         length_field = builder.gep(struct_mem, [i64_of(0), i32_of(2)])
         array_field = builder.gep(struct_mem, [i64_of(0), i32_of(3)])
 
-        string = "null"
+        string = type_["name"].lower()
         capacity = len(string)
         builder.store(i64_of(capacity), capacity_field)
         builder.store(i64_of(capacity), length_field)

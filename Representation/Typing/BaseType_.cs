@@ -13,7 +13,8 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Array",
         "File",
         "Optional",
-        "Null"
+        "Null",
+        "Internal"
     };
 
     public static List<string> NumberTypes_ = new List<string> {
@@ -73,7 +74,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static List<string> ValueTypes_ = new List<string> {
-        "Bool", "Byte", "W", "Z", "Q", "Null"
+        "Bool", "Byte", "W", "Z", "Q", "Null", "Internal"
     };
 
     string name;

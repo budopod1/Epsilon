@@ -77,6 +77,9 @@ def value_equals_depth_1(program, i, type_, invert=False):
                         builder.ret(program.value_equals_depth_1(
                             builder, generic_type_, v1, v2, invert
                         ))
+
+    elif type_ == Internal:
+        builder.ret(i1_of(0))
     
     else:
         if is_nullable_type_(type_):

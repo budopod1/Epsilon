@@ -69,6 +69,8 @@ def make_type_(program, data):
             ).as_pointer()
         case "Null", []:
             return ir.IntType(8).as_pointer()
+        case "Internal", []:
+            return ir.IntType(8).as_pointer()
         case name, []:
             return ir.global_context.get_identified_type(
                 "___"+name
@@ -87,7 +89,7 @@ def make_constant(constant, ir_type):
 
 
 def is_value_type_(type_):
-    return type_["name"] in ["W", "Z", "Bool", "Byte", "Q", "Null"]
+    return type_["name"] in ["W", "Z", "Bool", "Byte", "Q", "Null", "Internal"]
 
 
 def is_signed_integer_type_(type_):
@@ -170,7 +172,9 @@ def convert_type_(program, builder, val, old, new):
     elif ((not is_value_type_(old) or old == Null) 
           and (not is_value_type_(new))):
         return builder.bitcast(val, new_ir_type)
-    raise TypeError(f"Cannot convert type {old} to {new}")
+    elif old == Internal or new == Internal:
+        return builder.bitcast(val, new_ir_type)
+    raise ValueError(f"Cannot convert type {old} to {new}")
 
 
 def compare_values(builder, comparison, value1, value2, type_):
@@ -196,6 +200,8 @@ def truth_value(program, builder, value, type_):
     elif not is_value_type_(type_):
         null_ptr = program.nullptr(builder, make_type_(program, type_))
         return builder.icmp_unsigned("!=", value, null_ptr)
+    elif type_ == Internal:
+        return i1_of(1)
     else:
         raise ValueError(f"Cannot get truth value of type_ {type_}")
 
@@ -214,6 +220,8 @@ def untruth_value(program, builder, value, type_):
     elif not is_value_type_(type_):
         null_ptr = program.nullptr(builder, make_type_(program, type_))
         return builder.icmp_unsigned("==", value, null_ptr)
+    elif type_ == Internal:
+        return i1_of(1)
     else:
         raise ValueError(f"Cannot get untruth value of type_ {type_}")
 
@@ -369,3 +377,4 @@ ArrayString = Array(String)
 OptionalArrayString = Optional(ArrayString)
 ComparerType_ = Pointer(FuncType_(Z32, [PointerW8, PointerW8]))
 Null = {"name": "Null", "bits": None, "generics": []}
+Internal = {"name": "Internal", "bits": None, "generics": []}

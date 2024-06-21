@@ -1,0 +1,7 @@
+#import cfile;
+
+Z#main {
+    Internal:ptr = get_ptr;
+
+    return use_ptr[ptr];
+}

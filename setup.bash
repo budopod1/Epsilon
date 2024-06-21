@@ -20,5 +20,7 @@ pip install llvmlite
 pip install orjson
 python -c "import llvmlite;import orjson;"
 echo "venv setup complete"
+echo "Setting up tests..."
+./tests/setup.bash
 mkdir -p temp
 echo "Setup complete"
