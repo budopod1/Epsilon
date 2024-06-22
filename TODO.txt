@@ -7,7 +7,6 @@ TODO:
 * add safe array access
 * function annotations (the Java kind of annotation)
     * @cname annotation which specifies function ID (underlying symbol name)
-* make Builder static?
 * self host LLVMIR section?
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * struct subclassing

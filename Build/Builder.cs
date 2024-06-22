@@ -9,12 +9,10 @@ public class Builder {
     bool isProj = false;
     string currentFile = "";
     string currentText = "";
-    long? lastBuildStartTime;
     Dictionary<string, string> libraries;
     Dictionary<string, FileTree> files;
-    List<string> extensions = new List<string> {"epslspec", "epsl"};
-    List<string> prefixes = new List<string> {"", "."};
-    HashSet<Struct> structs;
+    readonly IEnumerable<string> EXTENSIONS = new List<string> {"epslspec", "epsl"};
+    readonly IEnumerable<string> PREFIXES = new List<string> {"", "."};
 
     public ResultStatus LoadEPSLPROJ(string input, bool neverProj, out EPSLPROJ projOut, bool allowNew=true) {
         EPSLPROJ proj = null;
@@ -127,7 +125,6 @@ public class Builder {
             string input = Utils.GetFullPath(settings.InputPath);
             string projectDirectory = Utils.GetDirectoryName(input);
 
-            lastBuildStartTime = proj.CompileStartTime;
             List<string> lastGeneratedSPECs = proj.EPSLSPECS;
             isProj = !settings.NeverProject && proj.IsFromFile;
 
@@ -144,10 +141,10 @@ public class Builder {
             Log.Status("Transfering declarations");
             TransferDeclarations();
             Log.Status("Transfering struct");
-            TransferStructs();
+            HashSet<Struct> structs = TransferStructs();
             SetupOldCompilers();
             Log.Status("Confirming dependencies");
-            ConfirmDependencies(settings, projectDirectory);
+            ConfirmDependencies(settings, structs, projectDirectory);
             Log.Status("Writing IR");
             List<string> sections = ToIR(settings, out List<string> IRInUserDir, 
                 out List<FileTree> unlinkedFiles);
@@ -308,6 +305,7 @@ public class Builder {
             }
             generatedEPSLSPEC = path;
             currentFile = source;
+            long? lastBuildStartTime = settings.Proj.CompileStartTime;
             if (lastBuildStartTime == null) {
                 return DispatchPath(settings, source, path, new SPECFileCompiler(
                     stemmed, fileText, obj
@@ -349,8 +347,8 @@ public class Builder {
     }
 
     IEnumerable<string> FileLocations(string partialPath, string projDirectory) {
-        foreach (string extension in extensions) {
-            foreach (string prefix in prefixes) {
+        foreach (string extension in EXTENSIONS) {
+            foreach (string prefix in PREFIXES) {
                 string filename = prefix + partialPath + "." + extension;
                 currentFile = filename;
                 List<string> folders = new List<string> {
@@ -490,8 +488,8 @@ public class Builder {
         }
     }
 
-    void TransferStructs() {
-        structs = new HashSet<Struct>();
+    HashSet<Struct> TransferStructs() {
+        HashSet<Struct> structs = new HashSet<Struct>();
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             HashSet<Struct> structsHere = file.Compiler.ToStructs();
@@ -502,6 +500,7 @@ public class Builder {
             SwitchFile(file);
             file.Compiler.SetStructs(structs);
         }
+        return structs;
     }
 
     public FileTree GetFileByIDPath(string path) {
@@ -522,7 +521,7 @@ public class Builder {
         }
     }
 
-    void ConfirmDependencies(BuildSettings settings, string projectDirectory) {
+    void ConfirmDependencies(BuildSettings settings, HashSet<Struct> structs, string projectDirectory) {
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             try {
