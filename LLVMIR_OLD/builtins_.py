@@ -76,7 +76,7 @@ def pop(program, builder, params, param_types_):
     content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
     content_ptr_casted = builder.bitcast(content_ptr, elem_ir_type.as_pointer())
     elem = builder.load(builder.gep(content_ptr_casted, [idx]))
-    program.decr_ref(builder, elem, elem_type_)
+    dumb_decr_ref_counter(program, builder, elem, elem_type_)
     program.call_extern(
         builder, "removeAt", [array, idx, elem_size], 
         [ArrayW8, W64, W64], None
@@ -648,12 +648,12 @@ BUILTINS = {
     "builtin3": {"func": append, "params": [ArrayW8, None]},
     "builtin4": {"func": require_capacity, "params": [ArrayW8, W64]},
     "builtin5": {"func": shrink_mem, "params": [ArrayW8]},
-    "builtin6": {"func": pop, "params": [ArrayW8, W64]},
+    "builtin6": {"func": pop, "params": [ArrayW8, W64]}, # result is not in params when builtin finishes
     "builtin7": {"func": insert, "params": [ArrayW8, W64, None]},
     "builtin8": {"func": clone, "params": [None]},
     "builtin9": {"func": extend, "params": [ArrayW8, ArrayW8]},
     "builtin10": {"func": concat, "params": [ArrayW8, ArrayW8]},
-    "builtin11": {"func": unsafe_idx, "params": [ArrayW8, W64]},
+    "builtin11": {"func": unsafe_idx, "params": [ArrayW8, W64], "result_in_params": True},
     "builtin14": {"func": abs_, "params": [Z32]},
     "builtin15": {"func": fabs, "params": [Q64]},
     "builtin16": {"func": concat, "params": [ArrayW8, ArrayW8]},
@@ -701,7 +701,7 @@ BUILTINS = {
     "builtin58": {"func": read_file_lines, "params": [File]},
     "builtin59": {"func": write_to_file, "params": [File, String]},
     "builtin60": {"func": is_null, "params": [None]},
-    "builtin61": {"func": unwrap, "params": [None], "result_in_params": True},
+    "builtin61": {"func": unwrap, "params": [None], "result_in_params": True, "result_is_param": True},
     "builtin63": {"func": array_unique, "params": [None]},
     "builtin64": {"func": sort_array, "params": [None]},
     "builtin65": {"func": sort_array_inverted, "params": [None]},
@@ -711,7 +711,7 @@ BUILTINS = {
     "builtin69": {"func": floor, "params": [Q64]},
     "builtin70": {"func": ceil, "params": [Q64]},
     "builtin71": {"func": round_, "params": [Q64]},
-    "builtin72": {"func": inner, "params": [None], "result_in_params": True},
+    "builtin72": {"func": inner, "params": [None], "result_in_params": True, "result_is_param": True},
     "builtin73": {"func": nullable_or, "params": [None, None], "result_in_params": True},
     "builtin74": {"func": nullable_and, "params": [None, None], "result_in_params": True},
 }
