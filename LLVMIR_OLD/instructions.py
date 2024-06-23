@@ -616,11 +616,12 @@ class FormatChainInstruction(Typed_Instruction):
         for i, (param, param_type_) in enumerate(zip(params, param_types_)):
             if param_type_ == String:
                 strs_to_check_ref.append(param)
+                str_ = param
             else:
-                param = self.program.stringify(builder, param, param_type_)
+                str_ = self.program.stringify(builder, param, param_type_)
                 self.program.check_ref(builder, param, param_type_)
-                strs_to_free.append(param)
-            builder.store(param, builder.gep(value_array, [i64_of(0), i64_of(i)]))
+                strs_to_free.append(str_)
+            builder.store(str_, builder.gep(value_array, [i64_of(0), i64_of(i)]))
 
         result = builder.call(self.program.extern_funcs["formatString"], [
             template, builder.gep(value_array, [i64_of(0), i64_of(0)]), i32_of(len(params))
