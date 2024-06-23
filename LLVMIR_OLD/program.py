@@ -2,7 +2,7 @@ from llvmlite import ir
 from common import *
 from stringify import make_stringify_func
 from equals import refrence_equals, value_equals_depth_1, value_equals
-from misc_helpers import index_of, compare, dedup
+from misc_helpers import index_of, compare, dedup, optional_array_access
 from functions import ModuleFunction
 
 
@@ -27,6 +27,7 @@ class Program:
         self.index_of_funcs = {}
         self.dedup_funcs = {}
         self.comparer_funcs = {}
+        self.optional_array_access_funcs = {}
 
     def setup_scope(self, scope):
         self.globals = scope
@@ -434,3 +435,14 @@ class Program:
             builder, "clone", [arr, elem], 
             [arr_type_, W64], arr_type_
         )
+
+    def optional_array_access(self, builder, arr, arr_type_, elem_type_, idx):
+        frozen = (freeze_json(arr_type_), freeze_json(elem_type_))
+        if frozen in self.optional_array_access_funcs:
+            func = self.optional_array_access_funcs[frozen]
+        else:
+            func = optional_array_access(
+                self, len(self.optional_array_access_funcs), arr_type_, elem_type_
+            )
+            self.optional_array_access_funcs[frozen] = func
+        return builder.call(func, [arr, idx])

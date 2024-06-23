@@ -323,5 +323,9 @@ EXTERN_FUNCS = {
     "formatString": {
         "name": "formatString", "return_type_": String,
         "arguments": [String, StringPointer, W32]
+    },
+    "verifyArrayIdx": {
+        "name": "verifyArrayIdx", "return_type_": None,
+        "arguments": [ArrayW8, W64]
     }
 }

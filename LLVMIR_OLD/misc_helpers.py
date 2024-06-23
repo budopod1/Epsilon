@@ -164,3 +164,33 @@ def compare(program, i, type_, invert):
     builder.ret(i32_of(0))
 
     return func
+
+
+def optional_array_access(program, i, arr_type_, elem_type_):
+    arr_ir_type_ = make_type_(program, arr_type_)
+    elem_ir_type_ = make_type_(program, elem_type_)
+    W64_ir_type_ = make_type_(program, W64)
+    func = ir.Function(
+        program.module, ir.FunctionType(
+            elem_ir_type_, [arr_ir_type_, W64_ir_type_]
+        ), name=f"{program.path} optional_array_access{i}"
+    )
+
+    entry = func.append_basic_block(name="entry")
+    builder = ir.IRBuilder(entry)
+
+    arr, idx = func.args
+
+    length_ptr = builder.gep(arr, [i64_of(0), i32_of(2)])
+    length = builder.load(length_ptr)
+
+    with builder.if_then(compare_values(builder, ">=", idx, length, W64)):
+        builder.ret(ir.Constant(elem_ir_type_, None))
+
+    content_ptr = builder.gep(arr, [i64_of(0), i32_of(3)])
+    content = builder.load(content_ptr)
+
+    elem_ptr = builder.gep(content, [idx])
+    builder.ret(builder.load(elem_ptr))
+    
+    return func

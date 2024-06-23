@@ -1,0 +1,9 @@
+Z#main {
+    Str:txt = "str";
+    [txt].insert[1]['f'];
+    W:total = 0;
+    for (W:i enumerating txt) {
+        total += txt[i] * i;
+    };
+    return total;
+}

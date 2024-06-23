@@ -1,0 +1,5 @@
+Z#main {
+    [Z]:nums = [Z] [1, 2, 3];
+    [nums].pop[1];
+    return [nums].len + nums[1];
+}

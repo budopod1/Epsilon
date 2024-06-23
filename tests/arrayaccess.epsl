@@ -1,0 +1,12 @@
+G {
+    Z:i
+}
+
+Z#main {
+    [G]:nums = [G] [G [1], G [2], G [3]];
+    Z:i = nums[0].i;
+    Z:j = [nums].unsafe_idx[1].i;
+    Z:k = ([nums[2]?] || [G [10]]).i;
+    Z:l = ([nums[3]?] || [G [10]]).i;
+    return i + j + k + l; // should be 16
+}

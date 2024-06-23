@@ -61,16 +61,8 @@ void shrinkMem(struct Array *array, uint64_t elemSize) {
     array->capacity = newCapacity;
 }
 
-const char *const REMOVEAT_IDX_ERR = ERR_START "Cannot remove item at index outside bounds of array\n";
-
 void removeAt(struct Array *array, uint64_t idx, uint64_t elemSize) {
-    uint64_t length = array->length;
-    if (idx >= length) {
-        fflush(stdout);
-        fwrite(REMOVEAT_IDX_ERR, strlen(REMOVEAT_IDX_ERR), 1, stderr);
-        exit(1);
-    }
-    array->length = length-1;
+    uint64_t length = array->length--;
     char* content = array->content;
     char* deststart = content+idx*elemSize;
     char* srcstart = deststart+elemSize;
@@ -863,8 +855,8 @@ void verifyNotNull(const char *val) {
     }
 }
 
-const char *const TOO_FEW_PLACEHOLDERS_MESSAGE = ERR_START "Not enough placeholders for given number of values";
-const char *const TOO_MANY_PLACEHOLDERS_MESSAGE = ERR_START "Too many placeholders for given number of values";
+const char *const TOO_FEW_PLACEHOLDERS_MESSAGE = ERR_START "Not enough placeholders for given number of values\n";
+const char *const TOO_MANY_PLACEHOLDERS_MESSAGE = ERR_START "Too many placeholders for given number of values\n";
 const char *const FORMAT_STRING_PLACEHOLDER = "{}";
 
 struct Array *formatString(struct Array *template_, struct Array *values[], uint32_t valueCount) {
@@ -917,4 +909,14 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
     resultArr->length = resultLen;
     resultArr->content = result;
     return resultArr;
+}
+
+const char *const ARR_INDEX_ERR = ERR_START "Specified array index is greater or equal to array length\n";
+
+void verifyArrayIdx(struct Array *arr, uint64_t i) {
+    if (i >= arr->length) {
+        fflush(stdout);
+        fwrite(ARR_INDEX_ERR, strlen(ARR_INDEX_ERR), 1, stderr);
+        exit(1);
+    }
 }

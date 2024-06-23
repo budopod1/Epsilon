@@ -563,9 +563,7 @@ public class EPSLFileCompiler : IFileCompiler {
                         new TextPatternSegment("?")
                     }, new FuncPatternProcessor<List<IToken>>(
                         tokens => new List<IToken> {
-                            new Type_Token(new Type_("Optional", new List<Type_> {
-                                ((Type_Token)tokens[0]).GetValue()
-                            }))
+                            new Type_Token(((Type_Token)tokens[0]).GetValue().OptionalOf())
                         }
                     )
                 ),
@@ -1023,6 +1021,16 @@ public class EPSLFileCompiler : IFileCompiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new Type_PatternSegment(new Type_("Array", new List<Type_> {Type_.Any()})),
+                        new TypePatternSegment(typeof(ValueList)),
+                        new TextPatternSegment("?")
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 1}),
+                        typeof(OptionalArrayAccess)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new Type_PatternSegment(new Type_("Array", new List<Type_> {Type_.Any()})),
                         new TypePatternSegment(typeof(ValueList))
                     }, new Wrapper2PatternProcessor(
                         typeof(ArrayAccess)
@@ -1151,6 +1159,12 @@ public class EPSLFileCompiler : IFileCompiler {
                         new SlotPatternProcessor(new List<int> {0, 2}),
                         typeof(ZeroedArrayCreation)
                     )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(UnmatchedCast)),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(typeof(Cast))
                 ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
@@ -1480,12 +1494,6 @@ public class EPSLFileCompiler : IFileCompiler {
                         )
                     ),
                 }),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(UnmatchedCast)),
-                        new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(typeof(Cast))
-                ),
             },
             new List<IMatcher> {
                 new PatternMatcher(

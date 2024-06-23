@@ -39,7 +39,7 @@ struct ByteArray *packing_packDouble(double d) {
     return arr;
 }
 
-const char *const BAD_LEN_FOR_DOUBLE_ERR = ERR_START "Array is not long enough, given the starting point, to be converted to a double";
+const char *const BAD_LEN_FOR_DOUBLE_ERR = ERR_START "Array is not long enough, given the starting point, to be converted to a double\n";
 
 double packing_unpackDouble(struct ByteArray *arr, uint64_t pos) {
     if (pos + sizeof(double) >= arr->length) {

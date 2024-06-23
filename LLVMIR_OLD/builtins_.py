@@ -44,7 +44,7 @@ def require_capacity(program, builder, params, param_types_):
     elem_type_ = array_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, elem_type_))
     program.call_extern(
-        builder, "requireCapacity", [], [array, capacity, elem_size], 
+        builder, "requireCapacity", [array, capacity, elem_size], 
         [ArrayW8, W64, W64], None
     )
     return None, None
@@ -56,7 +56,7 @@ def shrink_mem(program, builder, params, param_types_):
     elem_type_ = array_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, elem_type_))
     program.call_extern(
-        builder, "shrinkMem", [], [array, elem_size], [
+        builder, "shrinkMem", [array, elem_size], [
             ArrayW8, W64
         ], None
     )
@@ -70,15 +70,17 @@ def pop(program, builder, params, param_types_):
     elem_ir_type = make_type_(program, elem_type_)
     elem_size = program.sizeof(builder, elem_ir_type)
     program.call_extern(
-        builder, "removeAt", [], [array, idx, elem_size], [
-            ArrayW8, W64, 
-            W64
-        ], None
+        builder, "verifyArrayIdx", [array, idx], 
+        [ArrayW8, W64], None
     )
     content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
-    content_ptr_casted = builder.bicast(content_ptr, elem_ir_type.as_pointer())
+    content_ptr_casted = builder.bitcast(content_ptr, elem_ir_type.as_pointer())
     elem = builder.load(builder.gep(content_ptr_casted, [idx]))
     program.decr_ref(builder, elem, elem_type_)
+    program.call_extern(
+        builder, "removeAt", [array, idx, elem_size], 
+        [ArrayW8, W64, W64], None
+    )
     return elem, elem_type_
 
 
@@ -86,17 +88,17 @@ def insert(program, builder, params, param_types_):
     array, idx, value = params
     array_type_, _, value_type_ = param_types_
     elem_type_ = array_type_["generics"][0]
-    casted_value = convert_type(program, builder, value, value_type_, elem_type_)
+    casted_value = convert_type_(program, builder, value, value_type_, elem_type_)
     elem_ir_type = make_type_(program, elem_type_)
     elem_size = program.sizeof(builder, elem_ir_type)
     program.call_extern(
-        builder, "insertSpace", [], [array, idx, elem_size], [
+        builder, "insertSpace", [array, idx, elem_size], [
             ArrayW8, W64, 
             W64
         ], None
     )
     content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
-    content_ptr_casted = builder.bicast(content_ptr, elem_ir_type.as_pointer())
+    content_ptr_casted = builder.bitcast(content_ptr, elem_ir_type.as_pointer())
     builder.store(casted_value, builder.gep(content_ptr_casted, [idx]))
     return None, None
 
@@ -130,6 +132,17 @@ def concat(program, builder, params, param_types_):
             ArrayW8, ArrayW8, W64
         ], array_type_
     ), array_type_
+
+
+def unsafe_idx(program, builder, params, param_types_):
+    array, idx = params
+    array_type_, _ = param_types_
+    elem_type_ = array_type_["generics"][0]
+    elem_ir_type = make_type_(program, elem_type_)
+    content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
+    content_ptr_casted = builder.bitcast(content_ptr, elem_ir_type.as_pointer())
+    elem = builder.load(builder.gep(content_ptr_casted, [idx]))
+    return elem, elem_type_
 
 
 def abs_(program, builder, params, param_types_):
@@ -640,6 +653,7 @@ BUILTINS = {
     "builtin8": {"func": clone, "params": [None]},
     "builtin9": {"func": extend, "params": [ArrayW8, ArrayW8]},
     "builtin10": {"func": concat, "params": [ArrayW8, ArrayW8]},
+    "builtin11": {"func": unsafe_idx, "params": [ArrayW8, W64]},
     "builtin14": {"func": abs_, "params": [Z32]},
     "builtin15": {"func": fabs, "params": [Q64]},
     "builtin16": {"func": concat, "params": [ArrayW8, ArrayW8]},
@@ -698,6 +712,6 @@ BUILTINS = {
     "builtin70": {"func": ceil, "params": [Q64]},
     "builtin71": {"func": round_, "params": [Q64]},
     "builtin72": {"func": inner, "params": [None], "result_in_params": True},
-    "builtin73": {"func": nullable_or, "params": [None, None]},
-    "builtin74": {"func": nullable_and, "params": [None, None]},
+    "builtin73": {"func": nullable_or, "params": [None, None], "result_in_params": True},
+    "builtin74": {"func": nullable_and, "params": [None, None], "result_in_params": True},
 }

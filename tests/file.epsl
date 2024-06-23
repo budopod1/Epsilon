@@ -8,5 +8,5 @@ Z#main {
     if ([text].is_null) {
         abort "Cannot read file";
     };
-    return [[text].unwrap].length;
+    return [[text].unwrap].len;
 }

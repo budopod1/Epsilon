@@ -139,6 +139,14 @@ public class Type_ : IEquatable<Type_> {
         return new Type_(baseType_, generics);
     }
 
+    public Type_ OptionalOf() {
+        if (baseType_.GetName() == "Optional") {
+            return this;
+        } else {
+            return new Type_("Optional", new List<Type_> {this});
+        }
+    }
+
     public BaseType_ GetBaseType_() {
         return baseType_;
     }

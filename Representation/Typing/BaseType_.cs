@@ -50,9 +50,8 @@ public class BaseType_ : IEquatable<BaseType_> {
     public static Dictionary<string, List<string>> ConvertibleTo = new Dictionary<string, List<string>> {
         {"Bool", new List<string> {"Byte", "W", "Z", "Q"}},
         {"Byte", new List<string> {"W", "Z", "Q"}},
-        {"W", new List<string> {"Byte", "Z", "Q"}},
+        {"W", new List<string> {"Z", "Q"}},
         {"Z", new List<string> {"Q"}},
-        {"Optional", new List<string> {"Bool"}},
     };
 
     public static Dictionary<string, List<string>> EquivalentToBesidesBits = new Dictionary<string, List<string>> {

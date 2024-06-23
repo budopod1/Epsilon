@@ -8,7 +8,7 @@ public static class BuiltinsList {
                 new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "length")
+                    new UnitPatternSegment<string>(typeof(Name), "len")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
@@ -52,7 +52,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("value", new Type_("W", 64))
-            }, "buitlins4", null, FunctionSource.Builtin
+            }, "builtin4", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -74,7 +74,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
                 new FunctionArgument("index", new Type_("W", 64)),
-            }, "buitlins6", (List<Type_> types_) => {
+            }, "builtin6", (List<Type_> types_) => {
                 return types_[0].GetGeneric(0);
             }, FunctionSource.Builtin
         ), new ExternalFunction(
@@ -138,6 +138,20 @@ public static class BuiltinsList {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot concat array of type {types_[0]} with an array of type {types_[1]}", 1);
                 return types_[0];
+            }, FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "unsafe_idx"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("index", new Type_("W", 64)),
+            }, "builtin11", (List<Type_> types_) => {
+                return types_[0].GetGeneric(0);
             }, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -930,7 +944,7 @@ public static class BuiltinsList {
                 if (types_[1].GetBaseType_().GetName() == "Optional") {
                     return types_[1];
                 } else {
-                    return new Type_("Optional", new List<Type_> {types_[1]});
+                    return types_[1].OptionalOf();
                 }
             }, FunctionSource.Builtin
         ),

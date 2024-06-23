@@ -29,6 +29,14 @@ TESTS = [
         ]
     },
     {
+        "file": "arrayaccess.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 16}
+        ]
+    },
+    {
         "file": "basic.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_int),
@@ -136,6 +144,14 @@ TESTS = [
         ]
     },
     {
+        "file": "insert.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 676}
+        ]
+    },
+    {
         "file": "mathimport.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_double, c_int),
@@ -174,6 +190,14 @@ TESTS = [
         "sig": CFUNCTYPE(c_int),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
+        ]
+    },
+    {
+        "file": "pop.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 5}
         ]
     },
     {
@@ -261,10 +285,12 @@ def get_func(path, source, func_id):
     return engine.get_function_address(func)
 
 
-def compile_file(file):
+def compile_file(base_dir, file):
     proccess = subprocess.run(
-        ["mono", "Epsilon.exe", "-t", "llvm-ll", "compile", str(file), "-o", "code.ll", "-P"],
-        capture_output=True, timeout=TIMEOUT
+        [
+            "mono", "Epsilon.exe", "-t", "llvm-ll", "compile", 
+            str(file), "-o", str(base_dir/"code.ll"), "-P"
+        ], capture_output=True, timeout=TIMEOUT
     )
     output = proccess.stdout+proccess.stderr
     if proccess.returncode:
@@ -303,7 +329,7 @@ def main():
         source = base_dir/file
 
         try:
-            did_compile, compile_message = compile_file(source)
+            did_compile, compile_message = compile_file(base_dir, source)
         except subprocess.TimeoutExpired:
             print("❗ Compilation of function failed:")
             print(f"Compliation did not complete within {TIMEOUT} seconds")
@@ -316,7 +342,7 @@ def main():
             failed += len(group["tests"])
             continue
         
-        func_ptr = get_func("code.ll", source.with_suffix(""), func)
+        func_ptr = get_func(base_dir / "code.ll", source.with_suffix(""), func)
         func = group["sig"](func_ptr)
         
         for test in group["tests"]:

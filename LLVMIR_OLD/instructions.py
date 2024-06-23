@@ -91,13 +91,17 @@ class ArithmeticInstruction(CastToResultType_Instruction):
 class ArrayAccessInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
         array, index = params
-        _, index_type_ = param_types_
+        array_type_, index_type_ = param_types_
         # array should always already be the correct type_
         # this could change, and if it does, type_ casting would be
         # required here
         casted_index = convert_type_(
             self.program, builder, index, index_type_,
-            W32
+            W64
+        )
+        self.program.call_extern(
+            builder, "verifyArrayIdx", [array, casted_index], 
+            [array_type_, W64], None
         )
         result_ptr = builder.load(builder.gep(
             array, [i64_of(0), i32_of(3)]
@@ -763,6 +767,18 @@ class NullInstruction(Typed_Instruction):
         )
 
 
+class OptionalArrayAccessInstruction(Typed_Instruction):
+    def _build(self, builder, params, param_types_):
+        array, index = params
+        array_type_, index_type_ = param_types_
+        casted_index = convert_type_(
+            self.program, builder, index, index_type_, W64
+        )
+        return self.program.optional_array_access(
+            builder, array, array_type_, self.type_, casted_index
+        )
+
+
 class ReturnInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         param, = params
@@ -994,6 +1010,7 @@ def make_instruction(program, function, data):
         "not": NotInstruction,
         "not_equals": EqInstruction,
         "null_value": NullInstruction,
+        "optional_array_access": OptionalArrayAccessInstruction,
         "or": LogicalInstruction,
         "return": ReturnInstruction,
         "return_void": ReturnVoidInstruction,
