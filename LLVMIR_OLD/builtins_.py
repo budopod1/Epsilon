@@ -76,7 +76,8 @@ def pop(program, builder, params, param_types_):
     content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
     content_ptr_casted = builder.bitcast(content_ptr, elem_ir_type.as_pointer())
     elem = builder.load(builder.gep(content_ptr_casted, [idx]))
-    dumb_decr_ref_counter(program, builder, elem, elem_type_)
+    if not is_value_type_(elem_type_):
+        dumb_decr_ref_counter(program, builder, elem, elem_type_)
     program.call_extern(
         builder, "removeAt", [array, idx, elem_size], 
         [ArrayW8, W64, W64], None
