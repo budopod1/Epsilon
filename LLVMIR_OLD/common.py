@@ -72,7 +72,6 @@ def make_type_(program, data):
         case "Internal", []:
             return ir.IntType(8).as_pointer()
         case name, []:
-            print(program.structs)
             return ir.global_context.get_identified_type(
                 program.structs[name].symbol
             ).as_pointer()
