@@ -1,0 +1,10 @@
+#import cfile;
+
+@id frwd_test;
+Z#frwd_test<Z:arg> {
+    return arg + 1;
+}
+
+Z#main {
+    return call_test[3];
+}

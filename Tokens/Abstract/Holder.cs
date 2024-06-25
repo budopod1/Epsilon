@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-public class Holder : TreeToken {
+public abstract class Holder : TreeToken {
     public Holder(List<IToken> tokens) : base(tokens) {}
-    
-    protected override TreeToken _Copy(List<IToken> tokens) {
-        return (TreeToken)new Holder(tokens);
-    }
 
     public Block GetBlock() {
         if (Count < 2) return null;

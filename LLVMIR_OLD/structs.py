@@ -6,18 +6,22 @@ from common import *
 
 
 class Struct:
-    def __init__(self, program, id_, name, fields):
+    def __init__(self, program, id_, name, fields, symbol):
         self.program = program
         self.id_ = id_
         self.name = name
         self.fields = fields
+        self.symbol = symbol
+        self.ir_type = None
+
+    def compile_type_(self):
         field_ir_types = [REF_COUNTER_FIELD] + [
-            make_type_(program, field["type_"])
-            for field in fields
+            make_type_(self.program, field["type_"])
+            for field in self.fields
         ]
         self.ir_type = ir.LiteralStructType(field_ir_types).as_pointer()
         ir.global_context.get_identified_type(
-            "___"+id_
+            self.symbol
         ).set_body(*field_ir_types)
 
     def get_index_of_member(self, member):

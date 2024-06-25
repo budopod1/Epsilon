@@ -81,6 +81,7 @@ public class EPSLSPEC {
                 fobj["type_"] = new JSONString(type_);
                 return fobj;
             }));
+            sobj["symbol"] = new JSONString(struct_.GetSymbol());
             return sobj;
         }));
 

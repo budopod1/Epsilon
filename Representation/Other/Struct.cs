@@ -5,10 +5,24 @@ using System.Collections.Generic;
 public class Struct : IEquatable<Struct> {
     LocatedID id;
     List<Field> fields;
+    string symbol;
 
-    public Struct(string path, string name, List<Field> fields) {
+    public Struct(string path, string name, List<Field> fields, List<IAnnotation> annotations) {
         id = new LocatedID(path, name);
         this.fields = fields;
+        symbol = id.GetID();
+        foreach (IAnnotation annotation in annotations) {
+            IDAnnotation idA = annotation as IDAnnotation;
+            if (idA != null) {
+                symbol = idA.GetID();
+            }
+        }
+    }
+
+    public Struct(string path, string name, List<Field> fields, string symbol) {
+        id = new LocatedID(path, name);
+        this.fields = fields;
+        this.symbol = symbol;
     }
 
     public string GetPath() {
@@ -21,6 +35,10 @@ public class Struct : IEquatable<Struct> {
 
     public string GetID() {
         return id.GetID();
+    }
+
+    public string GetSymbol() {
+        return symbol;
     }
 
     public List<Field> GetFields() {
@@ -52,11 +70,13 @@ public class Struct : IEquatable<Struct> {
         obj["fields"] = new JSONList(fields.Select(
             field => field.GetJSON()
         ));
+        obj["symbol"] = new JSONString(symbol);
         return obj;
     }
 
     public bool Equals(Struct other) {
         if (GetID() != other.GetID()) return false;
+        if (GetSymbol() != other.GetSymbol()) return false;
         return Utils.ListEqual(fields, other.GetFields());
     }
 }

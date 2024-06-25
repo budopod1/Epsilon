@@ -114,7 +114,6 @@ public class Program : TreeToken, IVerifier, IHasScope {
         foreach (Struct struct_ in structs) {
             if (struct_.GetID() == name) return struct_;
         }
-        Console.WriteLine(path); // temp
         throw new ArgumentException($"No struct found for type_ {type_.ToString()}");
     }
 

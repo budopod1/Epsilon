@@ -76,6 +76,9 @@ public class EPSLFileCompiler : IFileCompiler {
         Step("Removing whitespace...");
         program = RemoveWhitespace(program);
 
+        Step("Tokenizing annotations");
+        program = TokenizeAnnotations(program);
+
         Step("Tokenizing blocks...");
         program = TokenizeBlocks(program);
 
@@ -125,6 +128,9 @@ public class EPSLFileCompiler : IFileCompiler {
 
         Step("Parsing function signatures...");
         program = ParseFunctionSignatures(program);
+
+        Step("Joining annotations...");
+        program = JoinAnnotations(program);
 
         Step("Objectifying functions...");
         program = ObjectifyingFunctions(program);
@@ -398,6 +404,10 @@ public class EPSLFileCompiler : IFileCompiler {
         return (Program)program.Copy(RemoveWhiteSpaceFilter(program));
     }
 
+    Program TokenizeAnnotations(Program program) {
+        return (Program)PerformMatching(program, new AnnotationsMatcher());
+    }
+
     Program TokenizeBlocks(Program program) {
         return (Program)PerformTreeMatching(program, new BlockMatcher(
             new TextPatternSegment("{"), new TextPatternSegment("}"),
@@ -587,35 +597,6 @@ public class EPSLFileCompiler : IFileCompiler {
         );
     }
 
-    Program ComputeStructs(Program program) {
-        ListTokenParser<Field> listParser = new ListTokenParser<Field>(
-            new TextPatternSegment(","), typeof(VarDeclaration), 
-            (token) => new Field((VarDeclaration)token)
-        );
-        HashSet<Struct> structs = new HashSet<Struct>();
-        for (int i = 0; i < program.Count; i++) {
-            IToken token = program[i];
-            if (token is StructHolder) {
-                Holder holder = ((Holder)token);
-                Block block = holder.GetBlock();
-                if (block == null) continue;
-                IToken nameT = holder[0];
-                if (!(nameT is Unit<string>)) continue;
-                Name name = ((Name)nameT);
-                string nameStr = name.GetValue();
-                List<Field> fields = listParser.Parse(block);
-                if (fields == null) {
-                    throw new SyntaxErrorException(
-                        "Malformed struct", token
-                    );
-                }
-                structs.Add(new Struct(GetIDPath(), nameStr, fields));
-            }
-        }
-        program.SetStructsHere(structs);
-        return (Program)program.Copy(program.Where(token => !(token is StructHolder)).ToList());
-    }
-
     Program ConvertTemplateArguments(Program program) {
         List<IPatternSegment> functionArgumentSegments = new List<IPatternSegment> {
             new TypePatternSegment(typeof(Type_Token)),
@@ -715,6 +696,31 @@ public class EPSLFileCompiler : IFileCompiler {
         return program;
     }
 
+    Program JoinAnnotations(Program program) {
+        Program result = (Program)PerformMatching(program, new PatternMatcher(
+            new List<IPatternSegment> {
+                new TypePatternSegment(typeof(RawAnnotation)),
+                new TypePatternSegment(typeof(IAnnotatable))
+            }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                RawAnnotation rawAnnotation = ((RawAnnotation)tokens[0]);
+                IAnnotation annotation = rawAnnotation.ToAnnotation();
+                IAnnotatable annotatable = ((IAnnotatable)tokens[1]);
+                if ((annotation.GetRecipients() & annotatable.RecipientType()) == 0) {
+                    throw new SyntaxErrorException(
+                        $"Cannot apply annotation of type '{rawAnnotation.AnnotationTypeName()}' to specified token", annotatable
+                    );
+                }
+                annotatable.ApplyAnnotation(annotation);
+                return new List<IToken> {annotatable};
+            })
+        ));
+        IToken unmatchedRaw = result.FirstOrDefault(token => token is RawAnnotation);
+        if (unmatchedRaw != null) {
+            throw new SyntaxErrorException("Unmatched annotation", unmatchedRaw);
+        }
+        return result;
+    }
+
     Program ObjectifyingFunctions(Program program) {
         return (Program)PerformMatching(program, new PatternMatcher(
             new List<IPatternSegment> {
@@ -726,11 +732,41 @@ public class EPSLFileCompiler : IFileCompiler {
                 return new List<IToken> {
                     new Function(
                         GetIDPath(), program, template.GetValue(), template.GetArguments(),
-                        (CodeBlock)holder.GetBlock(), sig.GetReturnType_()
+                        (CodeBlock)holder.GetBlock(), sig.GetReturnType_(), holder.GetAnnotations()
                     )
                 };
             })
         ));
+    }
+
+    Program ComputeStructs(Program program) {
+        ListTokenParser<Field> listParser = new ListTokenParser<Field>(
+            new TextPatternSegment(","), typeof(VarDeclaration), 
+            (token) => new Field((VarDeclaration)token)
+        );
+        HashSet<Struct> structs = new HashSet<Struct>();
+        for (int i = 0; i < program.Count; i++) {
+            IToken token = program[i];
+            if (token is StructHolder) {
+                StructHolder holder = ((StructHolder)token);
+                Block block = holder.GetBlock();
+                if (block == null) continue;
+                IToken nameT = holder[0];
+                if (!(nameT is Unit<string>)) continue;
+                Name name = ((Name)nameT);
+                string nameStr = name.GetValue();
+                List<Field> fields = listParser.Parse(block);
+                if (fields == null) {
+                    throw new SyntaxErrorException(
+                        "Malformed struct", token
+                    );
+                }
+                structs.Add(new Struct(GetIDPath(), nameStr, fields,
+                    holder.GetAnnotations()));
+            }
+        }
+        program.SetStructsHere(structs);
+        return (Program)program.Copy(program.Where(token => !(token is StructHolder)).ToList());
     }
 
     Program SplitProgramBlocksIntoLines(Program program) {
@@ -1480,17 +1516,6 @@ public class EPSLFileCompiler : IFileCompiler {
                         }, new Wrapper2PatternProcessor(
                             new SlotPatternProcessor(new List<int> {0, 3}),
                             typeof(Or)
-                        )
-                    ),
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new Type_PatternSegment(Type_.Any()),
-                            new TextPatternSegment("^"),
-                            new TextPatternSegment("^"),
-                            new Type_PatternSegment(Type_.Any())
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
-                            typeof(Xor)
                         )
                     ),
                 }),

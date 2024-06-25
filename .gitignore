@@ -21,5 +21,7 @@ LLVMIR/result
 
 # Epsilon specific
 *.epslspec
-!/libs/*.epslspec
-/libs/.*.epslspec
+!/libs/**/*.epslspec
+/libs/**/.*.epslspec
+!/tests/**/*.epslspec
+/tests/**/.*.epslspec

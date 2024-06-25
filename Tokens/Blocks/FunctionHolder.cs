@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
 
-public class FunctionHolder : Holder {
-    public FunctionHolder(List<IToken> tokens) : base(tokens) {}
+public class FunctionHolder : Holder, IAnnotatable {
+    List<IAnnotation> annotations;
+    
+    public FunctionHolder(List<IToken> tokens) : base(tokens) {
+        annotations = new List<IAnnotation>();
+    }
+
+    public FunctionHolder(List<IToken> tokens, List<IAnnotation> annotations) : base(tokens) {
+        this.annotations = annotations;
+    }
     
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return (TreeToken)new FunctionHolder(tokens);
+        return (TreeToken)new FunctionHolder(tokens, annotations);
     }
 
     public RawFuncSignature GetRawSignature() {
@@ -23,10 +31,23 @@ public class FunctionHolder : Holder {
     }
 
     public void SetSignature(IToken signature) {
-        if (Count < 2)
+        if (Count < 2) {
             throw new InvalidOperationException(
                 "FunctionHolder does not have signature already set"
             );
+        }
         this[0] = signature;
+    }
+
+    public List<IAnnotation> GetAnnotations() {
+        return annotations;
+    }
+
+    public AnnotationRecipients RecipientType() {
+        return AnnotationRecipients.FUNCTION;
+    }
+    
+    public void ApplyAnnotation(IAnnotation annotation) {
+        annotations.Add(annotation);
     }
 }

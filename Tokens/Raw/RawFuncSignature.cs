@@ -9,7 +9,7 @@ public class RawFuncSignature : IParentToken, IBarMatchingInto {
     IToken template;
     
     public int Count {
-        get { return 2; }
+        get => 2;
     }
     
     public IToken this[int i] {

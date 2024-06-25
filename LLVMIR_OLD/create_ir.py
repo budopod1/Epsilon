@@ -26,12 +26,15 @@ def create_ir(data):
 
     program = Program(module, data["path"])
 
-    program.setup_scope(data["scope"])
-
     for struct in data["structs"]:
         program.add_struct(Struct(
-            program, struct["id"], struct["name"], struct["fields"]
+            program, struct["id"], struct["name"], struct["fields"], struct["symbol"]
         ))
+
+    program.setup_scope(data["scope"])
+
+    for struct in program.structs.values():
+        struct.compile_type_()
 
     for func_name, func_data in EXTERN_FUNCS.items():
         program.add_extern_func(func_name, func_data)

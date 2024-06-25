@@ -88,5 +88,5 @@
     {"given_name": "Array<W>", "name": "Array", "bits": null, "generics": ["W"]},
     {"given_name": "Bool", "name": "Bool", "bits": null, "generics": []}
 ], "structs": [
-    {"name": "C", "fields": [{"name": "real", "type_": "Q64"}, {"name": "imag", "type_": "Q64"}]}
+    {"name": "C", "fields": [{"name": "real", "type_": "Q64"}, {"name": "imag", "type_": "Q64"}], "symbol": "math_C"}
 ], "dependencies": [], "clang_config": [], "imports": [], "ir": "math_.bc", "source": null, "source_type": "Library", "id_path": "libs/math"}

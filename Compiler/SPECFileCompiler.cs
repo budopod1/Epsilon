@@ -45,7 +45,8 @@ public class SPECFileCompiler : IFileCompiler {
                             {"name", new JSONStringShape()},
                             {"type_", new JSONStringShape()}
                         }
-                    ))}
+                    ))},
+                    {"symbol", new JSONStringShape()}
                 }
             ))},
             {"dependencies", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
@@ -135,7 +136,7 @@ public class SPECFileCompiler : IFileCompiler {
                         fobj["name"].GetString(), 
                         MakeSPECType_(fobj["type_"])
                     )
-                ).ToList()
+                ).ToList(), sobj["symbol"].GetString()
             )
         ).ToHashSet();
     }
