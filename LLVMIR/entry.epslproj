@@ -1,7 +1,4 @@
 {
-    "compile_start_time_1": 0,
-    "compile_start_time_2": 1719117898,
-    "epslspecs": ["/home/runner/Epsilon/LLVMIR/.entry.epslspec"],
-    "command_options": [],
+    "command_options": ["-h", "always"],
     "libraries": ["../EPSL-IR-Gen/irgen", "../EPSL-BinJSON/binjson"]
 }

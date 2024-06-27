@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
 public class Builder {
-    bool isProj = false;
+    bool shouldCache = false;
     string currentFile = "";
     string currentText = "";
     Dictionary<string, string> libraries;
@@ -14,7 +14,7 @@ public class Builder {
     readonly IEnumerable<string> EXTENSIONS = new List<string> {"epslspec", "epsl"};
     readonly IEnumerable<string> PREFIXES = new List<string> {"", "."};
 
-    public ResultStatus LoadEPSLPROJ(string input, bool neverProj, out EPSLPROJ projOut, bool allowNew=true) {
+    public ResultStatus LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
         EPSLPROJ proj = null;
 
         string projLocation = null;
@@ -27,29 +27,56 @@ public class Builder {
             projOut = null;
             return status1;
         }
-
-        if (neverProj) {
-            projOut = new EPSLPROJ(projLocation);
-            return status1;
-        }
         
         ResultStatus status2 = RunWrapped(() => {
             if (Utils.FileExists(projLocation)) {
                 currentFile = projLocation;
                 proj = EPSLPROJ.FromText(projLocation, ParseJSONFile(projLocation));
                 Log.Info("Loaded EPSLPROJ");
-                isProj = true;
             }
         });
-
-        // This C# version does not support the ??= operator
-        projOut = proj ?? new EPSLPROJ(projLocation);
 
         if (!allowNew && proj == null) {
             projOut = null;
             Console.WriteLine("Cannot find requested EPSLPROJ");
             return ResultStatus.USERERR;
         }
+
+        // This C# version does not support the ??= operator
+        projOut = proj ?? new EPSLPROJ(projLocation);
+        
+        return status2;
+    }
+
+    public ResultStatus LoadEPSLCACHE(string input, CacheMode cacheMode, out EPSLCACHE cacheOut) {
+        EPSLCACHE cache = null;
+
+        string cacheLocation = null;
+        ResultStatus status1 = RunWrapped(() => {
+            string cacheDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
+            string cacheName = $".{Utils.GetFileNameWithoutExtension(input)}.epslcache";
+            cacheLocation = Utils.JoinPaths(cacheDirectory, cacheName);
+        });
+        if (status1 != ResultStatus.GOOD) {
+            cacheOut = null;
+            return status1;
+        }
+
+        if (cacheMode <= CacheMode.DONTLOAD) {
+            cacheOut = new EPSLCACHE(cacheLocation);
+            return status1;
+        }
+        
+        ResultStatus status2 = RunWrapped(() => {
+            if (Utils.FileExists(cacheLocation)) {
+                currentFile = cacheLocation;
+                cache = EPSLCACHE.FromText(cacheLocation, ParseJSONFile(cacheLocation));
+                Log.Info("Loaded EPSLCACHE");
+            }
+        });
+
+        // This C# version does not support the ??= operator
+        cacheOut = cache ?? new EPSLCACHE(cacheLocation);
         
         return status2;
     }
@@ -96,11 +123,12 @@ public class Builder {
         });
     }
 
-    public ResultStatus RegisterLibraries(IEnumerable<string> relPaths) {
+    public ResultStatus RegisterLibraries(string input, IEnumerable<string> relPaths) {
         return RunWrapped(() => {
+            string projDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
             IEnumerable<string> paths = relPaths
-                .Select(path => Utils.GetFullPath(path.Replace(
-                    "%EPSLLIBS%", Utils.EPSLLIBS())))
+                .Select(path => Utils.JoinPaths(
+                    projDirectory, path.Replace("%EPSLLIBS%", Utils.EPSLLIBS())))
                 .Distinct();
             try {
                 libraries = paths.ToDictionary2((path) => Utils.GetFileNameWithoutExtension(path));
@@ -121,12 +149,13 @@ public class Builder {
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             EPSLPROJ proj = settings.Proj;
+            EPSLCACHE cache = settings.Cache;
 
             string input = Utils.GetFullPath(settings.InputPath);
             string projectDirectory = Utils.GetDirectoryName(input);
 
-            List<string> lastGeneratedSPECs = proj.EPSLSPECS;
-            isProj = !settings.NeverProject && proj.IsFromFile;
+            List<string> lastGeneratedSPECs = cache.EPSLSPECS;
+            shouldCache |= cache.IsFromFile;
 
             currentFile = input;
             files = new Dictionary<string, FileTree>();
@@ -135,7 +164,7 @@ public class Builder {
 
             Log.Status("Loading tree");
             LoadTree(settings, tree, projectDirectory);
-            DetermineIsProj();
+            DetermineShouldCache();
             Log.Status("Transfering struct IDs");
             TransferStructIDs();
             Log.Status("Transfering declarations");
@@ -148,7 +177,7 @@ public class Builder {
             Log.Status("Writing IR");
             List<string> sections = ToIR(settings, out List<string> IRInUserDir, 
                 out List<FileTree> unlinkedFiles);
-            if (IsProjMode(settings)) {
+            if (doesSaveCache(settings)) {
                 Log.Status("Saving EPSLSPECs");
                 SaveEPSLSPECs();
             }
@@ -179,11 +208,11 @@ public class Builder {
             Log.Status("Linking LLVM");
             Utils.RunCommand("llvm-link", arguments);
 
-            if (IsProjMode(settings)) {
-                proj.CompileStartTime = buildStartTime;
-                proj.EPSLSPECS = generatedSPECs;
-                proj.ToFile();
-                Log.Info("Saved updated EPSLPROJ");
+            if (doesSaveCache(settings)) {
+                cache.CompileStartTime = buildStartTime;
+                cache.EPSLSPECS = generatedSPECs;
+                cache.ToFile();
+                Log.Info("Saved updated EPSLCACHE");
             } else {
                 foreach (string path in IRInUserDir) {
                     Utils.TryDelete(path);
@@ -203,10 +232,6 @@ public class Builder {
         buildInfo = _buildInfo;
 
         return status;
-    }
-
-    bool IsProjMode(BuildSettings settings) {
-        return !settings.NeverProject && (settings.AlwaysProject || isProj);
     }
     
     public ResultStatus RunWrapped(Action action) {
@@ -259,6 +284,21 @@ public class Builder {
         return ResultStatus.GOOD;
     }
 
+    bool doesSaveCache(BuildSettings settings) {
+        switch (settings.CacheMode) {
+            case CacheMode.DONTUSE:
+                return false;
+            case CacheMode.DONTLOAD:
+                return true;
+            case CacheMode.AUTO:
+                return shouldCache;
+            case CacheMode.ALWAYS:
+                return true;
+            default:
+                throw new InvalidOperationException();
+        }
+    }
+
     void SwitchFile(FileTree file) {
         currentFile = file.Path;
         currentText = file.Text;
@@ -297,7 +337,7 @@ public class Builder {
         string source = Utils.GetFullPath(obj["source"].GetStringOrNull());
         string generatedEPSLSPEC = null;
         if (source != null) {
-            if (settings.NeverProject || settings.DisableCache) return null;
+            if (settings.CacheMode <= CacheMode.DONTLOAD) return null;
             if (!Utils.FileExists(source)) {
                 throw new InvalidSPECResourceException(
                     obj, path, source
@@ -305,7 +345,7 @@ public class Builder {
             }
             generatedEPSLSPEC = path;
             currentFile = source;
-            long? lastBuildStartTime = settings.Proj.CompileStartTime;
+            long? lastBuildStartTime = settings.Cache.CompileStartTime;
             if (lastBuildStartTime == null) {
                 return DispatchPath(settings, source, path, new SPECFileCompiler(
                     stemmed, fileText, obj
@@ -448,14 +488,14 @@ public class Builder {
         }
     }
 
-    void DetermineIsProj() {
+    void DetermineShouldCache() {
         int userFiles = 0;
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             if (file.Compiler.GetFileSourceType() == FileSourceType.User) {
                 userFiles++;
                 if (userFiles >= 2) {
-                    isProj = true;
+                    shouldCache = true;
                     return;
                 }
             }
@@ -712,15 +752,18 @@ public class Builder {
         });
     }
 
-    public ResultStatus Teardown(EPSLPROJ proj) {
+    public ResultStatus Teardown(EPSLPROJ proj, EPSLCACHE cache) {
         return RunWrapped(() => {
             Log.Status("Cleaning up EPSLSPECs");
-            foreach (string spec in proj.EPSLSPECS) {
+            foreach (string spec in cache.EPSLSPECS) {
                 CleanupSPEC(spec);
             }
 
             Log.Status("Deleting project file");
             Utils.TryDelete(proj.Path);
+
+            Log.Status("Deleting cache file");
+            Utils.TryDelete(cache.Path);
         });
     }
 

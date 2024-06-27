@@ -297,7 +297,7 @@ def compile_file(base_dir, file):
     proccess = subprocess.run(
         [
             "mono", "Epsilon.exe", "-t", "llvm-ll", "compile", 
-            str(file), "-o", str(base_dir/"code.ll"), "-P"
+            str(file), "-o", str(base_dir/"code.ll"), "-h", "dont-use"
         ], capture_output=True, timeout=TIMEOUT
     )
     output = proccess.stdout+proccess.stderr

@@ -36,7 +36,7 @@ public static class Log {
 
         for (int i = 0; i < vals.Length; i++) {
             if (i != 0) stream.Write(' ');
-            stream.Write(vals[i].ToString());
+            stream.Write(vals[i]?.ToString() ?? "null");
         }
         
         stream.WriteLine();

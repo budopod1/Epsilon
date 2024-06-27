@@ -20,6 +20,7 @@ LLVMIR/result
 /temp/*
 
 # Epsilon specific
+*.epslcache
 *.epslspec
 !/libs/**/*.epslspec
 /libs/**/.*.epslspec

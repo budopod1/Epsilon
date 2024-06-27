@@ -221,23 +221,20 @@ public class SPECFileCompiler : IFileCompiler {
     public Dependencies ToDependencies(Builder builder) {
         IEnumerable<(IEnumerable<Struct> structs, IEnumerable<RealFunctionDeclaration> declarations)> pairs = obj["dependencies"].IterList().Select(fobj => {
             FileTree file = builder.GetFileByIDPath(fobj["path"].GetString());
-            IFileCompiler oldCompiler;
+            bool hasChanges = file.OldCompiler != null;
             HashSet<Struct> structs;
             List<RealFunctionDeclaration> declarations;
-            if (file.Compiler.FromCache()) {
-                oldCompiler = file.Compiler;
-                structs = file.Structs;
-                declarations = file.Declarations;
-            } else {
-                oldCompiler = file.OldCompiler;
-                if (oldCompiler == null) throw new RecompilationRequiredException();
+            if (hasChanges) {
                 structs = file.OldStructs;
                 declarations = file.OldDeclarations;
+            } else {
+                structs = file.Structs;
+                declarations = file.Declarations;
             }
             IEnumerable<Struct> structDepedencies = fobj["structs"].IterList().Select(sstr => structs.First(
                 struct_ => struct_.GetName() == sstr.GetString()
             ));
-            if (!file.Compiler.FromCache()) {
+            if (hasChanges) {
                 foreach (Struct structDependency in structDepedencies) {
                     bool containsStruct = false;
                     foreach (Struct structNow in file.Structs) {
@@ -245,16 +242,19 @@ public class SPECFileCompiler : IFileCompiler {
                             containsStruct = true;
                         }
                     }
-                    if (!containsStruct) throw new RecompilationRequiredException();
+                    if (!containsStruct) {
+                        throw new RecompilationRequiredException();
+                    }
                 }
             }
             IEnumerable<RealFunctionDeclaration> functionDependencies = fobj["functions"].IterList().Select(
                 dstr => declarations[dstr.GetWhole()]
             );
-            if (!file.Compiler.FromCache()) {
+            if (hasChanges) {
                 foreach (RealFunctionDeclaration functionDependency in functionDependencies) {
-                    if (!file.Declarations.Contains(functionDependency))
+                    if (!file.Declarations.Contains(functionDependency)) {
                         throw new RecompilationRequiredException();
+                    }
                 }
             }
             return (structDepedencies, functionDependencies);

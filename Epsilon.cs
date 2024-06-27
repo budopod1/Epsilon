@@ -17,17 +17,10 @@ Modes:
             ".Trim()
         );
 
-        bool alwaysProj = false;
-        parser.AddOption(() => alwaysProj = true, "Always use project mode", null,
-            "p", "project-mode");
-        
-        bool neverProj = false;
-        parser.AddOption(() => neverProj = true, "Never use project mode", null, 
-            "P", "no-project-mode");
-
-        bool disableCache = false;
-        parser.AddOption(() => disableCache = true, "Disable loading modules from compilation cache",
-            null, "disable-cache");
+        PossibilitiesExpectation cacheModeInput = parser.AddOption(
+            new PossibilitiesExpectation("auto", "dont-use", "dont-load", "always"), 
+            "Caching mode", "h", "cache-mode"
+        );
 
         bool linkBuiltins = true;
         parser.AddOption(() => linkBuiltins = false, "Don't link to Epsilon's builtins", null, 
@@ -98,38 +91,35 @@ Modes:
         string input = curDirectory + (sourceFile.Matched ?? "entry");
 
         if (mode.Value() == "compile") {
-            TestResult(builder.LoadEPSLPROJ(input, neverProj, out EPSLPROJ proj));
+            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
             parser.ParseAdditionalOptions(proj.CommandOptions);
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
             
-            if (alwaysProj && neverProj) {
-                ArgumentParser.DisplayProblem("The 'project-mode' and 'no-project-mode' options are mutually exclusive");
-            }
+            CacheMode cacheMode = EPSLCACHE.ParseCacheMode(cacheModeInput.Value());
 
             if (outputType.Value() == "package") {
-                if (neverProj) {
-                    ArgumentParser.DisplayProblem("The 'package' output type requires project mode, and thus forbids the 'no-project-mode' option");
-                }
-                alwaysProj = true;
                 linkBuiltins = false;
                 linkLibraries = false;
             }
 
             libraries.AddRange(proj.Libraries);
 
-            TestResult(builder.RegisterLibraries(libraries));
+            TestResult(builder.RegisterLibraries(input, libraries));
+            TestResult(builder.LoadEPSLCACHE(input, cacheMode, out EPSLCACHE cache));
 
-            BuildSettings settings = new BuildSettings(input, proj, alwaysProj, neverProj, disableCache, linkBuiltins, linkLibraries, clangOptions.MatchedSegments);
+            BuildSettings settings = new BuildSettings(input, proj, cache, cacheMode, linkBuiltins, linkLibraries, clangOptions.MatchedSegments);
 
             return DoCompilation(
                 builder, settings, outputType.Value(),
                 outputFile.IsPresent ? outputFile.Matched : null
             );
         } else if (mode.Value() == "teardown") {
-            TestResult(builder.LoadEPSLPROJ(input, false, out EPSLPROJ proj, allowNew: false));
+            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj, allowNew: false));
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
+            
+            TestResult(builder.LoadEPSLCACHE(input, CacheMode.AUTO, out EPSLCACHE cache));
 
-            TestResult(builder.Teardown(proj));
+            TestResult(builder.Teardown(proj, cache));
 
             return 0;
         } else if (mode.Value() == "create-proj") {
