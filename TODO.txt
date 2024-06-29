@@ -1,6 +1,7 @@
 TODO:
 * `Matrix` type?
 * `Map` type
+* serialization and complete compilation of `given`s
 * add way to apply operation to every element of array (like Linq Select)
 * add option for string constants to be statically allocated
 * top tracking so we can alloca instead of malloc

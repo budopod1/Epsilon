@@ -3,6 +3,21 @@ using System.Linq;
 using System.Collections.Generic;
 
 public static class Extensions {
+    public static List<T> Slice<T>(this List<T> list, int length) {
+        List<T> result = new List<T>();
+        for (int i = 0; i < length; i++) {
+            result.Add(list[i]);
+        }
+        return result;
+    }
+    public static List<T> Slice<T>(this List<T> list, int start, int length) {
+        List<T> result = new List<T>();
+        for (int i = start; i < length; i++) {
+            result.Add(list[i]);
+        }
+        return result;
+    }
+    
     public static Dictionary<TKey, (TValue1, TValue2)> MergeToPairs<TKey, TValue1, TValue2>(this Dictionary<TKey, TValue1> d1, Dictionary<TKey, TValue2> d2, Func<TValue1> default1, Func<TValue2> default2) {
         return d1.Keys.Concat(d1.Keys).Distinct().ToDictionary(key => key, key => (
             d1.GetOr(key, default1), d2.GetOr(key, default2)

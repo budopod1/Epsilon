@@ -164,6 +164,9 @@ public class EPSLFileCompiler : IFileCompiler {
         Step("Tokenizing groups...");
         program = TokenizeGroups(program);
 
+        Step("Tokenizing given blocks...");
+        program = TokenizeGivenBlocks(program);
+
         Step("Tokenizing for loops...");
         program = TokenizeForLoops(program);
 
@@ -345,6 +348,7 @@ public class EPSLFileCompiler : IFileCompiler {
             {"null", typeof(NullValue)},
             {"for", typeof(ForKeyword)},
             {"abort", typeof(AbortKeyword)},
+            {"given", typeof(GivenKeyword)},
         };
         return DoUnstructuredSyntaxMatching(
             program,
@@ -867,6 +871,56 @@ public class EPSLFileCompiler : IFileCompiler {
         );
     }
 
+    Program TokenizeGivenBlocks(Program program) {
+        return (Program)PerformTreeMatching(
+            program, new PatternMatcher(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(GivenKeyword)),
+                    new TypePatternSegment(typeof(RawGroup)),
+                    new TypePatternSegment(typeof(CodeBlock))
+                }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                    RawGroup group = ((RawGroup)tokens[1]);
+                    int asIdx = -1;
+                    for (int i = 0; i < group.Count; i++) {
+                        IToken token = group[i];
+                        Name name = token as Name;
+                        if (name != null && name.GetValue() == "as") {
+                            asIdx = i;
+                            break;
+                        }
+                    }
+                    if (asIdx == -1) {
+                        throw new SyntaxErrorException(
+                            "Expected 'as' keyword", group
+                        );
+                    }
+                    if (asIdx == group.Count - 1) {
+                        throw new SyntaxErrorException(
+                            "Expected variable declaration after 'as' keyword", group[asIdx]
+                        );
+                    }
+                    if (asIdx < group.Count - 2) {
+                        throw new SyntaxErrorException(
+                            "Expected only a variable declaration after 'as' keyword", group[group.Count - 1]
+                        );
+                    }
+                    IToken endingToken = group[group.Count - 1];
+                    VarDeclaration var_ = endingToken as VarDeclaration;
+                    if (var_ == null) {
+                        throw new SyntaxErrorException(
+                            "Expected variable declaration", endingToken
+                        );
+                    }
+                    RawGivenValue givenValue = new RawGivenValue(group.GetTokens().Slice(asIdx));
+                    CodeBlock block = ((CodeBlock)tokens[2]);
+                    return new List<IToken> {new RawGivenPart(
+                        givenValue, var_, block
+                    )};
+                })
+            )
+        );
+    }
+
     Program ParseGlobals(Program program) {
         (IEnumerable<IToken> progTokens, IEnumerable<RawGlobal> globals) = program.ParitionSubclass<IToken, RawGlobal>();
         program.AddGlobals(globals.Select(rawGlobal => new Global(rawGlobal)));
@@ -1089,6 +1143,31 @@ public class EPSLFileCompiler : IFileCompiler {
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(ContinueKeyword))
                     }, new InstantiationPatternProcessor(typeof(Continue))
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Given)),
+                        new TypePatternSegment(typeof(RawGivenPart))
+                    }, new Wrapper2PatternProcessor(
+                        typeof(Given)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(RawGivenPart))
+                    }, new Wrapper2PatternProcessor(
+                        typeof(Given)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(Given)),
+                        new TypePatternSegment(typeof(ElseKeyword)),
+                        new TypePatternSegment(typeof(CodeBlock))
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(Given)
+                    )
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {

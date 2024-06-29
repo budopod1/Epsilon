@@ -72,7 +72,7 @@ public static class TokenUtils {
         }
     }
 
-    public static CodeSpan MergeSpans(List<IToken> tokens) {
+    public static CodeSpan MergeSpans(IEnumerable<IToken> tokens) {
         return CodeSpan.Merge(tokens.Select(token => token.span));
     }
 

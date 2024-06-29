@@ -183,12 +183,9 @@ public class Type_ : IEquatable<Type_> {
             return true;
         if (IsConvertibleOptionalTo(other)) return true;
         if (IsConvertibleNullTo(other)) return true;
-        if (HasGenerics())
-            return Matches(other);
+        if (HasGenerics()) return Matches(other);
         if (other.HasGenerics()) return false;
-        if (baseType_.IsConvertibleTo(otherBaseType_))
-            return true;
-        return false;
+        return baseType_.IsConvertibleTo(otherBaseType_);
     }
 
     public bool IsEquivalentTo(Type_ other) {

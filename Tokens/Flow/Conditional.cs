@@ -36,11 +36,21 @@ public class Conditional : IFlowControl, IFunctionTerminator {
     public Conditional(Conditional conditional, IValueToken condition, CodeBlock block) {
         conditions = new List<Condition>(conditional.GetConditions());
         Condition cond = new Condition(condition, block);
+        if (conditional.GetElseBlock() != null) {
+            throw new SyntaxErrorException(
+                "Cannot add condition to conditional already terminated with else block", cond
+            );
+        }
         cond.span = TokenUtils.MergeSpans(condition, block);
         conditions.Add(cond);
     }
 
     public Conditional(Conditional conditional, CodeBlock elseBlock) {
+        if (conditional.GetElseBlock() != null) {
+            throw new SyntaxErrorException(
+                "Cannot add else to conditional already terminated with else block", elseBlock
+            );
+        }
         conditions = conditional.GetConditions();
         this.elseBlock = elseBlock;
     }

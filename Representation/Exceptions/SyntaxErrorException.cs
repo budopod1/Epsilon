@@ -5,6 +5,8 @@ public class SyntaxErrorException : Exception {
     
     public SyntaxErrorException(string message, IToken token) : base(message) {
         if (token.span == null) {
+            Console.WriteLine(message);
+            Console.WriteLine(token);
             throw new NullReferenceException("IToken.span should never be null");
         }
         span = token.span;

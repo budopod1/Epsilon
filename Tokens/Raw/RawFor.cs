@@ -11,7 +11,7 @@ public class RawFor : IParentToken {
     };
 
     public int Count {
-        get { return 1 + clauses.Count; }
+        get => 1 + clauses.Count;
     }
 
     public IToken this[int i] {
