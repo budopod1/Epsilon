@@ -47,9 +47,9 @@ public class GivenPart : BinaryOperation<IValueToken, CodeBlock>, IVerifier {
         }
         Type_ fromType_ = toType_.OptionalOf();
         Type_ valType_ = o1.GetType_();
-        if (!valType_.IsConvertibleTo(fromType_)) {
+        if (!valType_.IsCastableTo(fromType_)) {
             throw new SyntaxErrorException(
-                $"Cannot convert value of type {valType_} to type {fromType_}", o1
+                $"Cannot cast value of type {valType_} to type {fromType_}", o1
             );
         }
     }
