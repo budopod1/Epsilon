@@ -873,7 +873,8 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
     char *result = malloc(resultCap);
     uint64_t resultIdx = 0;
     uint64_t segStart = 0;
-    for (uint64_t i = 0; i < template_Len; i++) {
+    uint64_t templateIterLen = template_Len - placeholder_len + 1;
+    for (uint64_t i = 0; i < templateIterLen; i++) {
         if (memcmp(template_Content + i, FORMAT_STRING_PLACEHOLDER, placeholder_len) == 0) {
             if (valueIdx == valueCount) {
                 fflush(stdout);
