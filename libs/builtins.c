@@ -812,13 +812,13 @@ void abort_(const struct Array *string) {
     exit(1);
 }
 
-struct Array *makeBlankArray(uint64_t size, uint64_t elemSize) {
+struct Array *makeBlankArray(uint64_t len, uint64_t elemSize) {
     struct Array *result = malloc(sizeof(struct Array));
     result->refCounter = 0;
-    result->capacity = size;
-    result->length = size;
-    uint64_t byteCount = size*elemSize;
-    void *content = calloc(1, byteCount);
+    uint64_t cap = len || 1;
+    result->capacity = cap;
+    result->length = len;
+    void *content = calloc(cap, elemSize);
     result->content = content;
     return result;
 }

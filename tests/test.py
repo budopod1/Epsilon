@@ -69,6 +69,14 @@ TESTS = [
         ]
     },
     {
+        "file": "capacity.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 1}
+        ]
+    },
+    {
         "file": "circular1.epsl",
         "func": -1,
         "sig": CFUNCTYPE(c_int),
