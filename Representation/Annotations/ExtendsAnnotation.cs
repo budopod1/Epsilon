@@ -1,24 +1,24 @@
 using System;
 using System.Collections.Generic;
 
-public class IDAnnotation : IAnnotation {
+public class ExtendsAnnotation : IAnnotation {
     CodeSpan span;
-    string id;
+    string extendee;
 
-    public IDAnnotation(CodeSpan span, string id) {
+    public ExtendsAnnotation(CodeSpan span, string extendee) {
         this.span = span;
-        this.id = id;
+        this.extendee = extendee;
     }
 
-    public static IDAnnotation FromTokens(IToken base_, List<IToken> arguments) {
+    public static ExtendsAnnotation FromTokens(IToken base_, List<IToken> arguments) {
         if (arguments.Count == 0) {
             throw new SyntaxErrorException(
-                $"Expected id", base_
+                $"Expected struct name", base_
             );
         }
         if (arguments.Count >= 2) {
             throw new SyntaxErrorException(
-                $"Too many arguments for ID annotation", arguments[1]
+                $"Too many arguments for extends annotation", arguments[1]
             );
         }
         Name name = arguments[0] as Name;
@@ -27,7 +27,7 @@ public class IDAnnotation : IAnnotation {
                 $"Expected name", name
             );
         }
-        return new IDAnnotation(TokenUtils.MergeSpans(arguments), name.GetValue());
+        return new ExtendsAnnotation(TokenUtils.MergeSpans(arguments), name.GetValue());
     }
 
     public CodeSpan GetSpan() {
@@ -35,10 +35,10 @@ public class IDAnnotation : IAnnotation {
     }
 
     public AnnotationRecipients GetRecipients() {
-        return AnnotationRecipients.STRUCT | AnnotationRecipients.FUNCTION;
+        return AnnotationRecipients.STRUCT;
     }
 
-    public string GetID() {
-        return id;
+    public string GetExtendee() {
+        return extendee;
     }
 }

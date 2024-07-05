@@ -42,7 +42,7 @@ public class ArrayCreation : IParentToken, IValueToken {
     }
 
     public Type_ GetType_() {
-        return new Type_("Array", new List<Type_> {type_});
+        return type_.ArrayOf();
     }
 
     public override string ToString() {

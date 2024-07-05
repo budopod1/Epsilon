@@ -11,7 +11,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "len")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+                new FunctionArgument("array", Type_.Any().ArrayOf())
             }, "builtin1", new Type_("W", 64), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -21,7 +21,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "capacity")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()}))
+                new FunctionArgument("array", Type_.Any().ArrayOf())
             }, "builtin2", new Type_("W", 64), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -32,7 +32,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
                 new FunctionArgument("value", Type_.Any())
             }, "builtin3", (List<Type_> types_) => {
                 Type_ value = types_[1];
@@ -50,7 +50,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
                 new FunctionArgument("value", new Type_("W", 64))
             }, "builtin4", null, FunctionSource.Builtin
         ), new ExternalFunction(
@@ -61,7 +61,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "shrink_mem"),
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
             }, "builtin5", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -72,7 +72,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
                 new FunctionArgument("index", new Type_("W", 64)),
             }, "builtin6", (List<Type_> types_) => {
                 return types_[0].GetGeneric(0);
@@ -87,7 +87,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3, 4})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
                 new FunctionArgument("index", new Type_("W", 64)),
                 new FunctionArgument("value", Type_.Any()),
             }, "builtin7", (List<Type_> types_) => {
@@ -105,7 +105,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "clone"),
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
             }, "builtin8", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -116,8 +116,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
+                new FunctionArgument("array2", Type_.Any().ArrayOf()),
             }, "builtin9", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot extend array of type {types_[0]} with an array of type {types_[1]}", 1);
@@ -132,8 +132,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array1", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array1", Type_.Any().ArrayOf()),
+                new FunctionArgument("array2", Type_.Any().ArrayOf()),
             }, "builtin10", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot concat array of type {types_[0]} with an array of type {types_[1]}", 1);
@@ -148,7 +148,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
                 new FunctionArgument("index", new Type_("W", 64)),
             }, "builtin11", (List<Type_> types_) => {
                 return types_[0].GetGeneric(0);
@@ -181,8 +181,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 2})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array1", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("array2", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("array1", Type_.Any().ArrayOf()),
+                new FunctionArgument("array2", Type_.Any().ArrayOf()),
             }, "builtin16", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot concat array of type {types_[0]} with an array of type {types_[1]}", 1);
@@ -254,7 +254,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3, 4})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
                 new FunctionArgument("start", new Type_("W", 64)),
                 new FunctionArgument("end", new Type_("W", 64)),
             }, "builtin22", (List<Type_> types_) => types_[0], FunctionSource.Builtin
@@ -279,8 +279,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
+                new FunctionArgument("sub", Type_.Any().ArrayOf()),
             }, "builtin24", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot count occurrences of array of type {types_[1]} in an array of type {types_[0]}", 1);
@@ -295,8 +295,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
+                new FunctionArgument("sub", Type_.Any().ArrayOf()),
             }, "builtin25", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot count occurrences of array of type {types_[1]} in an array of type {types_[0]}", 1);
@@ -310,8 +310,8 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "nest"),
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
-            }, "builtin26", (List<Type_> types_) => new Type_("Array", types_), FunctionSource.Builtin
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
+            }, "builtin26", (List<Type_> types_) => types_[0].ArrayOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -321,12 +321,12 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
+                new FunctionArgument("sub", Type_.Any().ArrayOf()),
             }, "builtin27", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot split array of type {types_[0]} by an array of type {types_[1]}", 1);
-                return new Type_("Array", new List<Type_> {types_[0]});
+                return types_[0].ArrayOf();
             }, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -337,8 +337,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
+                new FunctionArgument("sub", Type_.Any().ArrayOf()),
             }, "builtin28", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot check if array of type {types_[0]} starts with array of type {types_[1]}", 1);
@@ -353,8 +353,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
+                new FunctionArgument("sub", Type_.Any().ArrayOf()),
             }, "builtin29", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot check if array of type {types_[0]} ends with array of type {types_[1]}", 1);
@@ -479,10 +479,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {
-                    new Type_("Array", new List<Type_> {Type_.Any()})
-                })),
-                new FunctionArgument("sep", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf().ArrayOf()),
+                new FunctionArgument("sep", Type_.Any().ArrayOf()),
             }, "builtin34", (List<Type_> types_) => {
                 if (!(types_[0].GetGeneric(0)).Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot join of array of type {types_[0]} on array of type {types_[1]}", 1);
@@ -497,7 +495,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
                 new FunctionArgument("elem", Type_.Any()),
             }, "builtin35", (List<Type_> types_) => {
                 if (!types_[1].IsConvertibleTo(types_[0].GetGeneric(0)))
@@ -513,8 +511,8 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("arr", new Type_("Array", new List<Type_> {Type_.Any()})),
-                new FunctionArgument("sub", new Type_("Array", new List<Type_> {Type_.Any()})),
+                new FunctionArgument("arr", Type_.Any().ArrayOf()),
+                new FunctionArgument("sub", Type_.Any().ArrayOf()),
             }, "builtin36", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot check index of array of type {types_[1]} in array of type {types_[0]}", 1);
@@ -569,9 +567,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("str", Type_.String()),
                 new FunctionArgument("mode", new Type_("Z", 32)),
-            }, "builtin42", new Type_("Optional", 
-                new List<Type_> {new Type_("File")}
-            ), FunctionSource.Builtin
+            }, "builtin42", new Type_("File").OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -655,7 +651,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("file", new Type_("File")),
-            }, "builtin52", new Type_("Optional", new List<Type_> {Type_.String()}), FunctionSource.Builtin
+            }, "builtin52", Type_.String().OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -667,7 +663,7 @@ public static class BuiltinsList {
             ), new List<FunctionArgument> {
                 new FunctionArgument("file", new Type_("File")),
                 new FunctionArgument("bytes", new Type_("W", 64))
-            }, "builtin53", new Type_("Optional", new List<Type_> {Type_.String()}), FunctionSource.Builtin
+            }, "builtin53", Type_.String().OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -701,7 +697,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("file", new Type_("File"))
-            }, "builtin56", new Type_("Optional", new List<Type_> {Type_.String()}), FunctionSource.Builtin
+            }, "builtin56", Type_.String().OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -717,9 +713,7 @@ public static class BuiltinsList {
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("file", new Type_("File"))
-            }, "builtin58", new Type_("Optional", new List<Type_> {
-                new Type_("Array", new List<Type_> {Type_.String()})
-            }), FunctionSource.Builtin
+            }, "builtin58", Type_.String().ArrayOf().OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
@@ -763,9 +757,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "unwrap")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("optional", new Type_(
-                    "Optional", new List<Type_> {Type_.Any()}
-                ), true),
+                new FunctionArgument("optional", Type_.Any().OptionalOf(), true),
             }, "builtin61", (List<Type_> types_) => types_[0].GetGeneric(0),
             FunctionSource.Builtin
         ), new ExternalFunction(
@@ -776,9 +768,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "unique")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_(
-                    "Array", new List<Type_> {Type_.Any()}
-                )),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
             }, "builtin63", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -788,9 +778,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "sort")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_(
-                    "Array", new List<Type_> {Type_.Any()}
-                )),
+                new FunctionArgument("array", Type_.Any().OptionalOf()),
             }, "builtin64", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
@@ -807,9 +795,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "sort_inverted")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_(
-                    "Array", new List<Type_> {Type_.Any()}
-                )),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
             }, "builtin65", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
@@ -826,9 +812,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "dedup")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_(
-                    "Array", new List<Type_> {Type_.Any()}
-                )),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
             }, "builtin66", null, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -839,9 +823,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("array", new Type_(
-                    "Array", new List<Type_> {Type_.Any()}
-                )),
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
                 new FunctionArgument("times", new Type_("W", 64))
             }, "builtin67", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
@@ -892,9 +874,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "inner")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("optional", new Type_(
-                    "Optional", new List<Type_> {Type_.Any()}
-                ), true),
+                new FunctionArgument("optional", Type_.Any().OptionalOf(), true),
             }, "builtin72", (List<Type_> types_) => types_[0].GetGeneric(0),
             FunctionSource.Builtin
         ), new ExternalFunction(
@@ -906,9 +886,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("a", new Type_(
-                    "Optional", new List<Type_> {Type_.Any()}
-                ), true),
+                new FunctionArgument("a", Type_.Any().OptionalOf(), true),
                 new FunctionArgument("b", Type_.Any()),
             }, "builtin73", (List<Type_> types_) => {
                 if (types_[1].GetBaseType_().GetName() == "Optional") {
@@ -936,9 +914,7 @@ public static class BuiltinsList {
                     new TypePatternSegment(typeof(RawSquareGroup))
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("a", new Type_(
-                    "Optional", new List<Type_> {Type_.Any()}
-                ), true),
+                new FunctionArgument("a", Type_.Any().OptionalOf(), true),
                 new FunctionArgument("b", Type_.Any()),
             }, "builtin74", (List<Type_> types_) => {
                 if (types_[1].GetBaseType_().GetName() == "Optional") {

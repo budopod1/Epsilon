@@ -25,6 +25,6 @@ public class TypesPatternSegment : IPatternSegment {
     public bool Equals(IPatternSegment obj) {
         TypesPatternSegment other = obj as TypesPatternSegment;
         if (other == null) return false;
-        return Enumerable.SequenceEqual<Type>(types, other.GetMTypes());
+        return types.SequenceEqual(other.GetMTypes());
     }
 }

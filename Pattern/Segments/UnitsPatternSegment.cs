@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class UnitsPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
@@ -26,6 +27,6 @@ public class UnitsPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
     public bool Equals(IPatternSegment obj) {
         UnitsPatternSegment<T> other = obj as UnitsPatternSegment<T>;
         if (other == null) return false;
-        return Utils.ListEqual<T>(values, other.GetValue());
+        return values.SequenceEqual(other.GetValue());
     }
 }

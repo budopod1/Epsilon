@@ -16,7 +16,7 @@ public class Dependencies {
     }
 
     public IEnumerable<Struct> GetStructs() {
-        return structs;
+        return structs.SelectMany(struct_ => struct_.ExtendList()).Distinct();
     }
 
     public IEnumerable<RealFunctionDeclaration> GetFunctions() {

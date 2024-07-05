@@ -150,11 +150,15 @@ public class EPSLFileCompiler : IFileCompiler {
         return new HashSet<Struct>(program.GetStructsHere());
     }
 
-    public void SetStructs(HashSet<Struct> structs) {
-        program.SetStructs(structs);
+    public void LoadStructExtendees() {
+        Step("Loading struct extendees...");
+        program = LoadStructExtendeesHere(program);
     }
 
     public Dependencies ToDependencies(Builder builder) {
+        Step("Verifying poly types_...");
+        program = VerifyPolyTypes_(program);
+        
         Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
 
@@ -556,6 +560,18 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     Program TokenizeTypes_(Program program) {
+        Func<List<IToken>, Func<Type_>, List<IToken>> type_Wrapper = (tokens, inner) => {
+            Type_ type_;
+            CodeSpan span = TokenUtils.MergeSpans(tokens);
+            try {
+                type_ = inner();
+            } catch (IllegalType_Exception e) {
+                throw new SyntaxErrorException(e.Message, span);
+            }
+            program.AddParsedType_(span, type_);
+            return new List<IToken> {new Type_Token(type_)};
+        };
+        
         return DoStructuredSyntaxMatching(
             program, new CombinedMatchersMatcher(new List<IMatcher> {
                 new PatternMatcher(
@@ -564,11 +580,17 @@ public class EPSLFileCompiler : IFileCompiler {
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("]")
                     }, new FuncPatternProcessor<List<IToken>>(
-                        tokens => new List<IToken> {
-                            new Type_Token(new Type_("Array", new List<Type_> {
-                                ((Type_Token)tokens[1]).GetValue()
-                            }))
-                        }
+                        tokens => type_Wrapper(tokens, () => 
+                            ((Type_Token)tokens[1]).GetValue().ArrayOf())
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TextPatternSegment(":"),
+                        new TypePatternSegment(typeof(Type_Token))
+                    }, new FuncPatternProcessor<List<IToken>>(
+                        tokens => type_Wrapper(tokens, () => 
+                            ((Type_Token)tokens[1]).GetValue().PolyOf())
                     )
                 ),
                 new PatternMatcher(
@@ -576,12 +598,11 @@ public class EPSLFileCompiler : IFileCompiler {
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("?")
                     }, new FuncPatternProcessor<List<IToken>>(
-                        tokens => new List<IToken> {
-                            new Type_Token(((Type_Token)tokens[0]).GetValue().OptionalOf())
-                        }
+                        tokens => type_Wrapper(tokens, () => 
+                            ((Type_Token)tokens[0]).GetValue().OptionalOf())
                     )
                 ),
-                new Type_Matcher(),
+                new Type_Matcher(type_Wrapper),
             }), true
         );
     }
@@ -771,6 +792,24 @@ public class EPSLFileCompiler : IFileCompiler {
         }
         program.SetStructsHere(structs);
         return (Program)program.Copy(program.Where(token => !(token is StructHolder)).ToList());
+    }
+
+    Program LoadStructExtendeesHere(Program program) {
+        foreach (Struct struct_ in program.GetStructsHere()) {
+            struct_.LoadExtendee(program);
+        }
+        return program;
+    }
+
+    Program VerifyPolyTypes_(Program program) {
+        foreach ((CodeSpan span, Type_ type_) in program.ListParsedTypes_()) {
+            try {
+                type_.VerifyValidPoly(recursive: false);
+            } catch (IllegalType_Exception e) {
+                throw new SyntaxErrorException(e.Message, span);
+            }
+        }
+        return program;
     }
 
     Program SplitProgramBlocksIntoLines(Program program) {
@@ -1110,7 +1149,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new Type_PatternSegment(new Type_("Array", new List<Type_> {Type_.Any()})),
+                        new Type_PatternSegment(Type_.Any().ArrayOf()),
                         new TypePatternSegment(typeof(ValueList)),
                         new TextPatternSegment("?")
                     }, new Wrapper2PatternProcessor(
@@ -1120,7 +1159,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new Type_PatternSegment(new Type_("Array", new List<Type_> {Type_.Any()})),
+                        new Type_PatternSegment(Type_.Any().ArrayOf()),
                         new TypePatternSegment(typeof(ValueList))
                     }, new Wrapper2PatternProcessor(
                         typeof(ArrayAccess)
@@ -1905,7 +1944,7 @@ public class EPSLFileCompiler : IFileCompiler {
             
             Type_ type_ = token.GetType_();
             if (type_.GetBaseType_().IsBuiltin()) continue;
-            Struct struct_ = program.GetStructFromType_(type_);
+            Struct struct_ = StructsCtx.GetStructFromType_(type_);
             if (structsHere.Contains(struct_)) continue;
             structDependencies.Add(struct_);
         }

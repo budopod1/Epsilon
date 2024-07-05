@@ -46,7 +46,8 @@ public class SPECFileCompiler : IFileCompiler {
                             {"type_", new JSONStringShape()}
                         }
                     ))},
-                    {"symbol", new JSONStringShape()}
+                    {"symbol", new JSONStringShape()},
+                    {"extendee", new JSONNullableShape(new JSONStringShape())}
                 }
             ))},
             {"dependencies", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
@@ -136,12 +137,13 @@ public class SPECFileCompiler : IFileCompiler {
                         fobj["name"].GetString(), 
                         MakeSPECType_(fobj["type_"])
                     )
-                ).ToList(), sobj["symbol"].GetString()
+                ).ToList(), sobj["symbol"].GetString(),
+                sobj["extendee"].GetStringOrNull()
             )
         ).ToHashSet();
     }
-
-    public void SetStructs(HashSet<Struct> structs) {}
+    
+    public void LoadStructExtendees() {}
 
     public List<RealFunctionDeclaration> ToDeclarations() {
         return obj["functions"].IterList().Select(func => {

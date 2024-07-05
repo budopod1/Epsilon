@@ -12,6 +12,10 @@ public class RawAnnotation : TreeToken {
         switch (type) {
             case "id":
                 return IDAnnotation.FromTokens(this, GetTokens());
+            case "super":
+                return SuperAnnotation.FromTokens(this, GetTokens());
+            case "extends":
+                return ExtendsAnnotation.FromTokens(this, GetTokens());
             default:
                 throw new SyntaxErrorException($"Invalid annotation type {type}", this);
         }

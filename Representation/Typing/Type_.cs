@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Type_ : IEquatable<Type_> {
     public static Type_ String() {
-        return new Type_("Array", new List<Type_> {new Type_("Byte")});
+        return new Type_("Byte").ArrayOf();
     }
 
     BaseType_ baseType_;
@@ -92,8 +92,8 @@ public class Type_ : IEquatable<Type_> {
         if (generics == null) {
             generics = new List<Type_>();
         }
-        CheckGenerics(baseType_, generics);
         this.generics = generics;
+        CheckGenerics(baseType_, generics);
     }
 
     public Type_(string name, int? bits, List<Type_> generics = null) {
@@ -101,8 +101,8 @@ public class Type_ : IEquatable<Type_> {
         if (generics == null) {
             generics = new List<Type_>();
         }
-        CheckGenerics(baseType_, generics);
         this.generics = generics;
+        CheckGenerics(baseType_, generics);
     }
 
     public Type_(string name, List<Type_> generics = null) {
@@ -110,8 +110,8 @@ public class Type_ : IEquatable<Type_> {
         if (generics == null) {
             generics = new List<Type_>();
         }
-        CheckGenerics(baseType_, generics);
         this.generics = generics;
+        CheckGenerics(baseType_, generics);
     }
 
     void CheckGenerics(BaseType_ baseType_, List<Type_> generics) {
@@ -120,19 +120,37 @@ public class Type_ : IEquatable<Type_> {
                 $"Incorrect number of generics on base type {baseType_} (got {generics.Count}, expected {baseType_.GenericsAmount()})"
             );
         }
-    }
-
-    public static Type_ FromUserBaseType_(UserBaseType_ baseType_, List<Type_> generics = null) {
-        if (generics == null) generics = new List<Type_>();
-        Type_ result = baseType_.ToType_(generics);
-        if (result.GetBaseType_().GetName() == "Optional") {
+        if (baseType_.GetName() == "Optional") {
             if (!generics[0].GetBaseType_().IsOptionable()) {
                 throw new IllegalType_Exception(
                     $"Invalid generic {generics[0]} for Optional type"
                 );
             }
         }
-        return result;
+        if (StructsCtx.AreStructsLoaded()) {
+            VerifyValidPoly(recursive: false);
+        }
+    }
+
+    public void VerifyValidPoly(bool recursive) {
+        if (baseType_.GetName() == "Poly") {
+            Struct struct_ = StructsCtx.GetStructFromType_(generics[0]);
+            if (struct_ == null) {
+                throw new IllegalType_Exception(
+                    $"Poly type generic must be a struct, {generics[0]} isn't"
+                );
+            }
+            if (!struct_.IsSuper()) {
+                throw new IllegalType_Exception(
+                    $"Poly type generic must be annotated @super, {generics[0]} isn't"
+                );
+            }
+        }
+        if (recursive) {
+            foreach (Type_ generic in generics) {
+                generic.VerifyValidPoly(recursive: true);
+            }
+        }
     }
 
     public Type_ WithGenerics(List<Type_> generics) {
@@ -145,6 +163,42 @@ public class Type_ : IEquatable<Type_> {
         } else {
             return new Type_("Optional", new List<Type_> {this});
         }
+    }
+
+    public Type_ ArrayOf() {
+        return new Type_("Array", new List<Type_> {this});
+    }
+
+    public Type_ PolyOf() {
+        return new Type_("Poly", new List<Type_> {this});
+    }
+
+    public Type_ UnwrapOptional() {
+        if (baseType_.GetName() == "Optional") return generics[0];
+        return this;
+    }
+
+    public Type_ UnwrapOptional(out bool was) {
+        if (baseType_.GetName() == "Optional") {
+            was = true;
+            return generics[0];
+        }
+        was = false;
+        return this;
+    }
+
+    public Type_ UnwrapPoly() {
+        if (baseType_.GetName() == "Poly") return generics[0];
+        return this;
+    }
+
+    public Type_ UnwrapPoly(out bool was) {
+        if (baseType_.GetName() == "Poly") {
+            was = true;
+            return generics[0];
+        }
+        was = false;
+        return this;
     }
 
     public BaseType_ GetBaseType_() {
@@ -167,31 +221,38 @@ public class Type_ : IEquatable<Type_> {
         return generics.Count;
     }
 
-    bool IsConvertibleOptionalTo(Type_ other) {
-        if (other.GetBaseType_().GetName() != "Optional") return false;
-        return Matches(other.GetGeneric(0));
-    }
-
     bool IsConvertibleNullTo(Type_ other) {
         if (baseType_.GetName() != "Null") return false;
         return other.GetBaseType_().GetName() == "Optional";
     }
 
+    bool IsConvertibleToPolySub(Type_ other) {
+        Struct source = StructsCtx.GetStructOrPolyFromType_(this);
+        if (source == null) return false;
+        Struct dest = StructsCtx.GetStructOrPolyFromType_(other);
+        if (dest == null) return false;
+        return source.ExtendList().Contains(dest);
+    }
+
     public bool IsConvertibleTo(Type_ other) {
+        Type_ this_ = this;
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() || otherBaseType_.IsAny()) 
+        if (baseType_.IsAny() || other.GetBaseType_().IsAny()) 
             return true;
-        if (IsConvertibleOptionalTo(other)) return true;
-        if (IsConvertibleNullTo(other)) return true;
-        if (HasGenerics()) return Matches(other);
+        if (this_.IsConvertibleNullTo(other)) return true;
+        // conversion to optional is always implicit
+        other = other.UnwrapOptional(out bool otherWasOptional);
+        if (otherWasOptional) {
+            this_ = this_.UnwrapOptional();
+        }
+        if (this_.IsConvertibleToPolySub(other)) return true;
+        if (this_.HasGenerics()) return this_.Matches(other);
         if (other.HasGenerics()) return false;
-        return baseType_.IsConvertibleTo(otherBaseType_);
+        return this_.GetBaseType_().IsConvertibleTo(other.GetBaseType_());
     }
 
     public bool IsEquivalentTo(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (IsConvertibleOptionalTo(other)) return true;
-        if (IsConvertibleNullTo(other)) return true;
         if (HasGenerics()) {
             if (!baseType_.Equals(otherBaseType_)) return false;
             List<Type_> otherGenerics = other.GetGenerics();
@@ -206,14 +267,28 @@ public class Type_ : IEquatable<Type_> {
         }
     }
 
+    bool IsCastablePolyToOptional(Type_ other, bool otherWasOptional) {
+        if (baseType_.GetName() != "Poly") return false;
+        Struct source = StructsCtx.GetStructOrPolyFromType_(this);
+        if (source == null) return false;
+        if (!otherWasOptional) return false;
+        Struct dest = StructsCtx.GetStructFromType_(other);
+        if (dest == null) return false;
+        return dest.ExtendList().Contains(source);
+    }
+
     public bool IsCastableTo(Type_ other) {
-        BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() || otherBaseType_.IsAny()) 
-            return true;
-        if (IsEquivalentTo(other)) return true;
-        if (HasGenerics()) return Matches(other);
+        if (IsConvertibleTo(other)) return true;
+        Type_ this_ = this;
+        // conversion to optional is always implicit
+        other = other.UnwrapOptional(out bool otherWasOptional);
+        if (otherWasOptional) {
+            this_ = this_.UnwrapOptional();
+        }
+        if (this_.IsCastablePolyToOptional(other, otherWasOptional)) return true;
+        if (this_.HasGenerics()) return this_.Matches(other);
         if (other.HasGenerics()) return false;
-        if (baseType_.IsCastableTo(otherBaseType_))
+        if (this_.GetBaseType_().IsCastableTo(other.GetBaseType_()))
             return true;
         return false;
     }
@@ -245,7 +320,7 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool GenericsEqual(Type_ other) {
-        return Utils.ListEqual<Type_>(generics, other.GetGenerics());
+        return generics.SequenceEqual(other.GetGenerics());
     }
 
     public bool GenericsMatching(Type_ other) {

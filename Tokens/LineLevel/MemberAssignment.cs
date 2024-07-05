@@ -2,22 +2,25 @@ using System;
 
 public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVerifier, ICompleteLine {
     string member;
+    Type_ structType_;
     
     public MemberAssignment(IValueToken o1, string member, IValueToken o2) : base(o1, o2) {
         this.member = member;
+        structType_ = o1.GetType_().UnwrapPoly();
     }
 
     public MemberAssignment(MemberAccess access, IValueToken o2) : base(access.Sub(), o2) {
         member = access.GetMember();
+        structType_ = o1.GetType_().UnwrapPoly();
     }
 
     public void Verify() {
         Program program = TokenUtils.GetParentOfType<Program>(this);
         Type_ type_ = o1.GetType_();
-        Struct struct_ = program.GetStructFromType_(type_);
+        Struct struct_ = StructsCtx.GetStructFromType_(structType_);
         if (struct_ == null)
             throw new SyntaxErrorException(
-                $"You can assign to members of struct types, not {type_}", this
+                $"You can assign to members of struct and poly types, not {type_}", this
             );
         Field field = struct_.GetField(member);
         if (field == null)
@@ -42,7 +45,7 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
         return context.AddInstruction(
             new SerializableInstruction(this, context)
                 .AddData("member", new JSONString(member))
-                .AddData("struct_type_", o1.GetType_().GetJSON())
+                .AddData("struct_type_", structType_.GetJSON())
         );
     }
 }

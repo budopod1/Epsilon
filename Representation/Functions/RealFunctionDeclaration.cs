@@ -41,7 +41,7 @@ public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<
         if (GetCallee() != other.GetCallee()) return false;
         if (TakesOwnership() != other.TakesOwnership()) return false;
         if (ResultInParams() != other.ResultInParams()) return false;
-        if (!Utils.ListEqual(GetArguments(), other.GetArguments())) return false;
+        if (!GetArguments().SequenceEqual(other.GetArguments())) return false;
         if (GetSource() != other.GetSource()) return false;
         return GetPattern().Equals(other.GetPattern());
     }

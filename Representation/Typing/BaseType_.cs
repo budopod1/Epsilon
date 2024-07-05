@@ -14,7 +14,8 @@ public class BaseType_ : IEquatable<BaseType_> {
         "File",
         "Optional",
         "Null",
-        "Internal"
+        "Internal",
+        "Poly"
     };
 
     public static List<string> NumberTypes_ = new List<string> {
@@ -44,7 +45,8 @@ public class BaseType_ : IEquatable<BaseType_> {
 
     public static Dictionary<string, int> GenericsAmounts = new Dictionary<string, int> {
         {"Array", 1},
-        {"Optional", 1}
+        {"Optional", 1},
+        {"Poly", 1}
     };
 
     public static Dictionary<string, List<string>> ConvertibleTo = new Dictionary<string, List<string>> {
@@ -69,7 +71,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static List<string> Optionable = new List<string> {
-        "Array"
+        "Array", "Poly", "File"
     };
 
     public static List<string> ValueTypes_ = new List<string> {

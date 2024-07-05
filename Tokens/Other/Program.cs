@@ -8,7 +8,7 @@ public class Program : TreeToken, IVerifier, IHasScope {
     IDCounter functionIDCounter = new IDCounter();
     IDCounter scopeVarIDCounter = new IDCounter();
     HashSet<Struct> structsHere = new HashSet<Struct>();
-    HashSet<Struct> structs = new HashSet<Struct>();
+    List<(CodeSpan, Type_)> parsedTypes_ = new List<(CodeSpan, Type_)>();
     List<RealFunctionDeclaration> externalDeclarations = new List<RealFunctionDeclaration>();
     IScope scope;
 
@@ -17,13 +17,13 @@ public class Program : TreeToken, IVerifier, IHasScope {
         scope = new Scope(scopeVarIDCounter);
     }
 
-    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, IDCounter functionIDCounter, IDCounter scopeVarIDCounter, HashSet<Struct> structs, HashSet<Struct> structsHere, List<RealFunctionDeclaration> externalDeclarations, IScope scope) : base(tokens) {
+    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, IDCounter functionIDCounter, IDCounter scopeVarIDCounter, HashSet<Struct> structsHere, List<(CodeSpan, Type_)> parsedTypes_, List<RealFunctionDeclaration> externalDeclarations, IScope scope) : base(tokens) {
         this.path = path;
         this.structIds = structIds;
         this.functionIDCounter = functionIDCounter;
         this.scopeVarIDCounter = scopeVarIDCounter;
-        this.structs = structs;
         this.structsHere = structsHere;
+        this.parsedTypes_ = parsedTypes_;
         this.externalDeclarations = externalDeclarations;
         this.scope = scope;
     }
@@ -53,16 +53,16 @@ public class Program : TreeToken, IVerifier, IHasScope {
         structsHere = structs;
     }
 
-    public void SetStructs(HashSet<Struct> structs) {
-        this.structs = structs;
-    }
-
-    public HashSet<Struct> GetStructs() {
-        return structs;
-    }
-
     public HashSet<Struct> GetStructsHere() {
         return structsHere;
+    }
+
+    public void AddParsedType_(CodeSpan span, Type_ type_) {
+        parsedTypes_.Add((span, type_));
+    }
+
+    public IEnumerable<(CodeSpan, Type_)> ListParsedTypes_() {
+        return parsedTypes_;
     }
 
     public void AddExternalDeclarations(List<RealFunctionDeclaration> declarations) {
@@ -84,7 +84,7 @@ public class Program : TreeToken, IVerifier, IHasScope {
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structs, structsHere, externalDeclarations, scope);
+        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structsHere, parsedTypes_, externalDeclarations, scope);
     }
 
     public void Verify() {
@@ -109,14 +109,6 @@ public class Program : TreeToken, IVerifier, IHasScope {
         }
     }
 
-    public Struct GetStructFromType_(Type_ type_) {
-        string name = type_.GetBaseType_().GetName();
-        foreach (Struct struct_ in structs) {
-            if (struct_.GetID() == name) return struct_;
-        }
-        throw new ArgumentException($"No struct found for type_ {type_.ToString()}");
-    }
-
     public IJSONValue GetJSON() {
         JSONObject obj = new JSONObject();
         JSONList functions = new JSONList();
@@ -129,7 +121,7 @@ public class Program : TreeToken, IVerifier, IHasScope {
         obj["module_functions"] = new JSONList(
             externalDeclarations.Select(declaration => declaration.GetJSON())
         );
-        obj["structs"] = new JSONList(structs.Select(struct_ => struct_.GetJSON()));
+        obj["structs"] = new JSONList(StructsCtx.Structs().Select(struct_ => struct_.GetJSON()));
         obj["path"] = new JSONString(path);
         obj["scope"] = new JSONList(Scope.GetVarsJSON(scope));
         return obj;

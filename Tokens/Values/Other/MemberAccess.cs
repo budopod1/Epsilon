@@ -3,18 +3,20 @@ using System.Collections.Generic;
 
 public class MemberAccess : UnaryOperation<IValueToken>, IAssignableValue, IVerifier {
     string member;
+    Type_ structType_;
     
     public MemberAccess(IValueToken o, MemberAccessPostfix member) : base(o) {
         this.member = member.GetValue();
+        structType_ = o.GetType_().UnwrapPoly();
     }
 
     public Type_ GetType_() {
         Program program = TokenUtils.GetParentOfType<Program>(this);
         Type_ type_ = o.GetType_();
-        Struct struct_ = program.GetStructFromType_(type_);
+        Struct struct_ = StructsCtx.GetStructFromType_(structType_);
         if (struct_ == null)
             throw new SyntaxErrorException(
-                $"You can access members of struct types, not {type_}", this
+                $"You can access members of struct and poly types, not {type_}", this
             );
         Field field = struct_.GetField(member);
         if (field == null)
@@ -42,7 +44,7 @@ public class MemberAccess : UnaryOperation<IValueToken>, IAssignableValue, IVeri
         return context.AddInstruction(
             new SerializableInstruction(this, context)
                 .AddData("member", new JSONString(member))
-                .AddData("struct_type_", o.GetType_().GetJSON())
+                .AddData("struct_type_", structType_.GetJSON())
         );
     }
 

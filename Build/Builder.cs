@@ -169,11 +169,13 @@ public class Builder {
             TransferStructIDs();
             Log.Status("Transfering declarations");
             TransferDeclarations();
-            Log.Status("Transfering struct");
-            HashSet<Struct> structs = TransferStructs();
+            Log.Status("Transfering structs");
+            TransferStructs();
+            Log.Status("Loading struct extendees");
+            LoadStructExtendees();
             SetupOldCompilers();
             Log.Status("Confirming dependencies");
-            ConfirmDependencies(settings, structs, projectDirectory);
+            ConfirmDependencies(settings, projectDirectory);
             Log.Status("Writing IR");
             List<string> sections = ToIR(settings, out List<string> IRInUserDir, 
                 out List<FileTree> unlinkedFiles);
@@ -528,19 +530,21 @@ public class Builder {
         }
     }
 
-    HashSet<Struct> TransferStructs() {
-        HashSet<Struct> structs = new HashSet<Struct>();
+    void TransferStructs() {
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             HashSet<Struct> structsHere = file.Compiler.ToStructs();
             file.Structs = structsHere;
-            structs.UnionWith(structsHere);
+            StructsCtx.Extend(structsHere);
         }
+        StructsCtx.MarkStructsLoaded();
+    }
+
+    void LoadStructExtendees() {
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
-            file.Compiler.SetStructs(structs);
+            file.Compiler.LoadStructExtendees();
         }
-        return structs;
     }
 
     public FileTree GetFileByIDPath(string path) {
@@ -561,7 +565,7 @@ public class Builder {
         }
     }
 
-    void ConfirmDependencies(BuildSettings settings, HashSet<Struct> structs, string projectDirectory) {
+    void ConfirmDependencies(BuildSettings settings, string projectDirectory) {
         foreach (FileTree file in files.Values) {
             SwitchFile(file);
             try {
@@ -578,7 +582,6 @@ public class Builder {
                     file.Compiler.AddDeclarations(imported.Declarations);
                 }
                 file.Compiler.ToStructs();
-                file.Compiler.SetStructs(structs);
                 file.Dependencies = file.Compiler.ToDependencies(this);
             }
         }

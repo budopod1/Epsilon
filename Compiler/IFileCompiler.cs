@@ -10,7 +10,7 @@ public interface IFileCompiler {
     List<RealFunctionDeclaration> ToDeclarations();
     void AddDeclarations(List<RealFunctionDeclaration> declarations);
     HashSet<Struct> ToStructs();
-    void SetStructs(HashSet<Struct> structs);
+    void LoadStructExtendees();
     Dependencies ToDependencies(Builder builder);
     string ToIR(string suggestedPath);
     string GetSource();

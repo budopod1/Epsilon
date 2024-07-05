@@ -3,19 +3,32 @@ using System.Linq;
 using System.Collections.Generic;
 
 public static class Extensions {
-    public static List<T> Slice<T>(this List<T> list, int length) {
+    public static List<T> Slice<T>(this IList<T> list, int length) {
         List<T> result = new List<T>();
         for (int i = 0; i < length; i++) {
             result.Add(list[i]);
         }
         return result;
     }
-    public static List<T> Slice<T>(this List<T> list, int start, int length) {
+    public static List<T> Slice<T>(this IList<T> list, int start, int length) {
         List<T> result = new List<T>();
         for (int i = start; i < length; i++) {
             result.Add(list[i]);
         }
         return result;
+    }
+
+    public static T GetOr<T>(this IList<T> list, int idx, T default_) {
+        if (idx >= list.Count) return default_;
+        return list[idx];
+    }
+
+    public static TValue GetOr<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue default_) {
+        if (dict.TryGetValue(key, out TValue val)) {
+            return val;
+        } else {
+            return default_;
+        }
     }
     
     public static Dictionary<TKey, (TValue1, TValue2)> MergeToPairs<TKey, TValue1, TValue2>(this Dictionary<TKey, TValue1> d1, Dictionary<TKey, TValue2> d2, Func<TValue1> default1, Func<TValue2> default2) {

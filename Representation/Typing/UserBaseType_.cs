@@ -43,6 +43,10 @@ public class UserBaseType_ {
     static Dictionary<string, Type_> SpecialFullBaseTypes_ = new Dictionary<string, Type_> {
         {"Str", Type_.String()}, {"L", new Type_("W", 64)}
     };
+    
+    public Type_ ToType_() {
+        return ToType_(new List<Type_>());
+    }
 
     public Type_ ToType_(List<Type_> generics) {
         if (SpecialFullBaseType_Names.Contains(name)) {

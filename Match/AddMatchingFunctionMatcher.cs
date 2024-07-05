@@ -17,7 +17,7 @@ public class AddMatchingFunctionMatcher : IMatcher {
             RawFunctionCall call = token as RawFunctionCall;
             if (call == null) continue;
             List<IPatternSegment> csegments = call.GetSegments();
-            if (Utils.ListEqual<IPatternSegment>(csegments, segments)) {
+            if (csegments.SequenceEqual(segments)) {
                 call.AddMatchingFunction(func);
             }
         }

@@ -82,6 +82,7 @@ public class EPSLSPEC {
                 return fobj;
             }));
             sobj["symbol"] = new JSONString(struct_.GetSymbol());
+            sobj["extendee"] = JSONString.OrNull(struct_.GetExtendeeID());
             return sobj;
         }));
 

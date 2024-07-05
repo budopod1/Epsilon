@@ -1,0 +1,42 @@
+@super;
+A {
+    Z:val1
+}
+
+@super @extends A;
+B {
+    Z:val2
+}
+
+Z#main {
+    // this is just a test to make sure the program parses correctly
+
+    A:a = A [1];
+
+    :A:sa = a;
+
+    B?:mb = (B?)sa; // will be null
+    // the above satement wouldn't compile if it would always result in null
+    // because B did not extend A
+
+    B:b = B [1, 2];
+
+    sa = b;
+
+    :B:sb = b;
+
+    :B?:msb = b; // will not be null
+
+    sa = sb;
+
+    :A?:msa = (A?)sb; // will be null
+
+    mb = (B?)msa; // will be null
+
+    mb = (B?)sa; // will not be null
+
+    sb.val1;
+    sb.val2;
+    
+    return 0;
+}

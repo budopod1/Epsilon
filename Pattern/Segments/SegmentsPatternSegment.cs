@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class SegmentsPatternSegment : IPatternSegment {
@@ -25,6 +26,6 @@ public class SegmentsPatternSegment : IPatternSegment {
     public bool Equals(IPatternSegment obj) {
         SegmentsPatternSegment other = obj as SegmentsPatternSegment;
         if (other == null) return false;
-        return Utils.ListEqual<IPatternSegment>(segments, other.GetSegments());
+        return segments.SequenceEqual(other.GetSegments());
     }
 }

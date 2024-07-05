@@ -85,10 +85,10 @@ public class For : IParentToken, ILoop, IVerifier, ISerializableToken {
                     requiredType_ = new Type_("Z");
                     break;
                 case "in":
-                    requiredType_ = new Type_("Array", new List<Type_> {type_});
+                    requiredType_ = type_.ArrayOf();
                     break;
                 case "enumerating":
-                    requiredType_ = new Type_("Array", new List<Type_> {Type_.Any()});
+                    requiredType_ = Type_.Any().ArrayOf();
                     break;
             }
             if (!valType_.IsConvertibleTo(requiredType_)) {
