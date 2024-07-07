@@ -99,10 +99,7 @@ class ArrayAccessInstruction(Typed_Instruction):
             self.program, builder, index, index_type_,
             W64
         )
-        self.program.call_extern(
-            builder, "verifyArrayIdx", [array, casted_index], 
-            [array_type_, W64], None
-        )
+        self.program.verify_array_idx(builder, array, casted_index)
         result_ptr = builder.load(builder.gep(
             array, [i64_of(0), i32_of(3)]
         ))
@@ -696,6 +693,23 @@ class InstantiationInstruction(Typed_Instruction):
         return result
 
 
+class IntDivisionInstruction(CastToResultType_Instruction):
+    def _build(self, builder, params):
+        a, b = params
+        # whether or not b is signed for the comparison doesn't matter because the
+        # llvmlite functions icmp_unsigned and icmp_signed when using cmpop "=="
+        # both generate the same `icmp eq` ir
+        div_0 = builder.icmp_unsigned("==", b, ir.Constant(b.type, 0))
+        div_0 = self.program.expect(builder, div_0, False)
+        with builder.if_then(div_0):
+            self.program.call_extern(builder, "div0Fail", [], [], None)
+            builder.unreachable()
+        if is_signed_integer_type_(self.type_):
+            return builder.sdiv(a, b)
+        else:
+            return builder.udiv(a, b)
+
+
 class LogicalInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
         return {
@@ -1000,7 +1014,7 @@ def make_instruction(program, function, data):
         "greater_equal": ComparisonInstruction,
         "initial_assignment": InitialAssignmentInstruction,
         "instantiation": InstantiationInstruction,
-        "int_division": ArithmeticInstruction,
+        "int_division": IntDivisionInstruction,
         "less": ComparisonInstruction,
         "less_equal": ComparisonInstruction,
         "member_access": MemberAccessInstruction,

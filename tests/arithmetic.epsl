@@ -1,0 +1,10 @@
+Z#main {
+    Z:a = 5 + 2;
+    Z:b = 5 - 2;
+    Z:c = 5 * 2;
+    Z:d = 5 ~/ 2;
+    Z:e = 5 % 2;
+    Z:f = 5 ** 2;
+    Z:g = unsafe [5] ~/ [2];
+    return a + b + c + d + e + f + g; // 50
+}

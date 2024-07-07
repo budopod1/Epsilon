@@ -329,6 +329,8 @@ def do_chain_power(program, builder, type_, value, pow):
     mul = builder.fmul if is_floating_type_(type_) else builder.mul
     if pow == 0:
         return ir.Constant(make_type_(program, type_), 1)
+    elif pow == 1:
+        return value
     elif pow % 2 == 0:
         half = do_chain_power(
             program, builder, type_, value, pow/2

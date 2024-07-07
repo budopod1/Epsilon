@@ -62,8 +62,12 @@ void increaceCapacity(struct Array *array, uint64_t required, uint64_t elemSize)
     }
 }
 
+inline uint64_t min1(uint64_t val) {
+    return val == 0 ? 1 : val;
+}
+
 void shrinkMem(struct Array *array, uint64_t elemSize) {
-    uint64_t newCapacity = array->length || 1;
+    uint64_t newCapacity = min1(array->length);
     array->content = realloc(array->content, elemSize*newCapacity);
     array->capacity = newCapacity;
 }
@@ -822,7 +826,7 @@ void abort_(const struct Array *string) {
 struct Array *makeBlankArray(uint64_t len, uint64_t elemSize) {
     struct Array *result = malloc(sizeof(struct Array));
     result->refCounter = 0;
-    uint64_t cap = len || 1;
+    uint64_t cap = min1(len);
     result->capacity = cap;
     result->length = len;
     void *content = calloc(cap, elemSize);
@@ -854,12 +858,10 @@ struct Array *repeatArray(const struct Array *array, uint64_t times, uint64_t el
 
 const char *const NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found null\n";
 
-void verifyNotNull(const char *val) {
-    if (__builtin_expect(val == NULL, 0)) {
-        fflush(stdout);
-        fwrite(NULL_FAIL_MESSAGE, strlen(NULL_FAIL_MESSAGE), 1, stderr);
-        exit(1);
-    }
+void nullValueFail() {
+    fflush(stdout);
+    fwrite(NULL_FAIL_MESSAGE, strlen(NULL_FAIL_MESSAGE), 1, stderr);
+    exit(1);
 }
 
 const char *const TOO_FEW_PLACEHOLDERS_MESSAGE = ERR_START "Not enough placeholders for given number of values\n";
@@ -921,10 +923,16 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
 
 const char *const ARR_INDEX_ERR = ERR_START "Specified array index is greater or equal to array length\n";
 
-void verifyArrayIdx(struct Array *arr, uint64_t i) {
-    if (__builtin_expect(i >= arr->length, 0)) {
-        fflush(stdout);
-        fwrite(ARR_INDEX_ERR, strlen(ARR_INDEX_ERR), 1, stderr);
-        exit(1);
-    }
+void arrayIdxFail() {
+    fflush(stdout);
+    fwrite(ARR_INDEX_ERR, strlen(ARR_INDEX_ERR), 1, stderr);
+    exit(1);
+}
+
+const char *const DIV_0_ERR = ERR_START "Cannot divide an integer by 0\n";
+
+void div0Fail() {
+    fflush(stdout);
+    fwrite(DIV_0_ERR, strlen(DIV_0_ERR), 1, stderr);
+    exit(1);
 }

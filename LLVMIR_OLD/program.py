@@ -4,6 +4,7 @@ from stringify import make_stringify_func
 from equals import refrence_equals, value_equals_depth_1, value_equals
 from misc_helpers import index_of, compare, dedup, optional_array_access, bitshift
 from functions import ModuleFunction
+import re
 
 
 class Program:
@@ -59,9 +60,15 @@ class Program:
             )
             for param, param_type_, target_type_ in zip(params, param_types_, builtin["params"])
         ]
-        result, type_ = builtin["func"](
-            self, builder, casted_params, param_types_
-        )
+        try:
+            result, type_ = builtin["func"](
+                self, builder, casted_params, param_types_
+            )
+        except TypeError:
+            result = builtin["func"](
+                self, builder, casted_params, param_types_, result_type_
+            )
+            type_ = result_type_
 
         if not builtin.get("result_is_param", False):
             result_in_params = builtin.get("result_in_params", False)
@@ -464,3 +471,24 @@ class Program:
 
     def bitshift_right(self, builder, a, b, a_type_, b_type_):
         return self.bitshift(builder, a, b, a_type_, b_type_, False)
+
+    def expect(self, builder, val, expected):
+        return self.call_extern(builder, "expect.i1", [val, i1_of(expected)], [Bool, Bool], Bool)
+
+    def verify_array_idx(self, builder, arr, i, idx_type_=None):
+        if idx_type_ is None:
+            idx_type_ = W64
+        i = convert_type_(self, builder, i, idx_type_, W64)
+        arr_len = builder.load(builder.gep(arr, [i64_of(0), i32_of(2)]))
+        out_of_range = builder.icmp_unsigned(">=", i, arr_len)
+        out_of_range = self.expect(builder, out_of_range, False)
+        with builder.if_then(out_of_range):
+            self.call_extern(builder, "arrayIdxFail", [], [], None)
+            builder.unreachable()
+
+    def verify_not_null(self, builder, ptr):
+        is_null = builder.icmp_unsigned("==", ptr, ir.Constant(ptr.type, None))
+        is_null = self.expect(builder, is_null, False)
+        with builder.if_then(is_null):
+            self.call_extern(builder, "nullValueFail", [], [], None)
+            builder.unreachable()

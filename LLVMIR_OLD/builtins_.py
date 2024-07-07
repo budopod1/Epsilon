@@ -69,10 +69,7 @@ def pop(program, builder, params, param_types_):
     elem_type_ = array_type_["generics"][0]
     elem_ir_type = make_type_(program, elem_type_)
     elem_size = program.sizeof(builder, elem_ir_type)
-    program.call_extern(
-        builder, "verifyArrayIdx", [array, idx], 
-        [ArrayW8, W64], None
-    )
+    program.verify_array_idx(builder, array, idx)
     content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
     content_ptr_casted = builder.bitcast(content_ptr, elem_ir_type.as_pointer())
     elem = builder.load(builder.gep(content_ptr_casted, [idx]))
@@ -144,6 +141,18 @@ def unsafe_idx(program, builder, params, param_types_):
     content_ptr_casted = builder.bitcast(content_ptr, elem_ir_type.as_pointer())
     elem = builder.load(builder.gep(content_ptr_casted, [idx]))
     return elem, elem_type_
+
+
+def unsafe_int_division(program, builder, params, param_types_, result_type_):
+    a, b = (
+        convert_type_(program, builder, param, param_type_, result_type_)
+        for param, param_type_ in zip(params, param_types_)
+    )
+    
+    if is_signed_integer_type_(result_type_):
+        return builder.sdiv(a, b)
+    else:
+        return builder.udiv(a, b)
 
 
 def abs_(program, builder, params, param_types_):
@@ -499,9 +508,7 @@ def unwrap(program, builder, params, param_types_):
     value, = params
     value_type_, = param_types_
     generic_type_ = value_type_["generics"][0]
-    program.call_extern(
-        builder, "verifyNotNull", [value], [value_type_], None
-    )
+    program.verify_not_null(builder, value)
     return value, generic_type_
 
 
@@ -713,6 +720,7 @@ BUILTINS = {
     "builtin9": {"func": extend, "params": [ArrayW8, ArrayW8]},
     "builtin10": {"func": concat, "params": [ArrayW8, ArrayW8]},
     "builtin11": {"func": unsafe_idx, "params": [ArrayW8, W64], "result_in_params": True},
+    "builtin12": {"func": unsafe_int_division, "params": [None, None]},
     "builtin14": {"func": abs_, "params": [Z32]},
     "builtin15": {"func": fabs, "params": [Q64]},
     "builtin16": {"func": concat, "params": [ArrayW8, ArrayW8]},

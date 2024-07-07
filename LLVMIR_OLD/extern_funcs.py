@@ -316,16 +316,24 @@ EXTERN_FUNCS = {
         "name": "exit", "return_type_": None,
         "arguments": [Z32]
     },
-    "verifyNotNull": {
-        "name": "verifyNotNull", "return_type_": None,
-        "arguments": [PointerW8]
+    "nullValueFail": {
+        "name": "nullValueFail", "return_type_": None,
+        "arguments": []
     },
     "formatString": {
         "name": "formatString", "return_type_": String,
         "arguments": [String, StringPointer, W32]
     },
-    "verifyArrayIdx": {
-        "name": "verifyArrayIdx", "return_type_": None,
-        "arguments": [ArrayW8, W64]
+    "arrayIdxFail": {
+        "name": "arrayIdxFail", "return_type_": None,
+        "arguments": []
+    },
+    "expect.i1": {
+        "name": "llvm.expect.i1", "return_type_": Bool,
+        "arguments": [Bool, Bool]
+    },
+    "div0Fail": {
+        "name": "div0Fail", "return_type_": None,
+        "arguments": []
     }
 }

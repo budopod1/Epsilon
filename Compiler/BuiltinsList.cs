@@ -136,7 +136,9 @@ public static class BuiltinsList {
                 new FunctionArgument("array2", Type_.Any().ArrayOf()),
             }, "builtin10", (List<Type_> types_) => {
                 if (!types_[0].Equals(types_[1]))
-                    throw new FunctionCallTypes_Exception($"Cannot concat array of type {types_[0]} with an array of type {types_[1]}", 1);
+                    throw new FunctionCallTypes_Exception(
+                        $"Cannot concat array of type {types_[0]} with an array of type {types_[1]}", 1
+                    );
                 return types_[0];
             }, FunctionSource.Builtin
         ), new ExternalFunction(
@@ -152,6 +154,27 @@ public static class BuiltinsList {
                 new FunctionArgument("index", new Type_("W", 64)),
             }, "builtin11", (List<Type_> types_) => {
                 return types_[0].GetGeneric(0);
+            }, FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "unsafe"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("~"),
+                    new TextPatternSegment("/"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {1, 4})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z")),
+                new FunctionArgument("b", new Type_("Z")),
+            }, "builtin12", (List<Type_> types_) => {
+                Type_ common = Type_.CommonOrNull(types_[0], types_[1]);
+                if (common == null) {
+                    throw new FunctionCallTypes_Exception(
+                        "Incompatible types for division", 0
+                    );
+                }
+                return common;
             }, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
