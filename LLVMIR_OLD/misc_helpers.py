@@ -194,3 +194,51 @@ def optional_array_access(program, i, arr_type_, elem_type_):
     builder.ret(builder.load(elem_ptr))
     
     return func
+
+
+def make_unsigned_bitshift_func_body(program, builder, a, b, type_, b_type_, ir_type_, b_ir_type_, is_left):
+    shift_too_large = builder.icmp_unsigned(">=", b, ir.Constant(b_ir_type_, ir_type_.width))
+    with builder.if_then(shift_too_large):
+        builder.ret(ir.Constant(ir_type_, 0))
+    
+    b = convert_type_(program, builder, b, b_type_, type_)
+    if is_left:
+        builder.ret(builder.shl(a, b))
+    else:
+        if is_signed_integer_type_(type_):
+            builder.ret(builder.ashr(a, b))
+        else:
+            builder.ret(builder.lshr(a, b))
+
+
+def bitshift(program, i, type_, b_type_, is_left):
+    ir_type_ = make_type_(program, type_)
+    b_ir_type_ = make_type_(program, b_type_)
+    func = ir.Function(
+        program.module, ir.FunctionType(
+            ir_type_, [ir_type_, b_ir_type_]
+        ), name=f"{program.path} bitshift_left{i}"
+    )
+
+    entry = func.append_basic_block(name="entry")
+    builder = ir.IRBuilder(entry)
+
+    a, b = func.args
+
+    if is_signed_integer_type_(b_type_):
+        reverse_op = builder.icmp_signed("<", b, ir.Constant(b_ir_type_, 0))
+        with builder.if_then(reverse_op):
+            make_unsigned_bitshift_func_body(
+                program, builder, a, builder.neg(b), type_, b_type_,
+                ir_type_, b_ir_type_, not is_left
+            )
+        make_unsigned_bitshift_func_body(
+            program, builder, a, b, type_, b_type_,
+            ir_type_, b_ir_type_, is_left
+        )
+    else:
+        make_unsigned_bitshift_func_body(
+            program, builder, a, b, type_, b_type_, ir_type_, b_ir_type_, is_left
+        )
+
+    return func

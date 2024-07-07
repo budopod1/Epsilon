@@ -1,3 +1,4 @@
 Z#main {
-    return true ^ false;
+    Bool:result = [true] ^ [false];
+    return result;
 }

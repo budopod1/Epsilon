@@ -30,6 +30,14 @@ def freeze_json(json):
     return json
 
 
+def get_num_type__bits(type_):
+    if type_["bits"] is not None:
+        return type_["bits"]
+    return {
+        "W": 32, "Z": 32, "Bool": 1, "Byte": 8
+    }[type_["name"]]
+
+
 def make_type_(program, data):
     generics = [
         make_type_(program, generic)
@@ -44,12 +52,8 @@ def make_type_(program, data):
                 32: ir.FloatType,
                 64: ir.DoubleType
             }[bits]()
-        case ("W" | "Z" | "Bool" | "Byte") as name, []:
-            if bits is None:
-                bits = {
-                    "W": 32, "Z": 32, "Bool": 1, "Byte": 8
-                }[name]
-            return ir.IntType(bits)
+        case ("W" | "Z" | "Bool" | "Byte"), []:
+            return ir.IntType(get_num_type__bits(data))
         case "Pointer", [pointee]:
             return pointee.as_pointer()
         case "Func", [ret, *params]:

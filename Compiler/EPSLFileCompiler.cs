@@ -1027,11 +1027,6 @@ public class EPSLFileCompiler : IFileCompiler {
             {"%", typeof(Modulo)}
         };
 
-        Dictionary<string, Type> intCompoundableOperators = new Dictionary<string, Type> {
-            {"&", typeof(BitwiseAND)}, {"|", typeof(BitwiseOR)},
-            {"^", typeof(BitwiseXOR)}
-        };
-
         List<List<IMatcher>> rules = new List<List<IMatcher>> {
             functionRules,
             addMatchingFunctionRules,
@@ -1297,15 +1292,6 @@ public class EPSLFileCompiler : IFileCompiler {
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
-                        new TextPatternSegment("~"),
-                        new Type_PatternSegment(new Type_("Z"))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
-                        typeof(BitwiseNOT)
-                    )
-                ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("*"),
                         new Type_PatternSegment(new Type_("W"))
@@ -1492,62 +1478,6 @@ public class EPSLFileCompiler : IFileCompiler {
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
-                            new Type_PatternSegment(new Type_("Z")),
-                            new TextPatternSegment(">"),
-                            new TextPatternSegment(">"),
-                            new Type_PatternSegment(new Type_("Z"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
-                            typeof(BitshiftRight)
-                        )
-                    ),
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new Type_PatternSegment(new Type_("Z")),
-                            new TextPatternSegment("<"),
-                            new TextPatternSegment("<"),
-                            new Type_PatternSegment(new Type_("Z"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
-                            typeof(BitshiftLeft)
-                        )
-                    ),
-                }),
-                new CombinedMatchersMatcher(new List<IMatcher> {
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new Type_PatternSegment(new Type_("Z")),
-                            new TextPatternSegment("&"),
-                            new Type_PatternSegment(new Type_("Z"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
-                            typeof(BitwiseAND)
-                        )
-                    ),
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new Type_PatternSegment(new Type_("Z")),
-                            new TextPatternSegment("|"),
-                            new Type_PatternSegment(new Type_("Z"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
-                            typeof(BitwiseOR)
-                        )
-                    ),
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
-                            new Type_PatternSegment(new Type_("Z")),
-                            new TextPatternSegment("^"),
-                            new Type_PatternSegment(new Type_("Z"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
-                            typeof(BitwiseXOR)
-                        )
-                    ),
-                }),
-                new CombinedMatchersMatcher(new List<IMatcher> {
-                    new PatternMatcher(
-                        new List<IPatternSegment> {
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment(">"),
                             new Type_PatternSegment(new Type_("Q"))
@@ -1685,24 +1615,6 @@ public class EPSLFileCompiler : IFileCompiler {
                     }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
                         new CompoundAssignment(
                             floatCompoundableOperators[
-                                ((TextToken)tokens[1]).GetText()
-                            ], (IAssignableValue)tokens[0], (IValueToken)tokens[3]
-                        )
-                    })
-                )
-            },
-            new List<IMatcher> {
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(IAssignableValue)),
-                        new TextsPatternSegment(
-                            intCompoundableOperators.Keys.ToList()
-                        ),
-                        new TextPatternSegment("="),
-                        new Type_PatternSegment(new Type_("Z"))
-                    }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
-                        new CompoundAssignment(
-                            intCompoundableOperators[
                                 ((TextToken)tokens[1]).GetText()
                             ], (IAssignableValue)tokens[0], (IValueToken)tokens[3]
                         )

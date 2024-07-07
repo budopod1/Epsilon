@@ -1,0 +1,15 @@
+Z#main {
+    Z:a = [5] << [2]; // == 20
+    Z:b = [5] >> [-2]; // == 20
+    Z:c = [5] >> [2]; // == 1
+    Z:d = [5] << [-2]; // == 1
+    Z:e = unsafe [13] << [2]; // == 52
+    Z:f = unsafe [13] >> [2]; // == 3
+    Byte:byte = (Byte)24;
+    // unsafe [byte] >> [n] is illegal for n > 8 and n < 0
+    Z:shift = 5;
+    Z:g = [byte] >> [shift]; // == 0
+    Z:h = [byte] << [8]; // == 0
+    Z:i = [byte] << [9]; // == 0
+    return a + b + c + d + e + f + g + h + i;
+}

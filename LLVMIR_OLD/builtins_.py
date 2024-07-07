@@ -643,6 +643,62 @@ def nullable_and_w_nullable(program, builder, params, param_types_):
     return builder.select(a_is_null, b_null_ptr, b), b_type_
 
 
+def bitwise_invert(program, builder, params, param_types_):
+    a, = params
+    a_type_, = param_types_
+    return builder.not_(a), a_type_
+
+
+def bitwise_and(program, builder, params, param_types_):
+    a, b = params
+    type_, b_type_ = param_types_
+    b = convert_type_(program, builder, b, b_type_, type_)
+    return builder.and_(a, b), type_
+
+
+def bitwise_or(program, builder, params, param_types_):
+    a, b = params
+    type_, b_type_ = param_types_
+    b = convert_type_(program, builder, b, b_type_, type_)
+    return builder.or_(a, b), type_
+
+
+def bitwise_xor(program, builder, params, param_types_):
+    a, b = params
+    type_, b_type_ = param_types_
+    b = convert_type_(program, builder, b, b_type_, type_)
+    return builder.xor(a, b), type_
+
+
+def bitshift_left(program, builder, params, param_types_):
+    a, b = params
+    a_type_, b_type_ = param_types_
+    return program.bitshift_left(builder, a, b, a_type_, b_type_), a_type_
+
+
+def bitshift_right(program, builder, params, param_types_):
+    a, b = params
+    a_type_, b_type_ = param_types_
+    return program.bitshift_right(builder, a, b, a_type_, b_type_), a_type_
+
+
+def unsafe_bitshift_left(program, builder, params, param_types_):
+    a, b = params
+    type_, b_type_ = param_types_
+    b = convert_type_(program, builder, b, b_type_, type_)
+    return builder.shl(a, b), type_
+
+
+def unsafe_bitshift_right(program, builder, params, param_types_):
+    a, b = params
+    type_, b_type_ = param_types_
+    b = convert_type_(program, builder, b, b_type_, type_)
+    if is_signed_integer_type_(type_):
+        return builder.ashr(a, b), type_
+    else:
+        return builder.lshr(a, b), type_
+
+
 BUILTINS = {
     "builtin1": {"func": length, "params": [ArrayW8]},
     "builtin2": {"func": capacity, "params": [ArrayW8]},
@@ -715,4 +771,12 @@ BUILTINS = {
     "builtin72": {"func": inner, "params": [None], "result_in_params": True, "result_is_param": True},
     "builtin73": {"func": nullable_or, "params": [None, None], "result_in_params": True},
     "builtin74": {"func": nullable_and, "params": [None, None], "result_in_params": True},
+    "builtin75": {"func": bitwise_invert, "params": [None]},
+    "builtin76": {"func": bitwise_and, "params": [None, None]},
+    "builtin77": {"func": bitwise_or, "params": [None, None]},
+    "builtin78": {"func": bitwise_xor, "params": [None, None]},
+    "builtin79": {"func": bitshift_left, "params": [None, None]},
+    "builtin80": {"func": bitshift_right, "params": [None, None]},
+    "builtin81": {"func": unsafe_bitshift_left, "params": [None, None]},
+    "builtin82": {"func": unsafe_bitshift_right, "params": [None, None]},
 }

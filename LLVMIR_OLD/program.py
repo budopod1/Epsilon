@@ -2,7 +2,7 @@ from llvmlite import ir
 from common import *
 from stringify import make_stringify_func
 from equals import refrence_equals, value_equals_depth_1, value_equals
-from misc_helpers import index_of, compare, dedup, optional_array_access
+from misc_helpers import index_of, compare, dedup, optional_array_access, bitshift
 from functions import ModuleFunction
 
 
@@ -28,6 +28,7 @@ class Program:
         self.dedup_funcs = {}
         self.comparer_funcs = {}
         self.optional_array_access_funcs = {}
+        self.bitshift_funcs = {}
 
     def setup_scope(self, scope):
         self.globals = scope
@@ -446,3 +447,20 @@ class Program:
             )
             self.optional_array_access_funcs[frozen] = func
         return builder.call(func, [arr, idx])
+
+    def bitshift(self, builder, a, b, a_type_, b_type_, is_left):
+        frozen = (freeze_json(a_type_), freeze_json(b_type_), is_left)
+        if frozen in self.bitshift_funcs:
+            func = self.bitshift_funcs[frozen]
+        else:
+            func = bitshift(
+                self, len(self.bitshift_funcs), a_type_, b_type_, is_left
+            )
+            self.bitshift_funcs[frozen] = func
+        return builder.call(func, [a, b])
+
+    def bitshift_left(self, builder, a, b, a_type_, b_type_):
+        return self.bitshift(builder, a, b, a_type_, b_type_, True)
+
+    def bitshift_right(self, builder, a, b, a_type_, b_type_):
+        return self.bitshift(builder, a, b, a_type_, b_type_, False)

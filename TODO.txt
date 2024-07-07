@@ -8,3 +8,5 @@ TODO:
 * top tracking so we can alloca instead of malloc
 * self host LLVMIR section?
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
+* add `.so` compilation target
+* add `Struct` type that's treated as a superclass of all structs

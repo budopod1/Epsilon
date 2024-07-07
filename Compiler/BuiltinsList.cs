@@ -923,6 +923,98 @@ public static class BuiltinsList {
                     return types_[1].OptionalOf();
                 }
             }, FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TextPatternSegment("~"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {1})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z"))
+            }, "builtin75", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("&"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 2})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z")),
+                new FunctionArgument("b", new Type_("Z")),
+            }, "builtin76", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("|"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 2})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z")),
+                new FunctionArgument("b", new Type_("Z")),
+            }, "builtin77", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("^"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 2})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z")),
+                new FunctionArgument("b", new Type_("Z")),
+            }, "builtin78", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("<"),
+                    new TextPatternSegment("<"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z")),
+                new FunctionArgument("b", new Type_("Z")),
+            }, "builtin79", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment(">"),
+                    new TextPatternSegment(">"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z")),
+                new FunctionArgument("b", new Type_("Z")),
+            }, "builtin80", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "unsafe"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("<"),
+                    new TextPatternSegment("<"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {1, 4})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z")),
+                new FunctionArgument("b", new Type_("Z")),
+            }, "builtin81", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new UnitPatternSegment<string>(typeof(Name), "unsafe"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment(">"),
+                    new TextPatternSegment(">"),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {1, 4})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("a", new Type_("Z")),
+                new FunctionArgument("b", new Type_("Z")),
+            }, "builtin82", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ),
     };
 }

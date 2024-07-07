@@ -171,42 +171,42 @@ void println(const struct Array *string) {
     putc('\n', stdout);
 }
 
-char *formatW8() {
+extern inline char *formatW8() {
     static char *result = "%"PRIu8;
     return result;
 }
 
-char *formatW16() {
+extern inline char *formatW16() {
     static char *result = "%"PRIu16;
     return result;
 }
 
-char *formatW32() {
+extern inline char *formatW32() {
     static char *result = "%"PRIu32;
     return result;
 }
 
-char *formatW64() {
+extern inline char *formatW64() {
     static char *result = "%"PRIu64;
     return result;
 }
 
-char *formatZ8() {
+extern inline char *formatZ8() {
     static char *result = "%"PRId8;
     return result;
 }
 
-char *formatZ16() {
+extern inline char *formatZ16() {
     static char *result = "%"PRId16;
     return result;
 }
 
-char *formatZ32() {
+extern inline char *formatZ32() {
     static char *result = "%"PRId32;
     return result;
 }
 
-char *formatZ64() {
+extern inline char *formatZ64() {
     static char *result = "%"PRId64;
     return result;
 }
@@ -477,7 +477,7 @@ int32_t parseInt(const struct Array *str) {
     return MAGIC_INVALID_PARSED_INT;
 }
 
-int32_t getMagicInvalidParsedInt() {
+extern inline int32_t getMagicInvalidParsedInt() {
     return MAGIC_INVALID_PARSED_INT;
 }
 
@@ -536,11 +536,11 @@ double parseFloat(const struct Array *str) {
     return NAN;
 }
 
-bool isNaN32(float val) {
+extern inline bool isNaN32(float val) {
     return isnan(val) != 0;
 }
 
-bool isNaN64(double val) {
+extern inline bool isNaN64(double val) {
     return isnan(val) != 0;
 }
 
@@ -563,10 +563,10 @@ struct File {
     int32_t open;
 };
 
-int32_t _FILE_READ_MODE = 1;
-int32_t _FILE_WRITE_MODE = 2;
-int32_t _FILE_APPEND_MODE = 4;
-int32_t _FILE_BINARY_MODE = 8;
+#define _FILE_READ_MODE 1
+#define _FILE_WRITE_MODE 2
+#define _FILE_APPEND_MODE 4
+#define _FILE_BINARY_MODE 8
 
 // returns File?
 struct File *openFile(struct Array *string, int32_t mode) {
@@ -613,27 +613,27 @@ struct File *openFile(struct Array *string, int32_t mode) {
     return file;
 }
 
-int32_t FILE_READ_MODE() {
+extern inline int32_t FILE_READ_MODE() {
     return _FILE_READ_MODE;
 }
 
-int32_t FILE_WRITE_MODE() {
+extern inline int32_t FILE_WRITE_MODE() {
     return _FILE_WRITE_MODE;
 }
 
-int32_t FILE_APPEND_MODE() {
+extern inline int32_t FILE_APPEND_MODE() {
     return _FILE_APPEND_MODE;
 }
 
-int32_t FILE_BINARY_MODE() {
+extern inline int32_t FILE_BINARY_MODE() {
     return _FILE_BINARY_MODE;
 }
 
-bool fileOpen(const struct File *file) {
+extern inline bool fileOpen(const struct File *file) {
     return file->open;
 }
 
-int32_t fileMode(const struct File *file) {
+extern inline int32_t fileMode(const struct File *file) {
     return file->mode;
 }
 
@@ -760,7 +760,7 @@ struct Array *readFileLine(const struct File *file) {
     return NULL;
 }
 
-bool readLineReachedEOF() {
+extern inline bool readLineReachedEOF() {
     return readLineEOF;
 }
 
@@ -823,7 +823,7 @@ struct Array *makeBlankArray(uint64_t len, uint64_t elemSize) {
     return result;
 }
 
-void sortArray(struct Array *array, uint64_t elemSize, int (*compar)(const void*, const void*)) {
+extern inline void sortArray(struct Array *array, uint64_t elemSize, int (*compar)(const void*, const void*)) {
     qsort(array->content, array->length, elemSize, compar);
 }
 
