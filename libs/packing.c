@@ -4,6 +4,14 @@
 #include <string.h>
 #include <arpa/inet.h>
 
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+
+#if !__has_builtin(__builtin_expect)
+#define __builtin_expect(expr, val) expr
+#endif
+
 #define ERR_START "FATAL ERROR IN packing: "
 
 struct ByteArray {
@@ -42,7 +50,7 @@ struct ByteArray *packing_packDouble(double d) {
 const char *const BAD_LEN_FOR_DOUBLE_ERR = ERR_START "Array is not long enough, given the starting point, to be converted to a double\n";
 
 double packing_unpackDouble(struct ByteArray *arr, uint64_t pos) {
-    if (pos + sizeof(double) >= arr->length) {
+    if (__builtin_expect(pos + sizeof(double) >= arr->length, 0)) {
         fflush(stdout);
         fwrite(BAD_LEN_FOR_DOUBLE_ERR, strlen(BAD_LEN_FOR_DOUBLE_ERR), 1, stderr);
         exit(1);

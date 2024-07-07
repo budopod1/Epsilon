@@ -7,6 +7,14 @@
 #include <math.h>
 #include <stdbool.h>
 
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+
+#if !__has_builtin(__builtin_expect)
+#define __builtin_expect(expr, val) expr
+#endif
+
 #define ERR_START "FATAL ERROR: "
 
 // elem types are 64 bit unsigned
@@ -55,8 +63,7 @@ void increaceCapacity(struct Array *array, uint64_t required, uint64_t elemSize)
 }
 
 void shrinkMem(struct Array *array, uint64_t elemSize) {
-    uint64_t newCapacity = array->length;
-    if (newCapacity < 1) newCapacity = 1;
+    uint64_t newCapacity = array->length || 1;
     array->content = realloc(array->content, elemSize*newCapacity);
     array->capacity = newCapacity;
 }
@@ -73,7 +80,7 @@ const char *const INSERTSPACE_IDX_ERR = ERR_START "Cannot insert space outside b
 
 void insertSpace(struct Array *array, uint64_t idx, uint64_t elemSize) {
     uint64_t length = array->length;
-    if (idx > length) {
+    if (__builtin_expect(idx > length, 0)) {
         fflush(stdout);
         fwrite(INSERTSPACE_IDX_ERR, strlen(INSERTSPACE_IDX_ERR), 1, stderr);
         exit(1);
@@ -86,7 +93,7 @@ void insertSpace(struct Array *array, uint64_t idx, uint64_t elemSize) {
 }
 
 void incrementArrayRefCounts(const struct Array *array, uint64_t elem) {
-    if (elem&2) return;
+    if (elem & 2) return;
     uint64_t elemSize = elem >> 2;
     uint64_t length = array->length;
     char *content = array->content;
@@ -238,12 +245,12 @@ const char *const SLICE_NEG_LEN_ERR = ERR_START "Slice end index must be after s
 const char *const SLICE_INDEX_ERR = ERR_START "Slice end index out of range\n";
 
 struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
-    if (start > end) {
+    if (__builtin_expect(start > end, 0)) {
         fflush(stdout);
         fwrite(SLICE_NEG_LEN_ERR, strlen(SLICE_NEG_LEN_ERR), 1, stderr);
         exit(1);
     }
-    if (end >= array->length) {
+    if (__builtin_expect(end >= array->length, 0)) {
         fflush(stdout);
         fwrite(SLICE_INDEX_ERR, strlen(SLICE_INDEX_ERR), 1, stderr);
         exit(1);
@@ -848,7 +855,7 @@ struct Array *repeatArray(const struct Array *array, uint64_t times, uint64_t el
 const char *const NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found null\n";
 
 void verifyNotNull(const char *val) {
-    if (val == NULL) {
+    if (__builtin_expect(val == NULL, 0)) {
         fflush(stdout);
         fwrite(NULL_FAIL_MESSAGE, strlen(NULL_FAIL_MESSAGE), 1, stderr);
         exit(1);
@@ -876,7 +883,7 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
     uint64_t templateIterLen = template_Len - placeholder_len + 1;
     for (uint64_t i = 0; i < templateIterLen; i++) {
         if (memcmp(template_Content + i, FORMAT_STRING_PLACEHOLDER, placeholder_len) == 0) {
-            if (valueIdx == valueCount) {
+            if (__builtin_expect(valueIdx == valueCount, 0)) {
                 fflush(stdout);
                 fwrite(TOO_FEW_PLACEHOLDERS_MESSAGE, strlen(TOO_FEW_PLACEHOLDERS_MESSAGE), 1, stderr);
                 exit(1);
@@ -896,7 +903,7 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
         }
     }
     
-    if (valueIdx < valueCount) {
+    if (__builtin_expect(valueIdx < valueCount, 0)) {
         fflush(stdout);
         fwrite(TOO_MANY_PLACEHOLDERS_MESSAGE, strlen(TOO_MANY_PLACEHOLDERS_MESSAGE), 1, stderr);
         exit(1);
@@ -915,7 +922,7 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
 const char *const ARR_INDEX_ERR = ERR_START "Specified array index is greater or equal to array length\n";
 
 void verifyArrayIdx(struct Array *arr, uint64_t i) {
-    if (i >= arr->length) {
+    if (__builtin_expect(i >= arr->length, 0)) {
         fflush(stdout);
         fwrite(ARR_INDEX_ERR, strlen(ARR_INDEX_ERR), 1, stderr);
         exit(1);

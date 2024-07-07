@@ -578,6 +578,8 @@ def inner(program, builder, params, param_types_):
     value, = params
     value_type_, = param_types_
     generic_type_ = value_type_["generics"][0]
+    null = ir.Constant(make_type_(program, value_type_), None)
+    builder.assume(builder.icmp_unsigned("!=", value, null))
     return value, generic_type_
 
 
