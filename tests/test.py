@@ -53,6 +53,14 @@ TESTS = [
         ]
     },
     {
+        "file": "arrayassign.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 7}
+        ]
+    },
+    {
         "file": "basic.epsl",
         "func": 0,
         "sig": CFUNCTYPE(c_int),

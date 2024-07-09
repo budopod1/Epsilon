@@ -181,6 +181,25 @@ public static class BuiltinsList {
                 new List<IPatternSegment> {
                     new TypePatternSegment(typeof(RawSquareGroup)),
                     new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "unsafe_idx"),
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("="),
+                    new TypePatternSegment(typeof(RawSquareGroup))
+                }, new SlotPatternProcessor(new List<int> {0, 3, 5})
+            ), new List<FunctionArgument> {
+                new FunctionArgument("array", Type_.Any().ArrayOf()),
+                new FunctionArgument("index", new Type_("W", 64)),
+                new FunctionArgument("array", Type_.Any())
+            }, "builtin13", (List<Type_> types_) => {
+                if (!types_[2].IsConvertibleTo(types_[0].GetGeneric(0)))
+                    throw new FunctionCallTypes_Exception($"Cannot assign type {types_[2]} into an array of type {types_[0]}", 2);
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                new List<IPatternSegment> {
+                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "abs")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {

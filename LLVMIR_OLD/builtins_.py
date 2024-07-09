@@ -155,6 +155,18 @@ def unsafe_int_division(program, builder, params, param_types_, result_type_):
         return builder.udiv(a, b)
 
 
+def unsafe_idx_assign(program, builder, params, param_types_):
+    array, idx, val = params
+    array_type_, _, val_type_ = param_types_
+    elem_type_ = array_type_["generics"][0]
+    casted_value = convert_type_(program, builder, val, val_type_, elem_type_);
+    elem_ir_type = make_type_(program, elem_type_)
+    content_ptr = builder.load(builder.gep(array, [i64_of(0), i32_of(3)]))
+    content_ptr_casted = builder.bitcast(content_ptr, elem_ir_type.as_pointer())
+    builder.store(casted_value, builder.gep(content_ptr_casted, [idx]))
+    return None, None
+
+
 def abs_(program, builder, params, param_types_):
     value, = params
     return program.call_extern(
@@ -721,6 +733,7 @@ BUILTINS = {
     "builtin10": {"func": concat, "params": [ArrayW8, ArrayW8]},
     "builtin11": {"func": unsafe_idx, "params": [ArrayW8, W64], "result_in_params": True},
     "builtin12": {"func": unsafe_int_division, "params": [None, None]},
+    "builtin13": {"func": unsafe_idx_assign, "params": [ArrayW8, W64, None]},
     "builtin14": {"func": abs_, "params": [Z32]},
     "builtin15": {"func": fabs, "params": [Q64]},
     "builtin16": {"func": concat, "params": [ArrayW8, ArrayW8]},

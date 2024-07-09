@@ -92,9 +92,6 @@ class ArrayAccessInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
         array, index = params
         array_type_, index_type_ = param_types_
-        # array should always already be the correct type_
-        # this could change, and if it does, type_ casting would be
-        # required here
         casted_index = convert_type_(
             self.program, builder, index, index_type_,
             W64
@@ -116,13 +113,11 @@ class ArrayAssignmentInstruction(BaseInstruction):
     def _build(self, builder, params, param_types_):
         array, index, value = params
         _, index_type_, value_type_ = param_types_
-        # array should always already be the correct type_
-        # this could change, and if it does, type_ casting would be
-        # required here
         casted_index = convert_type_(
             self.program, builder, index, index_type_,
             W64
         )
+        self.program.verify_array_idx(builder, array, casted_index)
         if not is_value_type_(value_type_):
             incr_ref_counter(self.program, builder, casted_value, value_type_)
         casted_value = convert_type_(
