@@ -23,4 +23,5 @@ echo "venv setup complete"
 echo "Setting up tests..."
 ./tests/setup.bash
 mkdir -p temp
+ln -s epslc.bash /usr/local/bin/epslc || echo "Failed to add Epsilon to /usr/local/bin"
 echo "Setup complete"
