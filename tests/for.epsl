@@ -1,0 +1,31 @@
+Z#main {
+    Z:counter = 0;
+
+    for (Z:i to 5) {
+        counter += i;
+    }; // totals 10
+
+    for (Z:i to 5 step 2) {
+        counter += i;
+    }; // total 6
+
+    for (Z:i from 1 to 5 step 2) {
+        counter += i;
+    }; // totals 4
+    
+    [Z]:arr = [Z] [1, 1, 2, 3, 5];
+
+    for (Z:i in arr) {
+        counter += i;
+    }; // totals 12
+
+    for (Z:i in arr step -2) {
+        counter += i;
+    }; // totals 8
+
+    for (Z:i from 2 enumerating arr) {
+        counter += i;
+    }; // totals 9
+
+    return counter; // totals 49
+}

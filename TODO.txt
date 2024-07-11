@@ -11,4 +11,3 @@ TODO:
 * add `.so` compilation target
 * add `Struct` type that's treated as a superclass of all structs
 * add ability to import C methods and structs without having to write an EPSLSPEC
-* if you modify the length of an array during execution, for loop bounds should update

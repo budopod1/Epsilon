@@ -182,12 +182,11 @@ def convert_type_(program, builder, val, old, new):
 
 
 def compare_values(builder, comparison, value1, value2, type_):
-    if is_floating_type_(type_):
-        return builder.fcmp_unordered(comparison, value1, value2)
-    elif is_signed_integer_type_(type_):
-        return builder.icmp_signed(comparison, value1, value2)
-    else:
-        return builder.icmp_unsigned(comparison, value1, value2)
+    return (
+        builder.fcmp_unordered if is_floating_type_(type_) else
+        builder.icmp_signed if is_signed_integer_type_(type_) else
+        builder.icmp_unsigned
+    )(comparison, value1, value2)
 
 
 def truth_value(program, builder, value, type_):

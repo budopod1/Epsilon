@@ -52,13 +52,7 @@ public class For : IParentToken, ILoop, IVerifier, ISerializableToken {
                 "For loops cannot both have an in clause and an enumerating clause", this
             );
         }
-        if (isEnumeratingLoop) {
-            if (!type_.IsConvertibleTo(new Type_("W"))) {
-                throw new SyntaxErrorException(
-                    "Enumerating for loop variable type must be an unsigned integer", this
-                );
-            }
-        } else if (!isInLoop) {
+        if (!isInLoop) {
             if (!type_.IsConvertibleTo(new Type_("Z"))) {
                 throw new SyntaxErrorException(
                     "Non-in for loop variable type must be an integer", this

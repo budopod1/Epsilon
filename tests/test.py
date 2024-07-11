@@ -156,6 +156,14 @@ TESTS = [
             {"arguments": [], "compare": "exact", "expect": 352},
         ]
     },
+    {
+        "file": "for.epsl",
+        "func": -1,
+        "sig": CFUNCTYPE(c_int),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 49},
+        ]
+    },
     # {
     #     "file": "given.epsl",
     #     "func": -1,
