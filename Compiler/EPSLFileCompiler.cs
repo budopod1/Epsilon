@@ -691,7 +691,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 } else if (subtoken is FunctionArgumentToken) {
                     FunctionArgumentToken argument = ((FunctionArgumentToken)subtoken);
                     arguments.Add(argument);
-                    segment = new TypePatternSegment(typeof(RawSquareGroup));
+                    segment = new FuncArgPatternSegment();
                     slots.Add(j);
                 }
                 if (segment == null) {

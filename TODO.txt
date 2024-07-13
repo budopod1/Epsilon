@@ -16,5 +16,4 @@ TODO:
 * cache `.o` files instead of `.bc` or `.ll` files because they'll be quicker to link
 * move EPSLSPEC type definition from SPECFileCompiler to EPSLSPEC
 * teardown mode should only delete epslcache and cached epslspecs, ir, object files, not epslproj
-* replace usage of `TypePatternSegment(typeof(RawSquareGroup))` with new `FuncArgPatternSegment`
 * save the OptimizationLevel in EPSLCACHE, and DONTLOAD cached files when it changes

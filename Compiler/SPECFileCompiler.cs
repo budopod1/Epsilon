@@ -196,7 +196,7 @@ public class SPECFileCompiler : IFileCompiler {
                         Type_ type_ = MakeSPECType_(sobj["type_"]);
                         FunctionArgument argument = new FunctionArgument(name2, type_);
                         arguments.Add(argument);
-                        segments.Add(new TypePatternSegment(typeof(RawSquareGroup)));
+                        segments.Add(new FuncArgPatternSegment());
                         argumentIdxs.Add(i);
                         break;
                 }
