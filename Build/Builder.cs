@@ -906,15 +906,12 @@ public class Builder {
         });
     }
 
-    public ResultStatus Teardown(EPSLPROJ proj, EPSLCACHE cache) {
+    public ResultStatus Teardown(EPSLCACHE cache) {
         return RunWrapped(() => {
             Log.Status("Cleaning up EPSLSPECs");
             foreach (string spec in cache.EPSLSPECS) {
                 CleanupSPEC(spec);
             }
-
-            Log.Status("Deleting project file");
-            Utils.TryDelete(proj.Path);
 
             Log.Status("Deleting cache file");
             Utils.TryDelete(cache.Path);

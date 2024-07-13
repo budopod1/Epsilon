@@ -15,5 +15,4 @@ TODO:
 * add ability to import C methods and structs without having to write an EPSLSPEC
 * cache `.o` files instead of `.bc` or `.ll` files because they'll be quicker to link
 * move EPSLSPEC type definition from SPECFileCompiler to EPSLSPEC
-* teardown mode should only delete epslcache and cached epslspecs, ir, object files, not epslproj
 * save the OptimizationLevel in EPSLCACHE, and DONTLOAD cached files when it changes

@@ -1,4 +1,4 @@
 {
-    "command_options": ["-h", "always"],
+    "command_options": [],
     "libraries": ["../EPSL-IR-Gen/irgen", "../EPSL-BinJSON/binjson"]
 }

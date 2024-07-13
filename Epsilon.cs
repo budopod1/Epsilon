@@ -19,7 +19,7 @@ Modes:
 
         PossibilitiesExpectation cacheModeInput = parser.AddOption(
             new PossibilitiesExpectation("auto", "dont-use", "dont-load", "auto", "always"), 
-            "Caching mode", "h", "cache-mode"
+            "Caching mode", "H", "cache-mode"
         );
 
         PossibilitiesExpectation optimizationInput = parser.AddOption(
@@ -124,12 +124,11 @@ Modes:
                 outputFile.IsPresent ? outputFile.Matched : null
             );
         } else if (mode.Value() == "teardown") {
-            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj, allowNew: false));
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
             
             TestResult(builder.LoadEPSLCACHE(input, CacheMode.AUTO, out EPSLCACHE cache));
 
-            TestResult(builder.Teardown(proj, cache));
+            TestResult(builder.Teardown(cache));
 
             resultCode = 0;
         } else if (mode.Value() == "create-proj") {
