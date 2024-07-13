@@ -334,7 +334,7 @@ public class Builder {
         if (!File.Exists(path)) return;
         currentFile = path;
         IJSONValue jsonValue = ParseJSONFile(path);
-        ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
+        ShapedJSON obj = new ShapedJSON(jsonValue, EPSLSPEC.Shape);
         CleanupSPEC(path, obj);
     }
 
@@ -358,7 +358,7 @@ public class Builder {
         currentFile = path;
         string stemmed = Utils.Stem(path);
         IJSONValue jsonValue = ParseJSONFile(path, out string fileText);
-        ShapedJSON obj = new ShapedJSON(jsonValue, SPECFileCompiler.Shape);
+        ShapedJSON obj = new ShapedJSON(jsonValue, EPSLSPEC.Shape);
         string source = Utils.GetFullPath(obj["source"].GetStringOrNull());
         string generatedEPSLSPEC = null;
         if (source != null) {

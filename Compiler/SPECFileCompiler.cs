@@ -9,65 +9,6 @@ public class SPECFileCompiler : IFileCompiler {
     string fileText;
     ShapedJSON obj;
     Dictionary<string, Type_> types_ = new Dictionary<string, Type_>();
-    public static IJSONShape Shape { get => _Shape; }
-    static IJSONShape _Shape;
-
-    static SPECFileCompiler() {
-        _Shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
-            {"functions", new JSONListShape(new JSONObjectShape(
-                new Dictionary<string, IJSONShape> {
-                    {"id", new JSONStringShape()},
-                    {"callee", new JSONStringShape()},
-                    {"return_type_", new JSONNullableShape(new JSONStringShape())},
-                    {"template", new JSONListShape(new JSONObjectShape(
-                        new Dictionary<string, IJSONShape> {
-                            {"type", new JSONStringShape()}
-                        }
-                    ))},
-                    {"takes_ownership", new JSONBoolShape()},
-                    {"result_in_params", new JSONBoolShape()},
-                    {"source", new JSONStringOptionsShape(new List<string> {
-                        "Program", "Library", "Builtin"
-                    })}
-                }
-            ))},
-            {"types_", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
-                {"given_name", new JSONStringShape()},
-                {"name", new JSONStringShape()},
-                {"bits", new JSONNullableShape(new JSONIntShape())},
-                {"generics", new JSONListShape(new JSONStringShape())}
-            }))},
-            {"structs", new JSONListShape(new JSONObjectShape(
-                new Dictionary<string, IJSONShape> {
-                    {"name", new JSONStringShape()},
-                    {"fields", new JSONListShape(new JSONObjectShape(
-                        new Dictionary<string, IJSONShape> {
-                            {"name", new JSONStringShape()},
-                            {"type_", new JSONStringShape()}
-                        }
-                    ))},
-                    {"symbol", new JSONStringShape()},
-                    {"extendee", new JSONNullableShape(new JSONStringShape())}
-                }
-            ))},
-            {"dependencies", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
-                {"path", new JSONStringShape()},
-                {"functions", new JSONListShape(new JSONWholeShape())},
-                {"structs", new JSONListShape(new JSONStringShape())}
-            }))},
-            {"clang_config", new JSONListShape(new JSONObjectShape(
-                new Dictionary<string, IJSONShape> {
-                    {"type", new JSONStringShape()}
-                }
-            ))},
-            {"imports", new JSONListShape(new JSONStringShape())},
-            {"ir", new JSONNullableShape(new JSONStringShape())},
-            {"obj", new JSONNullableShape(new JSONStringShape())},
-            {"source", new JSONNullableShape(new JSONStringShape())},
-            {"source_type", new JSONStringOptionsShape(new List<string> {"Library", "User"})},
-            {"id_path", new JSONStringShape()}
-        });
-    }
     
     public SPECFileCompiler(string path, string fileText, ShapedJSON obj) {
         curPath = path;

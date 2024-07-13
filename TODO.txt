@@ -14,5 +14,4 @@ TODO:
 * add `Struct` type that's treated as a superclass of all structs
 * add ability to import C methods and structs without having to write an EPSLSPEC
 * cache `.o` files instead of `.bc` or `.ll` files because they'll be quicker to link
-* move EPSLSPEC type definition from SPECFileCompiler to EPSLSPEC
 * save the OptimizationLevel in EPSLCACHE, and DONTLOAD cached files when it changes
