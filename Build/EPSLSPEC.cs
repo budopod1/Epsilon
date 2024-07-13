@@ -9,17 +9,19 @@ public class EPSLSPEC {
     public IEnumerable<IClangConfig> ClangConfig;
     public IEnumerable<string> Imports;
     public string IR;
+    public string Obj;
     public string Source;
     public FileSourceType SourceType;
     public string IDPath;
 
-    public EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerable<Struct> structs, Dependencies dependencies, IEnumerable<IClangConfig> clangConfig, IEnumerable<string> imports, string IR, string source, FileSourceType sourceType, string idPath) {
+    public EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerable<Struct> structs, Dependencies dependencies, IEnumerable<IClangConfig> clangConfig, IEnumerable<string> imports, string IR, string obj, string source, FileSourceType sourceType, string idPath) {
         Functions = functions;
         Structs = structs;
         Dependencies = dependencies;
         ClangConfig = clangConfig;
         Imports = imports;
         this.IR = IR;
+        Obj = obj;
         Source = source;
         SourceType = sourceType;
         IDPath = idPath;
@@ -114,7 +116,9 @@ public class EPSLSPEC {
 
         obj["imports"] = new JSONList(Imports.Select(import => new JSONString(import)));
 
-        obj["ir"] = new JSONString(IR);
+        obj["ir"] = JSONString.OrNull(IR);
+        
+        obj["obj"] = JSONString.OrNull(Obj);
 
         obj["source"] = JSONString.OrNull(Source);
 

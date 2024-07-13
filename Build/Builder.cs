@@ -14,6 +14,72 @@ public class Builder {
     readonly IEnumerable<string> EXTENSIONS = new List<string> {"epslspec", "epsl"};
     readonly IEnumerable<string> PREFIXES = new List<string> {"", "."};
 
+    public static OptimizationLevel ParseOptimizationLevel(string text) {
+        if (Int32.TryParse(text, out int num)) {
+            return (OptimizationLevel)num;
+        }
+        Enum.TryParse(text, out OptimizationLevel result);
+        return result;
+    }
+
+    public ResultStatus RunWrapped(Action action) {
+        try {
+            action();
+        } catch (SyntaxErrorException e) {
+            ShowCompilationError(e, currentText, currentFile);
+            return ResultStatus.USERERR;
+        } catch (TargetInvocationException e) {
+            Exception inner = e.InnerException;
+            if (inner is SyntaxErrorException) {
+                ShowCompilationError(
+                    (SyntaxErrorException)inner, currentText, currentFile
+                );
+                return ResultStatus.USERERR;
+            } else {
+                ExceptionDispatchInfo.Capture(inner).Throw();
+                // The next line won't be called, we just need it to keep the
+                // C# compiler happy
+                return ResultStatus.FAIL;
+            }
+        } catch (CommandFailureException e) {
+            Console.WriteLine(e.Message);
+            return ResultStatus.FAIL;
+        } catch (FileNotFoundException e) {
+            Console.Write(e.Message);
+            if (e.FileName != null) {
+                Console.Write(": " + e.FileName);
+            }
+            Console.WriteLine();
+            return ResultStatus.USERERR;
+        } catch (IOException e) {
+            Console.Write("IO Error: ");
+            Console.WriteLine(e.Message);
+            return ResultStatus.USERERR;
+        } catch (InvalidJSONException e) {
+            JSONTools.ShowError(currentText, e, currentFile);
+            return ResultStatus.USERERR;
+        } catch (InvalidBJSONException e) {
+            Console.WriteLine($"Error while reading BJSON file: {e.Message}");
+            return ResultStatus.FAIL;
+        } catch (ModuleNotFoundException e) {
+            Console.WriteLine($"Cannot find requested module '{e.Path}'");
+            return ResultStatus.USERERR;
+        } catch (ProjectProblemException e) {
+            Console.WriteLine(e.Problem);
+            return ResultStatus.USERERR;
+        }
+
+        return ResultStatus.GOOD;
+    }
+
+    public ResultStatus WipeTempDir() {
+        return RunWrapped(() => {
+            foreach (string file in Utils.GetFilesInDir(Utils.TempDir())) {
+                Utils.TryDelete(file);
+            }
+        });
+    }
+
     public ResultStatus LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
         EPSLPROJ proj = null;
 
@@ -176,10 +242,17 @@ public class Builder {
             SetupOldCompilers();
             Log.Status("Confirming dependencies");
             ConfirmDependencies(settings, projectDirectory);
-            Log.Status("Writing IR");
-            List<string> sections = ToIR(settings, out List<string> IRInUserDir, 
-                out List<FileTree> unlinkedFiles);
+            Log.Status("Finishing individual file compilation...");
+            FinishCompilations(settings, out List<FileTree> unlinkedFiles);
+            Log.Status("Getting intermediates...");
+            ToIntermediates(settings);
+            
             if (doesSaveCache(settings)) {
+                if (settings.OptLevel < OptimizationLevel.MAX) {
+                    Log.Status("Creating .o files for caching...");
+                    CreateCachedObjs(settings);
+                }
+                
                 Log.Status("Saving EPSLSPECs");
                 SaveEPSLSPECs();
             }
@@ -187,28 +260,9 @@ public class Builder {
             List<string> generatedSPECs = GetGeneratedEPSLSPECs().ToList();
             DeleteUnusedGeneratedSPECs(lastGeneratedSPECs, generatedSPECs);
 
-            string fileWithMain = null;
-            foreach (FileTree file in files.Values) {
-                foreach (RealFunctionDeclaration declaration in file.Declarations) {
-                    if (!declaration.IsMain()) continue;
-                    if (fileWithMain == null) {
-                        fileWithMain = file.Stemmed;
-                    } else {
-                        throw new ProjectProblemException($"No more than one main function is allowed; main functions found in both {fileWithMain} and {file.Stemmed}");
-                    }
-                }
-            }
+            string fileWithMain = GetFileWithMain();
 
-            List<string> arguments = new List<string> {
-                "-o", Utils.JoinPaths(Utils.TempDir(), "code-linked.bc"), "--"
-            };
-            if (settings.LinkBuiltins) {
-                arguments.Add(Utils.JoinPaths(Utils.EPSLLIBS(), "builtins.bc"));
-            }
-            
-            arguments.AddRange(sections);
-            Log.Status("Linking LLVM");
-            Utils.RunCommand("llvm-link", arguments);
+            List<string> sources = ProduceFinalSources(settings);
 
             if (doesSaveCache(settings)) {
                 cache.CompileStartTime = buildStartTime;
@@ -216,8 +270,11 @@ public class Builder {
                 cache.ToFile();
                 Log.Info("Saved updated EPSLCACHE");
             } else {
-                foreach (string path in IRInUserDir) {
-                    Utils.TryDelete(path);
+                foreach (FileTree file in files.Values) {
+                    if (file.IRIsInUserDir)
+                        Utils.TryDelete(file.IR);
+                    if (file.ObjIsInUserDir)
+                        Utils.TryDelete(file.Obj);
                 }
             }
 
@@ -227,63 +284,13 @@ public class Builder {
                 .SelectMany(file => file.Compiler.GetClangConfig())
                 .Concat(extraClangConfig);
             _buildInfo = new BuildInfo(
-                tree, clangConfig, unlinkedFiles, fileWithMain
+                sources, tree, clangConfig, unlinkedFiles, fileWithMain
             );
         });
 
         buildInfo = _buildInfo;
 
         return status;
-    }
-    
-    public ResultStatus RunWrapped(Action action) {
-        try {
-            action();
-        } catch (SyntaxErrorException e) {
-            ShowCompilationError(e, currentText, currentFile);
-            return ResultStatus.USERERR;
-        } catch (TargetInvocationException e) {
-            Exception inner = e.InnerException;
-            if (inner is SyntaxErrorException) {
-                ShowCompilationError(
-                    (SyntaxErrorException)inner, currentText, currentFile
-                );
-                return ResultStatus.USERERR;
-            } else {
-                ExceptionDispatchInfo.Capture(inner).Throw();
-                // The next line won't be called, we just need it to keep the
-                // C# compiler happy
-                return ResultStatus.FAIL;
-            }
-        } catch (CommandFailureException e) {
-            Console.WriteLine(e.Message);
-            return ResultStatus.FAIL;
-        } catch (FileNotFoundException e) {
-            Console.Write(e.Message);
-            if (e.FileName != null) {
-                Console.Write(": " + e.FileName);
-            }
-            Console.WriteLine();
-            return ResultStatus.USERERR;
-        } catch (IOException e) {
-            Console.Write("IO Error: ");
-            Console.WriteLine(e.Message);
-            return ResultStatus.USERERR;
-        } catch (InvalidJSONException e) {
-            JSONTools.ShowError(currentText, e, currentFile);
-            return ResultStatus.USERERR;
-        } catch (InvalidBJSONException e) {
-            Console.WriteLine($"Error while reading BJSON file: {e.Message}");
-            return ResultStatus.FAIL;
-        } catch (ModuleNotFoundException e) {
-            Console.WriteLine($"Cannot find requested module '{e.Path}'");
-            return ResultStatus.USERERR;
-        } catch (ProjectProblemException e) {
-            Console.WriteLine(e.Problem);
-            return ResultStatus.USERERR;
-        }
-        
-        return ResultStatus.GOOD;
     }
 
     bool doesSaveCache(BuildSettings settings) {
@@ -302,7 +309,7 @@ public class Builder {
     }
 
     void SwitchFile(FileTree file) {
-        currentFile = file.Path;
+        currentFile = file.Path_;
         currentText = file.Text;
     }
 
@@ -312,11 +319,13 @@ public class Builder {
     }
 
     void CleanupSPEC(string path, ShapedJSON obj) {
-        string ir = obj["ir"].GetString();
         string source = obj["source"].GetString();
-        if (ir != null) {
-            string irPath = Utils.JoinPaths(Utils.GetDirectoryName(path), ir);
-            if (source != irPath) Utils.TryDelete(irPath);
+        foreach (string field in new List<string> {"ir", "obj"}) {
+            string fieldPath = obj[field].GetStringOrNull();
+            if (fieldPath == null) continue;
+            string fullFieldPath = Utils.JoinPaths(
+                Utils.GetDirectoryName(path), fieldPath);
+            if (source != fullFieldPath) Utils.TryDelete(fullFieldPath);
         }
         Utils.TryDelete(path);
     }
@@ -331,7 +340,21 @@ public class Builder {
 
     int LOAD_RETRY = 3;
 
-    public DispatchedFile DispatchEPSLSPEC(BuildSettings settings, string path, string _1, SPECFileCompiler _2) {
+    void VerifySPECDependencies(string path, ShapedJSON json) {
+        foreach (string field in new List<string> {"ir", "obj"}) {
+            string fieldPath = json[field].GetStringOrNull();
+            if (fieldPath == null) continue;
+            string fullFieldPath = Utils.JoinPaths(
+                Utils.GetDirectoryName(path), fieldPath);
+            if (Utils.FileExists(fullFieldPath)) continue;
+            Log.Info("Rejecting EPSLSPEC file,", field, "dependency could not be found");
+            throw new InvalidSPECResourceException(
+                json, path, fullFieldPath
+            );
+        }
+    }
+
+    DispatchedFile DispatchEPSLSPEC(BuildSettings settings, string path, string _1, SPECFileCompiler _2) {
         currentFile = path;
         string stemmed = Utils.Stem(path);
         IJSONValue jsonValue = ParseJSONFile(path, out string fileText);
@@ -341,6 +364,7 @@ public class Builder {
         if (source != null) {
             if (settings.CacheMode <= CacheMode.DONTLOAD) return null;
             if (!Utils.FileExists(source)) {
+                Log.Info("Rejecting EPSLSPEC file, source file could not be found");
                 throw new InvalidSPECResourceException(
                     obj, path, source
                 );
@@ -361,22 +385,14 @@ public class Builder {
             }
         }
         currentFile = path;
-        string ir = obj["ir"].GetString();
-        if (ir != null) {
-            string irPath = Utils.JoinPaths(Utils.GetDirectoryName(path), ir);
-            if (!Utils.FileExists(irPath)) {
-                throw new InvalidSPECResourceException(
-                    obj, path, irPath
-                );
-            }
-        }
+        VerifySPECDependencies(path, obj);
         return new DispatchedFile(
             new SPECFileCompiler(stemmed, fileText, obj), path, null, null,
             generatedEPSLSPEC
         );
     }
 
-    public DispatchedFile DispatchEPSL(BuildSettings _, string path, string oldCompilerPath, SPECFileCompiler oldCompiler) {
+    DispatchedFile DispatchEPSL(BuildSettings _, string path, string oldCompilerPath, SPECFileCompiler oldCompiler) {
         string fileText;
         currentFile = path;
         using (StreamReader file = new StreamReader(path)) {
@@ -467,7 +483,7 @@ public class Builder {
     void RecompileFile(BuildSettings settings, FileTree file, string projDirectory) {
         DispatchedFile dispatched = DispatchPartialPath(settings, file.PartialPath, projDirectory, false);
         file.Compiler = dispatched.Compiler;
-        file.Path = dispatched.Path;
+        file.Path_ = dispatched.Path;
         file.Text = file.Compiler.GetText();
         SwitchFile(file);
         file.Compiler.ToImports();
@@ -587,27 +603,69 @@ public class Builder {
         }
     }
 
-    List<string> ToIR(BuildSettings settings, out List<string> IRInUserDir, out List<FileTree> unlinkedFiles) {
-        IRInUserDir = new List<string>();
+    void FinishCompilations(BuildSettings settings, out List<FileTree> unlinkedFiles) {
         unlinkedFiles = new List<FileTree>();
-        List<string> sections = new List<string>();
         foreach (FileTree file in files.Values) {
             if (!settings.LinkLibraries && file.SourceType == FileSourceType.Library) {
+                file.IsUnlinked = true;
                 unlinkedFiles.Add(file);
             } else {
                 SwitchFile(file);
                 string directory = Utils.GetDirectoryName(currentFile);
                 string filename = "." + file.GetName();
                 string path = Utils.JoinPaths(directory, filename);
-                string ir = file.Compiler.ToIR(path);
-                if (path == Path.ChangeExtension(ir, null)) {
-                    IRInUserDir.Add(ir);
-                }
-                sections.Add(ir);
-                file.IR = ir;
+                file.SuggestedIntermediatePath = path;
+                file.Compiler.FinishCompilation(path);
             }
         }
-        return sections;
+    }
+
+    bool shouldGetIR(BuildSettings settings) {
+        return settings.OptLevel >= OptimizationLevel.MAX;
+    }
+
+    void ToIntermediates(BuildSettings settings) {
+        foreach (FileTree file in files.Values) {
+            if (file.IsUnlinked) continue;
+            SwitchFile(file);
+            file.IR = file.Compiler.GetIR();
+            file.Obj = file.Compiler.GetObj();
+            file.Intermediate = IntermediateFile.FromFileTree(file, shouldGetIR(settings));
+        }
+    }
+
+    void CreateCachedObjs(BuildSettings settings) {
+        foreach (FileTree file in files.Values) {
+            SwitchFile(file);
+            IntermediateFile intermediate = file.Intermediate;
+            
+            if (!(file.Compiler.ShouldSaveSPEC()
+                && intermediate.FileType == IntermediateFile.IntermediateType.IR
+                && intermediate.IsInUserDir
+                && file.Obj == null)) continue;
+            
+            string irFile = intermediate.Path;
+            
+            if (settings.OptLevel >= OptimizationLevel.NORMAL) {
+                string optFile = Utils.JoinPaths(Utils.TempDir(), "opt.bc");
+                Utils.RunCommand("opt", new List<string> {
+                    "-O3", irFile, "-o", optFile
+                });
+                Utils.TryDelete(irFile);
+                irFile = optFile;
+            }
+            
+            string objFile = file.SuggestedIntermediatePath+".o";
+            Utils.RunCommand("llc", new List<string> {
+                irFile, "-o", objFile, "-filetype=obj"
+            });
+            Utils.TryDelete(irFile);
+
+            file.IR = null;
+            file.Obj = objFile;
+            
+            file.Intermediate = new IntermediateFile(IntermediateFile.IntermediateType.Obj, objFile, true);
+        }
     }
 
     void SaveEPSLSPECs() {
@@ -625,11 +683,107 @@ public class Builder {
         }
     }
 
+    string GetFileWithMain() {
+        string fileWithMain = null;
+        foreach (FileTree file in files.Values) {
+            foreach (RealFunctionDeclaration declaration in file.Declarations) {
+                if (!declaration.IsMain()) continue;
+                if (fileWithMain == null) {
+                    fileWithMain = file.Stemmed;
+                } else {
+                    throw new ProjectProblemException($"No more than one main function is allowed; main functions found in both {fileWithMain} and {file.Stemmed}");
+                }
+            }
+        }
+        return fileWithMain;
+    }
+
     IEnumerable<string> GetGeneratedEPSLSPECs() {
         foreach (FileTree file in files.Values) {
             if (file.GeneratedEPSLSPEC != null)
                 yield return file.GeneratedEPSLSPEC;
         }
+    }
+
+    IEnumerable<string> MakeIntermediateCopiesInTemp(string name, IEnumerable<IntermediateFile> intermediates) {
+        int i = 0;
+        foreach (IntermediateFile intermediate in intermediates) {
+            if (intermediate.IsInUserDir) {
+                string extension = Path.GetExtension(intermediate.Path);
+                string newPath = Utils.JoinPaths(Utils.TempDir(), $"{name}{i++}{extension}");
+                File.Copy(intermediate.Path, newPath, true);
+                yield return newPath;
+            } else {
+                yield return intermediate.Path;
+            }
+        }
+    }
+
+    List<string> ProduceFinalSources(BuildSettings settings) {
+        IEnumerable<IntermediateFile> intermediates = files.Values
+            .Select(file => file.Intermediate);
+
+        if (settings.LinkBuiltins) {
+            IntermediateFile builtinsIntermediate;
+            
+            if (shouldGetIR(settings)) {
+                builtinsIntermediate = new IntermediateFile(
+                    IntermediateFile.IntermediateType.IR,
+                    Utils.JoinPaths(Utils.EPSLLIBS(), "builtins.bc"), false
+                );
+            } else {
+                builtinsIntermediate = new IntermediateFile(
+                    IntermediateFile.IntermediateType.Obj,
+                    Utils.JoinPaths(Utils.EPSLLIBS(), "builtins.o"), false
+                );
+            }
+            
+            intermediates = intermediates.Concat(new IntermediateFile[] {
+                builtinsIntermediate
+            });
+        }
+
+        var grouped = intermediates
+            .GroupBy(intermediate => intermediate.FileType)
+            .ToDictionary();
+
+        List<string> sources = new List<string>();
+        
+        if (settings.OptLevel >= OptimizationLevel.MAX) {
+            string irLinkedPath = Utils.JoinPaths(Utils.TempDir(), "linked.bc");
+            List<string> llvmLinkArgs = new List<string> {
+                "-o", irLinkedPath, "--"
+            };
+            llvmLinkArgs.AddRange(grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)
+                .Select(intermediate => intermediate.Path));
+            
+            Utils.RunCommand("llvm-link", llvmLinkArgs);
+
+            string irOptedPath = Utils.JoinPaths(Utils.TempDir(), "linked-opt.bc");
+            Utils.RunCommand("opt", new List<string> {
+                "-O3", "-o", irOptedPath, irLinkedPath
+            });
+
+            sources.Add(irOptedPath);
+        } else if (settings.OptLevel <= OptimizationLevel.MIN) {
+            sources.AddRange(MakeIntermediateCopiesInTemp(
+                "ir-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)));
+        } else {
+            int i = 0;
+            foreach (IntermediateFile intermediate in grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)) {
+                string irOptedPath = Utils.JoinPaths(Utils.TempDir(), $"opt-{i++}.bc");
+                Utils.RunCommand("opt", new List<string> {
+                    "-O3", "-o", irOptedPath, intermediate.Path
+                });
+
+                sources.Add(irOptedPath);
+            }
+        }
+
+        sources.AddRange(MakeIntermediateCopiesInTemp(
+            "obj-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.Obj)));
+
+        return sources;
     }
 
     void ShowCompilationError(SyntaxErrorException e, string text, string file) {
@@ -740,18 +894,15 @@ public class Builder {
             if (buildInfo.FileWithMain == null) {
                 throw new ProjectProblemException("One main function is required when creating an executable; no main function found");
             }
-            Log.Status("Optimizing LLVM");
-            Utils.RunCommand("opt", new List<string> {
-                "-O3", "-o", Utils.JoinPaths(Utils.TempDir(), "code-opt.bc"),
-                Utils.JoinPaths(Utils.TempDir(), "code-linked.bc")
-            });
+            
             Log.Status("Buiding executable");
             IEnumerable<string> clangFlags = buildInfo.ClangConfig
                 .Select(config => config.Stringify());
-            Utils.RunCommand("clang", clangFlags.Concat(new List<string> {
-                "-lc", "-lm", "-o", Utils.JoinPaths(Utils.TempDir(), "code"),
-                Utils.JoinPaths(Utils.TempDir(), "code-opt.bc"),
-            }));
+            List<string> clangArgs = clangFlags.Concat(new List<string> {
+                "-lc", "-lm", "-o", Utils.JoinPaths(Utils.TempDir(), "executable")
+            }).ToList();
+            clangArgs.AddRange(buildInfo.Sources);
+            Utils.RunCommand("clang", clangArgs);
         });
     }
 

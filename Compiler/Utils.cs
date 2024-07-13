@@ -80,6 +80,7 @@ public static class Utils {
             argumentsStr += "\"" + argument.Replace("\\", "\\\\")
                 .Replace("\"", "\\\"") + "\" ";
         }
+        Log.Info(command, argumentsStr);
         startInfo.Arguments = argumentsStr;
         Process process = Process.Start(startInfo);
         process.WaitForExit();
@@ -199,6 +200,14 @@ public static class Utils {
             return false;
         } catch (UnauthorizedAccessException) {
             return false;
+        }
+    }
+
+    public static string[] GetFilesInDir(string dir) {
+        try {
+            return Directory.GetFiles(dir);
+        } catch (UnauthorizedAccessException) {
+            return new string[0];
         }
     }
 

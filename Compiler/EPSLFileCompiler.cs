@@ -9,8 +9,8 @@ using System.Collections.Generic;
 public class EPSLFileCompiler : IFileCompiler {
     Program program;
     string fileText;
-
     string srcPath;
+    string IR;
 
     public EPSLFileCompiler(string path, string fileText) {
         Log.Info("Compiling EPSL file", path);
@@ -189,7 +189,7 @@ public class EPSLFileCompiler : IFileCompiler {
         return GetDependencies(program);
     }
 
-    public string ToIR(string destPath) {
+    public void FinishCompilation(string destPath) {
         Step("Adding unused value wrappers...");
         AddUnusedValueWrappers(program);
 
@@ -202,10 +202,16 @@ public class EPSLFileCompiler : IFileCompiler {
         Step("Creating LLVM IR...");
         CreateLLVMIR();
 
-        string dest = destPath + ".ll";
-        File.Copy(Utils.JoinPaths(Utils.TempDir(), "code.ll"), dest, true);
+        IR = destPath + ".ll";
+        File.Copy(Utils.JoinPaths(Utils.TempDir(), "code.ll"), IR, true);
+    }
 
-        return dest;
+    public string GetIR() {
+        return IR;
+    }
+
+    public string GetObj() {
+        return null;
     }
 
     public string GetSource() {

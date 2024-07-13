@@ -9,5 +9,12 @@ TODO:
 * self host LLVMIR section?
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `.so` compilation target
+* add `.o` compilation target
+* fix package, llvm-ll, and llvm-bc compilation targets
 * add `Struct` type that's treated as a superclass of all structs
 * add ability to import C methods and structs without having to write an EPSLSPEC
+* cache `.o` files instead of `.bc` or `.ll` files because they'll be quicker to link
+* move EPSLSPEC type definition from SPECFileCompiler to EPSLSPEC
+* teardown mode should only delete epslcache and cached epslspecs, ir, object files, not epslproj
+* replace usage of `TypePatternSegment(typeof(RawSquareGroup))` with new `FuncArgPatternSegment`
+* save the OptimizationLevel in EPSLCACHE, and DONTLOAD cached files when it changes

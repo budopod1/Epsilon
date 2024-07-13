@@ -18,8 +18,13 @@ Modes:
         );
 
         PossibilitiesExpectation cacheModeInput = parser.AddOption(
-            new PossibilitiesExpectation("auto", "dont-use", "dont-load", "always"), 
+            new PossibilitiesExpectation("auto", "dont-use", "dont-load", "auto", "always"), 
             "Caching mode", "h", "cache-mode"
+        );
+
+        PossibilitiesExpectation optimizationInput = parser.AddOption(
+            new PossibilitiesExpectation("normal", "0", "min", "1", "normal", "2", "max"), 
+            "Optimization level", "O", "opt"
         );
 
         bool linkBuiltins = true;
@@ -51,7 +56,7 @@ Modes:
         parser.AddOption(outputFile, "The path to output to", "o", "output");
 
         PossibilitiesExpectation mode = parser.Expect(
-            new PossibilitiesExpectation("compile", "teardown", "create-proj"));
+            new PossibilitiesExpectation("compile", "compile", "teardown", "create-proj"));
         
         InputExpectation sourceFile = new InputExpectation("source file", true);
 
@@ -68,7 +73,7 @@ Modes:
         });
 
         PossibilitiesExpectation outputType = parser.AddOption(
-            new PossibilitiesExpectation("executable", "package", "llvm-ll", "llvm-bc"), 
+            new PossibilitiesExpectation("executable", "executable"/*, "package", "llvm-ll", "llvm-bc"*/), 
             "The output file type", "t", "output-type"
         );
 
@@ -87,8 +92,12 @@ Modes:
 
         Builder builder = new Builder();
 
+        TestResult(builder.WipeTempDir());
+
         string curDirectory = $".{Path.DirectorySeparatorChar}";
         string input = curDirectory + (sourceFile.Matched ?? "entry");
+
+        int resultCode = 0;
 
         if (mode.Value() == "compile") {
             TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
@@ -96,6 +105,7 @@ Modes:
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
             
             CacheMode cacheMode = EPSLCACHE.ParseCacheMode(cacheModeInput.Value());
+            OptimizationLevel optimizationLevel = optimizationInput.ToEnum<OptimizationLevel>();
 
             if (outputType.Value() == "package") {
                 linkBuiltins = false;
@@ -107,9 +117,9 @@ Modes:
             TestResult(builder.RegisterLibraries(input, libraries));
             TestResult(builder.LoadEPSLCACHE(input, cacheMode, out EPSLCACHE cache));
 
-            BuildSettings settings = new BuildSettings(input, proj, cache, cacheMode, linkBuiltins, linkLibraries, clangOptions.MatchedSegments);
+            BuildSettings settings = new BuildSettings(input, proj, cache, cacheMode, optimizationLevel, linkBuiltins, linkLibraries, clangOptions.MatchedSegments);
 
-            return DoCompilation(
+            resultCode = DoCompilation(
                 builder, settings, outputType.Value(),
                 outputFile.IsPresent ? outputFile.Matched : null
             );
@@ -121,14 +131,18 @@ Modes:
 
             TestResult(builder.Teardown(proj, cache));
 
-            return 0;
+            resultCode = 0;
         } else if (mode.Value() == "create-proj") {
             TestResult(builder.CreateEPSLPROJ(projFile.Matched));
 
-            return 0;
+            resultCode = 0;
         } else {
             throw new InvalidOperationException();
         }
+
+        TestResult(builder.WipeTempDir());
+
+        return resultCode;
     }
 
     static int DoCompilation(Builder builder, BuildSettings settings, string outputType, string providedOutput) {
@@ -160,6 +174,7 @@ Modes:
         }
 
         if (outputType == "package") {
+            /*
             TestResult(builder.ReadyPackageFolder(output));
             
             try {
@@ -184,6 +199,8 @@ Modes:
 
             string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");
             TestResult(builder.SaveEPSLSPEC(epslspecDest, newEPSLSPEC));
+            */
+            throw new NotImplementedException();
         } else {
             string resultSource;
 
@@ -200,7 +217,7 @@ Modes:
                     resultSource = "code-linked.ll";
                     break;
                 case "executable":
-                    resultSource = "code";
+                    resultSource = "executable";
                     break;
                 default:
                     throw new InvalidOperationException();

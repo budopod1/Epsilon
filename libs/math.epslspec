@@ -89,4 +89,4 @@
     {"given_name": "Bool", "name": "Bool", "bits": null, "generics": []}
 ], "structs": [
     {"name": "C", "fields": [{"name": "real", "type_": "Q64"}, {"name": "imag", "type_": "Q64"}], "symbol": "math_C", "extendee": null}
-], "dependencies": [], "clang_config": [], "imports": [], "ir": "math_.bc", "source": null, "source_type": "Library", "id_path": "libs/math"}
+], "dependencies": [], "clang_config": [], "imports": [], "ir": "math_.bc", "obj": "math_.o", "source": null, "source_type": "Library", "id_path": "libs/math"}

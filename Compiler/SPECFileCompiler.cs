@@ -61,7 +61,8 @@ public class SPECFileCompiler : IFileCompiler {
                 }
             ))},
             {"imports", new JSONListShape(new JSONStringShape())},
-            {"ir", new JSONStringShape()},
+            {"ir", new JSONNullableShape(new JSONStringShape())},
+            {"obj", new JSONNullableShape(new JSONStringShape())},
             {"source", new JSONNullableShape(new JSONStringShape())},
             {"source_type", new JSONStringOptionsShape(new List<string> {"Library", "User"})},
             {"id_path", new JSONStringShape()}
@@ -267,9 +268,18 @@ public class SPECFileCompiler : IFileCompiler {
         );
     }
 
-    public string ToIR(string _) {
-        string ir = obj["ir"].GetString();
-        return Utils.JoinPaths(Utils.GetDirectoryName(curPath), ir);
+    public void FinishCompilation(string suggestedPath) {}
+
+    public string GetIR() {
+        string irPath = obj["ir"].GetStringOrNull();
+        if (irPath == null) return null;
+        return Utils.JoinPaths(Utils.GetDirectoryName(curPath), irPath);
+    }
+
+    public string GetObj() {
+        string objPath = obj["obj"].GetString();
+        if (objPath == null) return null;
+        return Utils.JoinPaths(Utils.GetDirectoryName(curPath), objPath);
     }
 
     public string GetSource() {

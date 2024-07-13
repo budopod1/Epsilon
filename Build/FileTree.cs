@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -22,12 +23,12 @@ public class FileTree {
         }
     }
 
-    string _Path;
+    string _Path_;
     public string Stemmed;
-    public string Path { 
-        get => _Path;
+    public string Path_ { 
+        get => _Path_;
         set {
-            _Path = value;
+            _Path_ = value;
             Stemmed = Utils.Stem(value);
         }
     }
@@ -59,11 +60,26 @@ public class FileTree {
     public HashSet<Struct> OldStructs;
     public List<RealFunctionDeclaration> OldDeclarations;
 
+    public bool IsUnlinked = false;
+    
+    public string SuggestedIntermediatePath;
+
     public string IR;
+    public string Obj;
+
+    public bool IRIsInUserDir {
+        get => IR != null && SuggestedIntermediatePath == Path.ChangeExtension(IR, null);
+    }
+
+    public bool ObjIsInUserDir {
+        get => Obj != null && SuggestedIntermediatePath == Path.ChangeExtension(Obj, null);
+    }
+
+    public IntermediateFile Intermediate;
 
     public FileTree(string partialPath, string path, IFileCompiler compiler, string oldCompilerPath, SPECFileCompiler oldCompiler, string generatedEPSLSPEC) {
         PartialPath = partialPath;
-        Path = path;
+        Path_ = path;
         Compiler = compiler;
         OldPath = oldCompilerPath;
         SourceType = compiler.GetFileSourceType();
@@ -75,12 +91,12 @@ public class FileTree {
     EPSLSPEC MakeSPEC() {
         return new EPSLSPEC(
             Declarations, Structs, Dependencies, Compiler.GetClangConfig(),
-            Imports, IR, Path, SourceType, IDPath
+            Imports, IR, Obj, Path_, SourceType, IDPath
         );
     }
 
     public string GetName() {
-        string name = Utils.GetFileNameWithoutExtension(Path);
+        string name = Utils.GetFileNameWithoutExtension(Path_);
         if (name[0] == '.') return name.Substring(1);
         return name;
     }
