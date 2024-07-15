@@ -192,7 +192,7 @@ public class SPECFileCompiler : IFileCompiler {
                 }
             }
             IEnumerable<RealFunctionDeclaration> functionDependencies = fobj["functions"].IterList().Select(
-                dstr => declarations[dstr.GetWhole()]
+                dint => declarations[dint.GetInt()]
             );
             if (hasChanges) {
                 foreach (RealFunctionDeclaration functionDependency in functionDependencies) {
@@ -218,7 +218,7 @@ public class SPECFileCompiler : IFileCompiler {
     }
 
     public string GetObj() {
-        string objPath = obj["obj"].GetString();
+        string objPath = obj["obj"].GetStringOrNull();
         if (objPath == null) return null;
         return Utils.JoinPaths(Utils.GetDirectoryName(curPath), objPath);
     }

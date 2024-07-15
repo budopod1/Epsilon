@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Epsilon {
-    public static int Main(string[] args) {
+    public static void Main(string[] args) {
         ArgumentParser parser = new ArgumentParser(
             "mono Epsilon.exe",
             @"
@@ -58,7 +58,7 @@ Modes:
         PossibilitiesExpectation mode = parser.Expect(
             new PossibilitiesExpectation("compile", "compile", "teardown", "create-proj"));
         
-        InputExpectation sourceFile = new InputExpectation("source file", true);
+        InputExpectation sourceFile = new InputExpectation("source file", optional: true);
 
         InputExpectation projFile = new InputExpectation("proj file location");
         
@@ -72,8 +72,8 @@ Modes:
             }
         });
 
-        PossibilitiesExpectation outputType = parser.AddOption(
-            new PossibilitiesExpectation("executable", "executable"/*, "package", "llvm-ll", "llvm-bc"*/), 
+        PossibilitiesExpectation outputTypeInput = parser.AddOption(
+            new PossibilitiesExpectation("executable", "executable"/*, "package"*/, "llvm-ll", "llvm-bc"), 
             "The output file type", "t", "output-type"
         );
 
@@ -97,17 +97,16 @@ Modes:
         string curDirectory = $".{Path.DirectorySeparatorChar}";
         string input = curDirectory + (sourceFile.Matched ?? "entry");
 
-        int resultCode = 0;
-
         if (mode.Value() == "compile") {
             TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
             parser.ParseAdditionalOptions(proj.CommandOptions);
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
             
-            CacheMode cacheMode = EPSLCACHE.ParseCacheMode(cacheModeInput.Value());
-            OptimizationLevel optimizationLevel = optimizationInput.ToEnum<OptimizationLevel>();
+            CacheMode cacheMode = EnumHelpers.ParseCacheMode(cacheModeInput.Value());
+            OptimizationLevel optimizationLevel = EnumHelpers.ParseOptimizationLevel(optimizationInput.Value());
+            OutputType outputType = EnumHelpers.ParseOutputType(outputTypeInput.Value());
 
-            if (outputType.Value() == "package") {
+            if (outputTypeInput.Value() == "package") {
                 linkBuiltins = false;
                 linkLibraries = false;
             }
@@ -117,63 +116,46 @@ Modes:
             TestResult(builder.RegisterLibraries(input, libraries));
             TestResult(builder.LoadEPSLCACHE(input, cacheMode, out EPSLCACHE cache));
 
-            BuildSettings settings = new BuildSettings(input, proj, cache, cacheMode, optimizationLevel, linkBuiltins, linkLibraries, clangOptions.MatchedSegments);
+            if (EPSLCACHE.MustDiscardCache(cache.LastOutputType, outputType)) {
+                Log.Info($"Cached data generated with the previous output type, {cache.LastOutputType.ToString()}, cannot be used with the current output type, {outputType.ToString()}. As such, all cached data is being disregarded.");
+                cacheMode = CacheMode.DONTLOAD;
+            }
 
-            resultCode = DoCompilation(
-                builder, settings, outputType.Value(),
-                outputFile.IsPresent ? outputFile.Matched : null
+            string providedOutput = outputFile.IsPresent ? outputFile.Matched : null;
+            
+            BuildSettings settings = new BuildSettings(
+                input, providedOutput, proj, cache, cacheMode, optimizationLevel, outputType,
+                linkBuiltins, linkLibraries, clangOptions.MatchedSegments
             );
+
+            TestResult(builder.Build(settings));
         } else if (mode.Value() == "teardown") {
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
             
             TestResult(builder.LoadEPSLCACHE(input, CacheMode.AUTO, out EPSLCACHE cache));
 
             TestResult(builder.Teardown(cache));
-
-            resultCode = 0;
         } else if (mode.Value() == "create-proj") {
             TestResult(builder.CreateEPSLPROJ(projFile.Matched));
-
-            resultCode = 0;
         } else {
             throw new InvalidOperationException();
         }
 
         TestResult(builder.WipeTempDir());
-
-        return resultCode;
     }
 
-    static int DoCompilation(Builder builder, BuildSettings settings, string outputType, string providedOutput) {
-        string extension;
-        switch (outputType) {
-            case "llvm-bc":
-                extension = ".bc";
-                break;
-            case "llvm-ll":
-                extension = ".ll";
-                break;
-            case "executable":
-                extension = null;
-                break;
-            case "package":
-                extension = null;
-                break;
-            default:
-                throw new InvalidOperationException();
-        }
-
-        TestResult(builder.GetOutputLocation(settings.InputPath, extension,
+    /*
+    static void DoCompilation(Builder builder, BuildSettings settings, string providedOutput) {
+        TestResult(builder.GetOutputLocation(settings,
             out string defaultOutput, out string outputName));
         string output = providedOutput ?? defaultOutput;
 
-        TestResult(builder.Build(settings, out BuildInfo buildInfo));
+        /*
         if (outputType == "executable") {
             TestResult(builder.ToExecutable(buildInfo));
         }
 
         if (outputType == "package") {
-            /*
             TestResult(builder.ReadyPackageFolder(output));
             
             try {
@@ -198,7 +180,7 @@ Modes:
 
             string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");
             TestResult(builder.SaveEPSLSPEC(epslspecDest, newEPSLSPEC));
-            */
+            * /
             throw new NotImplementedException();
         } else {
             string resultSource;
@@ -231,9 +213,17 @@ Modes:
                 return 1;
             }
         }
+        * /
 
-        return 0;
+        switch (settings.Output_Type) {
+        case OutputType.EXECUTABLE:
+            TestResult(builder.ToExecutable(buildInfo, output));
+            break;
+        default:
+            throw new InvalidOperationException();
+        }
     }
+    */
 
     static void TestResult(ResultStatus result) {
         if (result != ResultStatus.GOOD) {

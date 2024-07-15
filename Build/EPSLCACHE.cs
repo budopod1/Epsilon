@@ -7,6 +7,7 @@ public class EPSLCACHE {
     public string Path;
     public long? CompileStartTime = null;
     public List<string> EPSLSPECS = new List<string>();
+    public OutputType LastOutputType;
 
     public static IJSONShape Shape { get => _Shape; }
     static IJSONShape _Shape;
@@ -15,19 +16,22 @@ public class EPSLCACHE {
         _Shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
             {"compile_start_time_1", new JSONNullableShape(new JSONIntShape())},
             {"compile_start_time_2", new JSONNullableShape(new JSONIntShape())},
-            {"epslspecs", new JSONListShape(new JSONStringShape())}
+            {"epslspecs", new JSONListShape(new JSONStringShape())},
+            {"output_type", new JSONWholeShape()}
         });
     }
 
-    public EPSLCACHE(string path, long? compileStartTime, List<string> epslspecs, bool isFromFile) {
+    public EPSLCACHE(string path, long? compileStartTime, List<string> epslspecs, OutputType outputType, bool isFromFile) {
         Path = path;
         CompileStartTime = compileStartTime;
         EPSLSPECS = epslspecs;
         IsFromFile = isFromFile;
+        LastOutputType = outputType;
     }
 
     public EPSLCACHE(string path) {
         Path = path;
+        LastOutputType = OutputType.NONE;
     }
 
     public static EPSLCACHE FromText(string path, IJSONValue jsonValue) {
@@ -38,22 +42,15 @@ public class EPSLCACHE {
         List<string> epslspecs = json["epslspecs"].IterList().Select(
             epslspec => epslspec.GetString()
         ).ToList();
-        return new EPSLCACHE(path, compileStartTime, epslspecs, isFromFile: true);
+        OutputType outputType = (OutputType)json["output_type"].GetInt();
+        return new EPSLCACHE(path, compileStartTime, epslspecs, outputType, isFromFile: true);
     }
 
-    public static CacheMode ParseCacheMode(string txt) {
-        switch (txt) {
-            case "dont-use":
-                return CacheMode.DONTUSE;
-            case "dont-load":
-                return CacheMode.DONTLOAD;
-            case "auto":
-                return CacheMode.AUTO;
-            case "always":
-                return CacheMode.ALWAYS;
-            default:
-                throw new InvalidOperationException();
-        }
+    public static bool MustDiscardCache(OutputType old, OutputType new_) {
+        if (old == OutputType.NONE) return false;
+        if (old == new_) return true;
+        if (old.DoesRequireLLVM() != new_.DoesRequireLLVM()) return false;
+        return true;
     }
 
     public void ToFile() {
@@ -63,6 +60,7 @@ public class EPSLCACHE {
         obj["compile_start_time_2"] = JSONInt.OrNull(b);
         obj["epslspecs"] = new JSONList(EPSLSPECS.Select(
             epslspec => new JSONString(epslspec)));
+        obj["output_type"] = new JSONInt((int)LastOutputType);
         BJSONEnv.WriteFile(Path, obj);
     }
 }

@@ -18,12 +18,12 @@ public static class Extensions {
         return result;
     }
 
-    public static T GetOr<T>(this IList<T> list, int idx, T default_) {
+    public static T GetOr<T>(this IList<T> list, int idx, T default_=default(T)) {
         if (idx >= list.Count) return default_;
         return list[idx];
     }
 
-    public static TValue GetOr<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue default_) {
+    public static TValue GetOr<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue default_=default(TValue)) {
         if (dict.TryGetValue(key, out TValue val)) {
             return val;
         } else {
