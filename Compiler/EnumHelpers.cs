@@ -3,16 +3,16 @@ using System;
 public static class EnumHelpers {
     public static CacheMode ParseCacheMode(string txt) {
         switch (txt) {
-            case "dont-use":
-                return CacheMode.DONTUSE;
-            case "dont-load":
-                return CacheMode.DONTLOAD;
-            case "auto":
-                return CacheMode.AUTO;
-            case "always":
-                return CacheMode.ALWAYS;
-            default:
-                throw new InvalidOperationException();
+        case "dont-use":
+            return CacheMode.DONTUSE;
+        case "dont-load":
+            return CacheMode.DONTLOAD;
+        case "auto":
+            return CacheMode.AUTO;
+        case "always":
+            return CacheMode.ALWAYS;
+        default:
+            throw new InvalidOperationException();
         }
     }
 

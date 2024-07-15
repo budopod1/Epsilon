@@ -428,12 +428,12 @@ public class Builder {
     DispatchedFile DispatchPath(BuildSettings settings, string path, string oldCompilerPath=null, SPECFileCompiler oldCompiler=null) {
         string extension = Path.GetExtension(path);
         switch (extension) {
-            case ".epslspec":
-                return DispatchEPSLSPEC(settings, path, oldCompilerPath, oldCompiler);
-            case ".epsl":
-                return DispatchEPSL(settings, path, oldCompilerPath, oldCompiler);
-            default:
-                return null;
+        case ".epslspec":
+            return DispatchEPSLSPEC(settings, path, oldCompilerPath, oldCompiler);
+        case ".epsl":
+            return DispatchEPSL(settings, path, oldCompilerPath, oldCompiler);
+        default:
+            return null;
         }
     }
 

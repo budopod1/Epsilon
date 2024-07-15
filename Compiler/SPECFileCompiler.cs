@@ -98,48 +98,48 @@ public class SPECFileCompiler : IFileCompiler {
                 string type = sobj["type"].GetString();
                 Dictionary<string, IJSONShape> fields;
                 switch (type) {
-                    case "name":
-                        fields = new Dictionary<string, IJSONShape> {
-                            {"name", new JSONStringShape()}
-                        };
-                        break;
-                    case "text":
-                        fields = new Dictionary<string, IJSONShape> {
-                            {"text", new JSONStringShape()}
-                        };
-                        break;
-                    case "argument":
-                        fields = new Dictionary<string, IJSONShape> {
-                            {"name", new JSONStringShape()},
-                            {"type_", new JSONStringShape()}
-                        };
-                        break;
-                    default:
-                        throw new InvalidJSONException(
-                            "Invalid type of template segment", 
-                            sobj.GetJSON()
-                        );
+                case "name":
+                    fields = new Dictionary<string, IJSONShape> {
+                        {"name", new JSONStringShape()}
+                    };
+                    break;
+                case "text":
+                    fields = new Dictionary<string, IJSONShape> {
+                        {"text", new JSONStringShape()}
+                    };
+                    break;
+                case "argument":
+                    fields = new Dictionary<string, IJSONShape> {
+                        {"name", new JSONStringShape()},
+                        {"type_", new JSONStringShape()}
+                    };
+                    break;
+                default:
+                    throw new InvalidJSONException(
+                        "Invalid type of template segment", 
+                        sobj.GetJSON()
+                    );
                 }
 
                 sobj = sobj.ToShape(new JSONObjectShape(fields));
 
                 switch (type) {
-                    case "name":
-                        string name1 = sobj["name"].GetString();
-                        segments.Add(new UnitPatternSegment<string>(typeof(Name), name1));
-                        break;
-                    case "text":
-                        string text = sobj["text"].GetString();
-                        segments.Add(new TextPatternSegment(text));
-                        break;
-                    case "argument":
-                        string name2 = sobj["name"].GetString();
-                        Type_ type_ = MakeSPECType_(sobj["type_"]);
-                        FunctionArgument argument = new FunctionArgument(name2, type_);
-                        arguments.Add(argument);
-                        segments.Add(new FuncArgPatternSegment());
-                        argumentIdxs.Add(i);
-                        break;
+                case "name":
+                    string name1 = sobj["name"].GetString();
+                    segments.Add(new UnitPatternSegment<string>(typeof(Name), name1));
+                    break;
+                case "text":
+                    string text = sobj["text"].GetString();
+                    segments.Add(new TextPatternSegment(text));
+                    break;
+                case "argument":
+                    string name2 = sobj["name"].GetString();
+                    Type_ type_ = MakeSPECType_(sobj["type_"]);
+                    FunctionArgument argument = new FunctionArgument(name2, type_);
+                    arguments.Add(argument);
+                    segments.Add(new FuncArgPatternSegment());
+                    argumentIdxs.Add(i);
+                    break;
                 }
             }
             string id = func["id"].GetString();
@@ -244,25 +244,25 @@ public class SPECFileCompiler : IFileCompiler {
         Dictionary<string, IJSONShape> fields;
         
         switch (type) {
-            case "constant":
-                fields = new Dictionary<string, IJSONShape> {
-                    {"config", new JSONStringShape()}
-                };
-                break;
-            default:
-                throw new InvalidJSONException(
-                    "Invalid type of clang config", 
-                    obj.GetJSON()
-                );
+        case "constant":
+            fields = new Dictionary<string, IJSONShape> {
+                {"config", new JSONStringShape()}
+            };
+            break;
+        default:
+            throw new InvalidJSONException(
+                "Invalid type of clang config", 
+                obj.GetJSON()
+            );
         }
 
         obj = obj.ToShape(new JSONObjectShape(fields));
 
         switch (type) {
-            case "constant":
-                return new ConstantClangConfig(obj["config"].GetString());
-            default:
-                throw new InvalidOperationException();
+        case "constant":
+            return new ConstantClangConfig(obj["config"].GetString());
+        default:
+            throw new InvalidOperationException();
         }
     }
 

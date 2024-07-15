@@ -70,26 +70,26 @@ public class For : IParentToken, ILoop, IVerifier, ISerializableToken {
             Type_ requiredType_ = Type_.Any();
             string clauseName = clause.GetName();
             switch (clauseName) {
-                case "to":
-                    if (isEnumeratingLoop) {
-                        throw new SyntaxErrorException(
-                            "Enumerating for loops cannot have a to clause", clause
-                        );
-                    }
-                    requiredType_ = isInLoop ? new Type_("W") : type_;
-                    break;
-                case "from":
-                    requiredType_ = isInLoop ? new Type_("W") : type_;
-                    break;
-                case "step":
-                    requiredType_ = new Type_("Z");
-                    break;
-                case "in":
-                    requiredType_ = type_.ArrayOf();
-                    break;
-                case "enumerating":
-                    requiredType_ = Type_.Any().ArrayOf();
-                    break;
+            case "to":
+                if (isEnumeratingLoop) {
+                    throw new SyntaxErrorException(
+                        "Enumerating for loops cannot have a to clause", clause
+                    );
+                }
+                requiredType_ = isInLoop ? new Type_("W") : type_;
+                break;
+            case "from":
+                requiredType_ = isInLoop ? new Type_("W") : type_;
+                break;
+            case "step":
+                requiredType_ = new Type_("Z");
+                break;
+            case "in":
+                requiredType_ = type_.ArrayOf();
+                break;
+            case "enumerating":
+                requiredType_ = Type_.Any().ArrayOf();
+                break;
             }
             if (!valType_.IsConvertibleTo(requiredType_)) {
                 throw new SyntaxErrorException(
