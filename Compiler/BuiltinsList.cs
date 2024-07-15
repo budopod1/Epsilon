@@ -780,7 +780,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "unwrap")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("optional", Type_.Any().OptionalOf(), true),
+                new FunctionArgument("optional", Type_.Any().OptionalOf(), exactType_Match: true),
             }, "builtin61", (List<Type_> types_) => types_[0].GetGeneric(0),
             FunctionSource.Builtin
         ), new ExternalFunction(
@@ -897,7 +897,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "inner")
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
-                new FunctionArgument("optional", Type_.Any().OptionalOf(), true),
+                new FunctionArgument("optional", Type_.Any().OptionalOf(), exactType_Match: true),
             }, "builtin72", (List<Type_> types_) => types_[0].GetGeneric(0),
             FunctionSource.Builtin
         ), new ExternalFunction(
@@ -909,7 +909,7 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("a", Type_.Any().OptionalOf(), true),
+                new FunctionArgument("a", Type_.Any().OptionalOf(), exactType_Match: true),
                 new FunctionArgument("b", Type_.Any()),
             }, "builtin73", (List<Type_> types_) => {
                 if (types_[1].GetBaseType_().GetName() == "Optional") {
@@ -937,7 +937,7 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
-                new FunctionArgument("a", Type_.Any().OptionalOf(), true),
+                new FunctionArgument("a", Type_.Any().OptionalOf(), exactType_Match: true),
                 new FunctionArgument("b", Type_.Any()),
             }, "builtin74", (List<Type_> types_) => {
                 if (types_[1].GetBaseType_().GetName() == "Optional") {

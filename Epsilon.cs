@@ -145,23 +145,13 @@ Modes:
     }
 
     /*
-    static void DoCompilation(Builder builder, BuildSettings settings, string providedOutput) {
-        TestResult(builder.GetOutputLocation(settings,
-            out string defaultOutput, out string outputName));
-        string output = providedOutput ?? defaultOutput;
-
-        /*
-        if (outputType == "executable") {
-            TestResult(builder.ToExecutable(buildInfo));
-        }
-
         if (outputType == "package") {
             TestResult(builder.ReadyPackageFolder(output));
             
             try {
                 string bitcodeSrc = Utils.JoinPaths(
                     Utils.TempDir(), "code-linked.bc");
-                File.Copy(bitcodeSrc, Utils.JoinPaths(output, outputName+".bc"), true);
+                File.Copy(bitcodeSrc, Utils.JoinPaths(output, outputName+".bc"), overwrite: true);
             } catch (IOException) {
                 ArgumentParser.DisplayProblem("Could not write specified output file");
                 return 1;
@@ -182,47 +172,7 @@ Modes:
             TestResult(builder.SaveEPSLSPEC(epslspecDest, newEPSLSPEC));
             * /
             throw new NotImplementedException();
-        } else {
-            string resultSource;
-
-            switch (outputType) {
-                case "llvm-bc":
-                    resultSource = "code-linked.bc";
-                    break;
-                case "llvm-ll":
-                    string bcFile = Utils.JoinPaths(
-                        Utils.TempDir(), "code-linked.bc");
-                    Utils.RunCommand("llvm-dis", new List<string> {
-                        "--", bcFile
-                    });
-                    resultSource = "code-linked.ll";
-                    break;
-                case "executable":
-                    resultSource = "executable";
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            try {
-                string absoluteResultSource = Utils.JoinPaths(
-                    Utils.TempDir(), resultSource);
-                File.Copy(absoluteResultSource, output, true);
-            } catch (IOException) {
-                ArgumentParser.DisplayProblem("Could not write specified output file");
-                return 1;
-            }
         }
-        * /
-
-        switch (settings.Output_Type) {
-        case OutputType.EXECUTABLE:
-            TestResult(builder.ToExecutable(buildInfo, output));
-            break;
-        default:
-            throw new InvalidOperationException();
-        }
-    }
     */
 
     static void TestResult(ResultStatus result) {

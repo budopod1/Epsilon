@@ -203,7 +203,7 @@ public class EPSLFileCompiler : IFileCompiler {
         CreateLLVMIR();
 
         IR = destPath + ".ll";
-        File.Copy(Utils.JoinPaths(Utils.TempDir(), "code.ll"), IR, true);
+        File.Copy(Utils.JoinPaths(Utils.TempDir(), "code.ll"), IR, overwrite: true);
     }
 
     public string GetIR() {
@@ -461,7 +461,7 @@ public class EPSLFileCompiler : IFileCompiler {
     Program ConvertFunctionBlocks(Program program) {
         IMatcher matcher = new PatternMatcher(
             new List<IPatternSegment> {
-                new TypePatternSegment(typeof(Block), true)
+                new TypePatternSegment(typeof(Block), exact: true)
             }, new FuncPatternProcessor<List<IToken>>(tokens => {
                 return new List<IToken> {new CodeBlock(
                     program, ((Block)tokens[0]).GetTokens()

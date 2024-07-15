@@ -25,7 +25,8 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop, IFunctionTe
         if (constantT == null) return false;
         if (!constantT.GetValue().IsTruthy()) return false;
         TraverseConfig config = new TraverseConfig(
-            TraverseMode.DEPTH, false, false, token => token is ILoop
+            TraverseMode.DEPTH, invert: false, yieldFirst: false, 
+            avoidTokens: token => token is ILoop
         );
         foreach (Break break_ in TokenUtils.TraverseFind<Break>(o2, config)) {
             return false;

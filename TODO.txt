@@ -13,7 +13,7 @@ TODO:
 * fix package compilation target
 * add `Struct` type that's treated as a superclass of all structs
 * add ability to import C methods and structs without having to write an EPSLSPEC
-* reduce usage of bools as function parameters with no context (ack '(?<!while |if |\w{0,99}[Bb]ool\w{0,99})\((true|false)(,|\))|, (true|false)(,|\))')
+* remove usage of bools as function parameters with no context (ack '(?<!while |if |\w{0,99}[Bb]ool\w{0,99})\(([Tt]rue|[Ff]alse)(,|\))|, ([Tt]rue|[Ff]alse)(,|\))') in Python code
 * move enum-related methods to EnumHelpers class
 * remove trailing whitespace
 * change style: don't indent cases in switch

@@ -483,7 +483,8 @@ public class Builder {
     }
 
     void RecompileFile(BuildSettings settings, FileTree file, string projDirectory) {
-        DispatchedFile dispatched = DispatchPartialPath(settings, file.PartialPath, projDirectory, false);
+        DispatchedFile dispatched = DispatchPartialPath(
+            settings, file.PartialPath, projDirectory, canBeSPEC: false);
         file.Compiler = dispatched.Compiler;
         file.Path_ = dispatched.Path;
         file.Text = file.Compiler.GetText();
@@ -667,7 +668,8 @@ public class Builder {
             file.IR = null;
             file.Obj = objFile;
             
-            file.Intermediate = new IntermediateFile(IntermediateFile.IntermediateType.Obj, objFile, true);
+            file.Intermediate = new IntermediateFile(
+                IntermediateFile.IntermediateType.Obj, objFile, isInUserDir: true);
         }
     }
 
@@ -714,7 +716,7 @@ public class Builder {
             if (intermediate.IsInUserDir) {
                 string extension = Path.GetExtension(intermediate.Path);
                 string newPath = Utils.JoinPaths(Utils.TempDir(), $"{name}{i++}{extension}");
-                File.Copy(intermediate.Path, newPath, true);
+                File.Copy(intermediate.Path, newPath, overwrite: true);
                 yield return newPath;
             } else {
                 yield return intermediate.Path;
