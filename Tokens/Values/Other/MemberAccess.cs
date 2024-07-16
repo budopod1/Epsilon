@@ -11,7 +11,6 @@ public class MemberAccess : UnaryOperation<IValueToken>, IAssignableValue, IVeri
     }
 
     public Type_ GetType_() {
-        Program program = TokenUtils.GetParentOfType<Program>(this);
         Type_ type_ = o.GetType_();
         Struct struct_ = StructsCtx.GetStructFromType_(structType_);
         if (struct_ == null)

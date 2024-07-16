@@ -15,6 +15,5 @@ TODO:
 * remove usage of bools as function parameters with no context (ack '(?<!while |if |\w{0,99}[Bb]ool\w{0,99})\(([Tt]rue|[Ff]alse)(,|\))|, ([Tt]rue|[Ff]alse)(,|\))') in Python code
 * each individual ClangConfig should be able to supply multiple arguments
 * reenable clang config
-* move enum-related methods to EnumHelpers class
 * remove trailing whitespace
 * split IntermediateFile.IntermediateType.IR into IntermediateFile.IntermediateType.LL and IntermediateFile.IntermediateType.BC? the first of which is assumed to not be optimized already, the second of which is

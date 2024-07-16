@@ -113,7 +113,7 @@ Modes:
             TestResult(builder.RegisterLibraries(input, libraries));
             TestResult(builder.LoadEPSLCACHE(input, cacheMode, out EPSLCACHE cache));
 
-            if (EPSLCACHE.MustDiscardCache(cache.LastOutputType, outputType)) {
+            if (cacheMode > CacheMode.DONTLOAD && EPSLCACHE.MustDiscardCache(cache.LastOutputType, outputType)) {
                 Log.Info($"Cached data generated with the previous output type, {cache.LastOutputType.ToString()}, cannot be used with the current output type, {outputType.ToString()}. As such, all cached data is being disregarded.");
                 cacheMode = CacheMode.DONTLOAD;
             }

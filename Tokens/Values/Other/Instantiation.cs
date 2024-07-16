@@ -71,7 +71,6 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
     }
 
     public void Verify() {
-        Program program = TokenUtils.GetParentOfType<Program>(this);
         Struct struct_ = StructsCtx.GetStructFromType_(type_);
         List<Field> fields = struct_.GetFields().ToList();
         if (fields.Count != values.Count) {

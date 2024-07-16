@@ -861,7 +861,6 @@ public class Builder {
         if (oneLine) {
             Console.WriteLine();
 
-            string linenum = startLine.ToString();
             string line = lines[startLine-1];
             while (line.Length > 0 && Utils.Whitespace.Contains(line[0])) {
                 line = line.Substring(1);
