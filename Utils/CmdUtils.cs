@@ -53,7 +53,7 @@ public static class CmdUtils {
         List<string> llvm = new List<string>();
         
         foreach (string source in sources) {
-            switch (Path.GetExtension(source)) {
+            switch (Utils.GetExtension(source)) {
             case ".ll":
             case ".bc":
                 llvm.Add(source);

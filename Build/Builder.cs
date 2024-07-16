@@ -312,7 +312,7 @@ public class Builder {
 
     public string GetOutputLocation(BuildSettings settings, out string outputName) {
         string outputDir = Utils.GetFullPath(Utils.GetDirectoryName(settings.InputPath));
-        outputName = Utils.SetExtension(Utils.GetFileName(settings.InputPath), null);
+        outputName = Utils.RemoveExtension(Utils.GetFileName(settings.InputPath));
         if (outputName == "entry") outputName = "result";
         string extension = settings.Output_Type.GetExtension();
         string outputFile = Utils.SetExtension(outputName, extension);
@@ -388,8 +388,8 @@ public class Builder {
         currentFile = path;
         VerifySPECDependencies(path, obj);
         return new DispatchedFile(
-            new SPECFileCompiler(stemmed, fileText, obj), path, null, null,
-            generatedEPSLSPEC
+            new SPECFileCompiler(stemmed, fileText, obj), path,
+            generatedSPEC: generatedEPSLSPEC
         );
     }
 
@@ -425,7 +425,7 @@ public class Builder {
     }
 
     DispatchedFile DispatchPath(BuildSettings settings, string path, string oldCompilerPath=null, SPECFileCompiler oldCompiler=null) {
-        string extension = Path.GetExtension(path);
+        string extension = Utils.GetExtension(path);
         switch (extension) {
         case ".epslspec":
             return DispatchEPSLSPEC(settings, path, oldCompilerPath, oldCompiler);
@@ -443,7 +443,7 @@ public class Builder {
             try {
                 anyLocation = false;
                 foreach (string location in FileLocations(partialPath, projDirectory)) {
-                    if (!canBeSPEC && Path.GetExtension(location) == ".epslspec")
+                    if (!canBeSPEC && Utils.GetExtension(location) == ".epslspec")
                         continue;
                     dispatched = DispatchPath(settings, location);
                     if (dispatched != null) {
@@ -709,7 +709,7 @@ public class Builder {
         int i = 0;
         foreach (IntermediateFile intermediate in intermediates) {
             if (!doesSaveCache(settings) && intermediate.IsInUserDir) {
-                string extension = Path.GetExtension(intermediate.Path);
+                string extension = Utils.GetExtension(intermediate.Path);
                 string newPath = Utils.JoinPaths(Utils.TempDir(), $"{name}{i++}{extension}");
                 File.Copy(intermediate.Path, newPath, overwrite: true);
                 yield return newPath;
@@ -942,11 +942,13 @@ public class Builder {
         IEnumerable<string> unlinkedImports = buildInfo.UnlinkedFiles
             .Select(file => file.PartialPath);
 
+        string sourceFilename = null;
+
         EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
         EPSLSPEC newEPSLSPEC = new EPSLSPEC(
             entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
             buildInfo.ClangConfig, unlinkedImports, 
-            irFilename, objFilename, null, FileSourceType.Library,
+            irFilename, objFilename, sourceFilename, FileSourceType.Library,
             entryEPSLSPEC.IDPath
         );
 

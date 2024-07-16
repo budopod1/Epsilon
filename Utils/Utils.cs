@@ -166,9 +166,9 @@ public static class Utils {
         }
     }
 
-    public static string RemoveExtension(string path) {
+    public static string SetExtension(string path, string extension) {
         try {
-            return Path.ChangeExtension(path, null);
+            return Path.ChangeExtension(path, extension);
         } catch (ArgumentNullException e) {
             throw e;
         } catch (ArgumentException e) {
@@ -176,9 +176,13 @@ public static class Utils {
         }
     }
 
-    public static string SetExtension(string path, string extension) {
+
+    public static string RemoveExtension(string path) {
+        return SetExtension(path, extension: null);
+    }
+    public static string GetExtension(string path) {
         try {
-            return Path.ChangeExtension(path, extension);
+            return Path.GetExtension(path);
         } catch (ArgumentNullException e) {
             throw e;
         } catch (ArgumentException e) {

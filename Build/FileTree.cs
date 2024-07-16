@@ -68,11 +68,11 @@ public class FileTree {
     public string Obj;
 
     public bool IRIsInUserDir {
-        get => IR != null && SuggestedIntermediatePath == Path.ChangeExtension(IR, null);
+        get => IR != null && SuggestedIntermediatePath == Utils.RemoveExtension(IR);
     }
 
     public bool ObjIsInUserDir {
-        get => Obj != null && SuggestedIntermediatePath == Path.ChangeExtension(Obj, null);
+        get => Obj != null && SuggestedIntermediatePath == Utils.RemoveExtension(Obj);
     }
 
     public IntermediateFile Intermediate;
