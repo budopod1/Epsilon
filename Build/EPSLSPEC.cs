@@ -115,7 +115,7 @@ public class EPSLSPEC {
                     sobj["type"] = new JSONString("text");
                     string text = ((TextPatternSegment)segment).GetText();
                     sobj["text"] = new JSONString(text);
-                } else if (segment is TypePatternSegment) {
+                } else if (segment is FuncArgPatternSegment) {
                     sobj["type"] = new JSONString("argument");
                     FunctionArgument argument = arguments[argumentCounter++];
                     sobj["name"] = new JSONString(argument.GetName());

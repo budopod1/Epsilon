@@ -24,6 +24,10 @@ public static class EnumHelpers {
             return OutputType.LLVMLL;
         case "llvm-bc":
             return OutputType.LLVMBC;
+        case "package-both":
+            return OutputType.PACKAGEBOTH;
+        case "package-obj":
+            return OutputType.PACKAGEOBJ;
         default:
             throw new InvalidOperationException();
         }
@@ -39,6 +43,10 @@ public static class EnumHelpers {
             return "llvm-ll";
         case OutputType.LLVMBC:
             return "llvm-bc";
+        case OutputType.PACKAGEBOTH:
+            return "package-both";
+        case OutputType.PACKAGEOBJ:
+            return "package-obj";
         default:
             throw new InvalidOperationException();
         }
@@ -52,6 +60,10 @@ public static class EnumHelpers {
             return "ll";
         case OutputType.LLVMBC:
             return "bc";
+        case OutputType.PACKAGEBOTH:
+            return null;
+        case OutputType.PACKAGEOBJ:
+            return null;
         default:
             throw new InvalidOperationException();
         }
@@ -65,6 +77,44 @@ public static class EnumHelpers {
             return true;
         case OutputType.LLVMBC:
             return true;
+        case OutputType.PACKAGEBOTH:
+            return true;
+        case OutputType.PACKAGEOBJ:
+            return false;
+        default:
+            throw new InvalidOperationException();
+        }
+    }
+
+    public static bool ShouldLinkBuiltins(this OutputType outputType) {
+        switch (outputType) {
+        case OutputType.EXECUTABLE:
+            return true;
+        case OutputType.LLVMLL:
+            return true;
+        case OutputType.LLVMBC:
+            return true;
+        case OutputType.PACKAGEBOTH:
+            return false;
+        case OutputType.PACKAGEOBJ:
+            return false;
+        default:
+            throw new InvalidOperationException();
+        }
+    }
+
+    public static bool ShouldLinkLibraries(this OutputType outputType) {
+        switch (outputType) {
+        case OutputType.EXECUTABLE:
+            return true;
+        case OutputType.LLVMLL:
+            return true;
+        case OutputType.LLVMBC:
+            return true;
+        case OutputType.PACKAGEBOTH:
+            return false;
+        case OutputType.PACKAGEOBJ:
+            return false;
         default:
             throw new InvalidOperationException();
         }

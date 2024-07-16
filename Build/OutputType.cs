@@ -5,7 +5,8 @@ public enum OutputType {
     EXECUTABLE,
     LLVMLL,
     LLVMBC,
-    // PACKAGE,
+    PACKAGEBOTH,
+    PACKAGEOBJ,
     // OBJECT,
     // SHARED_OBJECT
 }

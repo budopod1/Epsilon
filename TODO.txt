@@ -10,10 +10,13 @@ TODO:
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `.so` compilation target
 * add `.o` compilation target
-* fix package compilation target
+* move Utils.RunCommand to CmdUtils.Run
 * add `Struct` type that's treated as a superclass of all structs
 * add ability to import C methods and structs without having to write an EPSLSPEC
 * remove usage of bools as function parameters with no context (ack '(?<!while |if |\w{0,99}[Bb]ool\w{0,99})\(([Tt]rue|[Ff]alse)(,|\))|, ([Tt]rue|[Ff]alse)(,|\))') in Python code
+* remove usage of nulls as function parameters with no context where possible (ack '(\(|, )(null)(,|\))' --ignore-file=ext:epsl)
+* each individual ClangConfig should be able to supply multiple arguments
+* reenable clang config
 * move enum-related methods to EnumHelpers class
 * remove trailing whitespace
 * split IntermediateFile.IntermediateType.IR into IntermediateFile.IntermediateType.LL and IntermediateFile.IntermediateType.BC? the first of which is assumed to not be optimized already, the second of which is

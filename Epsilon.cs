@@ -72,10 +72,9 @@ Modes:
             }
         });
 
-        PossibilitiesExpectation outputTypeInput = parser.AddOption(
-            new PossibilitiesExpectation("executable", "executable"/*, "package"*/, "llvm-ll", "llvm-bc"), 
-            "The output file type", "t", "output-type"
-        );
+        PossibilitiesExpectation outputTypeInput = parser.AddOption(new PossibilitiesExpectation(
+            "executable", "executable", "llvm-ll", "llvm-bc", "package-both", "package-obj"
+        ), "The output file type", "t", "output-type");
 
         PossibilitiesExpectation verbosity = parser.AddOption(
             new PossibilitiesExpectation((int)LogLevel.NONE, typeof(LogLevel)), 
@@ -106,10 +105,8 @@ Modes:
             OptimizationLevel optimizationLevel = EnumHelpers.ParseOptimizationLevel(optimizationInput.Value());
             OutputType outputType = EnumHelpers.ParseOutputType(outputTypeInput.Value());
 
-            if (outputTypeInput.Value() == "package") {
-                linkBuiltins = false;
-                linkLibraries = false;
-            }
+            linkBuiltins = outputType.ShouldLinkBuiltins();
+            linkLibraries = outputType.ShouldLinkLibraries();
 
             libraries.AddRange(proj.Libraries);
 
@@ -143,37 +140,6 @@ Modes:
 
         TestResult(builder.WipeTempDir());
     }
-
-    /*
-        if (outputType == "package") {
-            TestResult(builder.ReadyPackageFolder(output));
-            
-            try {
-                string bitcodeSrc = Utils.JoinPaths(
-                    Utils.TempDir(), "code-linked.bc");
-                File.Copy(bitcodeSrc, Utils.JoinPaths(output, outputName+".bc"), overwrite: true);
-            } catch (IOException) {
-                ArgumentParser.DisplayProblem("Could not write specified output file");
-                return 1;
-            }
-
-            IEnumerable<string> unlinkedImports = buildInfo.UnlinkedFiles
-                .Select(file => file.PartialPath);
-
-            EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
-            EPSLSPEC newEPSLSPEC = new EPSLSPEC(
-                entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
-                buildInfo.ClangConfig, unlinkedImports, 
-                outputName+".bc", null, FileSourceType.Library,
-                entryEPSLSPEC.IDPath
-            );
-
-            string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");
-            TestResult(builder.SaveEPSLSPEC(epslspecDest, newEPSLSPEC));
-            * /
-            throw new NotImplementedException();
-        }
-    */
 
     static void TestResult(ResultStatus result) {
         if (result != ResultStatus.GOOD) {

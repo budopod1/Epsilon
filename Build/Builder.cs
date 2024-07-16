@@ -141,31 +141,21 @@ public class Builder {
         return status2;
     }
 
-    public ResultStatus ReadyPackageFolder(string relFolder) {
-        return RunWrapped(() => {
-            string folder = Utils.GetFullPath(relFolder);
-            if (Directory.Exists(folder)) {
-                string[] subdirectories = Directory.GetDirectories(folder);
-                if (subdirectories.Length > 0) {
-                    throw new IOException("Cannot output package to folder with subdirectories");
-                }
-                string[] files = Directory.GetFiles(folder);
-                foreach (string file in files) {
-                    File.Delete(file);
-                }
-            } else if (File.Exists(folder)) {
-                throw new IOException($"File already exists at specified package output location, {folder}");
-            } else {
-                Directory.CreateDirectory(folder);
+    void ReadyPackageFolder(string folder) {
+        if (Directory.Exists(folder)) {
+            string[] subdirectories = Directory.GetDirectories(folder);
+            if (subdirectories.Length > 0) {
+                throw new IOException("Cannot output package to folder with subdirectories");
             }
-        });
-    }
-
-    public ResultStatus SaveEPSLSPEC(string path, EPSLSPEC epslspec) {
-        return RunWrapped(() => {
-            JSONObject json = epslspec.ToJSON(this);
-            BJSONEnv.WriteFile(path, json);
-        });
+            string[] files = Directory.GetFiles(folder);
+            foreach (string file in files) {
+                File.Delete(file);
+            }
+        } else if (File.Exists(folder)) {
+            throw new IOException($"File already exists at specified package output location, {folder}");
+        } else {
+            Directory.CreateDirectory(folder);
+        }
     }
 
     public ResultStatus RegisterLibraries(string input, IEnumerable<string> relPaths) {
@@ -190,7 +180,7 @@ public class Builder {
         
         return RunWrapped(() => {
             string defaultOutput = GetOutputLocation(settings, out string outputName);
-            string output = settings.ProvidedOutput ?? defaultOutput;
+            string output = Utils.GetFullPath(settings.ProvidedOutput ?? defaultOutput);
             
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
@@ -222,14 +212,14 @@ public class Builder {
             SetupOldCompilers();
             Log.Status("Confirming dependencies");
             ConfirmDependencies(settings, projectDirectory);
-            Log.Status("Finishing individual file compilation...");
+            Log.Status("Finishing individual file compilation");
             FinishCompilations(settings, out List<FileTree> unlinkedFiles);
-            Log.Status("Getting intermediates...");
+            Log.Status("Getting intermediates");
             ToIntermediates(settings);
             
             if (doesSaveCache(settings)) {
-                if (settings.OptLevel < OptimizationLevel.MAX) {
-                    Log.Status("Creating .o files for caching...");
+                if (!shouldGetIR(settings)) {
+                    Log.Status("Creating .o files for caching");
                     CreateCachedObjs(settings);
                 }
                 
@@ -242,16 +232,17 @@ public class Builder {
 
             string fileWithMain = GetFileWithMain();
 
-            Log.Status("Producing final sources...");
+            Log.Status("Producing final sources");
             List<string> sources = ProduceFinalSources(settings);
 
             if (doesSaveCache(settings)) {
                 cache.CompileStartTime = buildStartTime;
                 cache.EPSLSPECS = generatedSPECs;
+                cache.LastOutputType = settings.Output_Type;
                 cache.ToFile();
                 Log.Info("Saved updated EPSLCACHE");
             } else {
-                Log.Status("Deleting unwanted in user dir...");
+                Log.Status("Deleting unwanted files in user dir");
                 foreach (FileTree file in files.Values) {
                     if (file.IRIsInUserDir)
                         Utils.TryDelete(file.IR);
@@ -267,18 +258,26 @@ public class Builder {
                 .Concat(extraClangConfig);
             
             BuildInfo buildInfo = new BuildInfo(
-                sources, tree, clangConfig, unlinkedFiles, fileWithMain
+                output, outputName, sources, tree, clangConfig, unlinkedFiles, fileWithMain
             );
+
+            Log.Status("Producing final result");
 
             switch (settings.Output_Type) {
             case OutputType.EXECUTABLE:
-                ToExecutable(buildInfo, output);
+                ToExecutable(buildInfo);
                 break;
             case OutputType.LLVMLL:
-                ToLLVM(buildInfo, output, toLL: true);
+                ToLLVM(buildInfo, toLL: true);
                 break;
             case OutputType.LLVMBC:
-                ToLLVM(buildInfo, output, toLL: false);
+                ToLLVM(buildInfo, toLL: false);
+                break;
+            case OutputType.PACKAGEBOTH:
+                ToPackage(buildInfo, includeLLVM: true);
+                break;
+            case OutputType.PACKAGEOBJ:
+                ToPackage(buildInfo, includeLLVM: false);
                 break;
             default:
                 throw new InvalidOperationException();
@@ -652,17 +651,13 @@ public class Builder {
             
             if (settings.OptLevel >= OptimizationLevel.NORMAL) {
                 string optFile = Utils.JoinPaths(Utils.TempDir(), "opt.bc");
-                Utils.RunCommand("opt", new List<string> {
-                    "-O3", irFile, "-o", optFile
-                });
+                CmdUtils.OptLLVM(irFile, optFile);
                 Utils.TryDelete(irFile);
                 irFile = optFile;
             }
             
             string objFile = file.SuggestedIntermediatePath+".o";
-            Utils.RunCommand("llc", new List<string> {
-                irFile, "-o", objFile, "-filetype=obj"
-            });
+            CmdUtils.LLVMToObj(irFile, objFile);
             Utils.TryDelete(irFile);
 
             file.IR = null;
@@ -710,16 +705,53 @@ public class Builder {
         }
     }
 
-    IEnumerable<string> MakeIntermediateCopiesInTemp(string name, IEnumerable<IntermediateFile> intermediates) {
+    IEnumerable<string> MakeIntermediateCopiesInTemp(BuildSettings settings, string name, IEnumerable<IntermediateFile> intermediates) {
         int i = 0;
         foreach (IntermediateFile intermediate in intermediates) {
-            if (intermediate.IsInUserDir) {
+            if (!doesSaveCache(settings) && intermediate.IsInUserDir) {
                 string extension = Path.GetExtension(intermediate.Path);
                 string newPath = Utils.JoinPaths(Utils.TempDir(), $"{name}{i++}{extension}");
                 File.Copy(intermediate.Path, newPath, overwrite: true);
                 yield return newPath;
             } else {
                 yield return intermediate.Path;
+            }
+        }
+    }
+
+    string CombineAndOptimizeLLVM(IEnumerable<IntermediateFile> files) {
+        string irLinkedPath = Utils.JoinPaths(Utils.TempDir(), "linked.bc");
+        CmdUtils.LinkLLVM(files.Select(intermediate => intermediate.Path), irLinkedPath);
+
+        string irOptedPath = Utils.JoinPaths(Utils.TempDir(), "linked-opt.bc");
+        CmdUtils.OptLLVM(irLinkedPath, irOptedPath);
+
+        return irOptedPath;
+    }
+
+    IEnumerable<string> OptimizeLLVMIndividually(IEnumerable<IntermediateFile> files) {
+        int i = 0;
+        foreach (IntermediateFile file in files) {
+            string irOptedPath = Utils.JoinPaths(Utils.TempDir(), $"opt-{i++}.bc");
+            CmdUtils.OptLLVM(file.Path, irOptedPath);
+
+            yield return irOptedPath;
+        }
+    }
+
+    void VerifyOnlyLLVMSources(BuildSettings settings, Dictionary<IntermediateFile.IntermediateType, IEnumerable<IntermediateFile>> grouped) {
+        foreach (KeyValuePair<IntermediateFile.IntermediateType, IEnumerable<IntermediateFile>> pair in grouped) {
+            if (pair.Key == IntermediateFile.IntermediateType.IR) continue;
+            IntermediateFile intermediate = pair.Value.FirstOrDefault();
+            if (intermediate == null) continue;
+            if (settings.LinkLibraries) {
+                throw new ProjectProblemException(
+                    $"Cannot compile to output type {settings.Output_Type.ToString()} with source {intermediate.Path}, as it does not have an available LLVM form (which is required for this output type). If this source came from a library, you can compile without library linked (with the --no-libraries flag), and then compile and link the library seperately."
+                );
+            } else {
+                throw new ProjectProblemException(
+                    $"Cannot compile to output type {settings.Output_Type.ToString()} with source {intermediate.Path}, as it does not have an available LLVM form (which is required for this output type)."
+                );
             }
         }
     }
@@ -754,98 +786,24 @@ public class Builder {
             .ToDictionary();
 
         if (settings.Output_Type.DoesRequireLLVM()) {
-            return MakeLLVMSources(settings, grouped);
-        } else {
-            return MakeStandardSources(settings, grouped);
-        }
-    }
-
-    string CombineAndOptimizeLLVM(IEnumerable<IntermediateFile> files) {
-        string irLinkedPath = Utils.JoinPaths(Utils.TempDir(), "linked.bc");
-        List<string> llvmLinkArgs = new List<string> {
-            "-o", irLinkedPath, "--"
-        };
-        llvmLinkArgs.AddRange(files.Select(intermediate => intermediate.Path));
-
-        Utils.RunCommand("llvm-link", llvmLinkArgs);
-
-        string irOptedPath = Utils.JoinPaths(Utils.TempDir(), "linked-opt.bc");
-        Utils.RunCommand("opt", new List<string> {
-            "-O3", "-o", irOptedPath, irLinkedPath
-        });
-
-        return irOptedPath;
-    }
-
-    IEnumerable<string> OptimizeLLVMIndividually(IEnumerable<IntermediateFile> files) {
-        int i = 0;
-        foreach (IntermediateFile file in files) {
-            string irOptedPath = Utils.JoinPaths(Utils.TempDir(), $"opt-{i++}.bc");
-            Utils.RunCommand("opt", new List<string> {
-                "-O3", "-o", irOptedPath, file.Path
-            });
-
-            yield return irOptedPath;
-        }
-    }
-
-    List<string> MakeLLVMSources(BuildSettings settings, Dictionary<IntermediateFile.IntermediateType, IEnumerable<IntermediateFile>> grouped) {
-        foreach (KeyValuePair<IntermediateFile.IntermediateType, IEnumerable<IntermediateFile>> pair in grouped) {
-            if (pair.Key == IntermediateFile.IntermediateType.IR) continue;
-            IntermediateFile intermediate = pair.Value.FirstOrDefault();
-            if (intermediate == null) continue;
-            throw new ProjectProblemException(
-                $"Cannot compile to output type {settings.Output_Type.ToString()} with source {intermediate.Path}, as it does not have an available LLVM form (which is required for this output type). If this source came from a package, you can compile without package linked (with the --no-libraries flag), and then compile and link the module seperately."
-            );
+            VerifyOnlyLLVMSources(settings, grouped);
         }
 
-        // We return a List, because IEnumerable won't perform calculations immediately, and will instead
-        // perform calculations only once iterated over. That would cause major problems for cases
-        // where iterating over the IEnumerable produces side effects (as in this case, where
-        // commands are run on files that are deleted by the time of iteration).
-        if (settings.OptLevel >= OptimizationLevel.MAX) {
-            return new List<string> {CombineAndOptimizeLLVM(
-                grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)
-            )};
-        } else if (settings.OptLevel <= OptimizationLevel.MIN) {
-            return MakeIntermediateCopiesInTemp(
-                "ir-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)).ToList();
-        } else {
-            return OptimizeLLVMIndividually(
-                grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)).ToList();
-        }
-    }
-
-    List<string> MakeStandardSources(BuildSettings settings, Dictionary<IntermediateFile.IntermediateType, IEnumerable<IntermediateFile>> grouped) {
         List<string> sources = new List<string>();
 
         if (settings.OptLevel >= OptimizationLevel.MAX) {
-            string irLinkedPath = Utils.JoinPaths(Utils.TempDir(), "linked.bc");
-            List<string> llvmLinkArgs = new List<string> {
-                "-o", irLinkedPath, "--"
-            };
-            llvmLinkArgs.AddRange(grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)
-                .Select(intermediate => intermediate.Path));
-
-            Utils.RunCommand("llvm-link", llvmLinkArgs);
-
-            string irOptedPath = Utils.JoinPaths(Utils.TempDir(), "linked-opt.bc");
-            Utils.RunCommand("opt", new List<string> {
-                "-O3", "-o", irOptedPath, irLinkedPath
-            });
-
             sources.Add(CombineAndOptimizeLLVM(
                 grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)));
         } else if (settings.OptLevel <= OptimizationLevel.MIN) {
             sources.AddRange(MakeIntermediateCopiesInTemp(
-                "ir-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)));
+                settings, "ir-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)));
         } else {
             sources.AddRange(OptimizeLLVMIndividually(
                 grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)));
         }
 
         sources.AddRange(MakeIntermediateCopiesInTemp(
-            "obj-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.Obj)));
+            settings, "obj-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.Obj)));
 
         return sources;
     }
@@ -953,30 +911,47 @@ public class Builder {
         }
     }
 
-    public void ToExecutable(BuildInfo buildInfo, string output) {
+    void ToExecutable(BuildInfo buildInfo) {
         if (buildInfo.FileWithMain == null) {
             throw new ProjectProblemException("One main function is required when creating an executable; no main function found");
         }
         
         Log.Status("Buiding executable");
-        IEnumerable<string> clangFlags = buildInfo.ClangConfig
-            .Select(config => config.Stringify());
-        List<string> clangArgs = clangFlags.Concat(new List<string> {
-            "-lc", "-lm", "-o", output
-        }).ToList();
-        clangArgs.AddRange(buildInfo.Sources);
-        Utils.RunCommand("clang", clangArgs);
+        CmdUtils.ClangToExecutable(buildInfo.Sources, buildInfo.Output, buildInfo.ClangConfig);
     }
 
-    public void ToLLVM(BuildInfo buildInfo, string output, bool toLL) {
-        List<string> flags = new List<string> {
-            "-o", output
-        };
-        if (toLL) {
-            flags.Add("-S");
+    void ToLLVM(BuildInfo buildInfo, bool toLL) {
+        CmdUtils.LinkLLVM(buildInfo.Sources, buildInfo.Output, toLL);
+    }
+
+    void ToPackage(BuildInfo buildInfo, bool includeLLVM) {
+        string outputName = buildInfo.OutputName;
+        string output = buildInfo.Output;
+        
+        ReadyPackageFolder(output);
+
+        string irFilename = null;
+        if (includeLLVM) {
+            irFilename = outputName+".bc";
+            CmdUtils.LinkLLVM(buildInfo.Sources, Utils.JoinPaths(output, irFilename));
         }
-        flags.AddRange(buildInfo.Sources);
-        Utils.RunCommand("llvm-link", flags);
+
+        string objFilename = outputName+".o";
+        CmdUtils.FilesToObject(buildInfo.Sources, Utils.JoinPaths(output, objFilename));
+        
+        IEnumerable<string> unlinkedImports = buildInfo.UnlinkedFiles
+            .Select(file => file.PartialPath);
+
+        EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
+        EPSLSPEC newEPSLSPEC = new EPSLSPEC(
+            entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
+            buildInfo.ClangConfig, unlinkedImports, 
+            irFilename, objFilename, null, FileSourceType.Library,
+            entryEPSLSPEC.IDPath
+        );
+
+        string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");
+        BJSONEnv.WriteFile(epslspecDest, newEPSLSPEC.ToJSON(this));
     }
 
     public ResultStatus Teardown(EPSLCACHE cache) {

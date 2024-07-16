@@ -1,9 +1,9 @@
 using System;
-using System.Text;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
+using System.Text;
 using System.Reflection;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public class EPSLFileCompiler : IFileCompiler {
@@ -1848,8 +1848,6 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     void CreateLLVMIR() {
-        Utils.RunCommand("bash", new List<string> {
-            "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "runpython.bash")
-        });
+        CmdUtils.RunScript("runpython.bash");
     }
 }
