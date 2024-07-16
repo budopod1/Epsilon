@@ -69,8 +69,10 @@ public static class CmdUtils {
         RunCommand("clang", args);
     }
 
-    public static void LLVMsToObj(List<string> sources, string output) {
-        RunCommand("clang", new string[] {"-c", "-o", output}.Concat(sources));
+    public static void LLVMsToObj(List<string> sources, string output, bool positionIndependent=false) {
+        string linkedIR = Utils.JoinPaths(Utils.TempDir(), "linked.bc");
+        LinkLLVM(sources, linkedIR);
+        LLVMToObj(linkedIR, output, positionIndependent);
     }
 
     public static void RunScript(string name) {

@@ -47,7 +47,6 @@ public class EPSLCACHE {
     }
 
     public static bool MustDiscardCache(OutputType old, OutputType new_) {
-        Log.Tmp(old, new_);
         if (old == OutputType.NONE) return true;
         if (old == new_) return false;
         if (old.DoesRequireLLVM() != new_.DoesRequireLLVM()) return true;

@@ -274,10 +274,10 @@ public class Builder {
                 ToLLVM(buildInfo, toLL: false);
                 break;
             case OutputType.PACKAGEBOTH:
-                ToPackage(buildInfo, includeLLVM: true);
+                ToPackage(buildInfo, includeLLVMInPackage: true);
                 break;
             case OutputType.PACKAGEOBJ:
-                ToPackage(buildInfo, includeLLVM: false);
+                ToPackage(buildInfo, includeLLVMInPackage: false);
                 break;
             default:
                 throw new InvalidOperationException();
@@ -923,20 +923,25 @@ public class Builder {
         CmdUtils.LinkLLVM(buildInfo.Sources, buildInfo.Output, toLL);
     }
 
-    void ToPackage(BuildInfo buildInfo, bool includeLLVM) {
+    void ToPackage(BuildInfo buildInfo, bool includeLLVMInPackage) {
         string outputName = buildInfo.OutputName;
         string output = buildInfo.Output;
         
         ReadyPackageFolder(output);
 
-        string irFilename = null;
-        if (includeLLVM) {
-            irFilename = outputName+".bc";
-            CmdUtils.LinkLLVM(buildInfo.Sources, Utils.JoinPaths(output, irFilename));
-        }
-
         string objFilename = outputName+".o";
-        CmdUtils.FilesToObject(buildInfo.Sources, Utils.JoinPaths(output, objFilename));
+        string objPath = Utils.JoinPaths(output, objFilename);
+    
+        string irFilename = null;
+        if (includeLLVMInPackage) {
+            irFilename = outputName+".bc";
+            string irPath = Utils.JoinPaths(output, irFilename);
+            
+            CmdUtils.LinkLLVM(buildInfo.Sources, irPath);
+            CmdUtils.LLVMToObj(irPath, objPath);
+        } else {
+            CmdUtils.FilesToObject(buildInfo.Sources, objPath);
+        }
         
         IEnumerable<string> unlinkedImports = buildInfo.UnlinkedFiles
             .Select(file => file.PartialPath);
