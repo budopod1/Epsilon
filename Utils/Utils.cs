@@ -1,12 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
 using System.Collections.Generic;
 
 public static class Utils {
-    public static bool SUBPROCCESSOUTPUT = true;
-    
     public static string Tab = "    ";
     public static string Whitespace = "\r\n\t ";
     public static string Numbers = "1234567890";
@@ -66,38 +63,6 @@ public static class Utils {
 
     public static bool ApproxEquals(double a, double b) {
         return Math.Abs(a-b)/(a+b) < 0.01;
-    }
-
-    public static Process RunCommand(string command, IEnumerable<string> arguments) {
-        ProcessStartInfo startInfo = new ProcessStartInfo(command);
-        startInfo.CreateNoWindow = true;
-        startInfo.UseShellExecute = false;
-        startInfo.RedirectStandardOutput = true;
-        startInfo.RedirectStandardError = true;
-        string argumentsStr = "";
-        // https://stackoverflow.com/questions/5510343
-        foreach (string argument in arguments) {
-            argumentsStr += "\"" + argument.Replace("\\", "\\\\")
-                .Replace("\"", "\\\"") + "\" ";
-        }
-        Log.Info(command, argumentsStr);
-        startInfo.Arguments = argumentsStr;
-        Process process = Process.Start(startInfo);
-        process.WaitForExit();
-        if (SUBPROCCESSOUTPUT || process.ExitCode != 0) {
-            Console.Write(process.StandardOutput.ReadToEnd());
-            Console.Write(process.StandardError.ReadToEnd());
-        }
-        if (process.ExitCode != 0) {
-            throw new CommandFailureException(
-                $"Command '{command}' exited with status code {process.ExitCode}"
-            );
-        }
-        return process;
-    }
-
-    public static Process RunCommand(string command) {
-        return RunCommand(command, new List<string>());
     }
 
     public static bool FileExists(string path) {

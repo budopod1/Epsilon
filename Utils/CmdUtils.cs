@@ -1,9 +1,40 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public static class CmdUtils {
+    static readonly bool SUBPROCCESSOUTPUT = false;
+    
+    static Process RunCommand(string command, IEnumerable<string> arguments) {
+        ProcessStartInfo startInfo = new ProcessStartInfo(command);
+        startInfo.CreateNoWindow = true;
+        startInfo.UseShellExecute = false;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        string argumentsStr = "";
+        // https://stackoverflow.com/questions/5510343
+        foreach (string argument in arguments) {
+            argumentsStr += "\"" + argument.Replace("\\", "\\\\")
+                .Replace("\"", "\\\"") + "\" ";
+        }
+        Log.Info(command, argumentsStr);
+        startInfo.Arguments = argumentsStr;
+        Process process = Process.Start(startInfo);
+        process.WaitForExit();
+        if (SUBPROCCESSOUTPUT || process.ExitCode != 0) {
+            Console.Write(process.StandardOutput.ReadToEnd());
+            Console.Write(process.StandardError.ReadToEnd());
+        }
+        if (process.ExitCode != 0) {
+            throw new CommandFailureException(
+                $"Command '{command}' exited with status code {process.ExitCode}"
+            );
+        }
+        return process;
+    }
+    
     public static void LinkLLVM(IEnumerable<string> sources, string output, bool toLL=false) {
         List<string> args = new List<string> {"-o", output};
         if (toLL) {
@@ -11,11 +42,11 @@ public static class CmdUtils {
         }
         args.Add("--");
         args.AddRange(sources);
-        Utils.RunCommand("llvm-link", args);
+        RunCommand("llvm-link", args);
     }
 
     public static void OptLLVM(string source, string output) {
-        Utils.RunCommand("opt", new string[] {
+        RunCommand("opt", new string[] {
             "-O3", source, "-o", output
         });
     }
@@ -25,27 +56,30 @@ public static class CmdUtils {
         if (positionIndependent) {
             args.Add("--relocation-model=pic");
         }
-        Utils.RunCommand("llc", args);
+        RunCommand("llc", args);
     }
 
-    public static void ClangToExecutable(IEnumerable<string> sources, string output, IEnumerable<IClangConfig> configs) {
+    public static void ClangToExecutable(IEnumerable<string> sources, string output, IEnumerable<IClangConfig> configs, bool positionIndependent=false) {
         // List<string> args = configs.Select(config => config.ToString()).ToList();
         List<string> args = new List<string> {"-lc", "-lm", "-o", output};
+        if (positionIndependent) {
+            args.Add("-fPIC");
+        }
         args.AddRange(sources);
-        Utils.RunCommand("clang", args);
+        RunCommand("clang", args);
     }
 
     public static void LLVMsToObj(List<string> sources, string output) {
-        Utils.RunCommand("clang", new string[] {"-c", "-o", output}.Concat(sources));
+        RunCommand("clang", new string[] {"-c", "-o", output}.Concat(sources));
     }
 
     public static void RunScript(string name) {
-        Utils.RunCommand("bash", new string[] {
+        RunCommand("bash", new string[] {
             "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), name)});
     }
 
     public static void LinkObjsToObj(IEnumerable<string> sources, string output) {
-        Utils.RunCommand("ld", new string[] {"-r", "-o", output}.Concat(sources));
+        RunCommand("ld", new string[] {"-r", "-o", output}.Concat(sources));
     }
 
     public static void FilesToObject(IEnumerable<string> sources, string output) {
