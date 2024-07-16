@@ -55,15 +55,13 @@ public static class EnumHelpers {
     public static string GetExtension(this OutputType outputType) {
         switch (outputType) {
         case OutputType.EXECUTABLE:
+        case OutputType.PACKAGEBOTH:
+        case OutputType.PACKAGEOBJ:
             return null;
         case OutputType.LLVMLL:
             return "ll";
         case OutputType.LLVMBC:
             return "bc";
-        case OutputType.PACKAGEBOTH:
-            return null;
-        case OutputType.PACKAGEOBJ:
-            return null;
         default:
             throw new InvalidOperationException();
         }
@@ -72,15 +70,12 @@ public static class EnumHelpers {
     public static bool DoesRequireLLVM(this OutputType outputType) {
         switch (outputType) {
         case OutputType.EXECUTABLE:
-            return false;
-        case OutputType.LLVMLL:
-            return true;
-        case OutputType.LLVMBC:
-            return true;
-        case OutputType.PACKAGEBOTH:
-            return true;
         case OutputType.PACKAGEOBJ:
             return false;
+        case OutputType.LLVMLL:
+        case OutputType.LLVMBC:
+        case OutputType.PACKAGEBOTH:
+            return true;
         default:
             throw new InvalidOperationException();
         }
@@ -89,13 +84,10 @@ public static class EnumHelpers {
     public static bool ShouldLinkBuiltins(this OutputType outputType) {
         switch (outputType) {
         case OutputType.EXECUTABLE:
-            return true;
         case OutputType.LLVMLL:
-            return true;
         case OutputType.LLVMBC:
             return true;
         case OutputType.PACKAGEBOTH:
-            return false;
         case OutputType.PACKAGEOBJ:
             return false;
         default:
@@ -106,13 +98,10 @@ public static class EnumHelpers {
     public static bool ShouldLinkLibraries(this OutputType outputType) {
         switch (outputType) {
         case OutputType.EXECUTABLE:
-            return true;
         case OutputType.LLVMLL:
-            return true;
         case OutputType.LLVMBC:
             return true;
         case OutputType.PACKAGEBOTH:
-            return false;
         case OutputType.PACKAGEOBJ:
             return false;
         default:

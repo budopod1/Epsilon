@@ -60,8 +60,8 @@ public static class CmdUtils {
     }
 
     public static void ClangToExecutable(IEnumerable<string> sources, string output, IEnumerable<IClangConfig> configs, bool positionIndependent=false) {
-        // List<string> args = configs.Select(config => config.ToString()).ToList();
-        List<string> args = new List<string> {"-lc", "-lm", "-o", output};
+        List<string> args = configs.SelectMany(config => config.ToParts())
+            .Concat(new string[] {"-lc", "-lm", "-o", output}).ToList();
         if (positionIndependent) {
             args.Add("-fPIC");
         }

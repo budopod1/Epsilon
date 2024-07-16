@@ -251,11 +251,9 @@ public class Builder {
                 }
             }
 
-            IEnumerable<IClangConfig> extraClangConfig = settings.ExtraClangOptions
-                .Select(option => new ConstantClangConfig(option));
             IEnumerable<IClangConfig> clangConfig = files.Values
                 .SelectMany(file => file.Compiler.GetClangConfig())
-                .Concat(extraClangConfig);
+                .Concat(new IClangConfig[] {new ConstantClangConfig(settings.ExtraClangOptions)});
             
             BuildInfo buildInfo = new BuildInfo(
                 output, outputName, sources, tree, clangConfig, unlinkedFiles, fileWithMain
@@ -290,7 +288,6 @@ public class Builder {
         case CacheMode.DONTUSE:
             return false;
         case CacheMode.DONTLOAD:
-            return true;
         case CacheMode.AUTO:
             return shouldCache;
         case CacheMode.ALWAYS:

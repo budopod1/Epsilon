@@ -37,7 +37,7 @@ Modes:
 
         DelimitedInputExpectation clangOptions = parser.AddOption(
             new DelimitedInputExpectation(parser, "clang-options", "END", needsOne: true), 
-            "Options for the clang compiler", "c", "clang-options"
+            "Options for the clang compiler", "C", "clang-options"
         );
 
         parser.AddOption(
