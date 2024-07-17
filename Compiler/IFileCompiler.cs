@@ -12,7 +12,9 @@ public interface IFileCompiler {
     HashSet<Struct> ToStructs();
     void LoadStructExtendees();
     Dependencies ToDependencies(Builder builder);
-    string ToIR(string suggestedPath);
+    void FinishCompilation(string suggestedPath);
+    string GetIR();
+    string GetObj();
     string GetSource();
     bool FromCache();
     bool ShouldSaveSPEC();

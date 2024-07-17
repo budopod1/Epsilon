@@ -1,16 +1,16 @@
 using System;
-using System.Text;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
+using System.Text;
 using System.Reflection;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public class EPSLFileCompiler : IFileCompiler {
     Program program;
     string fileText;
-
     string srcPath;
+    string IR;
 
     public EPSLFileCompiler(string path, string fileText) {
         Log.Info("Compiling EPSL file", path);
@@ -37,25 +37,17 @@ public class EPSLFileCompiler : IFileCompiler {
         return srcPath;
     }
 
-    void Step(string text) {}
-
     public List<string> ToImports() {
-        Step("Tokenizing strings...");
         program = TokenizeStrings(program);
 
-        Step("Tokenizing character constants...");
         program = TokenizeCharacterConstants(program);
 
-        Step("Removing comments...");
         program = RemoveComments(program);
 
-        Step("Tokenizing function signatures...");
         program = TokenizeFuncSignatures(program);
 
-        Step("Tokenizing names...");
         program = TokenizeNames(program);
 
-        Step("Tokenizing imports...");
         program = TokenizeImports(program);
 
         return program.Where(token => token is Import).Select(
@@ -64,37 +56,26 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     public HashSet<LocatedID> ToStructIDs() {
-        Step("Tokenzing globals...");
         program = TokenizeGlobals(program);
 
-        Step("Tokenizing keywords...");
         program = TokenizeKeywords(program);
 
-        Step("Tokenizing numbers...");
         program = TokenizeNumbers(program);
 
-        Step("Removing whitespace...");
         program = RemoveWhitespace(program);
 
-        Step("Tokenizing annotations");
         program = TokenizeAnnotations(program);
 
-        Step("Tokenizing blocks...");
         program = TokenizeBlocks(program);
 
-        Step("Tokenizing function arguments...");
         program = TokenizeFuncArguments(program);
 
-        Step("Tokenizing functions...");
         program = TokenizeFunctionHolders(program);
 
-        Step("Tokenizing structs...");
         program = TokenizeStructHolders(program);
 
-        Step("Converting function blocks...");
         program = ConvertFunctionBlocks(program);
 
-        Step("Computing base types_...");
         ComputeBaseTypes_(program);
 
         return program.GetStructIDs();
@@ -105,34 +86,24 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     public List<RealFunctionDeclaration> ToDeclarations() {
-        Step("Tokenizing base types...");
         program = TokenizeBaseTypes_(program);
 
-        Step("Tokenizing constant keyword values...");
         program = TokenizeConstantKeywordValues(program);
 
-        Step("Tokenizing generics...");
         program = TokenizeGenerics(program);
 
-        Step("Tokenizing types_...");
         program = TokenizeTypes_(program);
 
-        Step("Tokenizing var declarations...");
         program = TokenizeVarDeclarations(program);
         
-        Step("Converting template arguments...");
         program = ConvertTemplateArguments(program);
 
-        Step("Parsing templates...");
         program = ParseFunctionTemplates(program);
 
-        Step("Parsing function signatures...");
         program = ParseFunctionSignatures(program);
 
-        Step("Joining annotations...");
         program = JoinAnnotations(program);
 
-        Step("Objectifying functions...");
         program = ObjectifyingFunctions(program);
 
         return program.Select(token => token as RealFunctionDeclaration)
@@ -144,68 +115,58 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     public HashSet<Struct> ToStructs() {
-        Step("Computing structs...");
         program = ComputeStructs(program);
 
         return new HashSet<Struct>(program.GetStructsHere());
     }
 
     public void LoadStructExtendees() {
-        Step("Loading struct extendees...");
         program = LoadStructExtendeesHere(program);
     }
 
     public Dependencies ToDependencies(Builder builder) {
-        Step("Verifying poly types_...");
         program = VerifyPolyTypes_(program);
         
-        Step("Splitting program blocks into lines...");
         program = SplitProgramBlocksIntoLines(program);
 
-        Step("Converting string literals...");
         program = ConvertStringLiterals(program);
 
-        Step("Tokenizing groups...");
         program = TokenizeGroups(program);
 
-        Step("Tokenizing given blocks...");
         program = TokenizeGivenBlocks(program);
 
-        Step("Tokenizing for loops...");
         program = TokenizeForLoops(program);
 
-        Step("Parsing globals...");
         program = ParseGlobals(program);
 
-        Step("Getting scope variables...");
         program = GetScopeVariables(program);
 
-        Step("Parsing function code...");
         program = ParseFunctionCode(program);
 
-        Step("Verifying code...");
         VerifyCode(program);
 
         return GetDependencies(program);
     }
 
-    public string ToIR(string destPath) {
-        Step("Adding unused value wrappers...");
+    public void FinishCompilation(string destPath) {
         AddUnusedValueWrappers(program);
 
-        Step("Getting JSON...");
         string json = GetJSONString(program);
 
-        Step("Saving JSON...");
         SaveJSON(json);
 
-        Step("Creating LLVM IR...");
         CreateLLVMIR();
 
-        string dest = destPath + ".ll";
-        File.Copy(Utils.JoinPaths(Utils.TempDir(), "code.ll"), dest, true);
+        IR = destPath + ".ll";
+        File.Copy(Utils.JoinPaths(Utils.TempDir(), "code.ll"), IR, overwrite: true);
+    }
 
-        return dest;
+    public string GetIR() {
+        return IR;
+    }
+
+    public string GetObj() {
+        return null;
     }
 
     public string GetSource() {
@@ -455,7 +416,7 @@ public class EPSLFileCompiler : IFileCompiler {
     Program ConvertFunctionBlocks(Program program) {
         IMatcher matcher = new PatternMatcher(
             new List<IPatternSegment> {
-                new TypePatternSegment(typeof(Block), true)
+                new TypePatternSegment(typeof(Block), exact: true)
             }, new FuncPatternProcessor<List<IToken>>(tokens => {
                 return new List<IToken> {new CodeBlock(
                     program, ((Block)tokens[0]).GetTokens()
@@ -685,7 +646,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 } else if (subtoken is FunctionArgumentToken) {
                     FunctionArgumentToken argument = ((FunctionArgumentToken)subtoken);
                     arguments.Add(argument);
-                    segment = new TypePatternSegment(typeof(RawSquareGroup));
+                    segment = new FuncArgPatternSegment();
                     slots.Add(j);
                 }
                 if (segment == null) {
@@ -1887,8 +1848,6 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     void CreateLLVMIR() {
-        Utils.RunCommand("bash", new List<string> {
-            "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), "runpython.bash")
-        });
+        CmdUtils.RunScript("runpython.bash");
     }
 }

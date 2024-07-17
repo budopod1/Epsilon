@@ -15,7 +15,6 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
     }
 
     public void Verify() {
-        Program program = TokenUtils.GetParentOfType<Program>(this);
         Type_ type_ = o1.GetType_();
         Struct struct_ = StructsCtx.GetStructFromType_(structType_);
         if (struct_ == null)

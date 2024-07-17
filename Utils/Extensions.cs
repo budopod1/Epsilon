@@ -18,12 +18,12 @@ public static class Extensions {
         return result;
     }
 
-    public static T GetOr<T>(this IList<T> list, int idx, T default_) {
+    public static T GetOr<T>(this IList<T> list, int idx, T default_=default(T)) {
         if (idx >= list.Count) return default_;
         return list[idx];
     }
 
-    public static TValue GetOr<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue default_) {
+    public static TValue GetOr<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue default_=default(TValue)) {
         if (dict.TryGetValue(key, out TValue val)) {
             return val;
         } else {
@@ -37,8 +37,16 @@ public static class Extensions {
         ));
     }
 
+    public static Dictionary<TKey, IEnumerable<TValue>> ToDictionary<TKey, TValue>(this IEnumerable<IGrouping<TKey, TValue>> source) {
+        return source.ToDictionary(grouping => grouping.Key, grouping => (IEnumerable<TValue>)grouping);
+    }
+
     public static TValue GetOr<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> default_) {
         return dict.ContainsKey(key) ? dict[key] : default_();
+    }
+
+    public static IEnumerable<TItem> GetOrEmpty<TKey, TItem>(this Dictionary<TKey, IEnumerable<TItem>> dict, TKey key) {
+        return dict.ContainsKey(key) ? dict[key] : new TItem[0];
     }
 
     public static Dictionary<TKey, TSource> ToDictionary2<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {

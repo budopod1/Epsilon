@@ -45,6 +45,15 @@ public class ExternalFunction : FunctionDeclaration {
         this.returnType_ = (tokens) => returnType_;
         this.source = source;
     }
+
+    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, FunctionSource source) {
+        this.pattern = pattern;
+        this.arguments = arguments;
+        this.id = id;
+        doesReturnVoid = true;
+        this.returnType_ = (tokens) => null;
+        this.source = source;
+    }
     
     public override PatternExtractor<List<IToken>> GetPattern() {
         return pattern;

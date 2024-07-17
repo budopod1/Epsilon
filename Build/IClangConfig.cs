@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 
 public interface IClangConfig {
-    string Stringify();
+    IEnumerable<string> ToParts();
     JSONObject GetJSON();
 }

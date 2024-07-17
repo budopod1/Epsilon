@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Epsilon {
-    public static int Main(string[] args) {
+    public static void Main(string[] args) {
         ArgumentParser parser = new ArgumentParser(
             "mono Epsilon.exe",
             @"
@@ -18,8 +18,13 @@ Modes:
         );
 
         PossibilitiesExpectation cacheModeInput = parser.AddOption(
-            new PossibilitiesExpectation("auto", "dont-use", "dont-load", "always"), 
-            "Caching mode", "h", "cache-mode"
+            new PossibilitiesExpectation("auto", "dont-use", "dont-load", "auto", "always"), 
+            "Caching mode", "H", "cache-mode"
+        );
+
+        PossibilitiesExpectation optimizationInput = parser.AddOption(
+            new PossibilitiesExpectation("normal", "0", "min", "1", "normal", "2", "max"), 
+            "Optimization level", "O", "opt"
         );
 
         bool linkBuiltins = true;
@@ -32,7 +37,7 @@ Modes:
 
         DelimitedInputExpectation clangOptions = parser.AddOption(
             new DelimitedInputExpectation(parser, "clang-options", "END", needsOne: true), 
-            "Options for the clang compiler", "c", "clang-options"
+            "Options for the clang compiler", "C", "clang-options"
         );
 
         parser.AddOption(
@@ -51,9 +56,9 @@ Modes:
         parser.AddOption(outputFile, "The path to output to", "o", "output");
 
         PossibilitiesExpectation mode = parser.Expect(
-            new PossibilitiesExpectation("compile", "teardown", "create-proj"));
+            new PossibilitiesExpectation("compile", "compile", "teardown", "create-proj"));
         
-        InputExpectation sourceFile = new InputExpectation("source file", true);
+        InputExpectation sourceFile = new InputExpectation("source file", optional: true);
 
         InputExpectation projFile = new InputExpectation("proj file location");
         
@@ -67,10 +72,9 @@ Modes:
             }
         });
 
-        PossibilitiesExpectation outputType = parser.AddOption(
-            new PossibilitiesExpectation("executable", "package", "llvm-ll", "llvm-bc"), 
-            "The output file type", "t", "output-type"
-        );
+        PossibilitiesExpectation outputTypeInput = parser.AddOption(new PossibilitiesExpectation(
+            "executable", "executable", "llvm-ll", "llvm-bc", "package-both", "package-obj"
+        ), "The output file type", "t", "output-type");
 
         PossibilitiesExpectation verbosity = parser.AddOption(
             new PossibilitiesExpectation((int)LogLevel.NONE, typeof(LogLevel)), 
@@ -87,6 +91,8 @@ Modes:
 
         Builder builder = new Builder();
 
+        TestResult(builder.WipeTempDir());
+
         string curDirectory = $".{Path.DirectorySeparatorChar}";
         string input = curDirectory + (sourceFile.Matched ?? "entry");
 
@@ -95,128 +101,44 @@ Modes:
             parser.ParseAdditionalOptions(proj.CommandOptions);
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
             
-            CacheMode cacheMode = EPSLCACHE.ParseCacheMode(cacheModeInput.Value());
+            CacheMode cacheMode = EnumHelpers.ParseCacheMode(cacheModeInput.Value());
+            OptimizationLevel optimizationLevel = EnumHelpers.ParseOptimizationLevel(optimizationInput.Value());
+            OutputType outputType = EnumHelpers.ParseOutputType(outputTypeInput.Value());
 
-            if (outputType.Value() == "package") {
-                linkBuiltins = false;
-                linkLibraries = false;
-            }
+            linkBuiltins = outputType.ShouldLinkBuiltins();
+            linkLibraries = outputType.ShouldLinkLibraries();
 
             libraries.AddRange(proj.Libraries);
 
             TestResult(builder.RegisterLibraries(input, libraries));
             TestResult(builder.LoadEPSLCACHE(input, cacheMode, out EPSLCACHE cache));
 
-            BuildSettings settings = new BuildSettings(input, proj, cache, cacheMode, linkBuiltins, linkLibraries, clangOptions.MatchedSegments);
+            if (cacheMode > CacheMode.DONTLOAD && EPSLCACHE.MustDiscardCache(cache.LastOutputType, outputType)) {
+                Log.Info($"Cached data generated with the previous output type, {cache.LastOutputType.ToString()}, cannot be used with the current output type, {outputType.ToString()}. As such, all cached data is being disregarded.");
+                cacheMode = CacheMode.DONTLOAD;
+            }
 
-            return DoCompilation(
-                builder, settings, outputType.Value(),
-                outputFile.IsPresent ? outputFile.Matched : null
+            string providedOutput = outputFile.IsPresent ? outputFile.Matched : null;
+            
+            BuildSettings settings = new BuildSettings(
+                input, providedOutput, proj, cache, cacheMode, optimizationLevel, outputType,
+                linkBuiltins, linkLibraries, clangOptions.MatchedSegments
             );
+
+            TestResult(builder.Build(settings));
         } else if (mode.Value() == "teardown") {
-            TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj, allowNew: false));
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
             
             TestResult(builder.LoadEPSLCACHE(input, CacheMode.AUTO, out EPSLCACHE cache));
 
-            TestResult(builder.Teardown(proj, cache));
-
-            return 0;
+            TestResult(builder.Teardown(cache));
         } else if (mode.Value() == "create-proj") {
             TestResult(builder.CreateEPSLPROJ(projFile.Matched));
-
-            return 0;
         } else {
             throw new InvalidOperationException();
         }
-    }
 
-    static int DoCompilation(Builder builder, BuildSettings settings, string outputType, string providedOutput) {
-        string extension;
-        switch (outputType) {
-            case "llvm-bc":
-                extension = ".bc";
-                break;
-            case "llvm-ll":
-                extension = ".ll";
-                break;
-            case "executable":
-                extension = null;
-                break;
-            case "package":
-                extension = null;
-                break;
-            default:
-                throw new InvalidOperationException();
-        }
-
-        TestResult(builder.GetOutputLocation(settings.InputPath, extension,
-            out string defaultOutput, out string outputName));
-        string output = providedOutput ?? defaultOutput;
-
-        TestResult(builder.Build(settings, out BuildInfo buildInfo));
-        if (outputType == "executable") {
-            TestResult(builder.ToExecutable(buildInfo));
-        }
-
-        if (outputType == "package") {
-            TestResult(builder.ReadyPackageFolder(output));
-            
-            try {
-                string bitcodeSrc = Utils.JoinPaths(
-                    Utils.TempDir(), "code-linked.bc");
-                File.Copy(bitcodeSrc, Utils.JoinPaths(output, outputName+".bc"), true);
-            } catch (IOException) {
-                ArgumentParser.DisplayProblem("Could not write specified output file");
-                return 1;
-            }
-
-            IEnumerable<string> unlinkedImports = buildInfo.UnlinkedFiles
-                .Select(file => file.PartialPath);
-
-            EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
-            EPSLSPEC newEPSLSPEC = new EPSLSPEC(
-                entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
-                buildInfo.ClangConfig, unlinkedImports, 
-                outputName+".bc", null, FileSourceType.Library,
-                entryEPSLSPEC.IDPath
-            );
-
-            string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");
-            TestResult(builder.SaveEPSLSPEC(epslspecDest, newEPSLSPEC));
-        } else {
-            string resultSource;
-
-            switch (outputType) {
-                case "llvm-bc":
-                    resultSource = "code-linked.bc";
-                    break;
-                case "llvm-ll":
-                    string bcFile = Utils.JoinPaths(
-                        Utils.TempDir(), "code-linked.bc");
-                    Utils.RunCommand("llvm-dis", new List<string> {
-                        "--", bcFile
-                    });
-                    resultSource = "code-linked.ll";
-                    break;
-                case "executable":
-                    resultSource = "code";
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            try {
-                string absoluteResultSource = Utils.JoinPaths(
-                    Utils.TempDir(), resultSource);
-                File.Copy(absoluteResultSource, output, true);
-            } catch (IOException) {
-                ArgumentParser.DisplayProblem("Could not write specified output file");
-                return 1;
-            }
-        }
-
-        return 0;
+        TestResult(builder.WipeTempDir());
     }
 
     static void TestResult(ResultStatus result) {

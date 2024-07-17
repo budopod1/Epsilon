@@ -18,11 +18,8 @@ LLVMIR/result
 *.bc
 *.ll
 /temp/*
+*.o
 
 # Epsilon specific
 *.epslcache
-*.epslspec
-!/libs/**/*.epslspec
-/libs/**/.*.epslspec
-!/tests/**/*.epslspec
-/tests/**/.*.epslspec
+.*.epslspec

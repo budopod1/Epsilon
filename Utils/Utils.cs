@@ -1,12 +1,9 @@
 using System;
-using System.Linq;
 using System.IO;
-using System.Diagnostics;
+using System.Linq;
 using System.Collections.Generic;
 
 public static class Utils {
-    public static bool SUBPROCCESSOUTPUT = true;
-    
     public static string Tab = "    ";
     public static string Whitespace = "\r\n\t ";
     public static string Numbers = "1234567890";
@@ -66,37 +63,6 @@ public static class Utils {
 
     public static bool ApproxEquals(double a, double b) {
         return Math.Abs(a-b)/(a+b) < 0.01;
-    }
-
-    public static Process RunCommand(string command, IEnumerable<string> arguments) {
-        ProcessStartInfo startInfo = new ProcessStartInfo(command);
-        startInfo.CreateNoWindow = true;
-        startInfo.UseShellExecute = false;
-        startInfo.RedirectStandardOutput = true;
-        startInfo.RedirectStandardError = true;
-        string argumentsStr = "";
-        // https://stackoverflow.com/questions/5510343
-        foreach (string argument in arguments) {
-            argumentsStr += "\"" + argument.Replace("\\", "\\\\")
-                .Replace("\"", "\\\"") + "\" ";
-        }
-        startInfo.Arguments = argumentsStr;
-        Process process = Process.Start(startInfo);
-        process.WaitForExit();
-        if (SUBPROCCESSOUTPUT || process.ExitCode != 0) {
-            Console.Write(process.StandardOutput.ReadToEnd());
-            Console.Write(process.StandardError.ReadToEnd());
-        }
-        if (process.ExitCode != 0) {
-            throw new CommandFailureException(
-                $"Command '{command}' exited with status code {process.ExitCode}"
-            );
-        }
-        return process;
-    }
-
-    public static Process RunCommand(string command) {
-        return RunCommand(command, new List<string>());
     }
 
     public static bool FileExists(string path) {
@@ -165,9 +131,9 @@ public static class Utils {
         }
     }
 
-    public static string RemoveExtension(string path) {
+    public static string SetExtension(string path, string extension) {
         try {
-            return Path.ChangeExtension(path, null);
+            return Path.ChangeExtension(path, extension);
         } catch (ArgumentNullException e) {
             throw e;
         } catch (ArgumentException e) {
@@ -175,9 +141,13 @@ public static class Utils {
         }
     }
 
-    public static string SetExtension(string path, string extension) {
+
+    public static string RemoveExtension(string path) {
+        return SetExtension(path, extension: null);
+    }
+    public static string GetExtension(string path) {
         try {
-            return Path.ChangeExtension(path, extension);
+            return Path.GetExtension(path);
         } catch (ArgumentNullException e) {
             throw e;
         } catch (ArgumentException e) {
@@ -199,6 +169,14 @@ public static class Utils {
             return false;
         } catch (UnauthorizedAccessException) {
             return false;
+        }
+    }
+
+    public static string[] GetFilesInDir(string dir) {
+        try {
+            return Directory.GetFiles(dir);
+        } catch (UnauthorizedAccessException) {
+            return new string[0];
         }
     }
 

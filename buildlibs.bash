@@ -5,6 +5,10 @@ cd "${0%/*}"
 for path in ./libs/*.c; do
     file="${path%.*}"
     clang -S -emit-llvm $path -o "${file}.ll"
-    llvm-as "${file}.ll" -o "${file}.bc"
+    opt -O3 "${file}.ll" -o "${file}.bc"
+    llc "${file}.bc" -o "${file}.o" -filetype=obj
+    if [ "${file##*/}" != "builtins" ]; then
+        rm "${file}.ll"
+    fi
 done
 echo "Libraries built"

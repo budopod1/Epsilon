@@ -9,64 +9,6 @@ public class SPECFileCompiler : IFileCompiler {
     string fileText;
     ShapedJSON obj;
     Dictionary<string, Type_> types_ = new Dictionary<string, Type_>();
-    public static IJSONShape Shape { get => _Shape; }
-    static IJSONShape _Shape;
-
-    static SPECFileCompiler() {
-        _Shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
-            {"functions", new JSONListShape(new JSONObjectShape(
-                new Dictionary<string, IJSONShape> {
-                    {"id", new JSONStringShape()},
-                    {"callee", new JSONStringShape()},
-                    {"return_type_", new JSONNullableShape(new JSONStringShape())},
-                    {"template", new JSONListShape(new JSONObjectShape(
-                        new Dictionary<string, IJSONShape> {
-                            {"type", new JSONStringShape()}
-                        }
-                    ))},
-                    {"takes_ownership", new JSONBoolShape()},
-                    {"result_in_params", new JSONBoolShape()},
-                    {"source", new JSONStringOptionsShape(new List<string> {
-                        "Program", "Library", "Builtin"
-                    })}
-                }
-            ))},
-            {"types_", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
-                {"given_name", new JSONStringShape()},
-                {"name", new JSONStringShape()},
-                {"bits", new JSONNullableShape(new JSONIntShape())},
-                {"generics", new JSONListShape(new JSONStringShape())}
-            }))},
-            {"structs", new JSONListShape(new JSONObjectShape(
-                new Dictionary<string, IJSONShape> {
-                    {"name", new JSONStringShape()},
-                    {"fields", new JSONListShape(new JSONObjectShape(
-                        new Dictionary<string, IJSONShape> {
-                            {"name", new JSONStringShape()},
-                            {"type_", new JSONStringShape()}
-                        }
-                    ))},
-                    {"symbol", new JSONStringShape()},
-                    {"extendee", new JSONNullableShape(new JSONStringShape())}
-                }
-            ))},
-            {"dependencies", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
-                {"path", new JSONStringShape()},
-                {"functions", new JSONListShape(new JSONWholeShape())},
-                {"structs", new JSONListShape(new JSONStringShape())}
-            }))},
-            {"clang_config", new JSONListShape(new JSONObjectShape(
-                new Dictionary<string, IJSONShape> {
-                    {"type", new JSONStringShape()}
-                }
-            ))},
-            {"imports", new JSONListShape(new JSONStringShape())},
-            {"ir", new JSONStringShape()},
-            {"source", new JSONNullableShape(new JSONStringShape())},
-            {"source_type", new JSONStringOptionsShape(new List<string> {"Library", "User"})},
-            {"id_path", new JSONStringShape()}
-        });
-    }
     
     public SPECFileCompiler(string path, string fileText, ShapedJSON obj) {
         curPath = path;
@@ -156,48 +98,48 @@ public class SPECFileCompiler : IFileCompiler {
                 string type = sobj["type"].GetString();
                 Dictionary<string, IJSONShape> fields;
                 switch (type) {
-                    case "name":
-                        fields = new Dictionary<string, IJSONShape> {
-                            {"name", new JSONStringShape()}
-                        };
-                        break;
-                    case "text":
-                        fields = new Dictionary<string, IJSONShape> {
-                            {"text", new JSONStringShape()}
-                        };
-                        break;
-                    case "argument":
-                        fields = new Dictionary<string, IJSONShape> {
-                            {"name", new JSONStringShape()},
-                            {"type_", new JSONStringShape()}
-                        };
-                        break;
-                    default:
-                        throw new InvalidJSONException(
-                            "Invalid type of template segment", 
-                            sobj.GetJSON()
-                        );
+                case "name":
+                    fields = new Dictionary<string, IJSONShape> {
+                        {"name", new JSONStringShape()}
+                    };
+                    break;
+                case "text":
+                    fields = new Dictionary<string, IJSONShape> {
+                        {"text", new JSONStringShape()}
+                    };
+                    break;
+                case "argument":
+                    fields = new Dictionary<string, IJSONShape> {
+                        {"name", new JSONStringShape()},
+                        {"type_", new JSONStringShape()}
+                    };
+                    break;
+                default:
+                    throw new InvalidJSONException(
+                        "Invalid type of template segment", 
+                        sobj.GetJSON()
+                    );
                 }
 
                 sobj = sobj.ToShape(new JSONObjectShape(fields));
 
                 switch (type) {
-                    case "name":
-                        string name1 = sobj["name"].GetString();
-                        segments.Add(new UnitPatternSegment<string>(typeof(Name), name1));
-                        break;
-                    case "text":
-                        string text = sobj["text"].GetString();
-                        segments.Add(new TextPatternSegment(text));
-                        break;
-                    case "argument":
-                        string name2 = sobj["name"].GetString();
-                        Type_ type_ = MakeSPECType_(sobj["type_"]);
-                        FunctionArgument argument = new FunctionArgument(name2, type_);
-                        arguments.Add(argument);
-                        segments.Add(new TypePatternSegment(typeof(RawSquareGroup)));
-                        argumentIdxs.Add(i);
-                        break;
+                case "name":
+                    string name1 = sobj["name"].GetString();
+                    segments.Add(new UnitPatternSegment<string>(typeof(Name), name1));
+                    break;
+                case "text":
+                    string text = sobj["text"].GetString();
+                    segments.Add(new TextPatternSegment(text));
+                    break;
+                case "argument":
+                    string name2 = sobj["name"].GetString();
+                    Type_ type_ = MakeSPECType_(sobj["type_"]);
+                    FunctionArgument argument = new FunctionArgument(name2, type_);
+                    arguments.Add(argument);
+                    segments.Add(new FuncArgPatternSegment());
+                    argumentIdxs.Add(i);
+                    break;
                 }
             }
             string id = func["id"].GetString();
@@ -250,7 +192,7 @@ public class SPECFileCompiler : IFileCompiler {
                 }
             }
             IEnumerable<RealFunctionDeclaration> functionDependencies = fobj["functions"].IterList().Select(
-                dstr => declarations[dstr.GetWhole()]
+                dint => declarations[dint.GetInt()]
             );
             if (hasChanges) {
                 foreach (RealFunctionDeclaration functionDependency in functionDependencies) {
@@ -267,9 +209,18 @@ public class SPECFileCompiler : IFileCompiler {
         );
     }
 
-    public string ToIR(string _) {
-        string ir = obj["ir"].GetString();
-        return Utils.JoinPaths(Utils.GetDirectoryName(curPath), ir);
+    public void FinishCompilation(string suggestedPath) {}
+
+    public string GetIR() {
+        string irPath = obj["ir"].GetStringOrNull();
+        if (irPath == null) return null;
+        return Utils.JoinPaths(Utils.GetDirectoryName(curPath), irPath);
+    }
+
+    public string GetObj() {
+        string objPath = obj["obj"].GetStringOrNull();
+        if (objPath == null) return null;
+        return Utils.JoinPaths(Utils.GetDirectoryName(curPath), objPath);
     }
 
     public string GetSource() {
@@ -290,28 +241,15 @@ public class SPECFileCompiler : IFileCompiler {
 
     public static IClangConfig ParseClangConfigFromJSON(ShapedJSON obj) {
         string type = obj["type"].GetString();
-        Dictionary<string, IJSONShape> fields;
         
         switch (type) {
-            case "constant":
-                fields = new Dictionary<string, IJSONShape> {
-                    {"config", new JSONStringShape()}
-                };
-                break;
-            default:
-                throw new InvalidJSONException(
-                    "Invalid type of clang config", 
-                    obj.GetJSON()
-                );
-        }
-
-        obj = obj.ToShape(new JSONObjectShape(fields));
-
-        switch (type) {
-            case "constant":
-                return new ConstantClangConfig(obj["config"].GetString());
-            default:
-                throw new InvalidOperationException();
+        case "constant":
+            return new ConstantClangConfig(obj);
+        default:
+            throw new InvalidJSONException(
+                "Invalid type of clang config", 
+                obj.GetJSON()
+            );
         }
     }
 
