@@ -6,11 +6,11 @@ public class ListTokenParser<T> {
         EXPECTITEM,
         EXPECTSEPARATOR
     }
-    
+
     IPatternSegment seperator;
     Type item;
     Func<IToken, T> parser;
-    
+
     public ListTokenParser(IPatternSegment seperator, Type item, Func<IToken, T> parser) {
         this.seperator = seperator;
         this.item = item;

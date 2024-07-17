@@ -8,7 +8,7 @@ public class TypesPatternSegment : IPatternSegment {
     public List<Type> GetMTypes() {
         return types;
     }
-    
+
     public TypesPatternSegment(List<Type> types) {
         this.types = types;
     }

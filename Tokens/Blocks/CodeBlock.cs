@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class CodeBlock : Block, IHasScope {
     Scope scope;
-    
+
     public CodeBlock(Program program, List<IToken> tokens) : base(tokens) {
         scope = new Scope(program.GetScopeVarIDCounter());
     }
@@ -11,7 +11,7 @@ public class CodeBlock : Block, IHasScope {
     public CodeBlock(Scope scope, List<IToken> tokens) : base(tokens) {
         this.scope = scope;
     }
-    
+
     protected override TreeToken _Copy(List<IToken> tokens) {
         return new CodeBlock(scope, tokens);
     }

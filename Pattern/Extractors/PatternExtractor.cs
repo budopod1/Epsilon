@@ -5,7 +5,7 @@ using System.Collections.Generic;
 abstract public class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<PatternExtractor<T>> {
     protected List<IPatternSegment> segments;
     protected IPatternProcessor<T> processor;
-    
+
     Action<List<IToken>, int, int> callback;
 
     public void SetCallback(Action<List<IToken>, int, int> callback) {
@@ -15,7 +15,7 @@ abstract public class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<Patte
     public List<IPatternSegment> GetSegments() {
         return segments;
     }
-    
+
     public T Extract(IParentToken tokens) {
         int maxStart = tokens.Count - segments.Count;
         for (int i = 0; i <= maxStart; i++) {
@@ -42,7 +42,7 @@ abstract public class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<Patte
         callback = null;
         return default(T);
     }
-    
+
     public bool Equals(PatternExtractor<T> other) {
         return Enumerable.SequenceEqual(segments, other.GetSegments());
     }

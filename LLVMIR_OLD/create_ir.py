@@ -59,7 +59,7 @@ def create_ir(data):
 
 def main(*, print_ir=False):
     global epsilon_folder
-    
+
     epsilon_folder = Path(__file__).parent.parent
     with open(epsilon_folder / "temp" / "code.json") as file:
         data = orjson.loads(file.read())

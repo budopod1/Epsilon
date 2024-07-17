@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public static class CmdUtils {
     static readonly string[] baseClangArgs = new string[] {"-lc", "-lm"};
     static readonly bool SUBPROCCESSOUTPUT = false;
-    
+
     static Process RunCommand(string command, IEnumerable<string> arguments) {
         ProcessStartInfo startInfo = new ProcessStartInfo(command);
         startInfo.CreateNoWindow = true;
@@ -35,7 +35,7 @@ public static class CmdUtils {
         }
         return process;
     }
-    
+
     public static void LinkLLVM(IEnumerable<string> sources, string output, bool toLL=false) {
         List<string> args = new List<string> {"-o", output};
         if (toLL) {
@@ -85,7 +85,7 @@ public static class CmdUtils {
     public static void FilesToObject(IEnumerable<string> sources, string output) {
         List<string> objs = new List<string>();
         List<string> llvm = new List<string>();
-        
+
         foreach (string source in sources) {
             switch (Utils.GetExtension(source)) {
             case ".ll":
@@ -101,7 +101,7 @@ public static class CmdUtils {
                 );
             }
         }
-        
+
         if (llvm.Count == 0) {
             LinkObjsToObj(objs, output);
         } else if (objs.Count == 0) {

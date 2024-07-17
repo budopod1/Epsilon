@@ -21,23 +21,23 @@ public class Scope : IScope {
 
     public bool ContainsVar(IHasScope hs, string name) {
         foreach (ScopeVar svar in variables.Values) {
-            if (svar.GetName() == name) return true; 
+            if (svar.GetName() == name) return true;
         }
         return WithParentScope(hs, (parent, parenths) => {
             if (parent == null) return false;
             return parent.ContainsVar(parenths, name);
         });
     }
-    
+
     public ScopeVar GetVarByID(IHasScope hs, int id) {
         if (ContainsVarLocal(id)) return variables[id];
         return WithParentScope(hs, (parent, parenths)
             => parent?.GetVarByID(parenths, id));
     }
-    
+
     public ScopeVar GetVarByName(IHasScope hs, string name) {
         foreach (ScopeVar svar in variables.Values) {
-            if (svar.GetName() == name) return svar; 
+            if (svar.GetName() == name) return svar;
         }
         return WithParentScope(hs, (parent, parenths)
             => parent?.GetVarByName(parenths, name));

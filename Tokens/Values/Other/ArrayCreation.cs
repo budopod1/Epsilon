@@ -5,16 +5,16 @@ using System.Collections.Generic;
 public class ArrayCreation : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     Type_ type_;
     List<IValueToken> values;
-    
+
     public int Count {
         get {
             return values.Count;
         }
     }
-    
+
     public IToken this[int i] {
         get {
             return values[i];
@@ -23,12 +23,12 @@ public class ArrayCreation : IParentToken, IValueToken {
             values[i] = ((IValueToken)value);
         }
     }
-    
+
     public ArrayCreation(Type_ type_, List<IValueToken> values) {
         this.type_ = type_;
         this.values = values;
     }
-    
+
     public ArrayCreation(Instantiation instantiation) {
         values = instantiation.GetValues();
         type_ = instantiation.GetType_().GetGeneric(0);
@@ -51,7 +51,7 @@ public class ArrayCreation : IParentToken, IValueToken {
                 GetType().Name,
                 type_.ToString(),
                 "<", ">"
-            ), 
+            ),
             String.Join(
                 ", ", values.ConvertAll<string>(
                     obj => obj.ToString()

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class RawFuncReturnType_ : TreeToken {
     public RawFuncReturnType_(List<IToken> tokens) : base(tokens) {}
-    
+
     protected override TreeToken _Copy(List<IToken> tokens) {
         return (TreeToken)new RawFuncReturnType_(tokens);
     }

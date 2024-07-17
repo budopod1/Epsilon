@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class SlotCastPatternProcessor<T> : IPatternProcessor<List<T>> {
     List<int> indices;
-    
+
     public SlotCastPatternProcessor(List<int> indices) {
         this.indices = indices;
     }

@@ -7,7 +7,7 @@ public class BlockMatcher : IMatcher {
     IPatternSegment start;
     IPatternSegment end;
     Type holder;
-    
+
     public BlockMatcher(IPatternSegment start, IPatternSegment end,
                         Type holder) {
         this.start = start;
@@ -15,7 +15,7 @@ public class BlockMatcher : IMatcher {
         this.holder = holder;
     }
 
-    public BlockMatcher(IPatternSegment prior, 
+    public BlockMatcher(IPatternSegment prior,
                         IPatternSegment start, IPatternSegment end,
                         Type holder) {
         this.prior = prior;
@@ -23,7 +23,7 @@ public class BlockMatcher : IMatcher {
         this.end = end;
         this.holder = holder;
     }
-    
+
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             int indent = 0;
@@ -33,9 +33,9 @@ public class BlockMatcher : IMatcher {
                 IToken token = tokens[j];
                 IToken priorToken = j>0 ? tokens[j-1] : null;
                 replaced.Add(token);
-                
-                if (start.Matches(token) 
-                    && (prior == null || (priorToken != null 
+
+                if (start.Matches(token)
+                    && (prior == null || (priorToken != null
                                           && prior.Matches(priorToken)))) {
                     indent++;
                 } else if (end.Matches(token)) {
@@ -44,7 +44,7 @@ public class BlockMatcher : IMatcher {
                     }
                     indent--;
                 }
-                
+
                 if (indent == 0) {
                     if (!any) break;
                     List<IToken> replacement = new List<IToken>();

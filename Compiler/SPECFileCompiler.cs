@@ -9,7 +9,7 @@ public class SPECFileCompiler : IFileCompiler {
     string fileText;
     ShapedJSON obj;
     Dictionary<string, Type_> types_ = new Dictionary<string, Type_>();
-    
+
     public SPECFileCompiler(string path, string fileText, ShapedJSON obj) {
         curPath = path;
         idPath = obj["id_path"].GetString();
@@ -76,7 +76,7 @@ public class SPECFileCompiler : IFileCompiler {
                 idPath, sobj["name"].GetString(),
                 sobj["fields"].IterList().Select(
                     fobj => new Field(
-                        fobj["name"].GetString(), 
+                        fobj["name"].GetString(),
                         MakeSPECType_(fobj["type_"])
                     )
                 ).ToList(), sobj["symbol"].GetString(),
@@ -84,7 +84,7 @@ public class SPECFileCompiler : IFileCompiler {
             )
         ).ToHashSet();
     }
-    
+
     public void LoadStructExtendees() {}
 
     public List<RealFunctionDeclaration> ToDeclarations() {
@@ -116,7 +116,7 @@ public class SPECFileCompiler : IFileCompiler {
                     break;
                 default:
                     throw new InvalidJSONException(
-                        "Invalid type of template segment", 
+                        "Invalid type of template segment",
                         sobj.GetJSON()
                     );
                 }
@@ -204,7 +204,7 @@ public class SPECFileCompiler : IFileCompiler {
             return (structDepedencies, functionDependencies);
         });
         return new Dependencies(
-            pairs.SelectMany(pair => pair.structs).ToList(), 
+            pairs.SelectMany(pair => pair.structs).ToList(),
             pairs.SelectMany(pair => pair.declarations).ToList()
         );
     }
@@ -241,20 +241,20 @@ public class SPECFileCompiler : IFileCompiler {
 
     public static IClangConfig ParseClangConfigFromJSON(ShapedJSON obj) {
         string type = obj["type"].GetString();
-        
+
         switch (type) {
         case "constant":
             return new ConstantClangConfig(obj);
         default:
             throw new InvalidJSONException(
-                "Invalid type of clang config", 
+                "Invalid type of clang config",
                 obj.GetJSON()
             );
         }
     }
 
     public FileSourceType GetFileSourceType() {
-        Enum.TryParse<FileSourceType>(obj["source_type"].GetString(), 
+        Enum.TryParse<FileSourceType>(obj["source_type"].GetString(),
             out FileSourceType source);
         return source;
     }

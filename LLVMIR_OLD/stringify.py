@@ -28,7 +28,7 @@ def make_stringify_func(program, key, type_, i):
             builder, make_type_(program, String).pointee, name="struct_mem"
         )
         init_ref_counter(builder, struct_mem)
-        
+
         capacity_field = builder.gep(struct_mem, [i64_of(0), i32_of(1)])
         length_field = builder.gep(struct_mem, [i64_of(0), i32_of(2)])
         array_field = builder.gep(struct_mem, [i64_of(0), i32_of(3)])
@@ -69,13 +69,13 @@ def make_stringify_func(program, key, type_, i):
              builder, string, capacity, unique=True
          ), array_field)
         builder.ret(struct_mem)
-            
+
     elif type_ == Byte:
         struct_mem = program.malloc(
             builder, make_type_(program, String).pointee, name="struct_mem"
         )
         init_ref_counter(builder, struct_mem)
-        
+
         builder.store(
             i64_of(1),
             builder.gep(struct_mem, [i64_of(0), i32_of(1)])
@@ -93,17 +93,17 @@ def make_stringify_func(program, key, type_, i):
             builder.gep(struct_mem, [i64_of(0), i32_of(3)]),
         )
         builder.ret(struct_mem)
-        
+
     elif is_number_type_(type_):
         struct_mem = program.malloc(
             builder, make_type_(program, String).pointee, name="struct_mem"
         )
         init_ref_counter(builder, struct_mem)
-        
+
         specifier = None
         casted_value = val
         bits = type_["bits"]
-        
+
         if is_floating_type_(type_):
             if bits < 32:
                 casted_value = convert_type_(program, builder, val, type_, Q32)
@@ -114,7 +114,7 @@ def make_stringify_func(program, key, type_, i):
             specifier = program.string_literal_array(
                 builder, specifier_txt, name="specifier"
             )
-                
+
         elif is_integer_type_(type_):
             name = type_["name"]
             new_type_ = {"name": name, "bits": 8, "generics": []}
@@ -131,10 +131,10 @@ def make_stringify_func(program, key, type_, i):
                 builder, func_name, [], [], PointerW8
             )
             casted_value = convert_type_(program, builder, val, type_, new_type_)
-        
+
         length = program.call_extern(
             builder, "snprintf", [
-                program.nullptr(builder, byte_ir_type.as_pointer()), i64_of(0), 
+                program.nullptr(builder, byte_ir_type.as_pointer()), i64_of(0),
                 specifier
             ], [PointerW8, W64, PointerW8], W64, [casted_value]
         )
@@ -155,7 +155,7 @@ def make_stringify_func(program, key, type_, i):
             builder, make_type_(program, String).pointee, name="struct_mem"
         )
         init_ref_counter(builder, struct_mem)
-        
+
         start_str = f"{stringify_type_(program, type_)} ["
         start_capacity = len(start_str)+1
         start_array_mem = program.string_literal_array(
@@ -163,13 +163,13 @@ def make_stringify_func(program, key, type_, i):
         )
         length = builder.load(builder.gep(val, [i64_of(0), i32_of(2)]), name="length")
         content = builder.load(builder.gep(val, [i64_of(0), i32_of(3)]), name="content")
-        
+
         check_block = func.append_basic_block(name="check")
         loop_block = func.append_basic_block(name="loop")
         finish_block = func.append_basic_block(name="finish")
-        
+
         builder.branch(check_block)
-        
+
         cbuilder = ir.IRBuilder(check_block)
         array = cbuilder.phi(byte_ir_type.as_pointer(), name="array")
         array.add_incoming(start_array_mem, entry)
@@ -214,7 +214,7 @@ def make_stringify_func(program, key, type_, i):
         program.dumb_free(lbuilder, segment_content)
         program.dumb_free(lbuilder, segment)
         lbuilder.branch(check_block)
-        
+
         array.add_incoming(new_array, loop_block)
         i.add_incoming(next_i, loop_block)
         capacity.add_incoming(new_cap, loop_block)
@@ -235,10 +235,10 @@ def make_stringify_func(program, key, type_, i):
 
         null_ptr = program.nullptr(builder, make_type_(program, type_))
         builder.cbranch(
-            builder.icmp_unsigned("==", val, null_ptr), 
+            builder.icmp_unsigned("==", val, null_ptr),
             null_block, nonnull_block
         )
-        
+
         builder = ir.IRBuilder(null_block)
         struct_mem = program.malloc(
             builder, make_type_(program, String).pointee, name="struct_mem"
@@ -247,7 +247,7 @@ def make_stringify_func(program, key, type_, i):
         capacity_field = builder.gep(struct_mem, [i64_of(0), i32_of(1)])
         length_field = builder.gep(struct_mem, [i64_of(0), i32_of(2)])
         array_field = builder.gep(struct_mem, [i64_of(0), i32_of(3)])
-        
+
         string = "null"
         capacity = len(string)
         builder.store(i64_of(capacity), capacity_field)
@@ -268,7 +268,7 @@ def make_stringify_func(program, key, type_, i):
         capacity_field = builder.gep(struct_mem, [i64_of(0), i32_of(1)])
         length_field = builder.gep(struct_mem, [i64_of(0), i32_of(2)])
         array_field = builder.gep(struct_mem, [i64_of(0), i32_of(3)])
-        
+
         text = "File"
         capacity = len(text)
         builder.store(i64_of(capacity), capacity_field)
@@ -276,15 +276,15 @@ def make_stringify_func(program, key, type_, i):
         builder.store(program.string_literal_array(
              builder, text, capacity, unique=True
         ), array_field)
-        
+
         builder.ret(struct_mem)
-        
+
     else:
         struct_mem = program.malloc(
             builder, make_type_(program, String).pointee, name="struct_mem"
         )
         init_ref_counter(builder, struct_mem)
-        
+
         # It's a struct!
         name = stringify_type_(program, type_)
         struct = program.structs[type_["name"]]
@@ -312,7 +312,7 @@ def make_stringify_func(program, key, type_, i):
             item_strs = []
             item_lens = []
             item_contents = []
-            
+
             for i, field in enumerate(struct.get_field_types_()):
                 item = builder.load(builder.gep(val, [i64_of(0), i32_of(i+1)]), name="item")
                 item_str = program.stringify(builder, item, field)
@@ -325,7 +325,7 @@ def make_stringify_func(program, key, type_, i):
                 item_strs.append(item_str)
                 item_lens.append(item_len)
                 item_contents.append(item_content)
-    
+
             comma_starts = []
             starts = []
             total = i64_of(start_len)
@@ -334,15 +334,15 @@ def make_stringify_func(program, key, type_, i):
                 comma_start = builder.add(total, value, name=f"comma_start{i}")
                 comma_starts.append(comma_start)
                 total = builder.add(comma_start, i64_of(2), name=f"total{i}")
-    
+
             last_index = comma_starts[-1] # no last ", "
-    
+
             total_length = builder.add(last_index, i64_of(1), name="total_length")
-    
+
             array_mem = program.mallocv(
                 builder, byte_ir_type, total_length, name="array_mem"
             )
-    
+
             program.call_extern(
                 builder, "memcpy", [
                     array_mem, start_str_mem, i64_of(start_len), i1_of(0)
@@ -351,7 +351,7 @@ def make_stringify_func(program, key, type_, i):
             builder.store(i8_of(ord("]")), builder.gep(
                 array_mem, [last_index], name="closing_square_bracket_ptr"
             ))
-    
+
             for idx, item_len, item_content in zip(starts, item_lens, item_contents):
                 program.call_extern(
                     builder, "memcpy", [
@@ -359,7 +359,7 @@ def make_stringify_func(program, key, type_, i):
                         item_len, i1_of(0)
                     ], [PointerW8, PointerW8, W64, Bool], None
                 )
-    
+
             for i, idx in enumerate(comma_starts[:-1]):
                 builder.store(i8_of(ord(",")), builder.gep(
                     array_mem, [idx], name=f"comma_ptr{i}"
@@ -367,7 +367,7 @@ def make_stringify_func(program, key, type_, i):
                 builder.store(i8_of(ord(" ")), builder.gep(
                     array_mem, [builder.add(idx, i64_of(1))], name=f"space_ptr{i}"
                 ))
-            
+
             builder.store(total_length, builder.gep(
                 struct_mem, [i64_of(0), i32_of(1)]
             ))
@@ -377,12 +377,12 @@ def make_stringify_func(program, key, type_, i):
             builder.store(array_mem, builder.gep(
                 struct_mem, [i64_of(0), i32_of(3)]
             ))
-    
+
             for item_str in item_strs:
                 program.dumb_free(builder, item_str)
             for item_content in item_contents:
                 program.dumb_free(builder, item_content)
-    
+
             builder.ret(struct_mem)
-    
+
     return func

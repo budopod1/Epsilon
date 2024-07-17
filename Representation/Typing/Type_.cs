@@ -19,7 +19,7 @@ public class Type_ : IEquatable<Type_> {
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
         if (abt.IsAny() || bbt.IsAny()) return true;
-        if (a.HasGenerics() || b.HasGenerics()) 
+        if (a.HasGenerics() || b.HasGenerics())
             return false;
         bool aToB = abt.IsConvertibleTo(bbt);
         bool bToA = bbt.IsConvertibleTo(abt);
@@ -237,7 +237,7 @@ public class Type_ : IEquatable<Type_> {
     public bool IsConvertibleTo(Type_ other) {
         Type_ this_ = this;
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() || other.GetBaseType_().IsAny()) 
+        if (baseType_.IsAny() || other.GetBaseType_().IsAny())
             return true;
         if (this_.IsConvertibleNullTo(other)) return true;
         // conversion to optional is always implicit
@@ -258,7 +258,7 @@ public class Type_ : IEquatable<Type_> {
             List<Type_> otherGenerics = other.GetGenerics();
             if (generics.Count != otherGenerics.Count) return false;
             for (int i = 0; i < generics.Count; i++) {
-                if (!generics[i].IsEquivalentTo(otherGenerics[i])) 
+                if (!generics[i].IsEquivalentTo(otherGenerics[i]))
                     return false;
             }
             return true;
@@ -299,7 +299,7 @@ public class Type_ : IEquatable<Type_> {
 
     public bool Matches(Type_ other) {
         BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() || otherBaseType_.IsAny()) 
+        if (baseType_.IsAny() || otherBaseType_.IsAny())
             return true;
         return baseType_.Equals(other.GetBaseType_()) && GenericsMatching(other);
     }

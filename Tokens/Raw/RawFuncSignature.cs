@@ -4,14 +4,14 @@ using System.Collections.Generic;
 public class RawFuncSignature : IParentToken, IBarMatchingInto {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     IToken returnType_;
     IToken template;
-    
+
     public int Count {
         get => 2;
     }
-    
+
     public IToken this[int i] {
         get {
             if (i == 0) return returnType_;
@@ -25,7 +25,7 @@ public class RawFuncSignature : IParentToken, IBarMatchingInto {
             }
         }
     }
-    
+
     public RawFuncSignature(IToken returnType_, IToken template) {
         this.returnType_ = returnType_;
         this.template = template;

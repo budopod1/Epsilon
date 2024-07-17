@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class SPECType_Creator {
     List<Type_> types_ = new List<Type_>();
-    
+
     public string MakeSPECType_(Type_ type_) {
         types_.Add(type_);
         return type_.ToString();

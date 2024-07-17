@@ -4,16 +4,16 @@ using System.Collections.Generic;
 public class FunctionCall : IFunctionCall, IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     FunctionDeclaration function;
     List<IValueToken> arguments;
-    
+
     public int Count {
         get {
             return arguments.Count;
         }
     }
-    
+
     public IToken this[int i] {
         get {
             return arguments[i];
@@ -22,7 +22,7 @@ public class FunctionCall : IFunctionCall, IParentToken, IValueToken {
             arguments[i] = (IValueToken)value;
         }
     }
-    
+
     public FunctionCall(FunctionDeclaration function, List<IValueToken> arguments) {
         this.function = function;
         this.arguments = arguments;

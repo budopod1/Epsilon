@@ -11,8 +11,8 @@ public static class Utils {
     public static string Lowercase = "qwertyuiopasdfghjklzxcvbnm";
     public static string NameStartChars = Uppercase + Lowercase + "_";
     public static string NameChars = Uppercase + Lowercase + Numbers + "_";
-    
-    public static string WrapName(string name, string content, 
+
+    public static string WrapName(string name, string content,
                                   string wrapStart="(", string wrapEnd=")") {
         return name + wrapStart + content + wrapEnd;
     }
@@ -34,7 +34,7 @@ public static class Utils {
         if (a.IsSubclassOf(b)) return true;
         return a == b;
     }
-    
+
     public static bool IsInstance(Object a, Type b) {
         return Utils.IsInstance(a.GetType(), b);
     }

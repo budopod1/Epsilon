@@ -2,7 +2,7 @@ using System;
 
 public class SyntaxErrorException : Exception {
     public CodeSpan span;
-    
+
     public SyntaxErrorException(string message, IToken token) : base(message) {
         if (token.span == null) {
             Console.WriteLine(message);

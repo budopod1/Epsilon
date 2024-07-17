@@ -3,15 +3,15 @@ from common import *
 
 EXTERN_FUNCS = {
     "pow": {
-        "name": "llvm.pow.f64", "return_type_": Q64, 
+        "name": "llvm.pow.f64", "return_type_": Q64,
         "arguments": [Q64, Q64]
     },
     "sqrt": {
-        "name": "llvm.sqrt.f64", "return_type_": Q64, 
+        "name": "llvm.sqrt.f64", "return_type_": Q64,
         "arguments": [Q64]
     },
     "cbrt": {
-        "name": "llvm.cbrt.f64", "return_type_": Q64, 
+        "name": "llvm.cbrt.f64", "return_type_": Q64,
         "arguments": [Q64]
     },
     "malloc": {
@@ -125,11 +125,11 @@ EXTERN_FUNCS = {
         "name": "formatZ64", "return_type_": PointerW8, "arguments": []
     },
     "leftPad": {
-        "name": "leftPad", "return_type_": None, 
+        "name": "leftPad", "return_type_": None,
         "arguments": [String, W64, Byte]
     },
     "rightPad": {
-        "name": "rightPad", "return_type_": None, 
+        "name": "rightPad", "return_type_": None,
         "arguments": [String, W64, Byte]
     },
     "slice": {

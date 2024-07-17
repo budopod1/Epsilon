@@ -17,7 +17,7 @@ class Function:
         self.result_in_params = data["result_in_params"]
         self.callee = data["callee"]
         self.ir_type = make_function_type_(
-            program, self.return_type_, 
+            program, self.return_type_,
             (argument["type_"] for argument in self.arguments)
         )
         self.ir = ir.Function(program.module, self.ir_type, name=self.callee)
@@ -88,7 +88,7 @@ class ModuleFunction:
         self.return_type_= data["return_type_"]
         self.arguments = data["arguments"]
         self.ir_type = make_function_type_(
-            program, self.return_type_, 
+            program, self.return_type_,
             (argument["type_"] for argument in self.arguments)
         )
         self.takes_ownership = data["takes_ownership"]

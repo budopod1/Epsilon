@@ -78,7 +78,7 @@ class Block:
             if instruction.parameters:
                 params, param_types_ = zip(*[
                     (
-                        ir_instructions[parameter-self.param_offset], 
+                        ir_instructions[parameter-self.param_offset],
                         instruction_result_types_[parameter-self.param_offset]
                     )
                     for parameter in instruction.parameters
@@ -151,7 +151,7 @@ class Block:
         self.instructions = self.instructions[:start]
         next_block = self.function.add_block(
             self.program, self.function, id_, {
-                "instructions": cut, 
+                "instructions": cut,
                 "initial_declarations": self.initial_declarations,
                 "parent_declarations": self.parent_declarations,
                 "does_terminate_function": self.does_terminate_function

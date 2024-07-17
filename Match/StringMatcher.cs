@@ -8,15 +8,15 @@ public class StringMatcher : IMatcher {
     public StringMatcher(Program program) {
         this.program = program;
     }
-    
+
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
-            if (!(token is TextToken) || 
+            if (!(token is TextToken) ||
                 ((TextToken)token).GetText() != "\"") {
                 continue;
             }
-            
+
             List<IToken> matched = new List<IToken>();
             matched.Add(token);
             bool wasBackslash = false;
@@ -27,7 +27,7 @@ public class StringMatcher : IMatcher {
                 }
                 matched.Add(token);
                 string text = ((TextToken)token).GetText();
-                
+
                 if (wasBackslash) {
                     wasBackslash = false;
                     continue;
@@ -37,7 +37,7 @@ public class StringMatcher : IMatcher {
                     continue;
                 }
                 if (text != "\"") continue;
-                
+
                 string matchedString = String.Join("", matched.Select(
                         (IToken sub) => ((TextToken)sub).GetText()
                 ));

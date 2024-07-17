@@ -6,13 +6,13 @@ public class TextPatternSegment : IPatternSegment {
     public string GetText() {
         return text;
     }
-    
+
     public TextPatternSegment(string text) {
         this.text = text;
     }
 
     public bool Matches(IToken token) {
-        return (token is TextToken 
+        return (token is TextToken
             && ((TextToken)token).GetText() == text);
     }
 

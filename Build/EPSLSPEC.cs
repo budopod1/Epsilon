@@ -13,7 +13,7 @@ public class EPSLSPEC {
     public string Source;
     public FileSourceType SourceType;
     public string IDPath;
-    
+
     public static IJSONShape Shape { get => _Shape; }
     static IJSONShape _Shape;
 
@@ -177,7 +177,7 @@ public class EPSLSPEC {
         obj["imports"] = new JSONList(Imports.Select(import => new JSONString(import)));
 
         obj["ir"] = JSONString.OrNull(IR);
-        
+
         obj["obj"] = JSONString.OrNull(Obj);
 
         obj["source"] = JSONString.OrNull(Source);

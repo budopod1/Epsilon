@@ -19,7 +19,7 @@ public class NameMatcher : IMatcher {
                 IToken token = tokens[j];
                 if (token is TextToken) {
                     string text = ((TextToken)token).GetText();
-                    
+
                     if (Utils.NameChars.Contains(text)) {
                         replaced.Add(token);
                         name += text;
@@ -31,7 +31,7 @@ public class NameMatcher : IMatcher {
             List<IToken> replacement = new List<IToken>();
             if (name.StartsWith("___")) {
                 throw new SyntaxErrorException(
-                    "Names starting with '___' are reserved", 
+                    "Names starting with '___' are reserved",
                     TokenUtils.MergeSpans(replaced)
                 );
             }

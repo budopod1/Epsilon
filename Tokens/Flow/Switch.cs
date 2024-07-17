@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     IValueToken value;
     List<SwitchArm> arms;
     CodeBlock default_;
@@ -13,7 +13,7 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public int Count {
         get { return 1 + arms.Count + (default_==null?0:1); }
     }
-    
+
     public IToken this[int i] {
         get {
             if (i == 0) return value;
@@ -140,7 +140,7 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public bool DoesTerminateFunction() {
         if (default_ == null) return false;
         if (!default_.DoesTerminateFunction()) return false;
-        return arms.All(arm => 
+        return arms.All(arm =>
             arm.GetBlock().DoesTerminateFunction());
     }
 }

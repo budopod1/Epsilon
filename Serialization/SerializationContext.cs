@@ -78,7 +78,7 @@ public class SerializationContext {
     }
 
     public int SerializeInstruction(ISerializableToken token) {
-        if (function.Serialized.ContainsKey(token)) 
+        if (function.Serialized.ContainsKey(token))
             return function.Serialized[token];
         int id = token.Serialize(this);
         function.Serialized[token] = id;

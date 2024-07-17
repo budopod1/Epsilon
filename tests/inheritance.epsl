@@ -37,6 +37,6 @@ Z#main {
 
     sb.val1;
     sb.val2;
-    
+
     return 0;
 }

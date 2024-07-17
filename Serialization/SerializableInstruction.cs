@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class SerializableInstruction {
     JSONObject obj = new JSONObject();
-    
+
     public SerializableInstruction(string name, List<int> parameters=null, Type_ type_=null) {
         obj["name"] = new JSONString(name);
         if (parameters == null) {

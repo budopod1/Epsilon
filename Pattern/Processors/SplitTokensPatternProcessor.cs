@@ -6,20 +6,20 @@ public class SplitTokensPatternProcessor : IPatternProcessor<List<IToken>> {
     Type wrapper;
     IPatternSegment seperator;
     IPatternProcessor<List<IToken>> subprocessor;
-    
+
     public SplitTokensPatternProcessor(IPatternProcessor<List<IToken>> subprocessor,
                                 IPatternSegment seperator, Type wrapper) {
         this.wrapper = wrapper;
         this.seperator = seperator;
         this.subprocessor = subprocessor;
     }
-    
+
     public SplitTokensPatternProcessor(IPatternSegment seperator, Type wrapper) {
         this.wrapper = wrapper;
         this.seperator = seperator;
         this.subprocessor = null;
     }
-    
+
     public List<IToken> Process(List<IToken> tokens_, int start, int end) {
         List<IToken> tokens = tokens_;
         if (subprocessor != null) {

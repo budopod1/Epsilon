@@ -5,12 +5,12 @@ using System.Collections.Generic;
 public class AddMatchingFunctionMatcher : IMatcher {
     FunctionDeclaration func;
     List<IPatternSegment> segments;
-    
+
     public AddMatchingFunctionMatcher(FunctionDeclaration func) {
         this.func = func;
         segments = func.GetPattern().GetSegments();
     }
-    
+
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];

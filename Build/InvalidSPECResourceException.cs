@@ -5,7 +5,7 @@ public class InvalidSPECResourceException : Exception {
     ShapedJSON obj;
     string epslspec;
     string source;
-    
+
     public InvalidSPECResourceException(ShapedJSON obj, string epslspec, string source) {
         this.obj = obj;
         this.epslspec = epslspec;

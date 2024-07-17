@@ -3,7 +3,7 @@ using System;
 public class ReturnVoid : IVerifier, IFunctionTerminator, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     public void Verify() {
         Function func = TokenUtils.GetParentOfType<Function>(this);
         if (!func.DoesReturnVoid()) {

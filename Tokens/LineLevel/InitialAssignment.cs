@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class InitialAssignment : UnaryOperation<IValueToken>, IVerifier, ICompleteLine, ISerializableToken {
     int id;
-    
+
     public InitialAssignment(VarDeclaration declaration, IValueToken o) : base(o) {
         id = declaration.GetID();
     }

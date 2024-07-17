@@ -3,7 +3,7 @@ using System.Reflection;
 
 public class CompoundAssignment : BinaryOperation<IAssignableValue, IValueToken>, ICompleteLine {
     Type type;
-    
+
     public CompoundAssignment(Type type, IAssignableValue o1, IValueToken o2) : base(o1, o2) {
         this.type = type;
     }

@@ -60,7 +60,7 @@ def make_type_(program, data):
             return ir.FunctionType(ret, params)
         case "Array", [sub]:
             return ir.LiteralStructType([
-                REF_COUNTER_FIELD, 
+                REF_COUNTER_FIELD,
                 ir.IntType(64), # capacity
                 ir.IntType(64), # element count
                 ir.PointerType(sub)
@@ -173,7 +173,7 @@ def convert_type_(program, builder, val, old, new):
         return builder.sitofp(val, new_ir_type)
     elif is_unsigned_integer_type_(old) and is_floating_type_(new):
         return builder.uitofp(val, new_ir_type)
-    elif ((not is_value_type_(old) or old == Null) 
+    elif ((not is_value_type_(old) or old == Null)
           and (not is_value_type_(new))):
         return builder.bitcast(val, new_ir_type)
     elif old == Internal or new == Internal:
@@ -261,7 +261,7 @@ def make_function_type_(program, return_type_, arguments, vargs=False):
     return ir.FunctionType(
         make_type_(program, return_type_) if return_type_ else ir.VoidType(),
         [
-            make_type_(program, argument) 
+            make_type_(program, argument)
             for argument in arguments
         ], vargs
     )

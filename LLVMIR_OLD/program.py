@@ -55,7 +55,7 @@ class Program:
         builtin = self.builtins[id]
         casted_params = [
             (
-               param if target_type_ is None else 
+               param if target_type_ is None else
                convert_type_(self, builder, param, param_type_, target_type_)
             )
             for param, param_type_, target_type_ in zip(params, param_types_, builtin["params"])
@@ -96,7 +96,7 @@ class Program:
                 params, param_types_, func.arguments
             )
         ]
-        
+
         result = builder.call(func.ir, converted_params)
 
         if not func.takes_ownership:
@@ -432,7 +432,7 @@ class Program:
         elem_size = self.sizeof(builder, make_type_(self, generic_type_))
         comparer_func = self.make_comparer_func(generic_type_, invert)
         self.call_extern(
-            builder, "sortArray", [arr, elem_size, comparer_func], 
+            builder, "sortArray", [arr, elem_size, comparer_func],
             [arr_type_, W64, ComparerType_], None
         )
 
@@ -440,7 +440,7 @@ class Program:
         elem_type_ = arr_type_["generics"][0]
         elem = self.make_elem(builder, elem_type_)
         return self.call_extern(
-            builder, "clone", [arr, elem], 
+            builder, "clone", [arr, elem],
             [arr_type_, W64], arr_type_
         )
 

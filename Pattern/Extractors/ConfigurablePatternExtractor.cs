@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class ConfigurablePatternExtractor<T> : PatternExtractor<T> {
-    public ConfigurablePatternExtractor(List<IPatternSegment> segments, 
+    public ConfigurablePatternExtractor(List<IPatternSegment> segments,
                                         IPatternProcessor<T> processor) {
         this.segments = segments;
         this.processor = processor;

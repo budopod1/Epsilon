@@ -7,11 +7,11 @@ public class TypePatternSegment : IPatternSegment {
     public Type GetMType() {
         return type;
     }
-    
+
     public TypePatternSegment(Type type) {
         this.type = type;
     }
-    
+
     public TypePatternSegment(Type type, bool exact) {
         this.type = type;
         this.exact = exact;

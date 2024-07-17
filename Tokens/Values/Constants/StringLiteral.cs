@@ -4,9 +4,9 @@ using System.Collections.Generic;
 public class StringLiteral : IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     string str;
-    
+
     public StringLiteral(string str) {
         this.str = str;
     }

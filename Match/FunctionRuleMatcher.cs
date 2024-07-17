@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 public class FunctionRuleMatcher : IMatcher {
     PatternExtractor<List<IToken>> extractor;
-    
+
     public FunctionRuleMatcher(PatternExtractor<List<IToken>> extractor) {
         this.extractor = extractor;
     }
-    
+
     public Match Match(IParentToken tokens) {
         int start = -1;
         int end = -1;

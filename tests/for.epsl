@@ -12,7 +12,7 @@ Z#main {
     for (Z:i from 1 to 5 step 2) {
         counter += i;
     }; // totals 4
-    
+
     [Z]:arr = [Z] [1, 1, 2, 3, 5];
 
     for (Z:i in arr) {

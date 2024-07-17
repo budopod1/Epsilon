@@ -8,11 +8,11 @@ public class AndPatternSegment : IPatternSegment {
     public List<IPatternSegment> GetSegments() {
         return segments;
     }
-    
+
     public AndPatternSegment(List<IPatternSegment> segments) {
         this.segments = segments;
     }
-    
+
     public AndPatternSegment(IPatternSegment a, IPatternSegment b) {
         this.segments = new List<IPatternSegment> {a, b};
     }

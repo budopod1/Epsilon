@@ -3,9 +3,9 @@ using System;
 public class TextToken : IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     string text;
-    
+
     public TextToken(string text) {
         this.text = text;
     }

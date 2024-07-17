@@ -378,7 +378,7 @@ struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t e
             section->length = sectionLen;
             void *secContent = malloc(capacity*elemSize);
             memcpy(
-                secContent, content+(elemSize*partStart), 
+                secContent, content+(elemSize*partStart),
                 sectionLen*elemSize
             );
             section->content = secContent;
@@ -401,7 +401,7 @@ struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t e
         section->length = sectionLen;
         void *secContent = malloc(capacity*elemSize);
         memcpy(
-            secContent, content+(elemSize*partStart), 
+            secContent, content+(elemSize*partStart),
             sectionLen*elemSize
         );
         section->content = secContent;
@@ -583,7 +583,7 @@ struct File {
 struct File *openFile(struct Array *string, int32_t mode) {
     char modeStr[4];
     int i = 0;
-    
+
     if (mode&_FILE_WRITE_MODE) {
         if (mode&_FILE_APPEND_MODE)
             return NULL;
@@ -599,11 +599,11 @@ struct File *openFile(struct Array *string, int32_t mode) {
     } else {
         return NULL;
     }
-    
+
     if (mode&_FILE_BINARY_MODE) {
         modeStr[i++] = 'b';
     }
-    
+
     modeStr[i] = '\0';
 
     uint64_t len = string->length;
@@ -611,7 +611,7 @@ struct File *openFile(struct Array *string, int32_t mode) {
     char* content = string->content;
     content[len] = '\0';
     string->length = len;
-    
+
     FILE *cFile = fopen(content, modeStr);
     if (cFile == NULL) return NULL;
 
@@ -664,7 +664,7 @@ int64_t fileLength(const struct File *file) {
     if (file->open) {
         FILE *fp = file->file;
         long startPos = ftell(fp);
-        fseek(fp, 0, SEEK_END); 
+        fseek(fp, 0, SEEK_END);
         uint64_t length = (uint64_t)ftell(fp);
         fseek(fp, startPos, SEEK_SET);
         return length;
@@ -890,11 +890,11 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
                 fwrite(TOO_FEW_PLACEHOLDERS_MESSAGE, strlen(TOO_FEW_PLACEHOLDERS_MESSAGE), 1, stderr);
                 exit(1);
             }
-            
+
             uint64_t segLen = i - segStart;
             memcpy(result + resultIdx, template_Content + segStart, segLen);
             resultIdx += segLen;
-            
+
             struct Array *value = values[valueIdx++];
             uint64_t valueLen = value->length;
             memcpy(result + resultIdx, value->content, valueLen);
@@ -904,7 +904,7 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
             i = segStart - 1;
         }
     }
-    
+
     if (__builtin_expect(valueIdx < valueCount, 0)) {
         fflush(stdout);
         fwrite(TOO_MANY_PLACEHOLDERS_MESSAGE, strlen(TOO_MANY_PLACEHOLDERS_MESSAGE), 1, stderr);
@@ -912,7 +912,7 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
     }
 
     memcpy(result + resultIdx, template_Content + segStart, template_Len - segStart);
-    
+
     struct Array *resultArr = malloc(sizeof(struct Array));
     resultArr->refCounter = 0;
     resultArr->capacity = resultCap;

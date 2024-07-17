@@ -42,14 +42,14 @@ public class NumberMatcher : IMatcher {
                         sub => ((TextToken)sub).GetText()
                     )
                 );
-                
+
                 IConstant constant;
                 if (dot) {
                     constant = FloatConstant.FromString(matchedString);
                 } else {
                     constant = UnsignedIntConstant.FromString(matchedString);
                 }
-                
+
                 List<IToken> replacement = new List<IToken> {
                     new ConstantValue(constant)
                 };

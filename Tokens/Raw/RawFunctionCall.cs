@@ -4,17 +4,17 @@ using System.Collections.Generic;
 public class RawFunctionCall : IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     HashSet<FunctionDeclaration> matchingFunctions = new HashSet<FunctionDeclaration>();
     List<IPatternSegment> segments;
     List<IToken> arguments;
-    
+
     public int Count {
         get {
             return arguments.Count;
         }
     }
-    
+
     public IToken this[int i] {
         get {
             return arguments[i];
@@ -23,7 +23,7 @@ public class RawFunctionCall : IParentToken {
             arguments[i] = (IToken)value;
         }
     }
-    
+
     public RawFunctionCall(List<IPatternSegment> segments, List<IToken> arguments) {
         this.segments = segments;
         this.arguments = arguments;

@@ -18,25 +18,25 @@ Modes:
         );
 
         PossibilitiesExpectation cacheModeInput = parser.AddOption(
-            new PossibilitiesExpectation("auto", "dont-use", "dont-load", "auto", "always"), 
+            new PossibilitiesExpectation("auto", "dont-use", "dont-load", "auto", "always"),
             "Caching mode", "H", "cache-mode"
         );
 
         PossibilitiesExpectation optimizationInput = parser.AddOption(
-            new PossibilitiesExpectation("normal", "0", "min", "1", "normal", "2", "max"), 
+            new PossibilitiesExpectation("normal", "0", "min", "1", "normal", "2", "max"),
             "Optimization level", "O", "opt"
         );
 
         bool linkBuiltins = true;
-        parser.AddOption(() => linkBuiltins = false, "Don't link to Epsilon's builtins", null, 
+        parser.AddOption(() => linkBuiltins = false, "Don't link to Epsilon's builtins", null,
             "no-builtins");
 
         bool linkLibraries = true;
-        parser.AddOption(() => linkLibraries = false, "Don't link to Epsilon libraries", null, 
+        parser.AddOption(() => linkLibraries = false, "Don't link to Epsilon libraries", null,
             "no-libraries");
 
         DelimitedInputExpectation clangOptions = parser.AddOption(
-            new DelimitedInputExpectation(parser, "clang-options", "END", needsOne: true), 
+            new DelimitedInputExpectation(parser, "clang-options", "END", needsOne: true),
             "Options for the clang compiler", "C", "clang-options"
         );
 
@@ -57,11 +57,11 @@ Modes:
 
         PossibilitiesExpectation mode = parser.Expect(
             new PossibilitiesExpectation("compile", "compile", "teardown", "create-proj"));
-        
+
         InputExpectation sourceFile = new InputExpectation("source file", optional: true);
 
         InputExpectation projFile = new InputExpectation("proj file location");
-        
+
         mode.Then(() => {
             if (mode.Value() == "compile") {
                 parser.Expect(sourceFile);
@@ -78,14 +78,14 @@ Modes:
         ), "The output file type", "t", "output-type");
 
         PossibilitiesExpectation verbosity = parser.AddOption(
-            new PossibilitiesExpectation((int)LogLevel.NONE, typeof(LogLevel)), 
+            new PossibilitiesExpectation((int)LogLevel.NONE, typeof(LogLevel)),
             "Logging verbosity (each option implies the next)", "v", "verbosity"
         );
 
         parser.AddUsageOption(mode.Usage("compile"), sourceFile);
         parser.AddUsageOption(mode.Usage("teardown"), sourceFile);
         parser.AddUsageOption(mode.Usage("create-proj"), projFile);
-        
+
         parser.Parse(args);
 
         Log.Verbosity = verbosity.ToEnum<LogLevel>();
@@ -101,7 +101,7 @@ Modes:
             TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
             parser.ParseAdditionalOptions(proj.CommandOptions);
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
-            
+
             CacheMode cacheMode = EnumHelpers.ParseCacheMode(cacheModeInput.Value());
             OptimizationLevel optimizationLevel = EnumHelpers.ParseOptimizationLevel(optimizationInput.Value());
             OutputType outputType = EnumHelpers.ParseOutputType(outputTypeInput.Value());
@@ -120,7 +120,7 @@ Modes:
             }
 
             string providedOutput = outputFile.IsPresent ? outputFile.Matched : null;
-            
+
             BuildSettings settings = new BuildSettings(
                 input, providedOutput, proj, cache, cacheMode, optimizationLevel, outputType,
                 linkBuiltins, linkLibraries, clangOptions.MatchedSegments
@@ -129,7 +129,7 @@ Modes:
             TestResult(builder.Build(settings));
         } else if (mode.Value() == "teardown") {
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
-            
+
             TestResult(builder.LoadEPSLCACHE(input, CacheMode.AUTO, out EPSLCACHE cache));
 
             TestResult(builder.Teardown(cache));

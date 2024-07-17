@@ -3,15 +3,15 @@ using System;
 public abstract class TrinaryOperation<T1, T2, T3> : IParentToken, ISerializableToken where T1 : IToken where T2 : IToken where T3 : IToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     protected T1 o1;
     protected T2 o2;
     protected T3 o3;
-    
+
     public int Count {
         get { return 3; }
     }
-    
+
     public IToken this[int i] {
         get {
             if (i == 0) return o1;
@@ -28,7 +28,7 @@ public abstract class TrinaryOperation<T1, T2, T3> : IParentToken, ISerializable
             }
         }
     }
-    
+
     public TrinaryOperation(T1 o1, T2 o2, T3 o3) {
         this.o1 = o1;
         this.o2 = o2;
@@ -40,7 +40,7 @@ public abstract class TrinaryOperation<T1, T2, T3> : IParentToken, ISerializable
             GetType().Name, $"{o1.ToString()}, {o2.ToString()}, {o3.ToString()}"
         );
     }
-    
+
     public virtual int Serialize(SerializationContext context) {
         return context.AddInstruction(
             new SerializableInstruction(this, context)

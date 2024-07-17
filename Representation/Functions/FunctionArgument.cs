@@ -6,7 +6,7 @@ public class FunctionArgument : IEquatable<FunctionArgument> {
     Type_ type_;
     bool exactType_Match;
     int id;
-    
+
     public FunctionArgument(string name, Type_ type_, bool exactType_Match=false, int id = -1) {
         this.name = name;
         this.type_ = type_;

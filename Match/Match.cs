@@ -6,7 +6,7 @@ public class Match {
     int end;
     List<IToken> replacement;
     List<IToken> matched;
-    
+
     public Match(int start, int end, List<IToken> replacement,
                  List<IToken> matched) {
         this.start = start;

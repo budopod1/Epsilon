@@ -5,14 +5,14 @@ using System.Collections.Generic;
 public class Conditional : IFlowControl, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     List<Condition> conditions;
     CodeBlock elseBlock;
 
     public int Count {
         get { return conditions.Count + (elseBlock==null?0:1); }
     }
-    
+
     public IToken this[int i] {
         get {
             if (i == conditions.Count) return elseBlock;
@@ -104,7 +104,7 @@ public class Conditional : IFlowControl, IFunctionTerminator {
     public bool DoesTerminateFunction() {
         if (elseBlock == null) return false;
         if (!elseBlock.DoesTerminateFunction()) return false;
-        return conditions.All(condition => 
+        return conditions.All(condition =>
             condition.GetBlock().DoesTerminateFunction());
     }
 }

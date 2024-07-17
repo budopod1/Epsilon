@@ -5,16 +5,16 @@ using System.Collections.Generic;
 public class Instantiation : IParentToken, IValueToken, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     Type_ type_;
     List<IValueToken> values;
-    
+
     public int Count {
         get {
             return values.Count;
         }
     }
-    
+
     public IToken this[int i] {
         get {
             return values[i];
@@ -23,12 +23,12 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
             values[i] = ((IValueToken)value);
         }
     }
-    
+
     public Instantiation(Type_ type_, List<IValueToken> values) {
         this.type_ = type_;
         this.values = values;
     }
-    
+
     public Instantiation(Type_Token type_token, ValueList list) {
         this.type_ = type_token.GetValue();
         values = new List<IValueToken>();
@@ -55,7 +55,7 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
                 GetType().Name,
                 type_.ToString(),
                 "<", ">"
-            ), 
+            ),
             String.Join(
                 ", ", values.ConvertAll<string>(
                     obj => obj.ToString()

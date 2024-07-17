@@ -7,7 +7,7 @@ public class SuperAnnotation : IAnnotation {
     public SuperAnnotation(CodeSpan span) {
         this.span = span;
     }
-    
+
     public static SuperAnnotation FromTokens(IToken base_, List<IToken> arguments) {
         if (arguments.Count > 0) {
             throw new SyntaxErrorException(

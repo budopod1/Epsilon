@@ -6,12 +6,12 @@ public class Variable : IAssignableValue {
 
     string name;
     int id;
-    
+
     public Variable(string name, int id) {
         this.name = name;
         this.id = id;
     }
-    
+
     public Variable(Name source) {
         id = Scope.GetIDByName(source, source.GetValue()).Value;
     }
@@ -44,7 +44,7 @@ public class Variable : IAssignableValue {
                 .AddData("variable", new JSONInt(GetID()))
         );
     }
-    
+
     public ICompleteLine AssignTo(IValueToken value) {
         return new Assignment(this, value);
     }

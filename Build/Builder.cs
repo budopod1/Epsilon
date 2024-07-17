@@ -85,7 +85,7 @@ public class Builder {
             projOut = null;
             return status1;
         }
-        
+
         ResultStatus status2 = RunWrapped(() => {
             if (Utils.FileExists(projLocation)) {
                 currentFile = projLocation;
@@ -102,7 +102,7 @@ public class Builder {
 
         // This C# version does not support the ??= operator
         projOut = proj ?? new EPSLPROJ(projLocation);
-        
+
         return status2;
     }
 
@@ -126,7 +126,7 @@ public class Builder {
             cacheOut = new EPSLCACHE(cacheLocation);
             return status1;
         }
-        
+
         ResultStatus status2 = RunWrapped(() => {
             if (Utils.FileExists(cacheLocation)) {
                 currentFile = cacheLocation;
@@ -137,7 +137,7 @@ public class Builder {
 
         // This C# version does not support the ??= operator
         cacheOut = cache ?? new EPSLCACHE(cacheLocation);
-        
+
         return status2;
     }
 
@@ -177,11 +177,11 @@ public class Builder {
 
     public ResultStatus Build(BuildSettings settings) {
         Log.Info("Starting build of", settings.InputPath);
-        
+
         return RunWrapped(() => {
             string defaultOutput = GetOutputLocation(settings, out string outputName);
             string output = Utils.GetFullPath(settings.ProvidedOutput ?? defaultOutput);
-            
+
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             EPSLPROJ proj = settings.Proj;
@@ -216,13 +216,13 @@ public class Builder {
             FinishCompilations(settings, out List<FileTree> unlinkedFiles);
             Log.Status("Getting intermediates");
             ToIntermediates(settings);
-            
+
             if (doesSaveCache(settings)) {
                 if (!shouldGetIR(settings)) {
                     Log.Status("Creating .o files for caching");
                     CreateCachedObjs(settings);
                 }
-                
+
                 Log.Status("Saving EPSLSPECs");
                 SaveEPSLSPECs();
             }
@@ -254,7 +254,7 @@ public class Builder {
             IEnumerable<IClangConfig> clangConfig = files.Values
                 .SelectMany(file => file.Compiler.GetClangConfig())
                 .Concat(new IClangConfig[] {new ConstantClangConfig(settings.ExtraClangOptions)});
-            
+
             BuildInfo buildInfo = new BuildInfo(
                 output, outputName, sources, tree, clangConfig, unlinkedFiles, fileWithMain
             );
@@ -468,7 +468,7 @@ public class Builder {
         }
         return dispatched;
     }
-    
+
     FileTree LoadFile(BuildSettings settings, string partialPath, string projDirectory, bool canBeSPEC=true) {
         if (files.ContainsKey(partialPath)) return files[partialPath];
         DispatchedFile dispatched = DispatchPartialPath(settings, partialPath, projDirectory, canBeSPEC);
@@ -644,28 +644,28 @@ public class Builder {
             SwitchFile(file);
             IntermediateFile intermediate = file.Intermediate;
             if (intermediate == null) continue;
-            
+
             if (!(file.Compiler.ShouldSaveSPEC()
                 && intermediate.FileType == IntermediateFile.IntermediateType.IR
                 && intermediate.IsInUserDir
                 && file.Obj == null)) continue;
-            
+
             string irFile = intermediate.Path;
-            
+
             if (settings.OptLevel >= OptimizationLevel.NORMAL) {
                 string optFile = Utils.JoinPaths(Utils.TempDir(), "opt.bc");
                 CmdUtils.OptLLVM(irFile, optFile);
                 Utils.TryDelete(irFile);
                 irFile = optFile;
             }
-            
+
             string objFile = file.SuggestedIntermediatePath+".o";
             CmdUtils.LLVMToObj(irFile, objFile);
             Utils.TryDelete(irFile);
 
             file.IR = null;
             file.Obj = objFile;
-            
+
             file.Intermediate = new IntermediateFile(
                 IntermediateFile.IntermediateType.Obj, objFile, isInUserDir: true);
         }
@@ -917,7 +917,7 @@ public class Builder {
         if (buildInfo.FileWithMain == null) {
             throw new ProjectProblemException("One main function is required when creating an executable; no main function found");
         }
-        
+
         Log.Status("Buiding executable");
         CmdUtils.ClangToExecutable(buildInfo.Sources, buildInfo.Output, buildInfo.ClangConfig);
     }
@@ -929,23 +929,23 @@ public class Builder {
     void ToPackage(BuildInfo buildInfo, bool includeLLVMInPackage) {
         string outputName = buildInfo.OutputName;
         string output = buildInfo.Output;
-        
+
         ReadyPackageFolder(output);
 
         string objFilename = outputName+".o";
         string objPath = Utils.JoinPaths(output, objFilename);
-    
+
         string irFilename = null;
         if (includeLLVMInPackage) {
             irFilename = outputName+".bc";
             string irPath = Utils.JoinPaths(output, irFilename);
-            
+
             CmdUtils.LinkLLVM(buildInfo.Sources, irPath);
             CmdUtils.LLVMToObj(irPath, objPath);
         } else {
             CmdUtils.FilesToObject(buildInfo.Sources, objPath);
         }
-        
+
         IEnumerable<string> unlinkedImports = buildInfo.UnlinkedFiles
             .Select(file => file.PartialPath);
 
@@ -954,7 +954,7 @@ public class Builder {
         EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
         EPSLSPEC newEPSLSPEC = new EPSLSPEC(
             entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
-            buildInfo.ClangConfig, unlinkedImports, 
+            buildInfo.ClangConfig, unlinkedImports,
             irFilename, objFilename, sourceFilename, FileSourceType.Library,
             entryEPSLSPEC.IDPath
         );
@@ -989,7 +989,7 @@ public class Builder {
             proj.ToFile();
         });
     }
-    
+
     public IJSONValue ParseJSONFile(string path) {
         return ParseJSONFile(path, out string _);
     }

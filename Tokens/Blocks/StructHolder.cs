@@ -11,7 +11,7 @@ public class StructHolder : Holder, IAnnotatable {
     public StructHolder(List<IToken> tokens, List<IAnnotation> annotations) : base(tokens) {
         this.annotations = annotations;
     }
-    
+
     protected override TreeToken _Copy(List<IToken> tokens) {
         return (TreeToken)new StructHolder(tokens, annotations);
     }

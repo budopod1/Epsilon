@@ -25,7 +25,7 @@ public class ForClause : UnaryOperation<IValueToken> {
         }
         SetSub(value);
     }
-    
+
     public ForClause(string name, IValueToken o) : base(o) {
         this.name = name;
     }

@@ -22,12 +22,12 @@ def append(program, builder, params, param_types_):
     elem_type_ = array_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, elem_type_))
     program.call_extern(
-        builder, "incrementLength", [array, elem_size], 
+        builder, "incrementLength", [array, elem_size],
         [ArrayW8, W64], None
     )
     content_ptr = builder.gep(array, [i64_of(0), i32_of(3)])
     content = builder.bitcast(
-        builder.load(content_ptr), 
+        builder.load(content_ptr),
         make_type_(program, elem_type_).as_pointer()
     )
     end_ptr = builder.gep(content, [length])
@@ -44,7 +44,7 @@ def require_capacity(program, builder, params, param_types_):
     elem_type_ = array_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, elem_type_))
     program.call_extern(
-        builder, "requireCapacity", [array, capacity, elem_size], 
+        builder, "requireCapacity", [array, capacity, elem_size],
         [ArrayW8, W64, W64], None
     )
     return None, None
@@ -76,7 +76,7 @@ def pop(program, builder, params, param_types_):
     if not is_value_type_(elem_type_):
         dumb_decr_ref_counter(program, builder, elem, elem_type_)
     program.call_extern(
-        builder, "removeAt", [array, idx, elem_size], 
+        builder, "removeAt", [array, idx, elem_size],
         [ArrayW8, W64, W64], None
     )
     return elem, elem_type_
@@ -91,7 +91,7 @@ def insert(program, builder, params, param_types_):
     elem_size = program.sizeof(builder, elem_ir_type)
     program.call_extern(
         builder, "insertSpace", [array, idx, elem_size], [
-            ArrayW8, W64, 
+            ArrayW8, W64,
             W64
         ], None
     )
@@ -148,7 +148,7 @@ def unsafe_int_division(program, builder, params, param_types_, result_type_):
         convert_type_(program, builder, param, param_type_, result_type_)
         for param, param_type_ in zip(params, param_types_)
     )
-    
+
     if is_signed_integer_type_(result_type_):
         return builder.sdiv(a, b)
     else:
@@ -235,7 +235,7 @@ def slice_(program, builder, params, param_types_):
     generic_type_ = arr_type_["generics"][0]
     elem = program.make_elem(builder, generic_type_)
     return program.call_extern(
-        builder, "slice", [arr, start, end, elem], 
+        builder, "slice", [arr, start, end, elem],
         [ArrayW8, W64, W64, W64], ArrayW8
     ), ArrayW8
 
@@ -254,7 +254,7 @@ def count(program, builder, params, param_types_):
     generic_type_ = arr_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, generic_type_))
     return program.call_extern(
-        builder, "count", [arr, sub, elem_size], 
+        builder, "count", [arr, sub, elem_size],
         [ArrayW8, ArrayW8, W64], ArrayW8
     ), ArrayW8
 
@@ -265,7 +265,7 @@ def overlapCount(program, builder, params, param_types_):
     generic_type_ = arr_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, generic_type_))
     return program.call_extern(
-        builder, "overlapCount", [arr, sub, elem_size], 
+        builder, "overlapCount", [arr, sub, elem_size],
         [ArrayW8, ArrayW8, W64], ArrayW8
     ), ArrayW8
 
@@ -296,7 +296,7 @@ def starts_with(program, builder, params, param_types_):
     generic_type_ = arr_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, generic_type_))
     return program.call_extern(
-        builder, "startsWith", [arr, sub, elem_size], 
+        builder, "startsWith", [arr, sub, elem_size],
         [ArrayW8, ArrayW8, W64], Bool
     ), Bool
 
@@ -307,7 +307,7 @@ def ends_with(program, builder, params, param_types_):
     generic_type_ = arr_type_["generics"][0]
     elem_size = program.sizeof(builder, make_type_(program, generic_type_))
     return program.call_extern(
-        builder, "endsWith", [arr, sub, elem_size], 
+        builder, "endsWith", [arr, sub, elem_size],
         [ArrayW8, ArrayW8, W64], Bool
     ), Bool
 
@@ -348,7 +348,7 @@ def join(program, builder, params, param_types_):
     generic_type_ = type_2["generics"][0]
     elem = program.make_elem(builder, generic_type_)
     return program.call_extern(
-        builder, "join", [arr, sep, elem], 
+        builder, "join", [arr, sep, elem],
         [type_1, type_2, W64], ArrayW8
     ), ArrayW8
 

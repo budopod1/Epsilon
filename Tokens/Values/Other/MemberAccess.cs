@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class MemberAccess : UnaryOperation<IValueToken>, IAssignableValue, IVerifier {
     string member;
     Type_ structType_;
-    
+
     public MemberAccess(IValueToken o, MemberAccessPostfix member) : base(o) {
         this.member = member.GetValue();
         structType_ = o.GetType_().UnwrapPoly();

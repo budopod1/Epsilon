@@ -13,7 +13,7 @@ public class FileTree {
     public bool TreeLoaded = false;
 
     string _Text;
-    public string Text { 
+    public string Text {
         get {
             if (_Text == null) _Text = Compiler.GetText();
             return _Text;
@@ -25,7 +25,7 @@ public class FileTree {
 
     string _Path_;
     public string Stemmed;
-    public string Path_ { 
+    public string Path_ {
         get => _Path_;
         set {
             _Path_ = value;
@@ -61,7 +61,7 @@ public class FileTree {
     public List<RealFunctionDeclaration> OldDeclarations;
 
     public bool IsUnlinked = false;
-    
+
     public string SuggestedIntermediatePath;
 
     public string IR;

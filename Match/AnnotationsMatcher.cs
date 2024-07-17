@@ -42,7 +42,7 @@ public class AnnotationsMatcher : IMatcher {
             }
             if (!completed) {
                 throw new SyntaxErrorException(
-                    "Expected another annotation argument, '@', or ';', found EOF", 
+                    "Expected another annotation argument, '@', or ';', found EOF",
                     matched[matched.Count - 1]
                 );
             }

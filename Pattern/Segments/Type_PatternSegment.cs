@@ -6,13 +6,13 @@ public class Type_PatternSegment : IPatternSegment {
     public Type_ GetType_() {
         return type_;
     }
-    
+
     public Type_PatternSegment(Type_ type_) {
         this.type_ = type_;
     }
 
     public bool Matches(IToken token) {
-        return (token is IValueToken 
+        return (token is IValueToken
             && ((IValueToken)token).GetType_().IsConvertibleTo(type_));
     }
 

@@ -95,7 +95,7 @@ public class EPSLFileCompiler : IFileCompiler {
         program = TokenizeTypes_(program);
 
         program = TokenizeVarDeclarations(program);
-        
+
         program = ConvertTemplateArguments(program);
 
         program = ParseFunctionTemplates(program);
@@ -126,7 +126,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
     public Dependencies ToDependencies(Builder builder) {
         program = VerifyPolyTypes_(program);
-        
+
         program = SplitProgramBlocksIntoLines(program);
 
         program = ConvertStringLiterals(program);
@@ -477,7 +477,7 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     Program TokenizeBaseTypes_(Program program) {
-        Func<string, UserBaseType_> converter = (string source) => 
+        Func<string, UserBaseType_> converter = (string source) =>
             UserBaseType_.ParseString(source, program.GetStructIDs());
         return DoStructuredSyntaxMatching(
             program, new UnitSwitcherMatcher<string, UserBaseType_>(
@@ -532,7 +532,7 @@ public class EPSLFileCompiler : IFileCompiler {
             program.AddParsedType_(span, type_);
             return new List<IToken> {new Type_Token(type_)};
         };
-        
+
         return DoStructuredSyntaxMatching(
             program, new CombinedMatchersMatcher(new List<IMatcher> {
                 new PatternMatcher(
@@ -541,7 +541,7 @@ public class EPSLFileCompiler : IFileCompiler {
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("]")
                     }, new FuncPatternProcessor<List<IToken>>(
-                        tokens => type_Wrapper(tokens, () => 
+                        tokens => type_Wrapper(tokens, () =>
                             ((Type_Token)tokens[1]).GetValue().ArrayOf())
                     )
                 ),
@@ -550,7 +550,7 @@ public class EPSLFileCompiler : IFileCompiler {
                         new TextPatternSegment(":"),
                         new TypePatternSegment(typeof(Type_Token))
                     }, new FuncPatternProcessor<List<IToken>>(
-                        tokens => type_Wrapper(tokens, () => 
+                        tokens => type_Wrapper(tokens, () =>
                             ((Type_Token)tokens[1]).GetValue().PolyOf())
                     )
                 ),
@@ -559,7 +559,7 @@ public class EPSLFileCompiler : IFileCompiler {
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("?")
                     }, new FuncPatternProcessor<List<IToken>>(
-                        tokens => type_Wrapper(tokens, () => 
+                        tokens => type_Wrapper(tokens, () =>
                             ((Type_Token)tokens[0]).GetValue().OptionalOf())
                     )
                 ),
@@ -727,7 +727,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program ComputeStructs(Program program) {
         ListTokenParser<Field> listParser = new ListTokenParser<Field>(
-            new TextPatternSegment(","), typeof(VarDeclaration), 
+            new TextPatternSegment(","), typeof(VarDeclaration),
             (token) => new Field((VarDeclaration)token)
         );
         HashSet<Struct> structs = new HashSet<Struct>();
@@ -929,11 +929,11 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program GetScopeVariables(Program program) {
         program.UpdateParents();
-        
+
         foreach (IToken token in program) {
             if (token is Function) {
                 Function function = ((Function)token);
-                foreach (VarDeclaration declaration 
+                foreach (VarDeclaration declaration
                         in TokenUtils.TraverseFind<VarDeclaration>(function)) {
                     string name = declaration.GetName().GetValue();
                     IScope scope = Scope.GetEnclosing(declaration);
@@ -943,7 +943,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 }
             }
         }
-        
+
         return program;
     }
 
@@ -983,7 +983,7 @@ public class EPSLFileCompiler : IFileCompiler {
         }
 
         Dictionary<string, Type> floatCompoundableOperators = new Dictionary<string, Type> {
-            {"+", typeof(Addition)}, {"-", typeof(Subtraction)}, 
+            {"+", typeof(Addition)}, {"-", typeof(Subtraction)},
             {"*", typeof(Multiplication)}, {"/", typeof(Division)},
             {"%", typeof(Modulo)}
         };
@@ -1221,7 +1221,7 @@ public class EPSLFileCompiler : IFileCompiler {
                         new TypePatternSegment(typeof(CodeBlock))
                     }, 1, -1, new List<IPatternSegment> {
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, 
+                    },
                     new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
                         return new List<IToken> {
                             new Switch((IValueToken)tokens[1], tokens.Skip(2).ToArray())
@@ -1235,7 +1235,7 @@ public class EPSLFileCompiler : IFileCompiler {
                     }, new List<IPatternSegment> {
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, 1, -1, new List<IPatternSegment>(), 
+                    }, 1, -1, new List<IPatternSegment>(),
                     new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
                         return new List<IToken> {
                             new Switch((IValueToken)tokens[1], tokens.Skip(2).ToArray())
@@ -1358,7 +1358,7 @@ public class EPSLFileCompiler : IFileCompiler {
                             new TextPatternSegment("/"),
                             new Type_PatternSegment(new Type_("Q"))
                         }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}), 
+                            new SlotPatternProcessor(new List<int> {0, 2}),
                             typeof(Division)
                         )
                     ),
@@ -1369,7 +1369,7 @@ public class EPSLFileCompiler : IFileCompiler {
                             new TextPatternSegment("/"),
                             new Type_PatternSegment(new Type_("Z"))
                         }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}), 
+                            new SlotPatternProcessor(new List<int> {0, 3}),
                             typeof(IntDivision)
                         )
                     ),
@@ -1664,10 +1664,10 @@ public class EPSLFileCompiler : IFileCompiler {
         foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(program)) {
             DoBlockCodeRules(block, rules);
         }
-        
+
         return program;
     }
-    
+
     void DoBlockCodeRules(CodeBlock block, List<List<IMatcher>> rules) {
         for (int i = 0; i < block.Count; i++) {
             Line line = block[i] as Line;
@@ -1787,7 +1787,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
     void VerifyCode(Program program) {
         TraverseConfig config = new TraverseConfig(
-            TraverseMode.DEPTH, invert: false, yieldFirst: true, 
+            TraverseMode.DEPTH, invert: false, yieldFirst: true,
             avoidTokens: token => false
         );
         foreach (IVerifier token in TokenUtils.TraverseFind<IVerifier>(program, config)) {
@@ -1798,14 +1798,14 @@ public class EPSLFileCompiler : IFileCompiler {
     Dependencies GetDependencies(Program program) {
         List<RealFunctionDeclaration> declarationDependencies = new List<RealFunctionDeclaration>();
         List<Struct> structDependencies = new List<Struct>();
-        
+
         HashSet<Struct> structsHere = program.GetStructsHere();
         HashSet<Function> functionsHere = new HashSet<Function>();
         foreach (IToken token in program) {
             Function function = token as Function;
             if (function != null) functionsHere.Add(function);
         }
-        
+
         foreach (IValueToken token in TokenUtils.TraverseFind<IValueToken>(program)) {
             IFunctionCall call = token as IFunctionCall;
             if (call != null) {
@@ -1814,14 +1814,14 @@ public class EPSLFileCompiler : IFileCompiler {
                     declarationDependencies.Add(func);
                 }
             }
-            
+
             Type_ type_ = token.GetType_();
             if (type_.GetBaseType_().IsBuiltin()) continue;
             Struct struct_ = StructsCtx.GetStructFromType_(type_);
             if (structsHere.Contains(struct_)) continue;
             structDependencies.Add(struct_);
         }
-        
+
         return new Dependencies(structDependencies, declarationDependencies);
     }
 
@@ -1848,6 +1848,6 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     void CreateLLVMIR() {
-        CmdUtils.RunScript("runpython.bash");
+        CmdUtils.RunScript($"scripts{Path.DirectorySeparatorChar}runpython.bash");
     }
 }

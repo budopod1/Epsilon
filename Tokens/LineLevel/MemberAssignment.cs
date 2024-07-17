@@ -3,7 +3,7 @@ using System;
 public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVerifier, ICompleteLine {
     string member;
     Type_ structType_;
-    
+
     public MemberAssignment(IValueToken o1, string member, IValueToken o2) : base(o1, o2) {
         this.member = member;
         structType_ = o1.GetType_().UnwrapPoly();
@@ -35,7 +35,7 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
 
     public override string ToString() {
         return Utils.WrapName(
-            GetType().Name, 
+            GetType().Name,
             $"{o1.ToString()}, {member}, {o2.ToString()}"
         );
     }

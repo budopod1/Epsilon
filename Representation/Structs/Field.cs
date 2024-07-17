@@ -3,7 +3,7 @@ using System;
 public class Field : IEquatable<Field> {
     string name;
     Type_ type_;
-    
+
     public Field(string name, Type_ type_) {
         this.name = name;
         this.type_ = type_;

@@ -5,12 +5,12 @@ using System.Collections.Generic;
 public class GroupConverterMatcher : IMatcher {
     Type source;
     Type dest;
-    
+
     public GroupConverterMatcher(Type source, Type dest) {
         this.source = source;
         this.dest = dest;
     }
-    
+
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];

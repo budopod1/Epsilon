@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 public class DisposePatternProcessor : IPatternProcessor<List<IToken>> {
     Action<List<IToken>> action;
-    
+
     public DisposePatternProcessor(Action<List<IToken>> action) {
         this.action = action;
     }
-    
+
     public DisposePatternProcessor() {
         this.action = null;
     }

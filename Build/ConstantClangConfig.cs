@@ -13,7 +13,7 @@ public class ConstantClangConfig : IClangConfig {
         obj = obj.ToShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
             {"parts", new JSONListShape(new JSONStringShape())}
         }));
-        
+
         parts = obj["parts"].IterList().Select(part => part.GetString());
     }
 

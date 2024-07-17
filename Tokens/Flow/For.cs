@@ -97,7 +97,7 @@ public class For : IParentToken, ILoop, IVerifier, ISerializableToken {
             );
         }
     }
-    
+
     public int Serialize(SerializationContext context) {
         Type_ iterType_ = type_;
         SerializationContext loop = context.AddSubContext();

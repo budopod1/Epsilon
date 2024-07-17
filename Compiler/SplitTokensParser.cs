@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class SplitTokensParser {
     IPatternSegment seperator;
     bool allowUnterminated;
-    
+
     public SplitTokensParser(IPatternSegment seperator, bool allowUnterminated) {
         this.seperator = seperator;
         this.allowUnterminated = allowUnterminated;
@@ -34,7 +34,7 @@ public class SplitTokensParser {
             result.Add(soFar);
         } else if (soFar.Count > 0) {
             return null;
-        } 
+        }
         return result;
     }
 }

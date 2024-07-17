@@ -171,7 +171,7 @@ class ArrayCreationInstruction(Typed_Instruction):
             builder.store(elem, builder.gep(array_mem, [i64_of(i)]))
         if not is_value_type_(self.elem_type_):
             self.program.call_extern(
-                builder, "incrementArrayRefCounts", 
+                builder, "incrementArrayRefCounts",
                 [struct_mem, self.program.make_elem(builder, self.elem_type_)],
                 [self.type_, W64], None
             )
@@ -191,7 +191,7 @@ class AssignmentInstruction(BaseInstruction):
         if not is_value_type_(value_type_):
             incr_ref_counter(self.program, builder, value, value_type_)
         converted_value = convert_type_(
-            self.program, builder, value, value_type_, 
+            self.program, builder, value, value_type_,
             var_type_
         )
         declaration = self.function.get_variable_declaration(
@@ -300,14 +300,14 @@ class Condition:
     def add_sub_branch_instructions(self):
         final_block = last_block_chain_block(self.eval_block)
         final_block.instructions.append(BranchInstruction(
-            self.program, self.function, 
+            self.program, self.function,
             {
-                "name": "branch", 
-                "parameters": [final_block.last_instruction_idx()], 
+                "name": "branch",
+                "parameters": [final_block.last_instruction_idx()],
                 "true_block": self.block,
                 "false_block": (
-                    (self.else_block or self.return_block) 
-                    if self.next_condition is None else 
+                    (self.else_block or self.return_block)
+                    if self.next_condition is None else
                     self.next_condition.eval_block
                 ),
             }
@@ -330,8 +330,8 @@ class ConditionalInstruction(FlowInstruction):
         for i in range(len(self.conditions)-1):
             self.conditions[i].set_next(self.conditions[i+1])
         self.else_block = (
-            self.function.blocks[self.data["else"]] 
-            if self.data["else"] is not None 
+            self.function.blocks[self.data["else"]]
+            if self.data["else"] is not None
             else None
         )
         self.conditions[-1].set_else_block(self.else_block)
@@ -443,7 +443,7 @@ pseudocode for ForInstruction _build
 
 initial block:
     from = is_given_from ? given_from : 0;
-    
+
     pyif is_iterating_over_array:
         to = length of given_array
     pyelse:
@@ -451,13 +451,13 @@ initial block:
 
     load array len ptr
     load array content ptr
-    
+
     pyif signed_step:
         positive_step = step > 0
         counter = positive_step ? from : to - 1
     pyelse:
         counter = from
-    
+
     branch to check block
 
 check block:
@@ -465,9 +465,9 @@ check block:
         to = load len from array len ptr
     pyelse:
         to = to from previous block
-    
+
     should_branch = counter >= to
-    
+
     pyif signed_step:
         should_branch |= counter < from
 
@@ -478,23 +478,23 @@ check block:
     else:
         branch to var block
 
-var block:    
+var block:
     pyif is_iterating_in_array:
         val = array content pointer loaded and indexed with counter
         incr val ref counter
         user iter var = val
     pyelse:
         user iter var = counter
-    
+
     branch to for loop body (which then itself eventually branches to iter block)
 
 iter block:
     pyif counter is unsigned and signed_step:
         if expect not (!positive_step and -step > counter):
             branch to finish block
-    
+
     counter += step
-    
+
     branch to check block
 
 finish block:
@@ -505,7 +505,7 @@ finish block:
 
 class ForInstruction(FlowInstruction):
     FOR_COUNTER = 0
-    
+
     def __init__(self, *args):
         super().__init__(*args)
         self.block_num = self.data["block"]
@@ -548,13 +548,13 @@ class ForInstruction(FlowInstruction):
 
         loop_block = self.block.block
         exit_block = self.this_block.next_block.block
-        
+
         is_in = "in" in self.clause_names
         is_enumerating = "enumerating" in self.clause_names
-        
+
         idx_type_ = self.iter_type_
         ir_idx_type = make_type_(self.program, idx_type_)
-        
+
         from_ = ir_idx_type(0)
         to = None
         array = None
@@ -562,7 +562,7 @@ class ForInstruction(FlowInstruction):
         step_type_ = idx_type_
         signed_step = False
         array_len_ptr = None
-        
+
         zipped = zip(params, param_types_, self.clause_names)
         for param, param_type_, clause_name in zipped:
             if clause_name == "from":
@@ -586,7 +586,7 @@ class ForInstruction(FlowInstruction):
                 signed_step = is_signed_integer_type_(step_type_)
 
         casted_step = convert_type_(self.program, builder, step, step_type_, idx_type_)
-        
+
         positive_step = None
         if signed_step:
             positive_step = compare_values(
@@ -666,13 +666,13 @@ class FormatChainInstruction(Typed_Instruction):
     def _build(self, builder, params, param_types_):
         template, *params = params
         _, *param_types_ = param_types_
-        
+
         arr_type_ = ir.ArrayType(make_type_(self.program, String), len(params))
         value_array = builder.alloca(arr_type_)
-        
+
         strs_to_check_ref = [template]
         strs_to_free = []
-        
+
         for i, (param, param_type_) in enumerate(zip(params, param_types_)):
             if param_type_ == String:
                 strs_to_check_ref.append(param)
@@ -727,11 +727,11 @@ class InitialAssignmentInstruction(BaseInstruction):
         if not is_value_type_(value_type_):
             incr_ref_counter(self.program, builder, value, value_type_)
         converted_value = convert_type_(
-            self.program, builder, value, value_type_, 
+            self.program, builder, value, value_type_,
             var_type_
         )
         return builder.store(
-            converted_value, 
+            converted_value,
             self.function.get_variable_declaration(self.variable)
         )
 
@@ -948,8 +948,8 @@ class SwitchInstruction(FlowInstruction):
         self.this_block.perpare_for_termination()
         switch = builder.switch(
             param, (
-                self.this_block.next_block 
-                if self.default_block is None else 
+                self.this_block.next_block
+                if self.default_block is None else
                 self.default_block
             ).block
         )
@@ -972,7 +972,7 @@ class VoidFunctionCallInstruction(BaseInstruction):
     def __init__(self, *args):
         super().__init__(*args)
         self.callee = self.data["function"]
-    
+
     def _build(self, builder, params, param_types_):
         if self.program.is_builtin(self.callee):
             self.program.call_builtin(
@@ -1018,10 +1018,10 @@ class WhileInstruction(FlowInstruction):
     def add_sub_branch_instructions(self):
         final_block = last_block_chain_block(self.eval_block)
         final_block.instructions.append(BranchInstruction(
-            self.program, self.function, 
+            self.program, self.function,
             {
-                "name": "branch", 
-                "parameters": [final_block.last_instruction_idx()], 
+                "name": "branch",
+                "parameters": [final_block.last_instruction_idx()],
                 "true_block": self.block,
                 "false_block": self.this_block.next_block
             }

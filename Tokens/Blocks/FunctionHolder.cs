@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class FunctionHolder : Holder, IAnnotatable {
     List<IAnnotation> annotations;
-    
+
     public FunctionHolder(List<IToken> tokens) : base(tokens) {
         annotations = new List<IAnnotation>();
     }
@@ -11,7 +11,7 @@ public class FunctionHolder : Holder, IAnnotatable {
     public FunctionHolder(List<IToken> tokens, List<IAnnotation> annotations) : base(tokens) {
         this.annotations = annotations;
     }
-    
+
     protected override TreeToken _Copy(List<IToken> tokens) {
         return (TreeToken)new FunctionHolder(tokens, annotations);
     }
@@ -46,7 +46,7 @@ public class FunctionHolder : Holder, IAnnotatable {
     public AnnotationRecipients RecipientType() {
         return AnnotationRecipients.FUNCTION;
     }
-    
+
     public void ApplyAnnotation(IAnnotation annotation) {
         annotations.Add(annotation);
     }

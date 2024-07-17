@@ -8,13 +8,13 @@ public class TextsPatternSegment : IPatternSegment {
     public List<string> GetTexts() {
         return texts;
     }
-    
+
     public TextsPatternSegment(List<string> texts) {
         this.texts = texts;
     }
 
     public bool Matches(IToken token) {
-        return (token is TextToken 
+        return (token is TextToken
             && texts.Contains(((TextToken)token).GetText()));
     }
 

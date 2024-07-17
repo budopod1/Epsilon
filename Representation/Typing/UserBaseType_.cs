@@ -23,7 +23,7 @@ public class UserBaseType_ {
         foreach (LocatedID structId in structIds) {
             if (content == structId.Name) return new UserBaseType_(structId.GetID());
         }
-        if ((BaseType_.BuiltInTypes_.Contains(content) 
+        if ((BaseType_.BuiltInTypes_.Contains(content)
             || SpecialFullBaseType_Names.Contains(content)
             ) && !NonUserType_Names.Contains(content)) {
             return new UserBaseType_(content);
@@ -43,7 +43,7 @@ public class UserBaseType_ {
     static Dictionary<string, Type_> SpecialFullBaseTypes_ = new Dictionary<string, Type_> {
         {"Str", Type_.String()}, {"L", new Type_("W", 64)}
     };
-    
+
     public Type_ ToType_() {
         return ToType_(new List<Type_>());
     }

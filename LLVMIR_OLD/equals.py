@@ -13,7 +13,7 @@ def refrence_equals(program, i, type_, invert=False):
     entry = func.append_basic_block(name="entry")
     v1, v2 = func.args
     builder = ir.IRBuilder(entry)
-    
+
     comparer = "!=" if invert else "=="
     if is_number_type_(type_):
         builder.ret(compare_values(builder, comparer, v1, v2, type_))
@@ -21,7 +21,7 @@ def refrence_equals(program, i, type_, invert=False):
         builder.ret(builder.icmp_unsigned(
             comparer, v1, v2
         ))
-    
+
     return func
 
 
@@ -41,14 +41,14 @@ def value_equals_depth_1(program, i, type_, invert=False):
         builder.ret(compare_values(
             builder, "!=" if invert else "==", v1, v2, type_
         ))
-        
+
     elif type_["name"] == "Array":
         generic_type_ = type_["generics"][0]
         elem_size = program.sizeof(
             builder, make_type_(program, generic_type_)
         )
         result = builder.trunc(program.call_extern(
-            builder, "arrayEqual", [v1, v2, elem_size], 
+            builder, "arrayEqual", [v1, v2, elem_size],
             [type_, type_, W64], Z32
         ), bool_ir_type)
         if invert:
@@ -80,7 +80,7 @@ def value_equals_depth_1(program, i, type_, invert=False):
 
     elif type_ == Internal:
         builder.ret(i1_of(0))
-    
+
     else:
         if is_nullable_type_(type_):
             null_ptr = self.nullptr(builder, make_type_(self, type_))
@@ -88,12 +88,12 @@ def value_equals_depth_1(program, i, type_, invert=False):
             v2_null = builder.icmp_unsigned("==", v2, null_ptr)
             with builder.if_then(builder.or_(v1_null, v2_null)):
                 builder.ret(builder.and_(v1_null, v2_null))
-        
+
         size = program.sizeof(
             builder, ir_type.pointee
         )
         cmp = program.call_extern(
-            builder, "memcmp", [v1, v2, size], 
+            builder, "memcmp", [v1, v2, size],
             [type_, type_, W64], Z32
         )
         builder.ret(builder.icmp_signed(
@@ -106,20 +106,20 @@ def value_equals_depth_1(program, i, type_, invert=False):
 def value_equals(program, i, type_, depth, invert=False):
     assert type_["name"] == "Array"
     generic_type_ = type_["generics"][0]
-    
+
     ir_type = make_type_(program, type_)
     bool_ir_type = make_type_(program, Bool)
-    
+
     func = ir.Function(
         program.module, ir.FunctionType(
             bool_ir_type, [ir_type, ir_type]
         ), name=f"{program.path} val_eq{i}"
     )
     v1, v2 = func.args
-    
+
     entry = func.append_basic_block(name="entry")
     builder = ir.IRBuilder(entry)
-    
+
     check_block = func.append_basic_block(name="check")
     cbuilder = ir.IRBuilder(check_block)
 

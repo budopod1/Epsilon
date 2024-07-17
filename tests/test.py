@@ -324,7 +324,7 @@ TIMEOUT = 15
 
 def get_func(path, source, func_id):
     global engine
-    
+
     with open(path) as file:
         module = file.read()
 
@@ -334,10 +334,10 @@ def get_func(path, source, func_id):
 
     target = llvm.Target.from_default_triple()
     target_machine = target.create_target_machine()
-    
+
     backing_mod = llvm.parse_assembly("")
     engine = llvm.create_mcjit_compiler(backing_mod, target_machine)
-    
+
     module = llvm.parse_assembly(module)
     module.verify()
     engine.add_module(module)
@@ -352,7 +352,7 @@ def get_func(path, source, func_id):
 def compile_file(base_dir, file):
     proccess = subprocess.run(
         [
-            "mono", "Epsilon.exe", "-t", "llvm-ll", "compile", 
+            "mono", "Epsilon.exe", "-t", "llvm-ll", "compile",
             str(file), "-o", str(base_dir/"code.ll"), "-H", "dont-use"
         ], capture_output=True, timeout=TIMEOUT
     )
@@ -378,14 +378,14 @@ def run_test(func, args):
 
 def main():
     base_dir = Path("tests")
-    
+
     print("🔬 Running tests...")
 
     test_count = sum(map(lambda v: len(v["tests"]), TESTS))
     i = 1
     succeeded = 0
     failed = 0
-    
+
     for group in TESTS:
         file = group["file"]
         func = group["func"]
@@ -405,15 +405,15 @@ def main():
             print(compile_message)
             failed += len(group["tests"])
             continue
-        
+
         func_ptr = get_func(base_dir / "code.ll", source.with_suffix(""), func)
         func = group["sig"](func_ptr)
-        
+
         for test in group["tests"]:
             print(f"Running test {i}/{test_count}...")
 
             test_result["result"] = None
-            
+
             process = multiprocessing.Process(
                 target=run_test, args=(func, test["arguments"]))
             process.start()
@@ -442,7 +442,7 @@ def main():
                     failed += 1
 
             i += 1
-    
+
     print("\nTests completed:")
     if failed > 0:
         print(f"{failed}/{test_count} failed")

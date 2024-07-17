@@ -2,7 +2,7 @@ using System;
 
 public class Cast : UnaryOperation<IValueToken>, IValueToken, IVerifier {
     Type_ type_;
-    
+
     public Cast(Type_ type_, IValueToken o) : base(o) {
         this.type_ = type_;
     }

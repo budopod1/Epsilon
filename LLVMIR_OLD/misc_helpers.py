@@ -11,7 +11,7 @@ def index_of(program, i, type_):
         ), name=f"{program.path} index_of{i}"
     )
     arr, target = func.args
-    
+
     entry = func.append_basic_block(name="entry")
     builder = ir.IRBuilder(entry)
 
@@ -44,7 +44,7 @@ def index_of(program, i, type_):
     )
     next_index = lbuilder.add(index, i64_of(1))
     lbuilder.cbranch(equal, match_block, check_block)
-    
+
     index.add_incoming(i64_of(0), entry)
     index.add_incoming(next_index, loop_block)
 
@@ -147,7 +147,7 @@ def compare(program, i, type_, invert):
             Z32_ir_type, [PointerW8_ir_type, PointerW8_ir_type]
         ), name=f"{program.path} comparer{i}"
     )
-    
+
     entry = func.append_basic_block(name="entry")
     builder = ir.IRBuilder(entry)
 
@@ -192,7 +192,7 @@ def optional_array_access(program, i, arr_type_, elem_type_):
 
     elem_ptr = builder.gep(content, [idx])
     builder.ret(builder.load(elem_ptr))
-    
+
     return func
 
 
@@ -200,7 +200,7 @@ def make_unsigned_bitshift_func_body(program, builder, a, b, type_, b_type_, ir_
     shift_too_large = builder.icmp_unsigned(">=", b, ir.Constant(b_ir_type_, ir_type_.width))
     with builder.if_then(shift_too_large):
         builder.ret(ir.Constant(ir_type_, 0))
-    
+
     b = convert_type_(program, builder, b, b_type_, type_)
     if is_left:
         builder.ret(builder.shl(a, b))

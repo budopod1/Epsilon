@@ -68,7 +68,7 @@ public class Given : IFlowControl, IFunctionTerminator {
     public bool DoesTerminateFunction() {
         if (else_ == null) return false;
         if (!else_.DoesTerminateFunction()) return false;
-        return parts.All(part => 
+        return parts.All(part =>
             part.GetBlock().DoesTerminateFunction());
     }
 }

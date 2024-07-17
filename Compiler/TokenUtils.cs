@@ -65,7 +65,7 @@ public static class TokenUtils {
             if (sub is T) yield return (T)sub;
         }
     }
-    
+
     public static IEnumerable<T> TraverseFind<T>(IParentToken token) {
         foreach (T sub in TraverseFind<T>(token, new TraverseConfig())) {
             yield return sub;
@@ -80,7 +80,7 @@ public static class TokenUtils {
         return MergeSpans(new List<IToken> {a, b});
     }
 
-    public static bool FullMatch(List<IPatternSegment> segs, 
+    public static bool FullMatch(List<IPatternSegment> segs,
                                  List<IToken> tokens) {
         if (segs.Count != tokens.Count) return false;
         for (int i = 0; i < segs.Count; i++) {

@@ -10,11 +10,11 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         new UnitPatternSegment<string>(typeof(Name), "main")
     };
     public Dictionary<ISerializableToken, int> Serialized = new Dictionary<ISerializableToken, int>();
-    
+
     public int Count {
         get { return 1; }
     }
-    
+
     public IToken this[int i] {
         get {
             return block;
@@ -34,7 +34,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     string id;
     string callee;
     List<SerializationContext> contexts = new List<SerializationContext>();
-    
+
     public Function(string idPath, Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_, List<IAnnotation> annotations) {
         this.sourcePath = idPath;
         this.pattern = pattern;
@@ -51,7 +51,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
             argument=>new FunctionArgument(argument)
         ).ToList();
         id = $"{idPath}/{program.GetFunctionID()}";
-        
+
         bool setCallee = false;
         foreach (IAnnotation annotation in annotations) {
             IDAnnotation idA = annotation as IDAnnotation;
@@ -105,7 +105,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     public override string GetCallee()  {
         return callee;
     }
-    
+
     public override string GetSourcePath() {
         return sourcePath;
     }

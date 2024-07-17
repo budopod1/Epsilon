@@ -9,7 +9,7 @@ public class Struct : IEquatable<Struct> {
     string symbol;
     bool isSuper = false;
     bool partiallyLoaded = true;
-    
+
     Struct extendee = null;
     string extendeeID = null;
     string extendeeName = null;
@@ -48,19 +48,19 @@ public class Struct : IEquatable<Struct> {
         partiallyLoaded = false;
 
         if (extendsAnnotation == null) return;
-        
+
         string extendeeName = extendsAnnotation.GetExtendee();
         extendeeID = program.GetStructIDs().FirstOrDefault(id => id.Name == extendeeName)?.GetID();
-        
+
         if (extendeeID == null) {
             throw new SyntaxErrorException(
                 $"Cannot find requested struct to extend '{extendeeName}'",
                 extendsAnnotation.GetSpan()
             );
         }
-        
+
         extendee = StructsCtx.GetStructFromID(extendeeID);
-        
+
         Struct struct_ = extendee;
         do {
             if (struct_ == this) {
@@ -69,7 +69,7 @@ public class Struct : IEquatable<Struct> {
                     extendsAnnotation.GetSpan()
                 );
             }
-            
+
             struct_ = struct_.GetExtendee();
         } while(struct_ != null);
     }
@@ -118,7 +118,7 @@ public class Struct : IEquatable<Struct> {
                 "Cannot get struct fields until struct is fully loaded"
             );
         }
-        
+
         if (allFields == null) {
             if (extendee == null) {
                 allFields = selfFields;

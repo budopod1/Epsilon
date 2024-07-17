@@ -5,13 +5,13 @@ using System.Collections.Generic;
 public class WrapperPatternProcessor : IPatternProcessor<List<IToken>> {
     Type wrapper;
     IPatternProcessor<List<IToken>> subprocessor;
-    
+
     public WrapperPatternProcessor(IPatternProcessor<List<IToken>> subprocessor,
                                    Type wrapper) {
         this.wrapper = wrapper;
         this.subprocessor = subprocessor;
     }
-    
+
     public WrapperPatternProcessor(Type wrapper) {
         this.wrapper = wrapper;
         this.subprocessor = null;

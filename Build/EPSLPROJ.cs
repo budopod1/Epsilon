@@ -16,7 +16,7 @@ public class EPSLPROJ {
             {"libraries", new JSONListShape(new JSONStringShape())}
         });
     }
-    
+
     public EPSLPROJ(string path, List<string> commandOptions, List<string> libraries) {
         Path = path;
         CommandOptions = commandOptions;
@@ -26,7 +26,7 @@ public class EPSLPROJ {
     public EPSLPROJ(string path, long? compileStartTime, List<string> epslspecs) {
         Path = path;
     }
-    
+
     public EPSLPROJ(string path) {
         Path = path;
     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class RawAnnotation : TreeToken {
     string type;
-    
+
     public RawAnnotation(string type, List<IToken> tokens) : base(tokens) {
         this.type = type;
     }

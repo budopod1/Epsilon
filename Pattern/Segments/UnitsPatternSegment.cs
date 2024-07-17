@@ -9,7 +9,7 @@ public class UnitsPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
     public List<T> GetValue() {
         return values;
     }
-    
+
     public UnitsPatternSegment(Type unit, List<T> values) {
         this.values = values;
         this.unit = unit;

@@ -7,14 +7,14 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
         REPEATED,
         END
     }
-    
+
     protected List<IPatternSegment> start;
     protected List<IPatternSegment> repeated;
     protected int minRepeats;
     protected int maxRepeats;
     protected List<IPatternSegment> end;
     protected IPatternProcessor<T> processor;
-    
+
     Action<List<IToken>, int, int> callback;
 
     public void SetCallback(Action<List<IToken>, int, int> callback) {
@@ -133,7 +133,7 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
             }
             if (part == Part.END && end.Count == 0)
                 finishedMatch = true;
-            if (part == Part.REPEATED && end.Count == 0 
+            if (part == Part.REPEATED && end.Count == 0
                 && spaceTermination)
                 finishedMatch = true;
             if (spaceTermination) j--;

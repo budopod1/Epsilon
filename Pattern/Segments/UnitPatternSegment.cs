@@ -7,7 +7,7 @@ public class UnitPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
     public T GetValue() {
         return value;
     }
-    
+
     public UnitPatternSegment(Type unit, T value) {
         this.value = value;
         this.unit = unit;
@@ -15,7 +15,7 @@ public class UnitPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
 
     public bool Matches(IToken token) {
         return (
-            token is Unit<T> 
+            token is Unit<T>
             && Utils.IsInstance(token, unit)
             && ((Unit<T>)token).GetValue().Equals(value)
         );

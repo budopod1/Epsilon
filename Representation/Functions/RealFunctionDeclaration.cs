@@ -16,7 +16,7 @@ public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<
             return _GetReturnType_();
         }
     }
-    
+
     public JSONObject GetJSON() {
         JSONObject obj = new JSONObject();
         obj["id"] = new JSONString(GetID());

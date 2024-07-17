@@ -30,12 +30,12 @@ public class RawFor : IParentToken {
             }
         }
     }
-    
+
     List<RawForClause> clauses;
     int declarationID;
     Type_ type_;
     CodeBlock block;
-    
+
     public RawFor(List<IToken> condition, CodeBlock block) {
         VarDeclaration declaration = condition[0] as VarDeclaration;
         if (declaration == null) {

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public static class StructsCtx {
     static Dictionary<string, Struct> structs = new Dictionary<string, Struct>();
     static bool structsLoaded = false;
-    
+
     public static Struct GetStructFromID(string id) {
         if (structs.ContainsKey(id)) {
             return structs[id];

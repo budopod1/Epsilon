@@ -5,9 +5,9 @@ using System.Collections.Generic;
 public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
-    
+
     List<IToken> tokens;
-    
+
     public TreeToken(List<IToken> tokens) {
         this.tokens = tokens;
     }
@@ -58,7 +58,7 @@ public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
     public IEnumerator<IToken> GetEnumerator() {
         return tokens.GetEnumerator();
     }
-    
+
     IEnumerator IEnumerable.GetEnumerator() {
         return GetEnumerator();
     }
@@ -68,8 +68,8 @@ public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
         bool whitespace = false;
         foreach (IToken token in this) {
             result += token.ToString();
-            if (token is IMultiLineToken 
-                || (token is TextToken && 
+            if (token is IMultiLineToken
+                || (token is TextToken &&
                 ((TextToken)token).GetText() == "\n")
                 || Utils.IsInstance(token, typeof(Unit<>))) {
                 whitespace = true;
