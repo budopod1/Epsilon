@@ -316,14 +316,14 @@ def equals(program, builder, params, param_types_):
     v1, v2 = params
     type_1, type_2 = param_types_
     assert type_1 == type_2
-    return program.value_equals_depth_1(builder, type_1, v1, v2, False), Bool
+    return program.value_equals_depth_1(builder, type_1, v1, v2, invert=False), Bool
 
 
 def not_equals(program, builder, params, param_types_):
     v1, v2 = params
     type_1, type_2 = param_types_
     assert type_1 == type_2
-    return program.value_equals_depth_1(builder, type_1, v1, v2, True), Bool
+    return program.value_equals_depth_1(builder, type_1, v1, v2, invert=True), Bool
 
 
 def equals_depth(program, builder, params, param_types_):
@@ -331,7 +331,7 @@ def equals_depth(program, builder, params, param_types_):
     type_1, type_2, _ = param_types_
     assert type_1 == type_2
     depth = depth_ir_const.json_const["value"]
-    return program.value_equals(builder, type_1, v1, v2, depth, False), Bool
+    return program.value_equals(builder, type_1, v1, v2, depth, invert=False), Bool
 
 
 def not_equals_depth(program, builder, params, param_types_):
@@ -339,7 +339,7 @@ def not_equals_depth(program, builder, params, param_types_):
     type_1, type_2, _ = param_types_
     assert type_1 == type_2
     depth = depth_ir_const.json_const["value"]
-    return program.value_equals(builder, type_1, v1, v2, depth, True), Bool
+    return program.value_equals(builder, type_1, v1, v2, depth, invert=True), Bool
 
 
 def join(program, builder, params, param_types_):

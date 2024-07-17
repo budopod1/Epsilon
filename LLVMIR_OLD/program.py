@@ -467,10 +467,10 @@ class Program:
         return builder.call(func, [a, b])
 
     def bitshift_left(self, builder, a, b, a_type_, b_type_):
-        return self.bitshift(builder, a, b, a_type_, b_type_, True)
+        return self.bitshift(builder, a, b, a_type_, b_type_, is_left=True)
 
     def bitshift_right(self, builder, a, b, a_type_, b_type_):
-        return self.bitshift(builder, a, b, a_type_, b_type_, False)
+        return self.bitshift(builder, a, b, a_type_, b_type_, is_left=False)
 
     def expect(self, builder, val, expected):
         return self.call_extern(builder, "expect.i1", [val, i1_of(expected)], [Bool, Bool], Bool)
