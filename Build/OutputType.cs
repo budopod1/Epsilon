@@ -7,6 +7,6 @@ public enum OutputType {
     LLVMBC,
     PACKAGEBOTH,
     PACKAGEOBJ,
-    // OBJECT,
-    // SHARED_OBJECT
+    OBJECT,
+    SHAREDOBJECT
 }

@@ -277,6 +277,12 @@ public class Builder {
             case OutputType.PACKAGEOBJ:
                 ToPackage(buildInfo, includeLLVMInPackage: false);
                 break;
+            case OutputType.OBJECT:
+                ToObject(buildInfo);
+                break;
+            case OutputType.SHAREDOBJECT:
+                ToSharedObject(buildInfo);
+                break;
             default:
                 throw new InvalidOperationException();
             }
@@ -955,6 +961,14 @@ public class Builder {
 
         string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");
         BJSONEnv.WriteFile(epslspecDest, newEPSLSPEC.ToJSON(this));
+    }
+
+    void ToObject(BuildInfo buildInfo) {
+        CmdUtils.FilesToObject(buildInfo.Sources, buildInfo.Output);
+    }
+
+    void ToSharedObject(BuildInfo buildInfo) {
+        CmdUtils.ToSharedObject(buildInfo.Sources, buildInfo.Output);
     }
 
     public ResultStatus Teardown(EPSLCACHE cache) {

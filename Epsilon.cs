@@ -73,7 +73,8 @@ Modes:
         });
 
         PossibilitiesExpectation outputTypeInput = parser.AddOption(new PossibilitiesExpectation(
-            "executable", "executable", "llvm-ll", "llvm-bc", "package-both", "package-obj"
+            "executable", "executable", "llvm-ll", "llvm-bc", "package-both", "package-obj",
+            "object", "shared-object"
         ), "The output file type", "t", "output-type");
 
         PossibilitiesExpectation verbosity = parser.AddOption(
@@ -105,8 +106,8 @@ Modes:
             OptimizationLevel optimizationLevel = EnumHelpers.ParseOptimizationLevel(optimizationInput.Value());
             OutputType outputType = EnumHelpers.ParseOutputType(outputTypeInput.Value());
 
-            linkBuiltins = outputType.ShouldLinkBuiltins();
-            linkLibraries = outputType.ShouldLinkLibraries();
+            if (outputType.MustntLinkBuiltins()) linkBuiltins = false;
+            if (outputType.MustntLinkLibraries()) linkLibraries = false;
 
             libraries.AddRange(proj.Libraries);
 

@@ -28,6 +28,10 @@ public static class EnumHelpers {
             return OutputType.PACKAGEBOTH;
         case "package-obj":
             return OutputType.PACKAGEOBJ;
+        case "object":
+            return OutputType.OBJECT;
+        case "shared-object":
+            return OutputType.SHAREDOBJECT;
         default:
             throw new InvalidOperationException();
         }
@@ -47,6 +51,10 @@ public static class EnumHelpers {
             return "package-both";
         case OutputType.PACKAGEOBJ:
             return "package-obj";
+        case OutputType.OBJECT:
+            return "object";
+        case OutputType.SHAREDOBJECT:
+            return "shared-object";
         default:
             throw new InvalidOperationException();
         }
@@ -62,6 +70,10 @@ public static class EnumHelpers {
             return "ll";
         case OutputType.LLVMBC:
             return "bc";
+        case OutputType.OBJECT:
+            return "o";
+        case OutputType.SHAREDOBJECT:
+            return "so";
         default:
             throw new InvalidOperationException();
         }
@@ -71,39 +83,45 @@ public static class EnumHelpers {
         switch (outputType) {
         case OutputType.EXECUTABLE:
         case OutputType.PACKAGEOBJ:
+        case OutputType.OBJECT:
             return false;
         case OutputType.LLVMLL:
         case OutputType.LLVMBC:
         case OutputType.PACKAGEBOTH:
+        case OutputType.SHAREDOBJECT:
             return true;
         default:
             throw new InvalidOperationException();
         }
     }
 
-    public static bool ShouldLinkBuiltins(this OutputType outputType) {
+    public static bool MustntLinkBuiltins(this OutputType outputType) {
         switch (outputType) {
         case OutputType.EXECUTABLE:
         case OutputType.LLVMLL:
         case OutputType.LLVMBC:
-            return true;
+        case OutputType.OBJECT:
+        case OutputType.SHAREDOBJECT:
+            return false;
         case OutputType.PACKAGEBOTH:
         case OutputType.PACKAGEOBJ:
-            return false;
+            return true;
         default:
             throw new InvalidOperationException();
         }
     }
 
-    public static bool ShouldLinkLibraries(this OutputType outputType) {
+    public static bool MustntLinkLibraries(this OutputType outputType) {
         switch (outputType) {
         case OutputType.EXECUTABLE:
         case OutputType.LLVMLL:
         case OutputType.LLVMBC:
-            return true;
+        case OutputType.OBJECT:
+        case OutputType.SHAREDOBJECT:
+            return false;
         case OutputType.PACKAGEBOTH:
         case OutputType.PACKAGEOBJ:
-            return false;
+            return true;
         default:
             throw new InvalidOperationException();
         }

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 
 public static class CmdUtils {
+    static readonly string[] baseClangArgs = new string[] {"-lc", "-lm"};
     static readonly bool SUBPROCCESSOUTPUT = false;
     
     static Process RunCommand(string command, IEnumerable<string> arguments) {
@@ -59,13 +60,10 @@ public static class CmdUtils {
         RunCommand("llc", args);
     }
 
-    public static void ClangToExecutable(IEnumerable<string> sources, string output, IEnumerable<IClangConfig> configs, bool positionIndependent=false) {
+    public static void ClangToExecutable(IEnumerable<string> sources, string output, IEnumerable<IClangConfig> configs) {
         List<string> args = configs.SelectMany(config => config.ToParts())
-            .Concat(new string[] {"-lc", "-lm", "-o", output}).ToList();
-        if (positionIndependent) {
-            args.Add("-fPIC");
-        }
-        args.AddRange(sources);
+            .Concat(baseClangArgs).Concat(new string[] {"-o", output})
+            .Concat(sources).ToList();
         RunCommand("clang", args);
     }
 
@@ -114,5 +112,10 @@ public static class CmdUtils {
             objs.Add(llvmObj);
             LinkObjsToObj(objs, output);
         }
+    }
+
+    public static void ToSharedObject(IEnumerable<string> sources, string output) {
+        RunCommand("clang", baseClangArgs.Concat(new string[] {"-shared", "-o", output})
+            .Concat(sources));
     }
 }
