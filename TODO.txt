@@ -10,4 +10,3 @@ TODO:
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `Struct` type that's treated as a superclass of all structs
 * add ability to import C methods and structs without having to write an EPSLSPEC
-* split IntermediateFile.IntermediateType.IR into IntermediateFile.IntermediateType.LL and IntermediateFile.IntermediateType.BC? the first of which is assumed to not be optimized already, the second of which is

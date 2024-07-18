@@ -1,20 +1,16 @@
-import llvmlite.binding as llvm
-from ctypes import CFUNCTYPE, c_double, c_float, c_int, c_uint, c_ushort, c_ulong, c_long, c_char
-import subprocess
-from pathlib import Path
+import os
 import sys
+import subprocess
 import multiprocessing
-
-
-engine = None
-manager = multiprocessing.Manager()
+from pathlib import Path
+from ctypes import c_double, c_float, c_int, c_uint, c_ushort, c_ulong, c_long, c_char, CDLL
 
 
 TESTS = [
     {
         "file": Path("Annotations") / "entry.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 7}
         ]
@@ -22,7 +18,7 @@ TESTS = [
     {
         "file": Path("Internal") / "entry.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 12}
         ]
@@ -30,7 +26,7 @@ TESTS = [
     {
         "file": "arithmetic.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 50}
         ]
@@ -38,7 +34,7 @@ TESTS = [
     {
         "file": "array.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int, c_int),
+        "sig": (c_int, c_int, c_int),
         "tests": [
             {"arguments": [0, 0], "compare": "exact", "expect": 1},
             {"arguments": [2, 1], "compare": "exact", "expect": 6},
@@ -47,7 +43,7 @@ TESTS = [
     {
         "file": "arrayaccess.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 16}
         ]
@@ -55,7 +51,7 @@ TESTS = [
     {
         "file": "arrayassign.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 7}
         ]
@@ -63,7 +59,7 @@ TESTS = [
     {
         "file": "basic.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
@@ -71,7 +67,7 @@ TESTS = [
     {
         "file": "bitshift.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 97}
         ]
@@ -79,7 +75,7 @@ TESTS = [
     {
         "file": "bitwise.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 3}
         ]
@@ -87,7 +83,7 @@ TESTS = [
     {
         "file": "blankarray.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 3}
         ]
@@ -95,7 +91,7 @@ TESTS = [
     {
         "file": "bool.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
@@ -103,7 +99,7 @@ TESTS = [
     {
         "file": "capacity.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 0}
         ]
@@ -111,7 +107,7 @@ TESTS = [
     {
         "file": "circular1.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 2}
         ]
@@ -119,7 +115,7 @@ TESTS = [
     {
         "file": "compound.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 10}
         ]
@@ -127,7 +123,7 @@ TESTS = [
     {
         "file": "deepequals.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 10}
         ]
@@ -135,7 +131,7 @@ TESTS = [
     {
         "file": "equals.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 2}
         ]
@@ -143,7 +139,7 @@ TESTS = [
     {
         "file": "file.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 20}
         ]
@@ -151,7 +147,7 @@ TESTS = [
     {
         "file": "format.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 352},
         ]
@@ -159,7 +155,7 @@ TESTS = [
     {
         "file": "for.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 49},
         ]
@@ -167,7 +163,7 @@ TESTS = [
     # {
     #     "file": "given.epsl",
     #     "func": -1,
-    #     "sig": CFUNCTYPE(c_int),
+    #     "sig": (c_int,),
     #     "tests": [
     #         {"arguments": [], "compare": "exact", "expect": 230}
     #     ]
@@ -175,7 +171,7 @@ TESTS = [
     {
         "file": "global.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 3}
         ]
@@ -183,7 +179,7 @@ TESTS = [
     {
         "file": "if.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
+        "sig": (c_int, c_int),
         "tests": [
             {"arguments": [6], "compare": "exact", "expect": 1},
             {"arguments": [5], "compare": "exact", "expect": 0},
@@ -193,7 +189,7 @@ TESTS = [
     {
         "file": "if2.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
+        "sig": (c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 1},
             {"arguments": [2], "compare": "exact", "expect": 0}
@@ -202,7 +198,7 @@ TESTS = [
     {
         "file": "if3.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 0}
         ]
@@ -210,7 +206,7 @@ TESTS = [
     {
         "file": "insert.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 676}
         ]
@@ -218,7 +214,7 @@ TESTS = [
     {
         "file": "mathimport.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_double, c_int),
+        "sig": (c_double, c_int),
         "tests": [
             {"arguments": [1], "compare": "float", "expect": 0.54}
         ]
@@ -226,7 +222,7 @@ TESTS = [
     {
         "file": "mathimport3.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_double, c_double),
+        "sig": (c_double, c_double),
         "tests": [
             {"arguments": [-4], "compare": "float", "expect": 2}
         ]
@@ -234,7 +230,7 @@ TESTS = [
     {
         "file": "mathtest.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_double, c_double),
+        "sig": (c_double, c_double),
         "tests": [
             {"arguments": [3], "compare": "float", "expect": 35.54}
         ]
@@ -242,7 +238,7 @@ TESTS = [
     {
         "file": "multipath.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
+        "sig": (c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 2},
             {"arguments": [3], "compare": "exact", "expect": 3}
@@ -251,7 +247,7 @@ TESTS = [
     {
         "file": "nullkw.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
@@ -259,7 +255,7 @@ TESTS = [
     {
         "file": "pop.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 5}
         ]
@@ -267,7 +263,7 @@ TESTS = [
     {
         "file": "string.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_char, c_int),
+        "sig": (c_char, c_int),
         "tests": [
             {"arguments": [0], "compare": "exact", "expect": b"a"},
             {"arguments": [14], "compare": "exact", "expect": b"o"},
@@ -276,7 +272,7 @@ TESTS = [
     {
         "file": "stringify.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
+        "sig": (c_int, c_int),
         "tests": [
             {"arguments": [10], "compare": "exact", "expect": 2851}
         ]
@@ -284,7 +280,7 @@ TESTS = [
     {
         "file": "struct.epsl",
         "func": -1,
-        "sig": CFUNCTYPE(c_int),
+        "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 5}
         ]
@@ -292,7 +288,7 @@ TESTS = [
     {
         "file": "switch.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
+        "sig": (c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 2},
             {"arguments": [2], "compare": "exact", "expect": -2},
@@ -302,7 +298,7 @@ TESTS = [
     {
         "file": "uninitvalue.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
+        "sig": (c_int, c_int),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 42},
             {"arguments": [0], "compare": "exact", "expect": 24}
@@ -311,7 +307,7 @@ TESTS = [
     {
         "file": "while.epsl",
         "func": 0,
-        "sig": CFUNCTYPE(c_int, c_int),
+        "sig": (c_int, c_int),
         "tests": [
             {"arguments": [4], "compare": "exact", "expect": 10},
             {"arguments": [6], "compare": "exact", "expect": 21},
@@ -319,41 +315,26 @@ TESTS = [
     }
 ]
 
+
+manager = multiprocessing.Manager()
+
+
 TIMEOUT = 15
 
 
-def get_func(path, source, func_id):
-    global engine
+def get_func(func_id, source, result_file):
+    so = CDLL(result_file)
 
-    with open(path) as file:
-        module = file.read()
+    func = "main" if func_id == -1 else f"{source.with_suffix('')}/{str(func_id)}"
 
-    llvm.initialize()
-    llvm.initialize_native_target()
-    llvm.initialize_native_asmprinter()
-
-    target = llvm.Target.from_default_triple()
-    target_machine = target.create_target_machine()
-
-    backing_mod = llvm.parse_assembly("")
-    engine = llvm.create_mcjit_compiler(backing_mod, target_machine)
-
-    module = llvm.parse_assembly(module)
-    module.verify()
-    engine.add_module(module)
-    engine.finalize_object()
-    engine.run_static_constructors()
-
-    func = "main" if func_id == -1 else f"{str(source.resolve())}/{str(func_id)}"
-
-    return engine.get_function_address(func)
+    return getattr(so, func)
 
 
-def compile_file(base_dir, file):
+def compile_file(source, result_file):
     proccess = subprocess.run(
         [
-            "mono", "Epsilon.exe", "-t", "llvm-ll", "compile",
-            str(file), "-o", str(base_dir/"code.ll"), "-H", "dont-use"
+            "mono", "Epsilon.exe", "compile", "-t", "shared-object",
+            str(source), "-o", str(result_file), "-H", "dont-use"
         ], capture_output=True, timeout=TIMEOUT
     )
     output = proccess.stdout+proccess.stderr
@@ -377,23 +358,24 @@ def run_test(func, args):
 
 
 def main():
-    base_dir = Path("tests")
+    base_dir = Path("tests").resolve()
 
     print("🔬 Running tests...")
 
     test_count = sum(map(lambda v: len(v["tests"]), TESTS))
-    i = 1
+    test_idx = 1
     succeeded = 0
     failed = 0
 
-    for group in TESTS:
-        file = group["file"]
-        func = group["func"]
-        print(f"\n🧪 Testing function {func} from file {file}...")
-        source = base_dir/file
+    for file_idx, group in enumerate(TESTS):
+        filename = group["file"]
+        print(f"\n🧪 Testing file {filename}...")
+
+        source = base_dir/filename
+        result_file = base_dir/f"o{file_idx}.so"
 
         try:
-            did_compile, compile_message = compile_file(base_dir, source)
+            did_compile, compile_message = compile_file(source, result_file)
         except subprocess.TimeoutExpired:
             print("❗ Compilation of function failed:")
             print(f"Compliation did not complete within {TIMEOUT} seconds")
@@ -406,11 +388,11 @@ def main():
             failed += len(group["tests"])
             continue
 
-        func_ptr = get_func(base_dir / "code.ll", source.with_suffix(""), func)
-        func = group["sig"](func_ptr)
+        func = get_func(group["func"], source, result_file)
+        func.restype, *func.argtypes = group["sig"]
 
         for test in group["tests"]:
-            print(f"Running test {i}/{test_count}...")
+            print(f"Running test {test_idx}/{test_count}...")
 
             test_result["result"] = None
 
@@ -441,7 +423,9 @@ def main():
                     print(f"Expected {expect}, got {result}")
                     failed += 1
 
-            i += 1
+            test_idx += 1
+
+        os.remove(result_file)
 
     print("\nTests completed:")
     if failed > 0:

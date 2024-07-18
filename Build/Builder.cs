@@ -442,7 +442,7 @@ public class Builder {
     DispatchedFile DispatchPartialPath(BuildSettings settings, string partialPath, string projDirectory, bool canBeSPEC=true) {
         DispatchedFile dispatched = null;
         bool anyLocation = false;
-        for (int attempts = 0; dispatched == null && attempts < LOAD_RETRY; attempts++) {
+        for (int attempt = 0; dispatched == null && attempt < LOAD_RETRY; attempt++) {
             try {
                 anyLocation = false;
                 foreach (string location in FileLocations(partialPath, projDirectory)) {

@@ -94,8 +94,9 @@ Modes:
 
         TestResult(builder.WipeTempDir());
 
-        string curDirectory = $".{Path.DirectorySeparatorChar}";
-        string input = curDirectory + (sourceFile.Matched ?? "entry");
+        string input = sourceFile.Matched ?? "entry";
+        if (!input.StartsWith(Path.DirectorySeparatorChar))
+            input = $".{Path.DirectorySeparatorChar}" + input;
 
         if (mode.Value() == "compile") {
             TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
