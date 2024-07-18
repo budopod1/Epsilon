@@ -25,6 +25,7 @@ for path in changed_files:
         print("fixing whitespace for", path)
         fixed_files.append(file)
 
-subprocess.run(
-    ["git", "add", *fixed_files]
-)
+if fixed_files:
+    subprocess.run(
+        ["git", "add", *fixed_files]
+    )
