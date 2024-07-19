@@ -12,4 +12,8 @@ public class LocatedID {
     public string GetID() {
         return Name + " " + Path;
     }
+
+    public bool IsPrivate() {
+        return Name.StartsWith('_');
+    }
 }

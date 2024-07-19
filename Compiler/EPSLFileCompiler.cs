@@ -89,7 +89,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
         ComputeBaseTypes_(program);
 
-        return program.GetStructIDs();
+        return program.GetStructIDs().Where(id => !id.IsPrivate()).ToHashSet();
     }
 
     public void AddStructIDs(HashSet<LocatedID> structIds) {
@@ -118,7 +118,7 @@ public class EPSLFileCompiler : IFileCompiler {
         program = ObjectifyingFunctions(program);
 
         return program.Select(token => token as RealFunctionDeclaration)
-            .Where(func => func != null).ToList();
+            .Where(func => func != null && !func.IsPrivate()).ToList();
     }
 
     public void AddDeclarations(List<RealFunctionDeclaration> declarations) {
