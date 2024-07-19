@@ -6,13 +6,26 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
 public class Builder {
+    static Dictionary<string, Func<BuildSettings, string, IFileCompiler>> dispatchers = new Dictionary<string, Func<BuildSettings, string, IFileCompiler>>();
+
     bool shouldCache = false;
     string currentFile = "";
     string currentText = "";
     Dictionary<string, string> libraries;
     Dictionary<string, FileTree> files;
-    readonly IEnumerable<string> EXTENSIONS = new List<string> {"epslspec", "epsl"};
-    readonly IEnumerable<string> PREFIXES = new List<string> {"", "."};
+    static List<string> EXTENSIONS = new List<string> {"epslspec"};
+    static readonly List<string> PREFIXES = new List<string> {"", "."};
+
+    public static void RegisterDispatcher(Func<BuildSettings, string, IFileCompiler> dispatcher, params string[] extensions) {
+        EXTENSIONS.AddRange(extensions);
+        foreach (string extension in extensions) {
+            dispatchers[extension] = dispatcher;
+        }
+    }
+
+    static Builder() {
+        EPSLFileCompiler.Setup();
+    }
 
     public ResultStatus RunWrapped(Action action) {
         try {
@@ -358,7 +371,7 @@ public class Builder {
         }
     }
 
-    DispatchedFile DispatchEPSLSPEC(BuildSettings settings, string path, string _1, SPECFileCompiler _2) {
+    DispatchedFile DispatchEPSLSPEC(BuildSettings settings, string path) {
         currentFile = path;
         string stemmed = Utils.Stem(path);
         IJSONValue jsonValue = ParseJSONFile(path, out string fileText);
@@ -396,18 +409,6 @@ public class Builder {
         );
     }
 
-    DispatchedFile DispatchEPSL(BuildSettings _, string path, string oldCompilerPath, SPECFileCompiler oldCompiler) {
-        string fileText;
-        currentFile = path;
-        using (StreamReader file = new StreamReader(path)) {
-            fileText = file.ReadToEnd();
-        }
-        currentText = fileText;
-        string stemmed = Utils.Stem(path);
-        IFileCompiler compiler = new EPSLFileCompiler(stemmed, fileText);
-        return new DispatchedFile(compiler, path, oldCompilerPath, oldCompiler);
-    }
-
     IEnumerable<string> FileLocations(string partialPath, string projDirectory) {
         foreach (string extension in EXTENSIONS) {
             foreach (string prefix in PREFIXES) {
@@ -429,12 +430,15 @@ public class Builder {
 
     DispatchedFile DispatchPath(BuildSettings settings, string path, string oldCompilerPath=null, SPECFileCompiler oldCompiler=null) {
         string extension = Utils.GetExtension(path);
-        switch (extension) {
-        case ".epslspec":
-            return DispatchEPSLSPEC(settings, path, oldCompilerPath, oldCompiler);
-        case ".epsl":
-            return DispatchEPSL(settings, path, oldCompilerPath, oldCompiler);
-        default:
+        if (extension == "epslspec") {
+            return DispatchEPSLSPEC(settings, path);
+        } else if (dispatchers.ContainsKey(extension)) {
+            currentFile = path;
+            return new DispatchedFile(
+                dispatchers[extension](settings, path),
+                path, oldCompilerPath, oldCompiler
+            );
+        } else {
             return null;
         }
     }
@@ -446,7 +450,7 @@ public class Builder {
             try {
                 anyLocation = false;
                 foreach (string location in FileLocations(partialPath, projDirectory)) {
-                    if (!canBeSPEC && Utils.GetExtension(location) == ".epslspec")
+                    if (!canBeSPEC && Utils.GetExtension(location) == "epslspec")
                         continue;
                     dispatched = DispatchPath(settings, location);
                     if (dispatched != null) {
@@ -713,7 +717,7 @@ public class Builder {
         foreach (IntermediateFile intermediate in intermediates) {
             if (!doesSaveCache(settings) && intermediate.IsInUserDir) {
                 string extension = Utils.GetExtension(intermediate.Path);
-                string newPath = Utils.JoinPaths(Utils.TempDir(), $"{name}{i++}{extension}");
+                string newPath = Utils.JoinPaths(Utils.TempDir(), $"{name}{i++}.{extension}");
                 File.Copy(intermediate.Path, newPath, overwrite: true);
                 yield return newPath;
             } else {

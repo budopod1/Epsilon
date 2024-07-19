@@ -146,13 +146,17 @@ public static class Utils {
         return SetExtension(path, extension: null);
     }
     public static string GetExtension(string path) {
+        string result;
         try {
-            return Path.GetExtension(path);
+            result = Path.GetExtension(path);
         } catch (ArgumentNullException e) {
             throw e;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
+        if (result == "") return "";
+        if (result[0] == '.') return result.Substring(1);
+        return result;
     }
 
     public static bool TryDelete(string path) {

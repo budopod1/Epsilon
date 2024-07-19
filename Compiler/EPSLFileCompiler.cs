@@ -12,6 +12,17 @@ public class EPSLFileCompiler : IFileCompiler {
     string srcPath;
     string IR;
 
+    public static void Setup() {
+        Builder.RegisterDispatcher((BuildSettings _, string path) => {
+            string fileText;
+            using (StreamReader file = new StreamReader(path)) {
+                fileText = file.ReadToEnd();
+            }
+            string stemmed = Utils.Stem(path);
+            return new EPSLFileCompiler(stemmed, fileText);
+        }, "epsl");
+    }
+
     public EPSLFileCompiler(string path, string fileText) {
         Log.Info("Compiling EPSL file", path);
         srcPath = path;

@@ -88,11 +88,11 @@ public static class CmdUtils {
 
         foreach (string source in sources) {
             switch (Utils.GetExtension(source)) {
-            case ".ll":
-            case ".bc":
+            case "ll":
+            case "bc":
                 llvm.Add(source);
                 break;
-            case ".o":
+            case "o":
                 objs.Add(source);
                 break;
             default:
