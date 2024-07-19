@@ -374,7 +374,11 @@ public class Builder {
     DispatchedFile DispatchEPSLSPEC(BuildSettings settings, string path) {
         currentFile = path;
         string stemmed = Utils.Stem(path);
-        IJSONValue jsonValue = ParseJSONFile(path, out string fileText);
+        string fileText = null;
+        IJSONValue jsonValue = JSONTools.ParseJSONFile(path, text => {
+            fileText = text;
+            currentText = text;
+        });
         ShapedJSON obj = new ShapedJSON(jsonValue, EPSLSPEC.Shape);
         string source = Utils.GetFullPath(obj["source"].GetStringOrNull());
         string generatedEPSLSPEC = null;
@@ -994,23 +998,7 @@ public class Builder {
         });
     }
 
-    public IJSONValue ParseJSONFile(string path) {
-        return ParseJSONFile(path, out string _);
-    }
-
-    public IJSONValue ParseJSONFile(string path, out string fileText) {
-        using (FileStream file = new FileStream(path, FileMode.Open)) {
-            BinaryReader bytes = new BinaryReader(file);
-            if (bytes.PeekChar() == 0x42 /* the magic number for a BinJSON file, ord(`B`) */) {
-                fileText = null;
-                return BJSONEnv.Deserialize(bytes);
-            }
-        }
-
-        using (StreamReader file = new StreamReader(path)) {
-            fileText = file.ReadToEnd();
-        }
-        currentText = fileText;
-        return JSONTools.ParseJSON(fileText);
+    IJSONValue ParseJSONFile(string path) {
+        return JSONTools.ParseJSONFile(path, text => currentText = text);
     }
 }
