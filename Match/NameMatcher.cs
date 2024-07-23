@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections.Generic;
 
 public class NameMatcher : IMatcher {
@@ -8,10 +9,11 @@ public class NameMatcher : IMatcher {
             if (!(stoken is TextToken)) {
                 continue;
             }
-            string name = ((TextToken)stoken).GetText();
-            if (!Utils.NameStartChars.Contains(name)) {
+            string nameStart = ((TextToken)stoken).GetText();
+            if (!Utils.NameStartChars.Contains(nameStart)) {
                 continue;
             }
+            StringBuilder name = new StringBuilder(nameStart);
             List<IToken> replaced = new List<IToken>();
             replaced.Add(stoken);
             int j;
@@ -22,20 +24,14 @@ public class NameMatcher : IMatcher {
 
                     if (Utils.NameChars.Contains(text)) {
                         replaced.Add(token);
-                        name += text;
+                        name.Append(text);
                         continue;
                     }
                 }
                 break;
             }
             List<IToken> replacement = new List<IToken>();
-            if (name.StartsWith("___")) {
-                throw new SyntaxErrorException(
-                    "Names starting with '___' are reserved",
-                    TokenUtils.MergeSpans(replaced)
-                );
-            }
-            replacement.Add(new Name(name));
+            replacement.Add(new Name(name.ToString()));
             return new Match(i, j-1, replacement, replaced);
         }
         return null;

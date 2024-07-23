@@ -1,39 +1,46 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 public static class CmdUtils {
     static readonly string[] baseClangArgs = new string[] {"-lc", "-lm"};
     static readonly bool SUBPROCCESSOUTPUT = false;
 
-    static Process RunCommand(string command, IEnumerable<string> arguments) {
-        ProcessStartInfo startInfo = new ProcessStartInfo(command);
-        startInfo.CreateNoWindow = true;
-        startInfo.UseShellExecute = false;
-        startInfo.RedirectStandardOutput = true;
-        startInfo.RedirectStandardError = true;
-        string argumentsStr = "";
-        // https://stackoverflow.com/questions/5510343
-        foreach (string argument in arguments) {
-            argumentsStr += "\"" + argument.Replace("\\", "\\\\")
-                .Replace("\"", "\\\"") + "\" ";
+    #pragma warning disable CS0649
+    struct _ProcessResult {
+        public string output;
+        public byte status;
+    }
+
+    [DllImport("./runcommand.so")]
+    static extern _ProcessResult _RunCommand(string prog, string[] args, int argCount);
+
+    static string RunCommand(string command, IEnumerable<string> arguments, out int exitCode) {
+        string[] args = arguments.ToArray();
+        _ProcessResult result = _RunCommand(command, args, args.Length);
+        exitCode = result.status;
+        if (SUBPROCCESSOUTPUT || exitCode != 0) {
+            Console.Write(result.output);
         }
-        Log.Info(command, argumentsStr);
-        startInfo.Arguments = argumentsStr;
-        Process process = Process.Start(startInfo);
-        process.WaitForExit();
-        if (SUBPROCCESSOUTPUT || process.ExitCode != 0) {
-            Console.Write(process.StandardOutput.ReadToEnd());
-            Console.Write(process.StandardError.ReadToEnd());
+        return result.output;
+    }
+
+    static string RunCommand(string command, IEnumerable<string> arguments) {
+        string result = RunCommand(command, arguments, out int exitCode);
+        if (SUBPROCCESSOUTPUT || exitCode != 0) {
+            Console.WriteLine(result);
         }
-        if (process.ExitCode != 0) {
+        if (exitCode != 0) {
             throw new CommandFailureException(
-                $"Command '{command}' exited with status code {process.ExitCode}"
+                $"Command '{command}' exited with status code {exitCode}"
             );
         }
-        return process;
+        return result;
     }
 
     public static void LinkLLVM(IEnumerable<string> sources, string output, bool toLL=false) {
@@ -60,9 +67,12 @@ public static class CmdUtils {
         RunCommand("llc", args);
     }
 
+    public static IEnumerable<string> ConfigsToStrs(IEnumerable<IClangConfig> configs) {
+        return configs.SelectMany(config => config.ToParts()).Concat(baseClangArgs);
+    }
+
     public static void ClangToExecutable(IEnumerable<string> sources, string output, IEnumerable<IClangConfig> configs) {
-        List<string> args = configs.SelectMany(config => config.ToParts())
-            .Concat(baseClangArgs).Concat(new string[] {"-o", output})
+        List<string> args = ConfigsToStrs(configs).Concat(new string[] {"-o", output})
             .Concat(sources).ToList();
         RunCommand("clang", args);
     }
@@ -73,9 +83,11 @@ public static class CmdUtils {
         LLVMToObj(linkedIR, output, positionIndependent);
     }
 
-    public static void RunScript(string name) {
-        RunCommand("bash", new string[] {
-            "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), name)});
+    public static string RunScript(string name, IEnumerable<string> args=null) {
+        IEnumerable<string> bashArgs = new string[] {
+            "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), name)};
+        if (args != null) bashArgs = bashArgs.Concat(args);
+        return RunCommand("bash", bashArgs);
     }
 
     public static void LinkObjsToObj(IEnumerable<string> sources, string output) {
@@ -117,5 +129,33 @@ public static class CmdUtils {
     public static void ToSharedObject(IEnumerable<string> sources, string output) {
         RunCommand("clang", baseClangArgs.Concat(new string[] {"-shared", "-o", output})
             .Concat(sources));
+    }
+
+    public static IEnumerable<string> ListIncludeDirs() {
+        string raw = RunCommand("cpp", new string[] {"--verbose", "/dev/null"});
+        bool isSearchList = false;
+        foreach (string line in raw.Split("\n")) {
+            if (isSearchList) {
+                if (line == "End of search list.") {
+                    isSearchList = false;
+                } else if (line.Length > 0 && line[0] == ' ') {
+                    yield return line.Substring(1);
+                }
+            } else if (line == "#include <...> search starts here:") {
+                isSearchList = true;
+            }
+        }
+    }
+
+    public static string VerifyCSyntax(string file, IEnumerable<string> config) {
+        return RunCommand("clang", new string[] {file, "-fsyntax-only"}.Concat(config), out int exitCode);
+    }
+
+    public static void CToLLVM(string from, string to_, IEnumerable<string> config) {
+        RunCommand("clang", new string[] {from, "-o", to_, "-emit-llvm", "-c"}.Concat(config));
+    }
+
+    public static void CToObj(string from, string to_, IEnumerable<string> config) {
+        RunCommand("clang", new string[] {from, "-o", to_, "-c"}.Concat(config));
     }
 }

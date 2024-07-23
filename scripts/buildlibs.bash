@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-cd "${0%/*}"
+cd "${0%/*}/.."
 
 for path in ./libs/*.c; do
     file="${path%.*}"

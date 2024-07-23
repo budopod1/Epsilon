@@ -1,5 +1,5 @@
 import os
-import sys
+import time
 import subprocess
 import multiprocessing
 from pathlib import Path
@@ -334,7 +334,7 @@ def compile_file(source, result_file):
     proccess = subprocess.run(
         [
             "mono", "Epsilon.exe", "compile", "-t", "shared-object",
-            str(source), "-o", str(result_file), "-H", "dont-use"
+            str(source), "-o", str(result_file), "-H", "dont-use",
         ], capture_output=True, timeout=TIMEOUT
     )
     output = proccess.stdout+proccess.stderr
@@ -367,9 +367,11 @@ def main():
     succeeded = 0
     failed = 0
 
+    created_sos = set()
+
     for file_idx, group in enumerate(TESTS):
         filename = group["file"]
-        print(f"\n🧪 Testing file {filename}...")
+        print(f"🏗️ Compiling file {filename}...")
 
         source = base_dir/filename
         result_file = base_dir/f"o{file_idx}.so"
@@ -387,6 +389,18 @@ def main():
             print(compile_message)
             failed += len(group["tests"])
             continue
+
+        created_sos.add(file_idx)
+
+    for file_idx, group in enumerate(TESTS):
+        if file_idx not in created_sos:
+            continue
+
+        filename = group["file"]
+        print(f"\n🧪 Testing file {filename}...")
+
+        source = base_dir/filename
+        result_file = base_dir/f"o{file_idx}.so"
 
         func = get_func(group["func"], source, result_file)
         func.restype, *func.argtypes = group["sig"]

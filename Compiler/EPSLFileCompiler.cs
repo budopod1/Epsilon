@@ -23,7 +23,7 @@ public class EPSLFileCompiler : IFileCompiler {
         }, "epsl");
     }
 
-    public EPSLFileCompiler(string path, string fileText) {
+    EPSLFileCompiler(string path, string fileText) {
         Log.Info("Compiling EPSL file", path);
         srcPath = path;
         this.fileText = fileText;
@@ -48,7 +48,7 @@ public class EPSLFileCompiler : IFileCompiler {
         return srcPath;
     }
 
-    public List<string> ToImports() {
+    public IEnumerable<string> ToImports() {
         program = TokenizeStrings(program);
 
         program = TokenizeCharacterConstants(program);
@@ -63,7 +63,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
         return program.Where(token => token is Import).Select(
             token => (token as Import).GetRealPath()
-        ).ToList();
+        );
     }
 
     public HashSet<LocatedID> ToStructIDs() {

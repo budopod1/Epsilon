@@ -1,8 +1,0 @@
-{"functions": [
-    {"id": "cfile_getPtr", "callee": "cfile_getPtr", "return_type_": "Internal", "template": [{"type": "name", "name": "get_ptr"}], "takes_ownership": false, "result_in_params": false, "source": "Program"},
-
-    {"id": "cfile_usePtr", "callee": "cfile_usePtr", "return_type_": "Z32", "template": [{"type": "name", "name": "use_ptr"}, {"type": "argument", "name": "argument", "type_": "Internal"}], "takes_ownership": false, "result_in_params": false, "source": "Program"}
-], "types_": [
-    {"given_name": "Internal", "name": "Internal", "bits": null, "generics": []},
-    {"given_name": "Z32", "name": "Z", "bits": 32, "generics": []}
-], "structs": [], "dependencies": [], "clang_config": [], "imports": [], "ir": "cfile.bc", "obj": null, "source": null, "source_type": "User", "id_path": "user/cfile"}

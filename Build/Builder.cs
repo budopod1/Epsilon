@@ -25,6 +25,7 @@ public class Builder {
 
     static Builder() {
         EPSLFileCompiler.Setup();
+        CFileCompiler.Setup();
     }
 
     public ResultStatus RunWrapped(Action action) {
@@ -64,13 +65,18 @@ public class Builder {
             JSONTools.ShowError(currentText, e, currentFile);
             return ResultStatus.USERERR;
         } catch (InvalidBJSONException e) {
-            Console.WriteLine($"Error while reading BJSON file: {e.Message}");
+            Console.WriteLine($"Error while reading BJSON file {currentFile}: {e.Message}");
             return ResultStatus.FAIL;
         } catch (ModuleNotFoundException e) {
             Console.WriteLine($"Cannot find requested module '{e.Path}'");
             return ResultStatus.USERERR;
         } catch (ProjectProblemException e) {
-            Console.WriteLine(e.Problem);
+            Console.WriteLine(e.Message);
+            return ResultStatus.USERERR;
+        } catch (FileProblemException e) {
+            Console.Write(currentFile);
+            Console.WriteLine(":");
+            Console.WriteLine(e.Message);
             return ResultStatus.USERERR;
         }
 
@@ -999,6 +1005,7 @@ public class Builder {
     }
 
     IJSONValue ParseJSONFile(string path) {
+        currentFile = path;
         return JSONTools.ParseJSONFile(path, text => currentText = text);
     }
 }

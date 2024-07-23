@@ -9,7 +9,7 @@ public class FileTree {
     public SPECFileCompiler OldCompiler;
     public string GeneratedEPSLSPEC = null;
     public List<FileTree> Imported = new List<FileTree>();
-    public List<string> Imports;
+    public IEnumerable<string> Imports;
     public bool TreeLoaded = false;
 
     string _Text;

@@ -12,6 +12,8 @@ Epsilon.pdb
 # Executable output
 Epsilon.exe
 LLVMIR/result
+C-EPSL-Translator/signatures
+*.so
 
 # Intermediate files
 *.pyc

@@ -1,5 +1,0 @@
-{"functions": [
-    {"id": "cfile_callTest", "callee": "cfile_callTest", "return_type_": "Z32", "template": [{"type": "name", "name": "call_test"}, {"type": "argument", "name": "argument", "type_": "Z32"}], "takes_ownership": false, "result_in_params": false, "source": "Program"}
-], "types_": [
-    {"given_name": "Z32", "name": "Z", "bits": 32, "generics": []}
-], "structs": [], "dependencies": [], "clang_config": [], "imports": [], "ir": "cfile.bc", "obj": null, "source": null, "source_type": "User", "id_path": "user/cfile"}

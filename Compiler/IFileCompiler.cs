@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public interface IFileCompiler {
     string GetText();
     string GetIDPath();
-    List<string> ToImports();
+    IEnumerable<string> ToImports();
     HashSet<LocatedID> ToStructIDs();
     void AddStructIDs(HashSet<LocatedID> structIds);
     List<RealFunctionDeclaration> ToDeclarations();

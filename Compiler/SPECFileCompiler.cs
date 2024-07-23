@@ -25,8 +25,8 @@ public class SPECFileCompiler : IFileCompiler {
         return idPath;
     }
 
-    public List<string> ToImports() {
-        return obj["imports"].IterList().Select(str=>str.GetString()).ToList();
+    public IEnumerable<string> ToImports() {
+        return obj["imports"].IterList().Select(str=>str.GetString());
     }
 
     Dictionary<string, string> structIds;

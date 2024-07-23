@@ -13,7 +13,7 @@ echo "Building executable..."
 echo "Executable built"
 
 echo "Setting up libraries..."
-./buildlibs.bash
+./scripts/buildlibs.bash
 
 echo "Setting up venv..."
 rm -rdf venv

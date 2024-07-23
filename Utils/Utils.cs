@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Collections.Generic;
 
 public static class Utils {
@@ -44,17 +45,17 @@ public static class Utils {
     }
 
     public static string CammelToSnake(string str) {
-        string result = "";
+        StringBuilder result = new StringBuilder();
         bool first = true;
         bool wasUpper = false;
         foreach (char chr in str) {
             bool isUpper = Char.IsUpper(chr);
-            if (isUpper && !wasUpper && !first) result += "_";
-            result += Char.ToLower(chr);
+            if (isUpper && !wasUpper && !first) result.Append('_');
+            result.Append(Char.ToLower(chr));
             wasUpper = isUpper;
             first = false;
         }
-        return result;
+        return result.ToString();
     }
 
     public static string ProjectAbsolutePath() {
