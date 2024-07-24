@@ -2,4 +2,4 @@
 set -e
 
 cd "${0%/*}/../temp"
-../Compiler/signatures "$@"
+../Compilers/signatures "$@"

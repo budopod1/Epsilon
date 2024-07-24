@@ -1,5 +1,5 @@
 # Executable output
-Compiler/signatures
+Compilers/signatures
 LLVMIR/result
 Epsilon.exe
 *.so
