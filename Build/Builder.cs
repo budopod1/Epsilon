@@ -622,6 +622,10 @@ public class Builder {
         }
     }
 
+    bool shouldGetIR(BuildSettings settings) {
+        return settings.OptLevel >= OptimizationLevel.MAX || settings.Output_Type.DoesRequireLLVM();
+    }
+
     void FinishCompilations(BuildSettings settings, out List<FileTree> unlinkedFiles) {
         unlinkedFiles = new List<FileTree>();
         foreach (FileTree file in files.Values) {
@@ -634,13 +638,9 @@ public class Builder {
                 string filename = "." + file.GetName();
                 string path = Utils.JoinPaths(directory, filename);
                 file.SuggestedIntermediatePath = path;
-                file.Compiler.FinishCompilation(path);
+                file.Compiler.FinishCompilation(path, shouldGetIR(settings));
             }
         }
-    }
-
-    bool shouldGetIR(BuildSettings settings) {
-        return settings.OptLevel >= OptimizationLevel.MAX || settings.Output_Type.DoesRequireLLVM();
     }
 
     void ToIntermediates(BuildSettings settings) {

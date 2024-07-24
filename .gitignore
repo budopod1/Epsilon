@@ -1,3 +1,9 @@
+# Executable output
+Compiler/signatures
+LLVMIR/result
+Epsilon.exe
+*.so
+
 # Replit stuff
 .cache
 .local
@@ -7,13 +13,7 @@ replit.nix
 # Misc tools
 .ackrc
 vgcore.*
-Epsilon.pdb
-
-# Executable output
-Epsilon.exe
-LLVMIR/result
-C-EPSL-Translator/signatures
-*.so
+*.pdb
 
 # Intermediate files
 *.pyc

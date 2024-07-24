@@ -7,7 +7,6 @@ public class CFileCompiler : IFileCompiler {
     string path;
     string idPath;
     string fileText;
-    bool requireLLVM;
     bool isCPP;
 
     Dictionary<string, LocatedID> structIDs = new Dictionary<string, LocatedID>();
@@ -43,17 +42,15 @@ public class CFileCompiler : IFileCompiler {
             using (StreamReader file = new StreamReader(path)) {
                 fileText = file.ReadToEnd();
             }
-            return new CFileCompiler(path, fileText,
-                settings.Output_Type.DoesRequireLLVM());
+            return new CFileCompiler(path, fileText);
         }, cExtensions.Concat(cppExtensions).ToArray());
     }
 
-    CFileCompiler(string path, string fileText, bool requireLLVM) {
+    CFileCompiler(string path, string fileText) {
         this.path = path;
         idPath = Utils.Stem(path);
         Log.Info("Compiling C file", idPath);
         this.fileText = fileText;
-        this.requireLLVM = requireLLVM;
         isCPP = cppExtensions.Contains(Path.GetExtension(path).Substring(1));
     }
 
@@ -206,8 +203,8 @@ public class CFileCompiler : IFileCompiler {
         return Dependencies.Empty();
     }
 
-    public void FinishCompilation(string destPath) {
-        if (requireLLVM) {
+    public void FinishCompilation(string destPath, bool recommendLLVM) {
+        if (recommendLLVM) {
             ir = destPath + ".bc";
             CmdUtils.CToLLVM(isCPP, path, ir, new string[0]);
         } else {

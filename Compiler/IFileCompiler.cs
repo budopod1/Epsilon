@@ -12,7 +12,7 @@ public interface IFileCompiler {
     HashSet<Struct> ToStructs();
     void LoadStructExtendees();
     Dependencies ToDependencies(Builder builder);
-    void FinishCompilation(string suggestedPath);
+    void FinishCompilation(string suggestedPath, bool recommendLLVM);
     string GetIR();
     string GetObj();
     string GetSource();

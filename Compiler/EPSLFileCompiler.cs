@@ -159,7 +159,7 @@ public class EPSLFileCompiler : IFileCompiler {
         return GetDependencies(program);
     }
 
-    public void FinishCompilation(string destPath) {
+    public void FinishCompilation(string destPath, bool recommendLLVM) {
         AddUnusedValueWrappers(program);
 
         string json = GetJSONString(program);

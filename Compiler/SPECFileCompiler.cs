@@ -209,7 +209,7 @@ public class SPECFileCompiler : IFileCompiler {
         );
     }
 
-    public void FinishCompilation(string suggestedPath) {}
+    public void FinishCompilation(string suggestedPath, bool recommendLLVM) {}
 
     public string GetIR() {
         string irPath = obj["ir"].GetStringOrNull();
