@@ -8,6 +8,7 @@ public class CFileCompiler : IFileCompiler {
     string idPath;
     string fileText;
     bool requireLLVM;
+    bool isCPP;
 
     Dictionary<string, LocatedID> structIDs = new Dictionary<string, LocatedID>();
     HashSet<Struct> structs = new HashSet<Struct>();
@@ -15,6 +16,9 @@ public class CFileCompiler : IFileCompiler {
 
     string ir = null;
     string obj = null;
+
+    static string[] cExtensions = new string[] {"c"};
+    static string[] cppExtensions = new string[] {"cpp", "cc", "cxx"};
 
     class LineReader {
         string[] parts;
@@ -41,7 +45,7 @@ public class CFileCompiler : IFileCompiler {
             }
             return new CFileCompiler(path, fileText,
                 settings.Output_Type.DoesRequireLLVM());
-        }, "c");
+        }, cExtensions.Concat(cppExtensions).ToArray());
     }
 
     CFileCompiler(string path, string fileText, bool requireLLVM) {
@@ -50,6 +54,7 @@ public class CFileCompiler : IFileCompiler {
         Log.Info("Compiling C file", idPath);
         this.fileText = fileText;
         this.requireLLVM = requireLLVM;
+        isCPP = cppExtensions.Contains(Path.GetExtension(path).Substring(1));
     }
 
     public string GetText() {
@@ -99,6 +104,7 @@ public class CFileCompiler : IFileCompiler {
     }
 
     RealFunctionDeclaration ReadFunc(LineReader reader) {
+        string symbol = reader.Line();
         Type_ retType_ = ReadType_(reader);
         string name = reader.Line();
         int argCount = reader.Int();
@@ -120,7 +126,7 @@ public class CFileCompiler : IFileCompiler {
         return new RealExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 segments, new SlotPatternProcessor(argumentIdxs)
-            ), arguments, name, idPath, name, retType_, retType_ == null,
+            ), arguments, name, idPath, symbol, retType_, retType_ == null,
             FunctionSource.Program, takesOwnership: false, resultInParams: true
         );
     }
@@ -141,14 +147,15 @@ public class CFileCompiler : IFileCompiler {
         }
     }
 
-    IEnumerable<string> FetchSignaturesArgs() {
-        return CmdUtils.ListIncludeDirs().Select(arg => "-I"+arg);
+    IEnumerable<string> FetchSignaturesArgs(string filename) {
+        return new string[] {filename}.Concat(
+            CmdUtils.ListIncludeDirs(isCPP).Select(arg => "-I"+arg));
     }
 
-    void FetchSignatures() {
+    void FetchSignatures(string filename) {
         string scriptPath = $"scripts{Path.DirectorySeparatorChar}fetchsignatures.bash";
         LineReader reader = new LineReader(CmdUtils.RunScript(
-            scriptPath, FetchSignaturesArgs()));
+            scriptPath, FetchSignaturesArgs(filename)));
         string status = reader.Line();
         switch (status) {
         case "success":
@@ -170,12 +177,13 @@ public class CFileCompiler : IFileCompiler {
     }
 
     public HashSet<LocatedID> ToStructIDs() {
-        string errors = CmdUtils.VerifyCSyntax(path, new string[0]);
+        string destName = Utils.GetFileName(path);
+        string errors = CmdUtils.VerifyCSyntax(isCPP, path, new string[0]);
         if (errors.Length > 0) {
             throw new FileProblemException(errors);
         }
-        File.Copy(path, Utils.JoinPaths(Utils.TempDir(), "src.c"), true);
-        FetchSignatures();
+        File.Copy(path, Utils.JoinPaths(Utils.TempDir(), destName), true);
+        FetchSignatures(destName);
 
         return structIDs.Values.ToHashSet();
     }
@@ -201,10 +209,10 @@ public class CFileCompiler : IFileCompiler {
     public void FinishCompilation(string destPath) {
         if (requireLLVM) {
             ir = destPath + ".bc";
-            CmdUtils.CToLLVM(path, ir, new string[0]);
+            CmdUtils.CToLLVM(isCPP, path, ir, new string[0]);
         } else {
             obj = destPath + ".o";
-            CmdUtils.CToObj(path, obj, new string[0]);
+            CmdUtils.CToObj(isCPP, path, obj, new string[0]);
         }
     }
 

@@ -16,6 +16,14 @@ TESTS = [
         ]
     },
     {
+        "file": Path("CPP") / "entry.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 4}
+        ]
+    },
+    {
         "file": Path("Internal") / "entry.epsl",
         "func": -1,
         "sig": (c_int,),
@@ -367,11 +375,9 @@ def main():
     succeeded = 0
     failed = 0
 
-    created_sos = set()
-
     for file_idx, group in enumerate(TESTS):
         filename = group["file"]
-        print(f"🏗️ Compiling file {filename}...")
+        print(f"\n🧪 Testing file {filename}...")
 
         source = base_dir/filename
         result_file = base_dir/f"o{file_idx}.so"
@@ -389,18 +395,6 @@ def main():
             print(compile_message)
             failed += len(group["tests"])
             continue
-
-        created_sos.add(file_idx)
-
-    for file_idx, group in enumerate(TESTS):
-        if file_idx not in created_sos:
-            continue
-
-        filename = group["file"]
-        print(f"\n🧪 Testing file {filename}...")
-
-        source = base_dir/filename
-        result_file = base_dir/f"o{file_idx}.so"
 
         func = get_func(group["func"], source, result_file)
         func.restype, *func.argtypes = group["sig"]

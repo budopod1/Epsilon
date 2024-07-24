@@ -11,4 +11,3 @@ TODO:
 * add `Struct` type that's treated as a superclass of all structs
 * allow C code to be compiled with user-specified options
 * CFileCompiler should generate code with a higher optimization level depending on settings
-* add proper c++ support

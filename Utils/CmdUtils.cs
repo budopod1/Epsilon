@@ -22,11 +22,9 @@ public static class CmdUtils {
 
     static string RunCommand(string command, IEnumerable<string> arguments, out int exitCode) {
         string[] args = arguments.ToArray();
+        Log.Info(command, $"[{String.Join(", ", arguments)}]");
         _ProcessResult result = _RunCommand(command, args, args.Length);
         exitCode = result.status;
-        if (SUBPROCCESSOUTPUT || exitCode != 0) {
-            Console.Write(result.output);
-        }
         return result.output;
     }
 
@@ -131,8 +129,8 @@ public static class CmdUtils {
             .Concat(sources));
     }
 
-    public static IEnumerable<string> ListIncludeDirs() {
-        string raw = RunCommand("cpp", new string[] {"--verbose", "/dev/null"});
+    public static IEnumerable<string> ListIncludeDirs(bool isCPP) {
+        string raw = RunCommand("cpp", new string[] {"--verbose", "-x", isCPP ? "c++" : "c", "/dev/null"});
         bool isSearchList = false;
         foreach (string line in raw.Split("\n")) {
             if (isSearchList) {
@@ -147,15 +145,15 @@ public static class CmdUtils {
         }
     }
 
-    public static string VerifyCSyntax(string file, IEnumerable<string> config) {
-        return RunCommand("clang", new string[] {file, "-fsyntax-only"}.Concat(config), out int exitCode);
+    public static string VerifyCSyntax(bool cpp, string file, IEnumerable<string> config) {
+        return RunCommand(cpp ? "clang++" : "clang", new string[] {file, "-fsyntax-only"}.Concat(config), out int exitCode);
     }
 
-    public static void CToLLVM(string from, string to_, IEnumerable<string> config) {
-        RunCommand("clang", new string[] {from, "-o", to_, "-emit-llvm", "-c"}.Concat(config));
+    public static void CToLLVM(bool cpp, string from, string to_, IEnumerable<string> config) {
+        RunCommand(cpp ? "clang++" : "clang", new string[] {from, "-o", to_, "-emit-llvm", "-c"}.Concat(config));
     }
 
-    public static void CToObj(string from, string to_, IEnumerable<string> config) {
-        RunCommand("clang", new string[] {from, "-o", to_, "-c"}.Concat(config));
+    public static void CToObj(bool cpp, string from, string to_, IEnumerable<string> config) {
+        RunCommand(cpp ? "clang++" : "clang", new string[] {from, "-o", to_, "-c"}.Concat(config));
     }
 }

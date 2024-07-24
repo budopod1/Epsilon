@@ -61,6 +61,7 @@ struct EPSLField {
 };
 
 struct EPSLFunc {
+    char *symbol;
     struct EPSLType_ *ret_type_; // when void, is NULL
     char *name;
     uint32_t arg_count;
@@ -126,6 +127,11 @@ bool starts_with_any(const char *str, char *prefixes[], uint32_t prefix_count) {
     return false;
 }
 
+void CXStr_puts(CXString str) {
+    puts(clang_getCString(str));
+    clang_disposeString(str);
+}
+
 void output_EPSLBaseType_(struct EPSLBaseType_ *base_type_) {
     if (base_type_->is_builtin) {
         puts(builtin_type__names[base_type_->name.builtin]);
@@ -167,6 +173,7 @@ void output_collected(struct CollectedInfo *info) {
     printf("%"PRIu32"\n", info->func_count);
     for (uint32_t i = 0; i < info->func_count; i++) {
         struct EPSLFunc *func = info->funcs[i];
+        puts(func->symbol);
         if (func->ret_type_ == NULL) {
             putchar('\n');
         } else {
@@ -521,11 +528,6 @@ void voidable_CXType_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *
     }
 }
 
-void CXStr_puts(CXString str) {
-    puts(clang_getCString(str));
-    clang_disposeString(str);
-}
-
 enum CXChildVisitResult field_collector_visitor(CXCursor cursor, CXCursor _, CXClientData visit_data) {
     struct EPSLStruct *struct_ = (struct EPSLStruct*)visit_data;
 
@@ -644,9 +646,17 @@ void collect_func(struct CollectedInfo *info, CXCursor cursor) {
     memcpy(name_copy, name, name_len);
     clang_disposeString(func_name);
 
+    CXString func_symbol = clang_Cursor_getMangling(cursor);
+    const char *symbol = clang_getCString(func_symbol);
+    size_t symbol_len = strlen(symbol)+1;
+    char *symbol_copy = malloc(symbol_len);
+    memcpy(symbol_copy, symbol, symbol_len);
+    clang_disposeString(func_symbol);
+
     CXType func_type = clang_getCursorType(cursor);
 
     struct EPSLFunc *func = malloc(sizeof(*func));
+    func->symbol = symbol_copy;
     voidable_CXType_to_EPSLType_(cursor, clang_getResultType(func_type), &func->ret_type_);
     func->name = name_copy;
     func->arg_count = clang_getNumArgTypes(func_type);
@@ -685,29 +695,36 @@ enum CXChildVisitResult visit_toplevel(CXCursor cursor, CXCursor _, CXClientData
         if (cursor.kind == CXCursor_UnionDecl) {
             check_is_private(collected_info, cursor);
         }
+
+        return CXChildVisit_Continue;
     } else {
         switch (cursor.kind) {
         case CXCursor_StructDecl:
             collect_struct(collected_info, cursor);
-            break;
+            return CXChildVisit_Continue;
         case CXCursor_FunctionDecl:
             collect_func(collected_info, cursor);
-            break;
+            return CXChildVisit_Continue;
         case CXCursor_UnionDecl:
             check_is_private(collected_info, cursor);
-            break;
-        default: break;
+            return CXChildVisit_Continue;
+        default:
+            return CXChildVisit_Continue;
         }
     }
-
-    return CXChildVisit_Continue;
 }
 
 int main(int argc, const char *const argv[]) {
-    if (argc >= 1) {
-        argc--;
-        argv++;
+    if (argc < 2) {
+        report_fail("Not enough arguments\n");
     }
+
+    // argv[0] isn't a real argument
+    argc--;
+    argv++;
+
+    argc--;
+    const char *const src_filename = *argv++;
 
     CXIndex index = clang_createIndex(0, 0);
 
