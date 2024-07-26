@@ -12,9 +12,8 @@ public class BuildSettings {
     public OutputType Output_Type;
     public bool LinkBuiltins;
     public bool LinkLibraries;
-    public IEnumerable<string> ExtraClangOptions;
 
-    public BuildSettings(string inputPath, string providedOutput, EPSLPROJ proj, EPSLCACHE cache, CacheMode cacheMode, OptimizationLevel optLevel, OutputType outputType, bool linkBuiltins, bool linkLibraries, IEnumerable<string> extraClangOptions) {
+    public BuildSettings(string inputPath, string providedOutput, EPSLPROJ proj, EPSLCACHE cache, CacheMode cacheMode, OptimizationLevel optLevel, OutputType outputType, bool linkBuiltins, bool linkLibraries) {
         InputPath = inputPath;
         ProvidedOutput = providedOutput;
         Proj = proj;
@@ -24,6 +23,5 @@ public class BuildSettings {
         Output_Type = outputType;
         LinkBuiltins = linkBuiltins;
         LinkLibraries = linkLibraries;
-        ExtraClangOptions = extraClangOptions;
     }
 }

@@ -29,6 +29,27 @@ public class SPECFileCompiler : IFileCompiler {
         return obj["imports"].IterList().Select(str=>str.GetString());
     }
 
+    public SubconfigCollection GetSubconfigs() {
+        return new SubconfigCollection(
+             obj["clang_parse_subconfigs"].IterList().Select(ParseSubconfigFromJSON),
+             obj["linking_configs"].IterList().Select(ParseSubconfigFromJSON)
+        );
+    }
+
+    public static ISubconfig ParseSubconfigFromJSON(ShapedJSON obj) {
+        string type = obj["type"].GetString();
+
+        switch (type) {
+        case "constant":
+            return new ConstantSubconfig(obj);
+        default:
+            throw new InvalidJSONException(
+                "Invalid type of subconfig",
+                obj.GetJSON()
+            );
+        }
+    }
+
     Dictionary<string, string> structIds;
 
     public HashSet<LocatedID> ToStructIDs() {
@@ -233,24 +254,6 @@ public class SPECFileCompiler : IFileCompiler {
 
     public bool ShouldSaveSPEC() {
         return false;
-    }
-
-    public IEnumerable<IClangConfig> GetClangConfig() {
-        return obj["clang_config"].IterList().Select(ParseClangConfigFromJSON);
-    }
-
-    public static IClangConfig ParseClangConfigFromJSON(ShapedJSON obj) {
-        string type = obj["type"].GetString();
-
-        switch (type) {
-        case "constant":
-            return new ConstantClangConfig(obj);
-        default:
-            throw new InvalidJSONException(
-                "Invalid type of clang config",
-                obj.GetJSON()
-            );
-        }
     }
 
     public FileSourceType GetFileSourceType() {

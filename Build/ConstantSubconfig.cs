@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class ConstantClangConfig : IClangConfig {
+public class ConstantSubconfig : ISubconfig {
     IEnumerable<string> parts;
 
-    public ConstantClangConfig(IEnumerable<string> parts) {
+    public ConstantSubconfig(IEnumerable<string> parts) {
         this.parts = parts;
     }
 
-    public ConstantClangConfig(ShapedJSON obj) {
+    public ConstantSubconfig(ShapedJSON obj) {
         obj = obj.ToShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
             {"parts", new JSONListShape(new JSONStringShape())}
         }));

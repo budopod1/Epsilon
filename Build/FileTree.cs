@@ -5,12 +5,21 @@ using System.Collections.Generic;
 
 public class FileTree {
     public string PartialPath;
-    public IFileCompiler Compiler;
     public SPECFileCompiler OldCompiler;
     public string GeneratedEPSLSPEC = null;
     public List<FileTree> Imported = new List<FileTree>();
     public IEnumerable<string> Imports;
     public bool TreeLoaded = false;
+
+    public SubconfigCollection Subconfigs;
+    IFileCompiler _Compiler;
+    public IFileCompiler Compiler {
+        get => _Compiler;
+        set {
+            Subconfigs = value.GetSubconfigs();
+            _Compiler = value;
+        }
+    }
 
     string _Text;
     public string Text {
@@ -90,7 +99,7 @@ public class FileTree {
 
     EPSLSPEC MakeSPEC() {
         return new EPSLSPEC(
-            Declarations, Structs, Dependencies, Compiler.GetClangConfig(),
+            Declarations, Structs, Dependencies, Subconfigs,
             Imports, IR, Obj, Path_, SourceType, IDPath
         );
     }

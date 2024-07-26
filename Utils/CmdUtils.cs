@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 public static class CmdUtils {
-    static readonly string[] baseClangArgs = new string[] {"-lc", "-lm"};
     static readonly bool SUBPROCCESSOUTPUT = false;
 
     #pragma warning disable CS0649
@@ -65,13 +64,9 @@ public static class CmdUtils {
         RunCommand("llc", args);
     }
 
-    public static IEnumerable<string> ConfigsToStrs(IEnumerable<IClangConfig> configs) {
-        return configs.SelectMany(config => config.ToParts()).Concat(baseClangArgs);
-    }
-
-    public static void ClangToExecutable(IEnumerable<string> sources, string output, IEnumerable<IClangConfig> configs) {
-        List<string> args = ConfigsToStrs(configs).Concat(new string[] {"-o", output})
-            .Concat(sources).ToList();
+    public static void ClangToExecutable(IEnumerable<string> sources, string output) {
+        List<string> args = Subconfigs.GetLinkingConfigs()
+            .Concat(new string[] {"-o", output}).Concat(sources).ToList();
         RunCommand("clang", args);
     }
 
@@ -89,6 +84,8 @@ public static class CmdUtils {
     }
 
     public static void LinkObjsToObj(IEnumerable<string> sources, string output) {
+        // This doesn't use Subconfigs.GetLinkingConfigs() because it isn't
+        // linking to an executable
         RunCommand("ld", new string[] {"-r", "-o", output}.Concat(sources));
     }
 
@@ -125,8 +122,8 @@ public static class CmdUtils {
     }
 
     public static void ToSharedObject(IEnumerable<string> sources, string output) {
-        RunCommand("clang", baseClangArgs.Concat(new string[] {"-shared", "-o", output})
-            .Concat(sources));
+        RunCommand("clang", Subconfigs.GetLinkingConfigs()
+            .Concat(new string[] {"-shared", "-o", output}).Concat(sources));
     }
 
     public static IEnumerable<string> ListIncludeDirs(bool isCPP) {
@@ -145,15 +142,15 @@ public static class CmdUtils {
         }
     }
 
-    public static string VerifyCSyntax(bool cpp, string file, IEnumerable<string> config) {
-        return RunCommand(cpp ? "clang++" : "clang", new string[] {file, "-fsyntax-only"}.Concat(config), out int exitCode);
+    public static string VerifyCSyntax(bool cpp, string file) {
+        IEnumerable<string> args = new string[] {file, "-fsyntax-only"}
+            .Concat(Subconfigs.GetClangParseConfigs());
+        return RunCommand(cpp ? "clang++" : "clang", args, out int exitCode);
     }
 
-    public static void CToLLVM(bool cpp, string from, string to_, IEnumerable<string> config) {
-        RunCommand(cpp ? "clang++" : "clang", new string[] {from, "-o", to_, "-emit-llvm", "-c"}.Concat(config));
-    }
-
-    public static void CToObj(bool cpp, string from, string to_, IEnumerable<string> config) {
-        RunCommand(cpp ? "clang++" : "clang", new string[] {from, "-o", to_, "-c"}.Concat(config));
+    public static void CToLLVM(bool cpp, string from, string to_) {
+        IEnumerable<string> args = new string[] {from, "-o", to_, "-emit-llvm", "-c"}
+            .Concat(Subconfigs.GetClangParseConfigs());
+        RunCommand(cpp ? "clang++" : "clang", args);
     }
 }

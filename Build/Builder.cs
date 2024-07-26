@@ -270,12 +270,8 @@ public class Builder {
                 }
             }
 
-            IEnumerable<IClangConfig> clangConfig = files.Values
-                .SelectMany(file => file.Compiler.GetClangConfig())
-                .Concat(new IClangConfig[] {new ConstantClangConfig(settings.ExtraClangOptions)});
-
             BuildInfo buildInfo = new BuildInfo(
-                output, outputName, sources, tree, clangConfig, unlinkedFiles, fileWithMain
+                output, outputName, sources, tree, unlinkedFiles, fileWithMain
             );
 
             Log.Status("Producing final result");
@@ -933,7 +929,7 @@ public class Builder {
         }
 
         Log.Status("Buiding executable");
-        CmdUtils.ClangToExecutable(buildInfo.Sources, buildInfo.Output, buildInfo.ClangConfig);
+        CmdUtils.ClangToExecutable(buildInfo.Sources, buildInfo.Output);
     }
 
     void ToLLVM(BuildInfo buildInfo, bool toLL) {
@@ -968,7 +964,7 @@ public class Builder {
         EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
         EPSLSPEC newEPSLSPEC = new EPSLSPEC(
             entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
-            buildInfo.ClangConfig, unlinkedImports,
+            Subconfigs.ToSubconfigCollection(), unlinkedImports,
             irFilename, objFilename, sourceFilename, FileSourceType.Library,
             entryEPSLSPEC.IDPath
         );

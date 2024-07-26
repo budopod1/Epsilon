@@ -66,6 +66,10 @@ public class EPSLFileCompiler : IFileCompiler {
         );
     }
 
+    public SubconfigCollection GetSubconfigs() {
+        return SubconfigCollection.Empty();
+    }
+
     public HashSet<LocatedID> ToStructIDs() {
         program = TokenizeGlobals(program);
 
@@ -190,10 +194,6 @@ public class EPSLFileCompiler : IFileCompiler {
 
     public bool ShouldSaveSPEC() {
         return true;
-    }
-
-    public IEnumerable<IClangConfig> GetClangConfig() {
-        return new List<IClangConfig>();
     }
 
     public FileSourceType GetFileSourceType() {

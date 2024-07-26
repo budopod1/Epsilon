@@ -6,7 +6,7 @@ public class EPSLSPEC {
     public IEnumerable<RealFunctionDeclaration> Functions;
     public IEnumerable<Struct> Structs;
     public Dependencies Dependencies;
-    public IEnumerable<IClangConfig> ClangConfig;
+    public SubconfigCollection Subconfigs;
     public IEnumerable<string> Imports;
     public string IR;
     public string Obj;
@@ -60,10 +60,11 @@ public class EPSLSPEC {
                 {"functions", new JSONListShape(new JSONWholeShape())},
                 {"structs", new JSONListShape(new JSONStringShape())}
             }))},
-            {"clang_config", new JSONListShape(new JSONObjectShape(
-                new Dictionary<string, IJSONShape> {
-                    {"type", new JSONStringShape()}
-                }
+            {"clang_parse_subconfigs", new JSONListShape(new JSONObjectShape(
+                new Dictionary<string, IJSONShape> {{"type", new JSONStringShape()}}
+            ))},
+            {"linking_configs", new JSONListShape(new JSONObjectShape(
+                new Dictionary<string, IJSONShape> {{"type", new JSONStringShape()}}
             ))},
             {"imports", new JSONListShape(new JSONStringShape())},
             {"ir", new JSONNullableShape(new JSONStringShape())},
@@ -74,11 +75,11 @@ public class EPSLSPEC {
         });
     }
 
-    public EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerable<Struct> structs, Dependencies dependencies, IEnumerable<IClangConfig> clangConfig, IEnumerable<string> imports, string IR, string obj, string source, FileSourceType sourceType, string idPath) {
+    public EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerable<Struct> structs, Dependencies dependencies, SubconfigCollection subconfigs, IEnumerable<string> imports, string IR, string obj, string source, FileSourceType sourceType, string idPath) {
         Functions = functions;
         Structs = structs;
         Dependencies = dependencies;
-        ClangConfig = clangConfig;
+        Subconfigs = subconfigs;
         Imports = imports;
         this.IR = IR;
         Obj = obj;
@@ -171,8 +172,11 @@ public class EPSLSPEC {
             })
         );
 
-        obj["clang_config"] = new JSONList(ClangConfig.Select(
-            item => item.GetJSON()));
+        obj["clang_parse_subconfigs"] = new JSONList(
+            Subconfigs.ClangParseConfigs.Select(item => item.GetJSON()));
+
+        obj["linking_configs"] = new JSONList(
+            Subconfigs.LinkingConfigs.Select(item => item.GetJSON()));
 
         obj["imports"] = new JSONList(Imports.Select(import => new JSONString(import)));
 

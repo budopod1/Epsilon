@@ -35,14 +35,24 @@ Modes:
         parser.AddOption(() => linkLibraries = false, "Don't link to Epsilon libraries", null,
             "no-libraries");
 
-        DelimitedInputExpectation clangOptions = parser.AddOption(
-            new DelimitedInputExpectation(parser, "clang-options", "END", needsOne: true),
-            "Options for the clang compiler", "C", "clang-options"
+        DelimitedInputExpectation clangParseOptions = parser.AddOption(
+            new DelimitedInputExpectation(parser, "clang-parse-options", "END", needsOne: true),
+            "Options for clang to use while parsing C/C++", "C", "clang-parse-options"
         );
 
         parser.AddOption(
-            new CaptureExpectation(val => clangOptions.Matched = val, "clang-option"),
-            "An option for the clang compiler", "clang-option"
+            new CaptureExpectation(val => clangParseOptions.Matched = val, "clang-option"),
+            "An option for the clang compiler", "clang-parse-option"
+        );
+
+        DelimitedInputExpectation linkingOptions = parser.AddOption(
+            new DelimitedInputExpectation(parser, "linking-options", "END", needsOne: true),
+            "Options for clang to use while parsing C/C++", "L", "linking-options"
+        );
+
+        parser.AddOption(
+            new CaptureExpectation(val => clangParseOptions.Matched = val, "linking-option"),
+            "An option for the clang compiler", "-L", "linking-option"
         );
 
         List<string> libraries = new List<string>();
@@ -103,6 +113,9 @@ Modes:
             parser.ParseAdditionalOptions(proj.CommandOptions);
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
+            Subconfigs.AddClangParseConfigs(clangParseOptions.MatchedSegments);
+            Subconfigs.AddLinkingConfigs(linkingOptions.MatchedSegments);
+
             CacheMode cacheMode = EnumHelpers.ParseCacheMode(cacheModeInput.Value());
             OptimizationLevel optimizationLevel = EnumHelpers.ParseOptimizationLevel(optimizationInput.Value());
             OutputType outputType = EnumHelpers.ParseOutputType(outputTypeInput.Value());
@@ -124,7 +137,7 @@ Modes:
 
             BuildSettings settings = new BuildSettings(
                 input, providedOutput, proj, cache, cacheMode, optimizationLevel, outputType,
-                linkBuiltins, linkLibraries, clangOptions.MatchedSegments
+                linkBuiltins, linkLibraries
             );
 
             TestResult(builder.Build(settings));

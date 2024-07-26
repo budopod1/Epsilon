@@ -14,7 +14,6 @@ public class CFileCompiler : IFileCompiler {
     List<RealFunctionDeclaration> funcs = new List<RealFunctionDeclaration>();
 
     string ir = null;
-    string obj = null;
 
     static string[] cExtensions = new string[] {"c"};
     static string[] cppExtensions = new string[] {"cpp", "cc", "cxx"};
@@ -173,9 +172,13 @@ public class CFileCompiler : IFileCompiler {
         return new string[0];
     }
 
+    public SubconfigCollection GetSubconfigs() {
+        return SubconfigCollection.Empty();
+    }
+
     public HashSet<LocatedID> ToStructIDs() {
         string destName = Utils.GetFileName(path);
-        string errors = CmdUtils.VerifyCSyntax(isCPP, path, new string[0]);
+        string errors = CmdUtils.VerifyCSyntax(isCPP, path);
         if (errors.Length > 0) {
             throw new FileProblemException(errors);
         }
@@ -204,13 +207,8 @@ public class CFileCompiler : IFileCompiler {
     }
 
     public void FinishCompilation(string destPath, bool recommendLLVM) {
-        if (recommendLLVM) {
-            ir = destPath + ".bc";
-            CmdUtils.CToLLVM(isCPP, path, ir, new string[0]);
-        } else {
-            obj = destPath + ".o";
-            CmdUtils.CToObj(isCPP, path, obj, new string[0]);
-        }
+        ir = destPath + ".bc";
+        CmdUtils.CToLLVM(isCPP, path, ir);
     }
 
     public string GetIR() {
@@ -218,7 +216,7 @@ public class CFileCompiler : IFileCompiler {
     }
 
     public string GetObj() {
-        return obj;
+        return null;
     }
 
     public string GetSource() {
@@ -231,10 +229,6 @@ public class CFileCompiler : IFileCompiler {
 
     public bool ShouldSaveSPEC() {
         return true;
-    }
-
-    public IEnumerable<IClangConfig> GetClangConfig() {
-        return new List<IClangConfig>();
     }
 
     public FileSourceType GetFileSourceType() {

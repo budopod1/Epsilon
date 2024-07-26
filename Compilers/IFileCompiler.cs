@@ -5,6 +5,7 @@ public interface IFileCompiler {
     string GetText();
     string GetIDPath();
     IEnumerable<string> ToImports();
+    SubconfigCollection GetSubconfigs();
     HashSet<LocatedID> ToStructIDs();
     void AddStructIDs(HashSet<LocatedID> structIds);
     List<RealFunctionDeclaration> ToDeclarations();
@@ -18,6 +19,5 @@ public interface IFileCompiler {
     string GetSource();
     bool FromCache();
     bool ShouldSaveSPEC();
-    IEnumerable<IClangConfig> GetClangConfig();
     FileSourceType GetFileSourceType();
 }

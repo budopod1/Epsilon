@@ -7,4 +7,4 @@
     {"given_name": "Q64", "name": "Q", "bits": 64, "generics": []},
     {"given_name": "Byte", "name": "Byte", "bits": null, "generics": []},
     {"given_name": "Str", "name": "Array", "bits": null, "generics": ["Byte"]}
-], "structs": [], "dependencies": [], "clang_config": [], "imports": [], "ir": "packing.bc", "obj": "packing.o", "source": null, "source_type": "Library", "id_path": "libs/packing"}
+], "structs": [], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "imports": [], "ir": "packing.bc", "obj": "packing.o", "source": null, "source_type": "Library", "id_path": "libs/packing"}
