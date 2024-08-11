@@ -6,7 +6,7 @@ TODO:
 * add way to apply operation to every element of array (like Linq Select)
 * add option for string constants to be statically allocated
 * top tracking so we can alloca instead of malloc
-* self host LLVMIR section?
+* self host LLVMIR section
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `Struct` type that's treated as a superclass of all structs
 * add `ObjectGenSubflags` (passed to both `clang` (when producing an object file, or going through an object file) and `llc`)
