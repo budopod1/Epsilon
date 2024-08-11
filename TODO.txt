@@ -10,3 +10,4 @@ TODO:
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `Struct` type that's treated as a superclass of all structs
 * add `ObjectGenSubflags` (passed to both `clang` (when producing an object file, or going through an object file) and `llc`)
+* figure out a better solution for CmdUtils locating runcommand.so

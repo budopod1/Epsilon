@@ -16,23 +16,12 @@ public static class CmdUtils {
         public byte status;
     }
 
-    static bool LD_LIBRARY_PATHIsSetup = false;
-
-    static void EnsureLD_LIBRARY_PATHIsSetup() {
-        if (LD_LIBRARY_PATHIsSetup) return;
-        string libPath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
-        libPath = $"{Utils.ProjectAbsolutePath()}:{libPath}";
-        Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libPath);
-        LD_LIBRARY_PATHIsSetup = true;
-    }
-
-    [DllImport("runcommand.so")]
+    [DllImport("/home/runner/Epsilon/runcommand.so")]
     static extern _ProcessResult _RunCommand(string prog, string[] args, int argCount);
 
     static string RunCommand(string command, IEnumerable<string> arguments, out int exitCode) {
         string[] args = arguments.ToArray();
         Log.Info(command, $"[{String.Join(", ", arguments)}]");
-        EnsureLD_LIBRARY_PATHIsSetup();
         _ProcessResult result = _RunCommand(command, args, args.Length);
         exitCode = result.status;
         return result.output;
