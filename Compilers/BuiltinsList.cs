@@ -669,7 +669,7 @@ public static class BuiltinsList {
                 new List<IPatternSegment> {
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "length"),
+                    new UnitPatternSegment<string>(typeof(Name), "len"),
                 }, new SlotPatternProcessor(new List<int> {0})
             ), new List<FunctionArgument> {
                 new FunctionArgument("file", new Type_("File")),

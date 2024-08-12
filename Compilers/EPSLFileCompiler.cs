@@ -958,6 +958,81 @@ public class EPSLFileCompiler : IFileCompiler {
         return program;
     }
 
+    List<IToken> IdentifyRawFunctionCall(List<IToken> tokens) {
+        RawFunctionCall rawCall = ((RawFunctionCall)(tokens[0]));
+
+        List<Type_> paramTypes_ = new List<Type_>();
+        List<IValueToken> parameters = new List<IValueToken>();
+
+        for (int i = 0; i < rawCall.Count; i++) {
+            RawSquareGroup rparameter = (rawCall[i]) as RawSquareGroup;
+            if (rparameter.Count == 0) {
+                throw new SyntaxErrorException(
+                    "Function parameters cannot be empty", rparameter
+                );
+            }
+            IValueToken parameter = (rparameter[0]) as IValueToken;
+            if (parameter == null || rparameter.Count > 1) {
+                throw new SyntaxErrorException(
+                    "Illegal syntax in function parameter", rparameter
+                );
+            }
+            paramTypes_.Add(parameter.GetType_());
+            parameters.Add(parameter);
+        }
+
+        List<List<Type_>> type_Alternatives = new List<List<Type_>>();
+
+        foreach (FunctionDeclaration function in rawCall.GetMatchingFunctions()) {
+            List<FunctionArgument> args = function.GetArguments();
+            if (paramTypes_.Count != args.Count) continue;
+
+            bool matches = true;
+
+            List<Type_> alternative = new List<Type_>();
+            for (int i = 0; i < paramTypes_.Count; i++) {
+                Type_ paramType_ = paramTypes_[i];
+                FunctionArgument arg = args[i];
+                alternative.Add(arg.GetType_());
+                if (!arg.IsCompatibleWith(paramType_)) {
+                    matches = false;
+                    break;
+                }
+            }
+            type_Alternatives.Add(alternative);
+
+            if (matches) {
+                IFunctionCall call;
+                if (function.DoesReturnVoid()) {
+                    call = new VoidFunctionCall(function, parameters);
+                } else {
+                    call = new FunctionCall(function, parameters);
+                }
+                return new List<IToken> {call};
+            }
+        }
+
+        Func<List<Type_>, string> stringifyTypes_ = types_ =>
+            String.Join(", ", types_.Select(type_ => type_.ToString()));
+
+        string expectedTypes_Str;
+        string plural;
+        if (type_Alternatives.Count == 1) {
+            plural = "";
+            expectedTypes_Str = stringifyTypes_(type_Alternatives[0]);
+        } else {
+            plural = "s";
+            expectedTypes_Str = "\n" + String.Join(
+                " or\n", type_Alternatives.Select(stringifyTypes_));
+        }
+
+        throw new SyntaxErrorException(
+            $@"Types supplied to function do not match any overload
+Got type{plural}: {stringifyTypes_(paramTypes_)}
+Expected type{plural}: {expectedTypes_Str}", rawCall
+        );
+    }
+
     Program ParseFunctionCode(Program program) {
         List<IMatcher> functionRules = new List<IMatcher>();
         List<IMatcher> addMatchingFunctionRules = new List<IMatcher>();
@@ -1029,59 +1104,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 new PatternMatcher(
                     new List<IPatternSegment> {
                         new TypePatternSegment(typeof(RawFunctionCall))
-                    }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
-                        RawFunctionCall rawCall = ((RawFunctionCall)(tokens[0]));
-
-                        List<Type_> paramTypes_ = new List<Type_>();
-                        List<IValueToken> parameters = new List<IValueToken>();
-
-                        for (int i = 0; i < rawCall.Count; i++) {
-                            RawSquareGroup rparameter = (rawCall[i]) as RawSquareGroup;
-                            if (rparameter.Count == 0) {
-                                throw new SyntaxErrorException(
-                                    "Function parameters cannot be empty", rparameter
-                                );
-                            }
-                            IValueToken parameter = (rparameter[0]) as IValueToken;
-                            if (parameter == null || rparameter.Count > 1) {
-                                throw new SyntaxErrorException(
-                                    "Illegal syntax in function parameter", rparameter
-                                );
-                            }
-                            paramTypes_.Add(parameter.GetType_());
-                            parameters.Add(parameter);
-                        }
-
-                        foreach (FunctionDeclaration function in rawCall.GetMatchingFunctions()) {
-                            List<FunctionArgument> args = function.GetArguments();
-                            if (paramTypes_.Count != args.Count) continue;
-
-                            bool matches = true;
-
-                            for (int i = 0; i < paramTypes_.Count; i++) {
-                                Type_ paramType_ = paramTypes_[i];
-                                FunctionArgument arg = args[i];
-                                if (!arg.IsCompatibleWith(paramType_)) {
-                                    matches = false;
-                                    break;
-                                }
-                            }
-
-                            if (matches) {
-                                IFunctionCall call;
-                                if (function.DoesReturnVoid()) {
-                                    call = new VoidFunctionCall(function, parameters);
-                                } else {
-                                    call = new FunctionCall(function, parameters);
-                                }
-                                return new List<IToken> {call};
-                            }
-                        }
-
-                        throw new SyntaxErrorException(
-                            "Types supplied to function do not match any overload", rawCall
-                        );
-                    })
+                    }, new FuncPatternProcessor<List<IToken>>(IdentifyRawFunctionCall)
                 ),
                 new PatternMatcher(
                     new List<IPatternSegment> {
