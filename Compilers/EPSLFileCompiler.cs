@@ -981,25 +981,22 @@ public class EPSLFileCompiler : IFileCompiler {
             parameters.Add(parameter);
         }
 
-        List<List<Type_>> type_Alternatives = new List<List<Type_>>();
+        List<IEnumerable<Type_>> type_Alternatives = new List<IEnumerable<Type_>>();
 
         foreach (FunctionDeclaration function in rawCall.GetMatchingFunctions()) {
             List<FunctionArgument> args = function.GetArguments();
             if (paramTypes_.Count != args.Count) continue;
 
+            type_Alternatives.Add(args.Select(arg => arg.GetType_()));
+
             bool matches = true;
 
-            List<Type_> alternative = new List<Type_>();
             for (int i = 0; i < paramTypes_.Count; i++) {
-                Type_ paramType_ = paramTypes_[i];
-                FunctionArgument arg = args[i];
-                alternative.Add(arg.GetType_());
-                if (!arg.IsCompatibleWith(paramType_)) {
+                if (!args[i].IsCompatibleWith(paramTypes_[i])) {
                     matches = false;
                     break;
                 }
             }
-            type_Alternatives.Add(alternative);
 
             if (matches) {
                 IFunctionCall call;
@@ -1012,22 +1009,20 @@ public class EPSLFileCompiler : IFileCompiler {
             }
         }
 
-        Func<List<Type_>, string> stringifyTypes_ = types_ =>
+        Func<IEnumerable<Type_>, string> stringifyTypes_ = types_ =>
             String.Join(", ", types_.Select(type_ => type_.ToString()));
 
+        string plural = paramTypes_.Count == 1 ? "" : "s";
         string expectedTypes_Str;
-        string plural;
         if (type_Alternatives.Count == 1) {
-            plural = "";
             expectedTypes_Str = stringifyTypes_(type_Alternatives[0]);
         } else {
-            plural = "s";
             expectedTypes_Str = "\n" + String.Join(
                 " or\n", type_Alternatives.Select(stringifyTypes_));
         }
 
         throw new SyntaxErrorException(
-            $@"Types supplied to function do not match any overload
+            $@"Types supplied to function do not match any overload:
 Got type{plural}: {stringifyTypes_(paramTypes_)}
 Expected type{plural}: {expectedTypes_Str}", rawCall
         );
