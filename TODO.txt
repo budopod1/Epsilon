@@ -12,3 +12,4 @@ TODO:
 * add `ObjectGenSubflags` (passed to both `clang` (when producing an object file, or going through an object file) and `llc`)
 * figure out a better solution for CmdUtils locating runcommand.so
 * allow `switch` blocks with non-constant operands by converting them to Conditionals using the `equals` builtin (or equivalent)
+* implement 'deep equals' and 'deep not equals' functions and write test for them

@@ -326,20 +326,12 @@ def not_equals(program, builder, params, param_types_):
     return program.value_equals_depth_1(builder, type_1, v1, v2, invert=True), Bool
 
 
-def equals_depth(program, builder, params, param_types_):
-    v1, v2, depth_ir_const = params
-    type_1, type_2, _ = param_types_
-    assert type_1 == type_2
-    depth = depth_ir_const.json_const["value"]
-    return program.value_equals(builder, type_1, v1, v2, depth, invert=False), Bool
+def deep_equals(program, builder, params, param_types_):
+    assert False, "the 'deep equals' operation has not yet been implemented"
 
 
-def not_equals_depth(program, builder, params, param_types_):
-    v1, v2, depth_ir_const = params
-    type_1, type_2, _ = param_types_
-    assert type_1 == type_2
-    depth = depth_ir_const.json_const["value"]
-    return program.value_equals(builder, type_1, v1, v2, depth, invert=True), Bool
+def deep_not_equals(program, builder, params, param_types_):
+    assert False, "the 'deep not equals' operation has not yet been implemented"
 
 
 def join(program, builder, params, param_types_):
@@ -752,8 +744,8 @@ BUILTINS = {
     "builtin29": {"func": ends_with, "params": [ArrayW8, ArrayW8]},
     "builtin30": {"func": equals, "params": [None, None]},
     "builtin31": {"func": not_equals, "params": [None, None]},
-    "builtin32": {"func": equals_depth, "params": [None, None, None]},
-    "builtin33": {"func": not_equals_depth, "params": [None, None, None]},
+    "builtin32": {"func": deep_equals, "params": [None, None]},
+    "builtin33": {"func": deep_not_equals, "params": [None, None]},
     "builtin34": {"func": join, "params": [None, None]},
     "builtin35": {"func": index_of, "params": [None, None]},
     "builtin36": {"func": index_of_subsection, "params": [ArrayW8, ArrayW8]},

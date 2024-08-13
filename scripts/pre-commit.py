@@ -25,6 +25,9 @@ for path in changed_files:
     if file.suffix not in [".cs", ".epsl", ".py", ".c", ".bash"]:
         continue
 
+    if not file.exists():
+        continue
+
     text1 = file.read_text()
 
     if "\t" in text1:

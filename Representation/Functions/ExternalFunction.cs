@@ -28,15 +28,6 @@ public class ExternalFunction : FunctionDeclaration {
         this.source = source;
     }
 
-    public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<IValueToken>, Type_> returnType_, FunctionSource source, bool doesReturnVoid=false) {
-        this.pattern = pattern;
-        this.arguments = arguments;
-        this.id = id;
-        this.doesReturnVoid = doesReturnVoid;
-        this.returnType_ = returnType_;
-        this.source = source;
-    }
-
     public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Type_ returnType_, FunctionSource source) {
         this.pattern = pattern;
         this.arguments = arguments;

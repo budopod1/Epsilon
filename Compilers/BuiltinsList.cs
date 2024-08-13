@@ -437,38 +437,16 @@ public static class BuiltinsList {
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
                     new FuncArgPatternSegment(),
+                    new UnitPatternSegment<string>(typeof(Name), "deep"),
                     new UnitPatternSegment<string>(typeof(Name), "equals"),
-                    new FuncArgPatternSegment(),
-                    new UnitPatternSegment<string>(typeof(Name), "depth"),
                     new FuncArgPatternSegment()
-                }, new SlotPatternProcessor(new List<int> {0, 2, 4})
+                }, new SlotPatternProcessor(new List<int> {0, 3})
             ), new List<FunctionArgument> {
                 new FunctionArgument("v1", Type_.Any()),
-                new FunctionArgument("v2", Type_.Any()),
-                new FunctionArgument("depth", new Type_("W"))
-            }, "builtin32", (List<IValueToken> tokens) => {
-                Type_ type_1 = tokens[0].GetType_();
-                Type_ type_2 = tokens[1].GetType_();
-                if (!type_1.Equals(type_2))
-                    throw new SyntaxErrorException($"The 'equals' function can only compare equality of values of equal types_", tokens[1]);
-                ConstantValue cv = tokens[2] as ConstantValue;
-                if (cv == null) {
-                    throw new SyntaxErrorException($"The 'equals' function's depth must be a constant", tokens[2]);
-                }
-                UnsignedIntConstant uic = cv.GetValue() as UnsignedIntConstant;
-                if (uic == null) {
-                    throw new SyntaxErrorException($"The 'equals' function's depth must be an unsigned integer", tokens[2]);
-                }
-                int depth = uic.GetIntValue();
-                Type_ type_ = type_1;
-                while (depth > 0) {
-                    if (depth > 1) {
-                        if (!(type_.GetBaseType_().GetName() == "Array")) {
-                            throw new SyntaxErrorException($"The depth given for the 'equals' function is too high for given type", tokens[0]);
-                        }
-                        type_ = type_.GetGeneric(0);
-                    }
-                    depth--;
+                new FunctionArgument("v2", Type_.Any())
+            }, "builtin32", (List<Type_> types_) => {
+                if (!types_[0].Equals(types_[1])) {
+                    throw new FunctionCallTypes_Exception($"The 'deep equals' function can only compare equality of values of equal types_", 1);
                 }
                 return new Type_("Bool");
             }, FunctionSource.Builtin
@@ -476,39 +454,17 @@ public static class BuiltinsList {
             new ConfigurablePatternExtractor<List<IToken>>(
                 new List<IPatternSegment> {
                     new FuncArgPatternSegment(),
+                    new UnitPatternSegment<string>(typeof(Name), "deep"),
                     new UnitPatternSegment<string>(typeof(Name), "not"),
                     new UnitPatternSegment<string>(typeof(Name), "equals"),
-                    new FuncArgPatternSegment(),
-                    new UnitPatternSegment<string>(typeof(Name), "depth"),
                     new FuncArgPatternSegment()
-                }, new SlotPatternProcessor(new List<int> {0, 3, 5})
+                }, new SlotPatternProcessor(new List<int> {0, 4})
             ), new List<FunctionArgument> {
                 new FunctionArgument("v1", Type_.Any()),
-                new FunctionArgument("v2", Type_.Any()),
-                new FunctionArgument("depth", new Type_("W"))
-            }, "builtin33", (List<IValueToken> tokens) => {
-                Type_ type_1 = tokens[0].GetType_();
-                Type_ type_2 = tokens[1].GetType_();
-                if (!type_1.Equals(type_2))
-                    throw new SyntaxErrorException($"The 'not equals' function can only compare equality of values of equal types_", tokens[1]);
-                ConstantValue cv = tokens[2] as ConstantValue;
-                if (cv == null) {
-                    throw new SyntaxErrorException($"The 'not equals' function's depth must be a constant", tokens[2]);
-                }
-                UnsignedIntConstant uic = cv.GetValue() as UnsignedIntConstant;
-                if (uic == null) {
-                    throw new SyntaxErrorException($"The 'not equals' function's depth must be an unsigned integer", tokens[2]);
-                }
-                int depth = uic.GetIntValue();
-                Type_ type_ = type_1;
-                while (depth > 0) {
-                    if (depth > 1) {
-                        if (!(type_.GetBaseType_().GetName() == "Array")) {
-                            throw new SyntaxErrorException($"The depth given for the 'not equals' function is too high for given type", tokens[0]);
-                        }
-                        type_ = type_.GetGeneric(0);
-                    }
-                    depth--;
+                new FunctionArgument("v2", Type_.Any())
+            }, "builtin33", (List<Type_> types_) => {
+                if (!types_[0].Equals(types_[1])) {
+                    throw new FunctionCallTypes_Exception($"The 'deep not equals' function can only compare equality of values of equal types_", 1);
                 }
                 return new Type_("Bool");
             }, FunctionSource.Builtin
