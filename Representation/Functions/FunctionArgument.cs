@@ -59,7 +59,6 @@ public class FunctionArgument : IEquatable<FunctionArgument> {
 
     public bool Equals(FunctionArgument other) {
         if (name != other.GetName()) return false;
-        if (id != other.GetID()) return false;
         return type_.Equals(other.GetType_());
     }
 }
