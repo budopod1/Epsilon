@@ -60,7 +60,7 @@ def value_equals_depth_1(program, i, type_, invert=False):
 
     elif type_["name"] == "Optional":
         generic_type_ = type_["generics"][0]
-        null_ptr = self.nullptr(builder, make_type_(self, type_))
+        null_ptr = program.nullptr(builder, make_type_(program, type_))
         v1_null = builder.icmp_unsigned("==", v1, null_ptr)
         v2_null = builder.icmp_unsigned("==", v2, null_ptr)
         with builder.if_else(v1_null) as (then, otherwise):
@@ -77,13 +77,14 @@ def value_equals_depth_1(program, i, type_, invert=False):
                         builder.ret(program.value_equals_depth_1(
                             builder, generic_type_, v1, v2, invert
                         ))
+        builder.unreachable()
 
     elif type_ == Internal:
         builder.ret(i1_of(0))
 
     else:
         if is_nullable_type_(type_):
-            null_ptr = self.nullptr(builder, make_type_(self, type_))
+            null_ptr = program.nullptr(builder, make_type_(program, type_))
             v1_null = builder.icmp_unsigned("==", v1, null_ptr)
             v2_null = builder.icmp_unsigned("==", v2, null_ptr)
             with builder.if_then(builder.or_(v1_null, v2_null)):
