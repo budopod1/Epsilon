@@ -66,7 +66,7 @@ public static class CmdUtils {
 
     public static void ClangToExecutable(IEnumerable<string> sources, string output) {
         List<string> args = Subconfigs.GetLinkingConfigs()
-            .Concat(new string[] {"-o", output}).Concat(sources).ToList();
+            .Concat(new string[] {"-o", output, "-O0"}).Concat(sources).ToList();
         RunCommand("clang", args);
     }
 

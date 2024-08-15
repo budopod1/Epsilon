@@ -23,7 +23,7 @@ Modes:
         );
 
         PossibilitiesExpectation optimizationInput = parser.AddOption(
-            new PossibilitiesExpectation("normal", "0", "min", "1", "normal", "2", "max"),
+            new PossibilitiesExpectation("min", "0", "min", "1", "normal", "2", "max"),
             "Optimization level", "O", "opt"
         );
 

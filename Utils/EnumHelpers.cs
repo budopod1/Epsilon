@@ -2,7 +2,7 @@ using System;
 
 public static class EnumHelpers {
     public static CacheMode ParseCacheMode(string txt) {
-        switch (txt) {
+        switch (txt.ToLower()) {
         case "dont-use":
             return CacheMode.DONTUSE;
         case "dont-load":
@@ -131,7 +131,7 @@ public static class EnumHelpers {
         if (Int32.TryParse(text, out int num)) {
             return (OptimizationLevel)num;
         }
-        Enum.TryParse(text, out OptimizationLevel result);
+        Enum.TryParse(text.ToUpper(), out OptimizationLevel result);
         return result;
     }
 }
