@@ -16,7 +16,7 @@ public static class CmdUtils {
         public byte status;
     }
 
-    [DllImport("/home/runner/Epsilon/runcommand.so")]
+    [DllImport("/home/runner/Epsilon/Utils/runcommand.so")]
     static extern _ProcessResult _RunCommand(string prog, string[] args, int argCount);
 
     static string RunCommand(string command, IEnumerable<string> arguments, out int exitCode) {

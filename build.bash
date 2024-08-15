@@ -3,7 +3,7 @@ set -e
 cd "${0%/*}"
 
 if [ ./Utils/runcommand.c -nt ./runcommand.so ]; then
-    clang ./Utils/runcommand.c -o ./runcommand.so -shared -Wall -Wextra -Wno-unused-parameter
+    clang ./Utils/runcommand.c -o ./Utils/runcommand.so -shared -Wall -Wextra -Wno-unused-parameter
 fi
 
 if [ ./Compilers/signatures.c -nt ./Compilers/signatures ]; then
