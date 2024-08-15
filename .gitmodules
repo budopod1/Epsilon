@@ -10,3 +10,6 @@
 [submodule "EPSL-IR-Gen"]
 	path = EPSL-IR-Gen
 	url = https://github.com/budopod1/EPSL-IR-Gen.git
+[submodule "EEWriter"]
+	path = EEWriter
+	url = https://github.com/budopod1/EEWriter.git

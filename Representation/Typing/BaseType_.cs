@@ -123,7 +123,8 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool Equals(BaseType_ other) {
-        return name == other.GetName() && bits == other.GetBits();
+        return name == other.GetName()
+            && GetBitsOrDefaultIfMeaningful() == other.GetBitsOrDefaultIfMeaningful();
     }
 
     public bool Matches(BaseType_ other) {

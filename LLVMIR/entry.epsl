@@ -1,14 +1,18 @@
 #import irgen;
 #import binjson;
+#import eewriter;
 
 Z#main {
-    IRType:ret_type = IRType [null, IRIntType [32], null, null, null, null, null];
-    IRInstruction:instruction = IRInstruction [null, null, IRRetInstruction [IRValue [null, IRConstant [ret_type, IRIntConstant [5], null, null]]], null, null, null, null, null, null];
-    IRFuncBody:body = IRFuncBody [[IRBasicBlock] [IRBasicBlock [0, [IRInstruction] [instruction]]], 0];
-    [IRFunc]:funcs = [IRFunc] [IRFunc [ret_type, "main", [IRRegister] [], body]];
-    IRModule:module = IRModule ["x86_64-unknown-linux-gnu", "", "entry.epsl", [IRStructDef] [], funcs];
-
-    println[[module].stringify];
+    start irgen;
+    ir entry;
+    end irgen;
 
     return 0;
+}
+
+#ir entry {
+if (fn [Z_] ["main"] [[Type_] []]) {
+    ret [c [(Z)0]];
+end fn;
+};
 }

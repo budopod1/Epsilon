@@ -958,6 +958,51 @@ public class EPSLFileCompiler : IFileCompiler {
         return program;
     }
 
+    List<FunctionDeclaration> GetBestFunctions(List<FunctionDeclaration> matchingFunctions, List<Type_> targetTypes_) {
+        for (int phase = 0; phase < 2; phase++) {
+            for (int i = 0; i < targetTypes_.Count; i++) {
+                List<List<Type_>> functionsTypes_ = matchingFunctions
+                    .Select(function =>
+                        function.GetArguments()
+                        .Select(argument => argument.GetType_())
+                        .ToList())
+                    .ToList();
+
+                List<int> matchingIdxs = new List<int>();
+
+                for (int j = 0; j < functionsTypes_.Count; j++) {
+                    if (phase == 0) {
+                        if (functionsTypes_[j][i].Equals(targetTypes_[i])) {
+                            matchingIdxs.Add(j);
+                        }
+                    } else if (phase == 1) {
+                        bool noneGreater = true;
+                        for (int k = 0; k < functionsTypes_.Count; k++) {
+                            if (functionsTypes_[k][i].IsGreaterThan(functionsTypes_[j][i])) {
+                                // eight layers of indentation FTW
+                                noneGreater = false;
+                                break;
+                            }
+                        }
+                        if (noneGreater) matchingIdxs.Add(j);
+                    } else {
+                        throw new InvalidOperationException();
+                    }
+                }
+
+                if (matchingIdxs.Count > 0) {
+                    List<FunctionDeclaration> newMatchingFunctions = new List<FunctionDeclaration>();
+                    foreach (int idx in matchingIdxs) {
+                        newMatchingFunctions.Add(matchingFunctions[idx]);
+                    }
+                    matchingFunctions = newMatchingFunctions;
+                }
+            }
+        }
+
+        return matchingFunctions;
+    }
+
     List<IToken> IdentifyRawFunctionCall(List<IToken> tokens) {
         RawFunctionCall rawCall = ((RawFunctionCall)(tokens[0]));
 
@@ -983,6 +1028,8 @@ public class EPSLFileCompiler : IFileCompiler {
 
         List<IEnumerable<Type_>> type_Alternatives = new List<IEnumerable<Type_>>();
 
+        List<FunctionDeclaration> matchingFunctions = new List<FunctionDeclaration>();
+
         foreach (FunctionDeclaration function in rawCall.GetMatchingFunctions()) {
             List<FunctionArgument> args = function.GetArguments();
             if (paramTypes_.Count != args.Count) continue;
@@ -998,7 +1045,32 @@ public class EPSLFileCompiler : IFileCompiler {
                 }
             }
 
-            if (matches) {
+            if (matches) matchingFunctions.Add(function);
+        }
+
+        Func<IEnumerable<Type_>, string> stringifyTypes_ = types_ =>
+            String.Join(", ", types_.Select(type_ => type_.ToString()));
+        string plural = paramTypes_.Count == 1 ? "" : "s";
+
+        if (matchingFunctions.Count == 0) {
+            string expectedTypes_Str;
+            if (type_Alternatives.Count == 1) {
+                expectedTypes_Str = stringifyTypes_(type_Alternatives[0]);
+            } else {
+                expectedTypes_Str = "\n" + String.Join(
+                    " or\n", type_Alternatives.Select(stringifyTypes_));
+            }
+
+            throw new SyntaxErrorException(
+                $@"Types supplied to function do not match any overload:
+Got type{plural}: {stringifyTypes_(paramTypes_)}
+Expected type{plural}: {expectedTypes_Str}", rawCall
+            );
+        } else {
+            List<FunctionDeclaration> functions = GetBestFunctions(matchingFunctions, paramTypes_);
+
+            if (functions.Count == 1) {
+                FunctionDeclaration function = functions[0];
                 IFunctionCall call;
                 if (function.DoesReturnVoid()) {
                     call = new VoidFunctionCall(function, parameters);
@@ -1006,26 +1078,15 @@ public class EPSLFileCompiler : IFileCompiler {
                     call = new FunctionCall(function, parameters);
                 }
                 return new List<IToken> {call};
+            } else {
+                string bestFuncTypes_Str = String.Join(" or", functions.Select(
+                    func => stringifyTypes_(func.GetArguments().Select(arg => arg.GetType_()))));
+                throw new SyntaxErrorException($@"Function call is ambiguous:
+Got type{plural}: {stringifyTypes_(paramTypes_)}
+Please clarify between the functions that take the types:
+{bestFuncTypes_Str}", rawCall);
             }
         }
-
-        Func<IEnumerable<Type_>, string> stringifyTypes_ = types_ =>
-            String.Join(", ", types_.Select(type_ => type_.ToString()));
-
-        string plural = paramTypes_.Count == 1 ? "" : "s";
-        string expectedTypes_Str;
-        if (type_Alternatives.Count == 1) {
-            expectedTypes_Str = stringifyTypes_(type_Alternatives[0]);
-        } else {
-            expectedTypes_Str = "\n" + String.Join(
-                " or\n", type_Alternatives.Select(stringifyTypes_));
-        }
-
-        throw new SyntaxErrorException(
-            $@"Types supplied to function do not match any overload:
-Got type{plural}: {stringifyTypes_(paramTypes_)}
-Expected type{plural}: {expectedTypes_Str}", rawCall
-        );
     }
 
     Program ParseFunctionCode(Program program) {
@@ -1042,7 +1103,7 @@ Expected type{plural}: {expectedTypes_Str}", rawCall
             }
         }
 
-        functions.Sort();
+        functions.Sort(FunctionShapeComparer.Singleton);
 
         List<PatternExtractor<List<IToken>>> extractors = new List<PatternExtractor<List<IToken>>>();
         foreach (FunctionDeclaration function in functions) {

@@ -149,4 +149,21 @@ public static class Extensions {
             }
         }
     }
+
+    /*
+    Just a utility method for debugging
+    public static void DetectNontransitiveSorting<T>(this List<T> items, IComparer<T> comparer) {
+        for (int i = 0; i < items.Count; i++) {
+            for (int j = i + 1; j < items.Count; j++) {
+                T a = items[i];
+                T b = items[j];
+                int comparison = comparer.Compare(a, b);
+                if (comparison > 0) {
+                    Log.Tmp("fail", a, b, comparison);
+                }
+            }
+        }
+        Log.Tmp("end");
+    }
+    */
 }
