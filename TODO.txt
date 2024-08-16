@@ -15,3 +15,4 @@ TODO:
 * implement 'deep equals' and 'deep not equals' functions and write test for them
 * remove unnecessary parenthesis around if, for, elif, given, while, etc...
 * add new `at` method akin to JavaScript's, new `pop` method that always pops the last item (to eliminate `ack "len(gth)? ?- ?1"`)
+* && and || operators should short circut

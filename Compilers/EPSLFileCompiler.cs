@@ -28,16 +28,10 @@ public class EPSLFileCompiler : IFileCompiler {
         srcPath = path;
         this.fileText = fileText;
         program = new Program(
-            Utils.GetFullPath(path), new List<IToken>()
+            Utils.GetFullPath(path),
+            InitialTokenizer.Tokenize(fileText).ToList()
         );
         program.span = new CodeSpan(0, fileText.Length-1);
-        int i = 0;
-        foreach (char chr in fileText) {
-            TextToken token = new TextToken(chr.ToString());
-            token.span = new CodeSpan(i);
-            program.Add(token);
-            i++;
-        }
     }
 
     public string GetText() {
@@ -49,12 +43,6 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     public IEnumerable<string> ToImports() {
-        program = TokenizeStrings(program);
-
-        program = TokenizeCharacterConstants(program);
-
-        program = RemoveComments(program);
-
         program = TokenizeFuncSignatures(program);
 
         program = TokenizeNames(program);
@@ -198,84 +186,6 @@ public class EPSLFileCompiler : IFileCompiler {
 
     public FileSourceType GetFileSourceType() {
         return FileSourceType.User;
-    }
-
-    Program TokenizeStrings(Program program) {
-        return (Program)PerformMatching(program, new StringMatcher(program));
-    }
-
-    Program TokenizeCharacterConstants(Program program) {
-        Func<List<IToken>, List<IToken>> converter = tokens => {
-            string txt = String.Join("", tokens.ConvertAll<string>(token=>token.ToString()));
-            try {
-                return new List<IToken> {new ConstantValue(CharConstant.FromString(txt))};
-            } catch (OverflowException e) {
-                throw new SyntaxErrorException(e.Message, TokenUtils.MergeSpans(tokens));
-            }
-        };
-        Program program2 = (Program)PerformMatching(
-            program, new PatternMatcher(new List<IPatternSegment> {
-                new TextPatternSegment("'"),
-                new TypePatternSegment(typeof(TextToken)),
-                new TextPatternSegment("'")
-            }, new FuncPatternProcessor<List<IToken>>(converter))
-        );
-        return (Program)PerformMatching(
-            program2, new PatternMatcher(new List<IPatternSegment> {
-                new TextPatternSegment("'"),
-                new TextPatternSegment("\\"),
-                new TypePatternSegment(typeof(TextToken)),
-                new TextPatternSegment("'")
-            }, new FuncPatternProcessor<List<IToken>>(converter))
-        );
-    }
-
-    Program RemoveComments(Program program) {
-        List<IToken> tokens = new List<IToken>();
-        bool wasSlash = false;
-        bool wasStar = false;
-        bool isLineComment = false;
-        bool isBlockComment = false;
-        foreach (IToken token in program) {
-            TextToken textT = token as TextToken;
-            if (textT == null) {
-                if (!isLineComment && !isBlockComment) tokens.Add(token);
-            } else {
-                string text = textT.GetText();
-                if (isLineComment) {
-                    if (text == "\n") isLineComment = false;
-                } else if (isBlockComment) {
-                    if (text == "*") {
-                        wasStar = true;
-                    }
-                    if (wasStar && text == "/") {
-                        isBlockComment = false;
-                    }
-                } else {
-                    if (text == "/") {
-                        if (wasSlash) {
-                            isLineComment = true;
-                            tokens.RemoveAt(tokens.Count-1);
-                        } else {
-                            wasSlash = true;
-                            tokens.Add(token);
-                        }
-                    } else if (text == "*") {
-                        if (wasSlash) {
-                            isBlockComment = true;
-                            tokens.RemoveAt(tokens.Count-1);
-                        } else {
-                            tokens.Add(token);
-                        }
-                    } else {
-                        tokens.Add(token);
-                    }
-                }
-                if (text != "/") wasSlash = false;
-                if (text != "*") wasStar = false;
-            }
-        }
-        return (Program)program.Copy(tokens);
     }
 
     Program TokenizeFuncSignatures(Program program) {
