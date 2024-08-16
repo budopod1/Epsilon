@@ -871,6 +871,8 @@ public class EPSLFileCompiler : IFileCompiler {
     List<FunctionDeclaration> GetBestFunctions(List<FunctionDeclaration> matchingFunctions, List<Type_> targetTypes_) {
         for (int phase = 0; phase < 2; phase++) {
             for (int i = 0; i < targetTypes_.Count; i++) {
+                if (matchingFunctions.Count == 1) goto selectedFunction;
+
                 List<List<Type_>> functionsTypes_ = matchingFunctions
                     .Select(function =>
                         function.GetArguments()
@@ -886,15 +888,15 @@ public class EPSLFileCompiler : IFileCompiler {
                             matchingIdxs.Add(j);
                         }
                     } else if (phase == 1) {
-                        bool noneGreater = true;
+                        bool greaterThanNone = true;
                         for (int k = 0; k < functionsTypes_.Count; k++) {
-                            if (functionsTypes_[k][i].IsGreaterThan(functionsTypes_[j][i])) {
+                            if (functionsTypes_[j][i].IsGreaterThan(functionsTypes_[k][i])) {
                                 // eight layers of indentation FTW
-                                noneGreater = false;
+                                greaterThanNone = false;
                                 break;
                             }
                         }
-                        if (noneGreater) matchingIdxs.Add(j);
+                        if (greaterThanNone) matchingIdxs.Add(j);
                     } else {
                         throw new InvalidOperationException();
                     }
@@ -910,6 +912,7 @@ public class EPSLFileCompiler : IFileCompiler {
             }
         }
 
+    selectedFunction:
         return matchingFunctions;
     }
 
