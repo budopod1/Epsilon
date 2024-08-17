@@ -83,6 +83,8 @@ def value_equals_depth_1(program, i, type_, invert=False):
         builder.ret(i1_of(0))
 
     else:
+        assert False, f"Struct equality is not currently functioning (attempted to check equality of {type_['name']} in {program.path})"
+
         if is_nullable_type_(type_):
             null_ptr = program.nullptr(builder, make_type_(program, type_))
             v1_null = builder.icmp_unsigned("==", v1, null_ptr)

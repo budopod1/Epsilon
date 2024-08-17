@@ -17,3 +17,4 @@ TODO:
 * add new `at` method akin to JavaScript's, new `pop` method that always pops the last item (to eliminate `ack "len(gth)? ?- ?1"`)
 * && and || operators should short circut
 * warn when the truth value is taken resulting in an always true truth value
+* fix struct equality (you can't memcmp them because of the padding bytes)

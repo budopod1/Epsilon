@@ -759,7 +759,7 @@ public class Builder {
             if (intermediate == null) continue;
             if (settings.LinkLibraries) {
                 throw new ProjectProblemException(
-                    $"Cannot compile to output type {settings.Output_Type.ToString()} with source {intermediate.Path}, as it does not have an available LLVM form (which is required for this output type). If this source came from a library, you can compile without library linked (with the --no-libraries flag), and then compile and link the library seperately."
+                    $"Cannot compile to output type {settings.Output_Type.ToString()} with source {intermediate.Path}, as it does not have an available LLVM form (which is required for this output type). If this source came from a library, you can compile without libraries linked (with the --no-libraries flag), and then compile and link the library seperately."
                 );
             } else {
                 throw new ProjectProblemException(
