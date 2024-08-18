@@ -1344,6 +1344,26 @@ Please clarify between the functions that take the types:
                         typeof(Negation)
                     )
                 ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new TypePatternSegment(typeof(FormatChain)),
+                        new TextPatternSegment("%"),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(FormatChain)
+                    )
+                ),
+                new PatternMatcher(
+                    new List<IPatternSegment> {
+                        new Type_PatternSegment(Type_.String()),
+                        new TextPatternSegment("%"),
+                        new Type_PatternSegment(Type_.Any())
+                    }, new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor(new List<int> {0, 2}),
+                        typeof(FormatChain)
+                    )
+                ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {
@@ -1387,26 +1407,6 @@ Please clarify between the functions that take the types:
                         )
                     ),
                 }),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new Type_PatternSegment(Type_.String()),
-                        new TextPatternSegment("%"),
-                        new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
-                        typeof(FormatChain)
-                    )
-                ),
-                new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new TypePatternSegment(typeof(FormatChain)),
-                        new TextPatternSegment("%"),
-                        new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
-                        typeof(FormatChain)
-                    )
-                ),
                 new CombinedMatchersMatcher(new List<IMatcher> {
                     new PatternMatcher(
                         new List<IPatternSegment> {

@@ -125,6 +125,18 @@ public class Builder {
         return status2;
     }
 
+    public ResultStatus ParseAdditionalOptions(ArgumentParser parser, EPSLPROJ proj) {
+        return RunWrapped(() => {
+            try {
+                parser.ParseAdditionalOptions(proj.CommandOptions);
+            } catch (ParseProblemException e) {
+                throw new ProjectProblemException(
+                    $"Problem while parsing additional parameters: {e.Message}"
+                );
+            }
+        });
+    }
+
     public ResultStatus LoadEPSLCACHE(string input, CacheMode cacheMode, out EPSLCACHE cacheOut) {
         EPSLCACHE cache = null;
 

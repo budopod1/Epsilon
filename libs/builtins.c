@@ -887,7 +887,7 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
         if (memcmp(template_Content + i, FORMAT_STRING_PLACEHOLDER, placeholder_len) == 0) {
             if (__builtin_expect(valueIdx == valueCount, 0)) {
                 fflush(stdout);
-                fwrite(TOO_FEW_PLACEHOLDERS_MESSAGE, strlen(TOO_FEW_PLACEHOLDERS_MESSAGE), 1, stderr);
+                fwrite(TOO_MANY_PLACEHOLDERS_MESSAGE, strlen(TOO_MANY_PLACEHOLDERS_MESSAGE), 1, stderr);
                 exit(1);
             }
 
@@ -907,7 +907,7 @@ struct Array *formatString(struct Array *template_, struct Array *values[], uint
 
     if (__builtin_expect(valueIdx < valueCount, 0)) {
         fflush(stdout);
-        fwrite(TOO_MANY_PLACEHOLDERS_MESSAGE, strlen(TOO_MANY_PLACEHOLDERS_MESSAGE), 1, stderr);
+        fwrite(TOO_FEW_PLACEHOLDERS_MESSAGE, strlen(TOO_FEW_PLACEHOLDERS_MESSAGE), 1, stderr);
         exit(1);
     }
 

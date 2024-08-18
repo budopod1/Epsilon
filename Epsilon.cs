@@ -110,7 +110,7 @@ Modes:
 
         if (mode.Value() == "compile") {
             TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
-            parser.ParseAdditionalOptions(proj.CommandOptions);
+            TestResult(builder.ParseAdditionalOptions(parser, proj));
             Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
             Subconfigs.AddClangParseConfigs(clangParseOptions.MatchedSegments);
