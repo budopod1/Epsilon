@@ -3,7 +3,7 @@
 #import eewriter;
 
 Z#main {
-    start irgen;
+    start irgen ["/example/path/to/file"];
     ir entry;
     end irgen;
 
@@ -12,7 +12,15 @@ Z#main {
 
 #ir entry {
 if (fn [Z_] ["main"] [[Type_] []]) {
-    ret [c [(Z)0]];
+    Val:arr = new array [Array_ [W_]] [[Val] [c [1], c [2]]] with capacity [10];
+    [arr].check_ref;
+
+    Val:str = mut str ["Hello, world!"] [1];
+    free[str];
+
+    Val:a = var [c [1.2]];
+    [a] = [[a] + [c [0.9]]];
+    ret [cast [a] to [Z_]];
 end fn;
 };
 }
