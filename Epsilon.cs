@@ -6,7 +6,7 @@ using System.Collections.Generic;
 public class Epsilon {
     public static void Main(string[] args) {
         ArgumentParser parser = new ArgumentParser(
-            "mono Epsilon.exe",
+            "epslc",
             @"
 A compiler for the Epsilon programming language
 

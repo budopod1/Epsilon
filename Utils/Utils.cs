@@ -45,7 +45,7 @@ public static class Utils {
     }
 
     public static string CammelToSnake(string str) {
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new();
         bool first = true;
         bool wasUpper = false;
         foreach (char chr in str) {
@@ -59,7 +59,14 @@ public static class Utils {
     }
 
     public static string ProjectAbsolutePath() {
-        return AppDomain.CurrentDomain.BaseDirectory;
+        DirectoryInfo dir = new(AppDomain.CurrentDomain.BaseDirectory);
+        do {
+            if (dir.Name == "EpsilonLang") {
+                return dir.FullName;
+            }
+            dir = dir.Parent;
+        } while (dir != null);
+        throw new IOException("The Epsilon executable isn't a descendant of a folder named 'EpsilonLang'");
     }
 
     public static bool ApproxEquals(double a, double b) {
@@ -181,7 +188,7 @@ public static class Utils {
         try {
             return Directory.GetFiles(dir);
         } catch (UnauthorizedAccessException) {
-            return new string[0];
+            return [];
         }
     }
 

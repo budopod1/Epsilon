@@ -37,7 +37,7 @@ noreturn void child_proc(char *cmd, const char *const *args, uint32_t arg_count,
 
 #define PIPE_READ_AMOUNT 128
 
-inline uint64_t grow_cap(uint64_t cap) {
+extern inline uint64_t grow_cap(uint64_t cap) {
     return (cap * 3) / 2 + PIPE_READ_AMOUNT + 1;
 }
 

@@ -10,6 +10,7 @@ public static class Extensions {
         }
         return result;
     }
+
     public static List<T> Slice<T>(this IList<T> list, int start, int length) {
         List<T> result = new List<T>();
         for (int i = start; i < length; i++) {

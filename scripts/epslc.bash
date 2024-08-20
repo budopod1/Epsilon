@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-mono "${0%/*}/../Epsilon.exe" "$@"
+script_path=$(realpath $0)
+executable_path="${script_path%/*}/../bin/*/net8.0/EpsilonLang.dll"
+dotnet $executable_path "$@"

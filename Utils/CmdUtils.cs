@@ -16,7 +16,7 @@ public static class CmdUtils {
         public byte status;
     }
 
-    [DllImport("/home/runner/Epsilon/Utils/runcommand.so")]
+    [DllImport("/home/mstaab/EpsilonLang/Utils/runcommand.so")]
     static extern _ProcessResult _RunCommand(string prog, string[] args, int argCount);
 
     static string RunCommand(string command, IEnumerable<string> arguments, out int exitCode) {
@@ -57,7 +57,7 @@ public static class CmdUtils {
     }
 
     public static void LLVMToObj(string source, string output, bool positionIndependent=false) {
-        List<string> args = new List<string> {source, "-o", output, "-filetype=obj"};
+        List<string> args = [source, "-o", output, "-filetype=obj"];
         if (positionIndependent) {
             args.Add("--relocation-model=pic");
         }
@@ -65,8 +65,7 @@ public static class CmdUtils {
     }
 
     public static void ClangToExecutable(IEnumerable<string> sources, string output) {
-        List<string> args = Subconfigs.GetLinkingConfigs()
-            .Concat(new string[] {"-o", output, "-O0"}).Concat(sources).ToList();
+        List<string> args = ["-no-pie", "-o", output, "-O0", ..Subconfigs.GetLinkingConfigs(), ..sources];
         RunCommand("clang", args);
     }
 
@@ -77,8 +76,7 @@ public static class CmdUtils {
     }
 
     public static string RunScript(string name, IEnumerable<string> args=null) {
-        IEnumerable<string> bashArgs = new string[] {
-            "--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), name)};
+        IEnumerable<string> bashArgs = ["--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), name)];
         if (args != null) bashArgs = bashArgs.Concat(args);
         return RunCommand("bash", bashArgs);
     }
@@ -122,8 +120,8 @@ public static class CmdUtils {
     }
 
     public static void ToSharedObject(IEnumerable<string> sources, string output) {
-        RunCommand("clang", Subconfigs.GetLinkingConfigs()
-            .Concat(new string[] {"-shared", "-o", output}).Concat(sources));
+        RunCommand("clang", new string[] {"-shared", "-o", output}
+            .Concat(Subconfigs.GetLinkingConfigs()).Concat(sources));
     }
 
     public static IEnumerable<string> ListIncludeDirs(bool isCPP) {

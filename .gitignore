@@ -5,6 +5,11 @@ LLVMIR/code
 Epsilon.exe
 *.so
 
+# VSCode stuff
+c_cpp_properties.json
+launch.json
+settings.json
+
 # Replit stuff
 .cache
 .local
@@ -14,6 +19,12 @@ replit.nix
 # Misc tools
 .ackrc
 vgcore.*
+.clang
+.vscode
+
+# C# stuff
+obj
+bin
 *.pdb
 
 # Intermediate files

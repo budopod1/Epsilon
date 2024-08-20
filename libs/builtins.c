@@ -29,7 +29,7 @@ struct Array {
     void *content;
 };
 
-inline uint64_t calcNewCapacity(uint64_t cap) {
+extern inline uint64_t calcNewCapacity(uint64_t cap) {
     return 1+(cap*3)/2;
 }
 
@@ -56,13 +56,13 @@ void requireCapacity(struct Array *array, uint64_t required, uint64_t elemSize) 
 // Will grow capacity and then apply growth factor
 void increaceCapacity(struct Array *array, uint64_t required, uint64_t elemSize) {
     if (array->capacity < required) {
-        uint newCapacity = calcNewCapacity(required);
+        uint64_t newCapacity = calcNewCapacity(required);
         array->capacity = newCapacity;
         array->content = realloc(array->content, elemSize*newCapacity);
     }
 }
 
-inline uint64_t min1(uint64_t val) {
+extern inline uint64_t min1(uint64_t val) {
     return val == 0 ? 1 : val;
 }
 
@@ -746,7 +746,7 @@ int32_t jumpFilePos(const struct File *file, uint64_t amount) {
     return false;
 }
 
-bool readLineEOF = false;
+static bool readLineEOF = false;
 
 // returns: Str?
 struct Array *readFileLine(const struct File *file) {
