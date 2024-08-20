@@ -1,12 +1,8 @@
 using System;
 using System.Globalization;
 
-public class FloatConstant : INumberConstant {
-    double value;
-
-    public FloatConstant(double value) {
-        this.value = value;
-    }
+public class FloatConstant(double value) : INumberConstant {
+    readonly double value = value;
 
     public static FloatConstant FromString(string value) {
         return new FloatConstant(double.Parse(
@@ -27,14 +23,15 @@ public class FloatConstant : INumberConstant {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["type"] = new JSONString("float");
+        JSONObject obj = new() {
+            ["type"] = new JSONString("float")
+        };
         IJSONValue json;
-        if (Double.IsNaN(value)) {
+        if (double.IsNaN(value)) {
             json = new JSONString("NaN");
-        } else if (Double.IsPositiveInfinity(value)) {
+        } else if (double.IsPositiveInfinity(value)) {
             json = new JSONString("+Infinity");
-        } else if (Double.IsNegativeInfinity(value)) {
+        } else if (double.IsNegativeInfinity(value)) {
             json = new JSONString("-Infinity");
         } else {
             json = new JSONDouble(value);

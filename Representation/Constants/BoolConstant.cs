@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-public class BoolConstant : INumberConstant, IIntConstant {
-    bool value;
-
-    public BoolConstant(bool value) {
-        this.value = value;
-    }
+public class BoolConstant(bool value) : INumberConstant, IIntConstant {
+    readonly bool value = value;
 
     public static BoolConstant FromString(string value) {
         if (value == "true") {
@@ -37,9 +33,9 @@ public class BoolConstant : INumberConstant, IIntConstant {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["type"] = new JSONString("bool");
-        obj["value"] = new JSONBool(value);
-        return obj;
+        return new JSONObject {
+            ["type"] = new JSONString("bool"),
+            ["value"] = new JSONBool(value)
+        };
     }
 }

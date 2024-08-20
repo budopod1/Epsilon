@@ -1,8 +1,8 @@
 using System;
 
 public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVerifier, ICompleteLine {
-    string member;
-    Type_ structType_;
+    readonly string member;
+    readonly Type_ structType_;
 
     public MemberAssignment(IValueToken o1, string member, IValueToken o2) : base(o1, o2) {
         this.member = member;

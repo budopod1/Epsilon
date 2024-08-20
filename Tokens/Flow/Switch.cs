@@ -7,11 +7,11 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public CodeSpan span { get; set; }
 
     IValueToken value;
-    List<SwitchArm> arms;
+    readonly List<SwitchArm> arms;
     CodeBlock default_;
 
     public int Count {
-        get { return 1 + arms.Count + (default_==null?0:1); }
+        get => 1 + arms.Count + (default_==null?0:1);
     }
 
     public IToken this[int i] {
@@ -39,21 +39,21 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
 
     public Switch(IValueToken value, IToken[] rest) {
         this.value = value;
-        arms = new List<SwitchArm>();
+        arms = [];
         int max = rest.Length;
         if (max % 2 == 1) {
             max--;
-            default_ = (CodeBlock)rest[rest.Length-1];
+            default_ = (CodeBlock)rest[^1];
         }
         for (int i = 0; i < max; i+=2) {
-            Group group = ((Group)rest[i]);
+            Group group = (Group)rest[i];
             ConstantValue constant = group.Sub() as ConstantValue;
             if (constant == null) {
                 throw new SyntaxErrorException(
                     "Switch arm values can only be constants", group
                 );
             }
-            SwitchArm arm = new SwitchArm(
+            SwitchArm arm = new(
                 constant, (CodeBlock)rest[i+1]
             );
             arm.span = TokenUtils.MergeSpans(rest[i], rest[i+1]);
@@ -85,13 +85,14 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     }
 
     public int Serialize(SerializationContext context) {
-        JSONList armsJSON = new JSONList();
+        JSONList armsJSON = [];
         foreach (SwitchArm arm in arms) {
             SerializationContext sub = context.AddSubContext();
             sub.Serialize(arm.GetBlock());
-            JSONObject armObj = new JSONObject();
-            armObj["block"] = new JSONInt(sub.GetIndex());
-            armObj["target"] = arm.GetTarget().GetValue().GetJSON();
+            JSONObject armObj = new() {
+                ["block"] = new JSONInt(sub.GetIndex()),
+                ["target"] = arm.GetTarget().GetValue().GetJSON()
+            };
             armsJSON.Add(armObj);
         }
         IJSONValue defaultJSON = new JSONNull();
@@ -102,7 +103,7 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
         }
         return context.AddInstruction(
             new SerializableInstruction(
-                "switch", new List<int> {value.Serialize(context)}
+                "switch", [value.Serialize(context)]
             ).AddData("arms", armsJSON).AddData("default", defaultJSON)
              .AddData("value_type_", value.GetType_().GetJSON())
         );

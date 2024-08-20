@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class PostIncrement : UnaryOperation<IAssignableValue>, IValueToken {
-    public PostIncrement(IAssignableValue o) : base(o) {}
-
+public class PostIncrement(IAssignableValue o) : UnaryOperation<IAssignableValue>(o), IValueToken {
     public Type_ GetType_() {
         return o.GetType_();
     }

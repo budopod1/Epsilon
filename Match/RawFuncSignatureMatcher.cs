@@ -7,9 +7,9 @@ public class RawFuncSignatureMatcher : IMatcher {
         for (int i = 0; i < tokens.Count; i++) {
             IToken stoken = tokens[i];
             if (wasNL) {
-                List<IToken> matched = new List<IToken>();
-                List<IToken> before = new List<IToken>();
-                List<IToken> after = new List<IToken>();
+                List<IToken> matched = [];
+                List<IToken> before = [];
+                List<IToken> after = [];
                 bool hasHashtag = false;
                 for (int j = i; j < tokens.Count; j++) {
                     IToken token = tokens[j];
@@ -27,17 +27,17 @@ public class RawFuncSignatureMatcher : IMatcher {
                                         "Function template cannot be empty", TokenUtils.MergeSpans(matched)
                                     );
                                 }
-                                RawFuncReturnType_ ret = new RawFuncReturnType_(before);
+                                RawFuncReturnType_ ret = new(before);
                                 ret.span = TokenUtils.MergeSpans(before);
-                                RawFuncTemplate template = new RawFuncTemplate(after);
+                                RawFuncTemplate template = new(after);
                                 template.span = TokenUtils.MergeSpans(after);
                                 return new Match(
-                                    i, j-1, new List<IToken> {
+                                    i, j-1, [
                                         new RawFuncSignature(
                                             ret,
                                             template
                                         )
-                                    }, matched
+                                    ], matched
                                 );
                             } else {
                                 break;

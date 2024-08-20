@@ -23,7 +23,7 @@ public static class Utils {
     }
 
     public static string Indent(string text) {
-        return Utils.Tab + text.Replace("\n", "\n" + Utils.Tab);
+        return Tab + text.Replace("\n", "\n" + Tab);
     }
 
     public static bool IsInstance(Type a, Type b) {
@@ -37,7 +37,7 @@ public static class Utils {
     }
 
     public static bool IsInstance(Object a, Type b) {
-        return Utils.IsInstance(a.GetType(), b);
+        return IsInstance(a.GetType(), b);
     }
 
     public static string TitleCase(string text) {

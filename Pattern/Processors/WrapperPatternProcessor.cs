@@ -3,8 +3,8 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class WrapperPatternProcessor : IPatternProcessor<List<IToken>> {
-    Type wrapper;
-    IPatternProcessor<List<IToken>> subprocessor;
+    readonly Type wrapper;
+    readonly IPatternProcessor<List<IToken>> subprocessor;
 
     public WrapperPatternProcessor(IPatternProcessor<List<IToken>> subprocessor,
                                    Type wrapper) {
@@ -25,6 +25,6 @@ public class WrapperPatternProcessor : IPatternProcessor<List<IToken>> {
         IToken result = (IToken)Activator.CreateInstance(
             wrapper, new object[] {ntokens}
         );
-        return new List<IToken> {result};
+        return [result];
     }
 }

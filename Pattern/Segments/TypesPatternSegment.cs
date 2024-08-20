@@ -2,15 +2,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class TypesPatternSegment : IPatternSegment {
-    List<Type> types;
+public class TypesPatternSegment(List<Type> types) : IPatternSegment {
+    readonly List<Type> types = types;
 
     public List<Type> GetMTypes() {
         return types;
-    }
-
-    public TypesPatternSegment(List<Type> types) {
-        this.types = types;
     }
 
     public bool Matches(IToken token) {

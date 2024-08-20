@@ -1,15 +1,11 @@
 using System;
 using System.Globalization;
 
-public class ByteConstant : IIntConstant {
-    byte value;
-
-    public ByteConstant(byte value) {
-        this.value = value;
-    }
+public class ByteConstant(byte value) : IIntConstant {
+    readonly byte value = value;
 
     public static ByteConstant FromString(string value) {
-        return new ByteConstant(Byte.Parse(
+        return new ByteConstant(byte.Parse(
             value, CultureInfo.InvariantCulture
         ));
     }
@@ -31,9 +27,9 @@ public class ByteConstant : IIntConstant {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["type"] = new JSONString("int");
-        obj["value"] = new JSONInt(value);
-        return obj;
+        return new JSONObject {
+            ["type"] = new JSONString("int"),
+            ["value"] = new JSONInt(value)
+        };
     }
 }

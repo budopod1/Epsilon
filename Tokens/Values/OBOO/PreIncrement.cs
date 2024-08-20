@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class PreIncrement : UnaryOperation<IAssignableValue>, IValueToken {
-    public PreIncrement(IAssignableValue o) : base(o) {}
-
+public class PreIncrement(IAssignableValue o) : UnaryOperation<IAssignableValue>(o), IValueToken {
     public Type_ GetType_() {
         return o.GetType_();
     }

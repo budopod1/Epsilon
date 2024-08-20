@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
 public class Builder {
-    static Dictionary<string, Func<BuildSettings, string, IFileCompiler>> dispatchers = new Dictionary<string, Func<BuildSettings, string, IFileCompiler>>();
+    static readonly Dictionary<string, Func<BuildSettings, string, IFileCompiler>> dispatchers = [];
 
     bool shouldCache = false;
     string currentFile = "";
     string currentText = "";
     Dictionary<string, string> libraries;
     Dictionary<string, FileTree> files;
-    static List<string> EXTENSIONS = new List<string> {"epslspec"};
-    static readonly List<string> PREFIXES = new List<string> {"", "."};
+    static readonly List<string> EXTENSIONS = ["epslspec"];
+    static readonly List<string> PREFIXES = ["", "."];
 
     public static void RegisterDispatcher(Func<BuildSettings, string, IFileCompiler> dispatcher, params string[] extensions) {
         EXTENSIONS.AddRange(extensions);
@@ -225,7 +225,7 @@ public class Builder {
             shouldCache |= cache.IsFromFile;
 
             currentFile = input;
-            files = new Dictionary<string, FileTree>();
+            files = [];
             FileTree tree = LoadFile(settings, Utils.GetFileNameWithoutExtension(input),
                 projectDirectory);
 
@@ -282,7 +282,7 @@ public class Builder {
                 }
             }
 
-            BuildInfo buildInfo = new BuildInfo(
+            BuildInfo buildInfo = new(
                 output, outputName, sources, tree, unlinkedFiles, fileWithMain
             );
 
@@ -365,11 +365,11 @@ public class Builder {
         if (!File.Exists(path)) return;
         currentFile = path;
         IJSONValue jsonValue = ParseJSONFile(path);
-        ShapedJSON obj = new ShapedJSON(jsonValue, EPSLSPEC.Shape);
+        ShapedJSON obj = new(jsonValue, EPSLSPEC.Shape);
         CleanupSPEC(path, obj);
     }
 
-    int LOAD_RETRY = 3;
+    readonly int LOAD_RETRY = 3;
 
     void VerifySPECDependencies(string path, ShapedJSON json) {
         foreach (string field in new List<string> {"ir", "obj"}) {
@@ -393,7 +393,7 @@ public class Builder {
             fileText = text;
             currentText = text;
         });
-        ShapedJSON obj = new ShapedJSON(jsonValue, EPSLSPEC.Shape);
+        ShapedJSON obj = new(jsonValue, EPSLSPEC.Shape);
         string source = Utils.GetFullPath(obj["source"].GetStringOrNull());
         string generatedEPSLSPEC = null;
         if (source != null) {
@@ -432,11 +432,11 @@ public class Builder {
             foreach (string prefix in PREFIXES) {
                 string filename = prefix + partialPath + "." + extension;
                 currentFile = filename;
-                List<string> folders = new List<string> {
+                List<string> folders = [
                     projDirectory, Utils.EPSLLIBS()
-                };
-                if (libraries.ContainsKey(partialPath)) {
-                    folders.Add(libraries[partialPath]);
+                ];
+                if (libraries.TryGetValue(partialPath, out string? value)) {
+                    folders.Add(value);
                 }
                 foreach (string folder in folders) {
                     string file = Utils.JoinPaths(folder, filename);
@@ -498,7 +498,7 @@ public class Builder {
         IFileCompiler fileCompiler = dispatched.Compiler;
         currentFile = path;
         currentText = fileCompiler.GetText();
-        FileTree result = new FileTree(
+        FileTree result = new(
             partialPath, path, fileCompiler, dispatched.OldCompilerPath, dispatched.OldCompiler,
             dispatched.GeneratedSPEC
         );
@@ -635,7 +635,7 @@ public class Builder {
     }
 
     void FinishCompilations(BuildSettings settings, out List<FileTree> unlinkedFiles) {
-        unlinkedFiles = new List<FileTree>();
+        unlinkedFiles = [];
         foreach (FileTree file in files.Values) {
             if (!settings.LinkLibraries && file.SourceType == FileSourceType.Library) {
                 file.IsUnlinked = true;
@@ -814,7 +814,7 @@ public class Builder {
             VerifyOnlyLLVMSources(settings, grouped);
         }
 
-        List<string> sources = new List<string>();
+        List<string> sources = [];
 
         if (settings.OptLevel >= OptimizationLevel.MAX) {
             sources.Add(CombineAndOptimizeLLVM(
@@ -853,7 +853,7 @@ public class Builder {
         int stage = 0;
         int startIndex = 0;
 
-        List<string> lines = new List<string> {""};
+        List<string> lines = [""];
 
         for (int i = 0; i < text.Length; i++) {
             if (stage == 0 && i == span.GetStart()) {
@@ -974,7 +974,7 @@ public class Builder {
         string sourceFilename = null;
 
         EPSLSPEC entryEPSLSPEC = buildInfo.EntryFile.EPSLSPEC;
-        EPSLSPEC newEPSLSPEC = new EPSLSPEC(
+        EPSLSPEC newEPSLSPEC = new(
             entryEPSLSPEC.Functions, entryEPSLSPEC.Structs, Dependencies.Empty(),
             Subconfigs.ToSubconfigCollection(), unlinkedImports,
             irFilename, objFilename, sourceFilename, FileSourceType.Library,
@@ -1007,7 +1007,7 @@ public class Builder {
 
     public ResultStatus CreateEPSLPROJ(string path) {
         return RunWrapped(() => {
-            EPSLPROJ proj = new EPSLPROJ(Utils.GetFullPath(path));
+            EPSLPROJ proj = new(Utils.GetFullPath(path));
             proj.ToFile();
         });
     }

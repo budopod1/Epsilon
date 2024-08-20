@@ -1,15 +1,11 @@
 using System;
 using System.Globalization;
 
-public class UnsignedIntConstant : INumberConstant, IIntConstant {
-    uint value;
-
-    public UnsignedIntConstant(uint value) {
-        this.value = value;
-    }
+public class UnsignedIntConstant(uint value) : INumberConstant, IIntConstant {
+    readonly uint value = value;
 
     public static UnsignedIntConstant FromString(string value) {
-        return new UnsignedIntConstant(UInt32.Parse(
+        return new UnsignedIntConstant(uint.Parse(
             value, CultureInfo.InvariantCulture
         ));
     }
@@ -31,9 +27,9 @@ public class UnsignedIntConstant : INumberConstant, IIntConstant {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["type"] = new JSONString("uint");
-        obj["value"] = new JSONInt((int)value);
-        return obj;
+        return new JSONObject {
+            ["type"] = new JSONString("uint"),
+            ["value"] = new JSONInt((int)value)
+        };
     }
 }

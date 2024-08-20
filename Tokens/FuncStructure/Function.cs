@@ -6,10 +6,10 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    static List<IPatternSegment> mainPattern = new List<IPatternSegment> {
+    static readonly List<IPatternSegment> mainPattern = [
         new UnitPatternSegment<string>(typeof(Name), "main")
-    };
-    public Dictionary<ISerializableToken, int> Serialized = new Dictionary<ISerializableToken, int>();
+    ];
+    public readonly Dictionary<ISerializableToken, int> Serialized = [];
 
     public int Count {
         get { return 1; }
@@ -20,20 +20,20 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
             return block;
         }
         set {
-            block = ((CodeBlock)value);
+            block = (CodeBlock)value;
         }
     }
 
-    string sourcePath;
-    PatternExtractor<List<IToken>> pattern;
-    List<FunctionArgument> arguments;
+    readonly string sourcePath;
+    readonly PatternExtractor<List<IToken>> pattern;
+    readonly List<FunctionArgument> arguments;
     CodeBlock block;
-    Type_ returnType_;
-    bool doesReturnVoid;
-    List<Type_> specialAllocs = new List<Type_>();
-    string id;
-    string callee;
-    List<SerializationContext> contexts = new List<SerializationContext>();
+    readonly Type_ returnType_;
+    readonly bool doesReturnVoid;
+    readonly List<Type_> specialAllocs = [];
+    readonly string id;
+    readonly string callee;
+    readonly List<SerializationContext> contexts = [];
 
     public Function(string idPath, Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_, List<IAnnotation> annotations) {
         this.sourcePath = idPath;
@@ -54,8 +54,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
 
         bool setCallee = false;
         foreach (IAnnotation annotation in annotations) {
-            IDAnnotation idA = annotation as IDAnnotation;
-            if (idA != null && !setCallee) {
+            if (annotation is IDAnnotation idA && !setCallee) {
                 callee = idA.GetID();
                 setCallee = true;
             }
@@ -120,7 +119,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
 
     public override string ToString() {
         string title = Utils.WrapName(
-            GetType().Name, String.Join(", ", arguments), "<", ">"
+            GetType().Name, string.Join(", ", arguments), "<", ">"
         );
         return Utils.WrapName(title, block.ToString());
     }
@@ -147,12 +146,11 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         obj["blocks"] = new JSONList(contexts.Select(
             context=>context.Serialize()
         ));
-        JSONList declarations = new JSONList();
-        foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(this)) {
-            foreach (IJSONValue declaration in Scope.GetVarsJSON(block.GetScope())) {
-                declarations.Add(declaration);
-            }
-        }
+        JSONList declarations = new(
+            TokenUtils.TraverseFind<CodeBlock>(this).SelectMany(
+                block => Scope.GetVarsJSON(block.GetScope())
+            )
+        );
         obj["declarations"] = declarations;
         obj["special_allocs"] = new JSONList(
             specialAllocs.Select(specialAlloc=>specialAlloc.GetJSON())

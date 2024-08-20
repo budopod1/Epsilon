@@ -21,9 +21,9 @@ public class FormatChain : IParentToken, IValueToken {
         }
         set {
             if (i == 0) {
-                template = ((IValueToken)value);
+                template = (IValueToken)value;
             } else {
-                values[i - 1] = ((IValueToken)value);
+                values[i - 1] = (IValueToken)value;
             }
         }
     }
@@ -36,7 +36,7 @@ public class FormatChain : IParentToken, IValueToken {
 
     public FormatChain(IValueToken template, IValueToken value1) {
         this.template = template;
-        this.values = new List<IValueToken> {value1};
+        this.values = [value1];
     }
 
     public IValueToken GetTemplate() {

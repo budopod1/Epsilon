@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-public class SuperAnnotation : IAnnotation {
-    CodeSpan span;
-
-    public SuperAnnotation(CodeSpan span) {
-        this.span = span;
-    }
+public class SuperAnnotation(CodeSpan span) : IAnnotation {
+    readonly CodeSpan span = span;
 
     public static SuperAnnotation FromTokens(IToken base_, List<IToken> arguments) {
         if (arguments.Count > 0) {

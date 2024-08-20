@@ -2,14 +2,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Dependencies {
-    IEnumerable<Struct> structs;
-    IEnumerable<RealFunctionDeclaration> functions;
-
-    public Dependencies(IEnumerable<Struct> structs, IEnumerable<RealFunctionDeclaration> functions) {
-        this.structs = structs;
-        this.functions = functions;
-    }
+public class Dependencies(IEnumerable<Struct> structs, IEnumerable<RealFunctionDeclaration> functions) {
+    readonly IEnumerable<Struct> structs = structs;
+    readonly IEnumerable<RealFunctionDeclaration> functions = functions;
 
     public static Dependencies Empty() {
         return new Dependencies(Enumerable.Empty<Struct>(), Enumerable.Empty<RealFunctionDeclaration>());

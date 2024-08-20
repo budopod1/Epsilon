@@ -18,8 +18,8 @@ public class ImportMatcher : IMatcher {
                     if (nntoken == null || nntoken.GetValue() != "import") continue;
                     TextToken wtoken = tokens[i+2] as TextToken;
                     if (wtoken == null || !Utils.Whitespace.Contains(wtoken.GetText())) continue;
-                    List<IToken> matched = new List<IToken> {stoken, nntoken, wtoken};
-                    List<string> path = new List<string> {""};
+                    List<IToken> matched = [stoken, nntoken, wtoken];
+                    List<string> path = [""];
                     bool anyContent = false;
                     bool wasName = false;
                     for (int j = 3; j + i < tokens.Count; j++) {
@@ -42,9 +42,9 @@ public class ImportMatcher : IMatcher {
                                     "Import statement path must end with a target name", token
                                 );
                             }
-                            return new Match(i, i+j, new List<IToken> {
+                            return new Match(i, i+j, [
                                 new Import(path)
-                            }, matched);
+                            ], matched);
                         } else {
                             break;
                         }

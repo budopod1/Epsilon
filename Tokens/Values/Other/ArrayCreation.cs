@@ -6,8 +6,8 @@ public class ArrayCreation : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    Type_ type_;
-    List<IValueToken> values;
+    readonly Type_ type_;
+    readonly List<IValueToken> values;
 
     public int Count {
         get {
@@ -20,7 +20,7 @@ public class ArrayCreation : IParentToken, IValueToken {
             return values[i];
         }
         set {
-            values[i] = ((IValueToken)value);
+            values[i] = (IValueToken)value;
         }
     }
 

@@ -2,30 +2,17 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class RealExternalFunction : RealFunctionDeclaration {
-    PatternExtractor<List<IToken>> pattern;
-    List<FunctionArgument> arguments;
-    string id;
-    string sourcePath;
-    string callee;
-    Type_ returnType_;
-    bool doesReturnVoid;
-    FunctionSource source;
-    bool takesOwnership;
-    bool resultInParams;
-
-    public RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, string sourcePath, string callee, Type_ returnType_, bool doesReturnVoid, FunctionSource source, bool takesOwnership=false, bool resultInParams=false) {
-        this.pattern = pattern;
-        this.arguments = arguments;
-        this.id = id;
-        this.sourcePath = sourcePath;
-        this.callee = callee;
-        this.returnType_ = returnType_;
-        this.doesReturnVoid = doesReturnVoid;
-        this.source = source;
-        this.takesOwnership = takesOwnership;
-        this.resultInParams = resultInParams;
-    }
+public class RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, string sourcePath, string callee, Type_ returnType_, bool doesReturnVoid, FunctionSource source, bool takesOwnership = false, bool resultInParams = false) : RealFunctionDeclaration {
+    readonly PatternExtractor<List<IToken>> pattern = pattern;
+    readonly List<FunctionArgument> arguments = arguments;
+    readonly string id = id;
+    readonly string sourcePath = sourcePath;
+    readonly string callee = callee;
+    readonly Type_ returnType_ = returnType_;
+    readonly bool doesReturnVoid = doesReturnVoid;
+    readonly FunctionSource source = source;
+    readonly bool takesOwnership = takesOwnership;
+    readonly bool resultInParams = resultInParams;
 
     public override PatternExtractor<List<IToken>> GetPattern() {
         return pattern;

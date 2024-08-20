@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class ParameterGroup : UnaryOperation<IValueToken>, IValueToken {
-    public ParameterGroup(IValueToken o) : base(o) {}
-
+public class ParameterGroup(IValueToken o) : UnaryOperation<IValueToken>(o), IValueToken {
     public Type_ GetType_() {
         return o.GetType_();
     }

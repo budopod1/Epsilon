@@ -2,22 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-public class UserBaseType_ {
-    string name;
-    int? bits;
-
-    public UserBaseType_(string name, int? bits = null) {
-        this.name = name;
-        this.bits = bits;
-    }
-
-    public static List<string> SpecialFullBaseType_Names = new List<string> {
+public class UserBaseType_(string name, int? bits = null) {
+    readonly string name = name;
+    readonly int? bits = bits;
+    public readonly static List<string> SpecialFullBaseType_Names = [
         "Str", "L"
-    };
+    ];
 
-    public static List<string> NonUserType_Names = new List<string> {
+    public readonly static List<string> NonUserType_Names = [
         "Null"
-    };
+    ];
 
     public static UserBaseType_ ParseString(string content, HashSet<LocatedID> structIds) {
         foreach (LocatedID structId in structIds) {
@@ -29,23 +23,23 @@ public class UserBaseType_ {
             return new UserBaseType_(content);
         }
         System.Text.RegularExpressions.Match match = Regex.Match(
-            content, $@"({String.Join('|', BaseType_.BitTypes_)})(\d+)"
+            content, $@"({string.Join('|', BaseType_.BitTypes_)})(\d+)"
         );
         if (match.Success) {
             string name = match.Groups[1].Value;
             if (NonUserType_Names.Contains(name)) return null;
-            int bits = Int32.Parse(match.Groups[2].Value);
+            int bits = int.Parse(match.Groups[2].Value);
             return new UserBaseType_(name, bits);
         }
         return null;
     }
 
-    static Dictionary<string, Type_> SpecialFullBaseTypes_ = new Dictionary<string, Type_> {
+    static readonly Dictionary<string, Type_> SpecialFullBaseTypes_ = new() {
         {"Str", Type_.String()}, {"L", new Type_("W", 64)}
     };
 
     public Type_ ToType_() {
-        return ToType_(new List<Type_>());
+        return ToType_([]);
     }
 
     public Type_ ToType_(List<Type_> generics) {

@@ -4,8 +4,8 @@ public class Variable : IAssignableValue {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    string name;
-    int id;
+    readonly string name;
+    readonly int id;
 
     public Variable(string name, int id) {
         this.name = name;

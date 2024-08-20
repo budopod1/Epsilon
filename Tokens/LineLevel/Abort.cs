@@ -1,8 +1,6 @@
 using System;
 
-public class Abort : UnaryOperation<IValueToken>, IFunctionTerminator, IBlockEndOnly {
-    public Abort(IValueToken o) : base(o) {}
-
+public class Abort(IValueToken o) : UnaryOperation<IValueToken>(o), IFunctionTerminator, IBlockEndOnly {
     public bool DoesTerminateFunction() {
         return true;
     }

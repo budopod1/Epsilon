@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 
 public class FunctionHolder : Holder, IAnnotatable {
-    List<IAnnotation> annotations;
+    readonly List<IAnnotation> annotations;
 
     public FunctionHolder(List<IToken> tokens) : base(tokens) {
-        annotations = new List<IAnnotation>();
+        annotations = [];
     }
 
     public FunctionHolder(List<IToken> tokens, List<IAnnotation> annotations) : base(tokens) {

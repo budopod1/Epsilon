@@ -1,8 +1,6 @@
 using System;
 
-public class ConstantValue : Unit<IConstant>, IValueToken {
-    public ConstantValue(IConstant constant) : base(constant) {}
-
+public class ConstantValue(IConstant constant) : Unit<IConstant>(constant), IValueToken {
     public Type_ GetType_() {
         return GetValue().GetType_();
     }

@@ -3,33 +3,28 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Struct : IEquatable<Struct> {
-    LocatedID id;
-    List<Field> selfFields = null;
+    readonly LocatedID id;
+    readonly List<Field> selfFields = null;
     IEnumerable<Field> allFields = null;
-    string symbol;
-    bool isSuper = false;
+    readonly string symbol;
+    readonly bool isSuper = false;
     bool partiallyLoaded = true;
 
     Struct extendee = null;
     string extendeeID = null;
-    string extendeeName = null;
-    ExtendsAnnotation extendsAnnotation = null;
+    readonly string extendeeName = null;
+    readonly ExtendsAnnotation extendsAnnotation = null;
 
     public Struct(string path, string name, List<Field> selfFields, List<IAnnotation> annotations) {
         id = new LocatedID(path, name);
         this.selfFields = selfFields;
         symbol = id.GetID();
         foreach (IAnnotation annotation in annotations) {
-            IDAnnotation idA = annotation as IDAnnotation;
-            if (idA != null) {
+            if (annotation is IDAnnotation idA) {
                 symbol = idA.GetID();
-            }
-            SuperAnnotation superA = annotation as SuperAnnotation;
-            if (superA != null) {
+            } else if (annotation is SuperAnnotation superA) {
                 isSuper = true;
-            }
-            ExtendsAnnotation _extendsAnnotation = annotation as ExtendsAnnotation;
-            if (_extendsAnnotation != null) {
+            } else if (annotation is ExtendsAnnotation _extendsAnnotation) {
                 extendsAnnotation = _extendsAnnotation;
                 extendeeName = _extendsAnnotation.GetExtendee();
             }
@@ -158,15 +153,15 @@ public class Struct : IEquatable<Struct> {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["id"] = new JSONString(GetID());
-        obj["name"] = new JSONString(GetName());
-        obj["fields"] = new JSONList(GetFields().Select(
-            field => field.GetJSON()
-        ));
-        obj["symbol"] = new JSONString(symbol);
-        obj["extendee"] = JSONString.OrNull(extendeeID);
-        return obj;
+        return new JSONObject {
+            ["id"] = new JSONString(GetID()),
+            ["name"] = new JSONString(GetName()),
+            ["fields"] = new JSONList(GetFields().Select(
+                field => field.GetJSON()
+            )),
+            ["symbol"] = new JSONString(symbol),
+            ["extendee"] = JSONString.OrNull(extendeeID)
+        };
     }
 
     public bool Equals(Struct other) {

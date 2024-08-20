@@ -1,5 +1,4 @@
 using System;
 
-public class Greater : Comparison {
-    public Greater(IValueToken o1, IValueToken o2) : base(o1, o2) {}
+public class Greater(IValueToken o1, IValueToken o2) : Comparison(o1, o2) {
 }

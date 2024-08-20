@@ -1,17 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-public class SplitTokensParser {
-    IPatternSegment seperator;
-    bool allowUnterminated;
-
-    public SplitTokensParser(IPatternSegment seperator, bool allowUnterminated) {
-        this.seperator = seperator;
-        this.allowUnterminated = allowUnterminated;
-    }
+public class SplitTokensParser(IPatternSegment seperator, bool allowUnterminated) {
+    readonly IPatternSegment seperator = seperator;
+    readonly bool allowUnterminated = allowUnterminated;
 
     public List<List<IToken>> Parse(IParentToken tree) {
-        List<IToken> list = new List<IToken>();
+        List<IToken> list = [];
         for (int i = 0; i < tree.Count; i++) {
             list.Add(tree[i]);
         }
@@ -19,13 +14,13 @@ public class SplitTokensParser {
     }
 
     public List<List<IToken>> Parse(List<IToken> tree) {
-        List<List<IToken>> result = new List<List<IToken>>();
-        List<IToken> soFar = new List<IToken>();
+        List<List<IToken>> result = [];
+        List<IToken> soFar = [];
         for (int i = 0; i < tree.Count; i++) {
             IToken token = tree[i];
             if (seperator.Matches(token)) {
                 result.Add(soFar);
-                soFar = new List<IToken>();
+                soFar = [];
             } else {
                 soFar.Add(token);
             }

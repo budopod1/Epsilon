@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 public class ForClause : UnaryOperation<IValueToken> {
-    string name;
+    readonly string name;
 
     public ForClause(RawForClause source) : base(null) {
         name = source.GetName();

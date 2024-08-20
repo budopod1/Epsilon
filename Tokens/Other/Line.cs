@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Line : TreeToken, IVerifier {
-    public Line(List<IToken> tokens) : base(tokens) {}
-
+public class Line(List<IToken> tokens) : TreeToken(tokens), IVerifier {
     protected override TreeToken _Copy(List<IToken> tokens) {
         return (TreeToken)new Line(tokens);
     }

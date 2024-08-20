@@ -18,15 +18,15 @@ public class GlobalsMatcher : IMatcher {
                     if (nntoken == null || nntoken.GetValue() != "global") continue;
                     TextToken wtoken = tokens[i+2] as TextToken;
                     if (wtoken == null || !Utils.Whitespace.Contains(wtoken.GetText())) continue;
-                    List<IToken> matched = new List<IToken> {stoken, nntoken, wtoken};
-                    List<IToken> declaration = new List<IToken>();
+                    List<IToken> matched = [stoken, nntoken, wtoken];
+                    List<IToken> declaration = [];
                     for (int j = 3; j + i < tokens.Count; j++) {
                         IToken token = tokens[i+j];
                         TextToken ttoken = token as TextToken;
                         if (ttoken?.GetText() == ";") {
-                            return new Match(i, i+j, new List<IToken> {
+                            return new Match(i, i+j, [
                                 new RawGlobal(declaration)
-                            }, matched);
+                            ], matched);
                         } else {
                             matched.Add(token);
                             declaration.Add(token);

@@ -1,24 +1,19 @@
 using System;
 
-public class UnitPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
-    T value;
-    Type unit;
+public class UnitPatternSegment<T>(Type unit, T value) : IPatternSegment where T : IEquatable<T> {
+    readonly T value = value;
+    readonly Type unit = unit;
 
     public T GetValue() {
         return value;
     }
 
-    public UnitPatternSegment(Type unit, T value) {
-        this.value = value;
-        this.unit = unit;
-    }
-
     public bool Matches(IToken token) {
-        return (
+        return
             token is Unit<T>
             && Utils.IsInstance(token, unit)
             && ((Unit<T>)token).GetValue().Equals(value)
-        );
+        ;
     }
 
     public bool Equals(IPatternSegment obj) {

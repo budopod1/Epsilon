@@ -3,12 +3,12 @@ using System.Linq;
 using System.Collections.Generic;
 
 public static class StructsCtx {
-    static Dictionary<string, Struct> structs = new Dictionary<string, Struct>();
+    static readonly Dictionary<string, Struct> structs = [];
     static bool structsLoaded = false;
 
     public static Struct GetStructFromID(string id) {
-        if (structs.ContainsKey(id)) {
-            return structs[id];
+        if (structs.TryGetValue(id, out Struct? value)) {
+            return value;
         } else {
             return null;
         }
@@ -16,8 +16,8 @@ public static class StructsCtx {
 
     public static Struct GetStructFromType_(Type_ type_) {
         string id = type_.GetBaseType_().GetName();
-        if (structs.ContainsKey(id)) {
-            return structs[id];
+        if (structs.TryGetValue(id, out Struct? value)) {
+            return value;
         } else {
             return null;
         }
@@ -28,8 +28,8 @@ public static class StructsCtx {
             type_ = type_.GetGeneric(0);
         }
         string name = type_.GetBaseType_().GetName();
-        if (structs.ContainsKey(name)) {
-            return structs[name];
+        if (structs.TryGetValue(name, out Struct? value)) {
+            return value;
         } else {
             return null;
         }
@@ -37,8 +37,7 @@ public static class StructsCtx {
 
     public static void Add(Struct struct_) {
         string id = struct_.GetID();
-        if (structs.ContainsKey(id)) {
-            Struct other = structs[id];
+        if (structs.TryGetValue(id, out Struct? other)) {
             if (!other.Equals(struct_)) {
                 throw new ArgumentException(
                     $"Duplicate struct ID '{id}' for different structs"
@@ -68,6 +67,6 @@ public static class StructsCtx {
     }
 
     public static HashSet<Struct> StructSet() {
-        return structs.Values.ToHashSet();
+        return [..structs.Values];
     }
 }

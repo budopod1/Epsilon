@@ -1,19 +1,15 @@
 using System;
 using System.Collections.Generic;
 
-public class StringConstant : IConstant {
-    string value;
+public class StringConstant(string value) : IConstant {
+    readonly string value = value;
 
-    public static Dictionary<char, string> BackslashReplacements = new Dictionary<char, string> {
+    public static readonly Dictionary<char, string> BackslashReplacements = new() {
         {'n', "\n"},
         {'t', "\t"},
         {'r', "\r"},
         {'\\', "\\"},
     };
-
-    public StringConstant(string value) {
-        this.value = value;
-    }
 
     public static StringConstant FromString(string value) {
         return new StringConstant(JSONTools.FromLiteral(value));

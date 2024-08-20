@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 
 public class RawForClause : TreeToken {
-    string name;
+    readonly string name;
 
-    public RawForClause(string name) : base(new List<IToken>()) {
+    public RawForClause(string name) : base([]) {
         this.name = name;
     }
 

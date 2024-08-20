@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class FunctionShapeComparer : IComparer<FunctionDeclaration> {
     FunctionShapeComparer() {}
 
-    public static readonly FunctionShapeComparer Singleton = new FunctionShapeComparer();
+    public static readonly FunctionShapeComparer Singleton = new();
 
     public int Compare(FunctionDeclaration a, FunctionDeclaration b) {
         int apsc = a.GetPattern().GetSegments().Count;

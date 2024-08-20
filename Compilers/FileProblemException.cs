@@ -1,5 +1,4 @@
 using System;
 
-public class FileProblemException : Exception {
-    public FileProblemException(string message) : base(message) {}
+public class FileProblemException(string message) : Exception(message) {
 }

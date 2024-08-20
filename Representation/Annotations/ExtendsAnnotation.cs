@@ -1,14 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-public class ExtendsAnnotation : IAnnotation {
-    CodeSpan span;
-    string extendee;
-
-    public ExtendsAnnotation(CodeSpan span, string extendee) {
-        this.span = span;
-        this.extendee = extendee;
-    }
+public class ExtendsAnnotation(CodeSpan span, string extendee) : IAnnotation {
+    readonly CodeSpan span = span;
+    readonly string extendee = extendee;
 
     public static ExtendsAnnotation FromTokens(IToken base_, List<IToken> arguments) {
         if (arguments.Count == 0) {

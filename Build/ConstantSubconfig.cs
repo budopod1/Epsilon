@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class ConstantSubconfig : ISubconfig {
-    IEnumerable<string> parts;
+    readonly IEnumerable<string> parts;
 
     public ConstantSubconfig(IEnumerable<string> parts) {
         this.parts = parts;
@@ -22,9 +22,10 @@ public class ConstantSubconfig : ISubconfig {
     }
 
     public JSONObject GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["type"] = new JSONString("constant");
-        obj["parts"] = new JSONList(parts.Select(part => new JSONString(part)));
+        JSONObject obj = new() {
+            ["type"] = new JSONString("constant"),
+            ["parts"] = new JSONList(parts.Select(part => new JSONString(part)))
+        };
         return obj;
     }
 }

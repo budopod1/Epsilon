@@ -1,8 +1,8 @@
 using System;
 
 public class GivenPart : BinaryOperation<IValueToken, CodeBlock>, IVerifier {
-    Type_ toType_;
-    int varID;
+    readonly Type_ toType_;
+    readonly int varID;
 
     public GivenPart(RawGivenPart part) : base(null, part.GetBlock()) {
         span = part.span;

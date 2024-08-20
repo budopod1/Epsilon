@@ -1,5 +1,4 @@
 using System;
 
-public class UnusedValueWrapper : UnaryOperation<IValueToken>, ICompleteLine {
-    public UnusedValueWrapper(IValueToken o) : base(o) {}
+public class UnusedValueWrapper(IValueToken o) : UnaryOperation<IValueToken>(o), ICompleteLine {
 }

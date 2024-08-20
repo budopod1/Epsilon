@@ -1,13 +1,8 @@
 using System;
 
-public class ScopeVar {
-    string name;
-    Type_ type_;
-
-    public ScopeVar(string name, Type_ type_) {
-        this.name = name;
-        this.type_ = type_;
-    }
+public class ScopeVar(string name, Type_ type_) {
+    readonly string name = name;
+    readonly Type_ type_ = type_;
 
     public string GetName() {
         return name;
@@ -18,10 +13,10 @@ public class ScopeVar {
     }
 
     public IJSONValue GetJSON(int id) {
-        JSONObject obj = new JSONObject();
-        obj["name"] = new JSONString(name);
-        obj["type_"] = type_.GetJSON();
-        obj["id"] = new JSONInt(id);
-        return obj;
+        return new JSONObject {
+            ["name"] = new JSONString(name),
+            ["type_"] = type_.GetJSON(),
+            ["id"] = new JSONInt(id)
+        };
     }
 }

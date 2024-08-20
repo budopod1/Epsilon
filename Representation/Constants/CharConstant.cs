@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 
 public class CharConstant : IIntConstant {
-    byte value;
+    readonly byte value;
 
     public CharConstant(byte value) {
         this.value = value;
@@ -36,9 +36,9 @@ public class CharConstant : IIntConstant {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["type"] = new JSONString("int");
-        obj["value"] = new JSONInt(value);
-        return obj;
+        return new JSONObject {
+            ["type"] = new JSONString("int"),
+            ["value"] = new JSONInt(value)
+        };
     }
 }

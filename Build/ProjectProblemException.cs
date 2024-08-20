@@ -1,5 +1,3 @@
 using System;
 
-public class ProjectProblemException : Exception {
-    public ProjectProblemException(string message) : base(message) {}
-}
+public class ProjectProblemException(string message) : Exception(message) {}

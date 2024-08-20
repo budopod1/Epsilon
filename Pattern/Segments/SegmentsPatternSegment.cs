@@ -2,15 +2,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class SegmentsPatternSegment : IPatternSegment {
-    List<IPatternSegment> segments;
+public class SegmentsPatternSegment(List<IPatternSegment> segments) : IPatternSegment {
+    readonly List<IPatternSegment> segments = segments;
 
     public List<IPatternSegment> GetSegments() {
         return segments;
-    }
-
-    public SegmentsPatternSegment(List<IPatternSegment> segments) {
-        this.segments = segments;
     }
 
     public bool Matches(IToken token) {

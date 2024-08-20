@@ -1,19 +1,13 @@
 using System;
 using System.Collections.Generic;
 
-public class FunctionArgumentToken : IToken {
+public class FunctionArgumentToken(string name, Type_ type_, int id = -1) : IToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    string name;
-    Type_ type_;
-    int id;
-
-    public FunctionArgumentToken(string name, Type_ type_, int id = -1) {
-        this.name = name;
-        this.type_ = type_;
-        this.id = id;
-    }
+    readonly string name = name;
+    readonly Type_ type_ = type_;
+    int id = id;
 
     public string GetName() {
         return name;
@@ -36,10 +30,10 @@ public class FunctionArgumentToken : IToken {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["name"] = new JSONString(name);
-        obj["type_"] = type_.GetJSON();
-        obj["variable"] = new JSONInt(id);
-        return obj;
+        return new JSONObject {
+            ["name"] = new JSONString(name),
+            ["type_"] = type_.GetJSON(),
+            ["variable"] = new JSONInt(id)
+        };
     }
 }

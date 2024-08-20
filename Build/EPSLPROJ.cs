@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 public class EPSLPROJ {
     public string Path;
-    public List<string> CommandOptions = new List<string>();
-    public List<string> Libraries = new List<string>();
+    public List<string> CommandOptions = [];
+    public List<string> Libraries = [];
     public static IJSONShape Shape { get => _Shape; }
-    static IJSONShape _Shape;
+    static readonly IJSONShape _Shape;
 
     static EPSLPROJ() {
         _Shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
@@ -32,7 +32,7 @@ public class EPSLPROJ {
     }
 
     public static EPSLPROJ FromText(string path, IJSONValue jsonValue) {
-        ShapedJSON json = new ShapedJSON(jsonValue, Shape);
+        ShapedJSON json = new(jsonValue, Shape);
         List<string> commandOptions = json["command_options"].IterList()
             .Select(option => option.GetString()).ToList();
         List<string> libraries = json["libraries"].IterList()
@@ -41,15 +41,13 @@ public class EPSLPROJ {
     }
 
     public void ToFile() {
-        JSONObject obj = new JSONObject();
-        obj["command_options"] = new JSONList(CommandOptions.Select(
-            commandOption => new JSONString(commandOption)));
-        obj["libraries"] = new JSONList(Libraries.Select(
-            library => new JSONString(library)));
-        PrettyPrintConfig printConfig = new PrettyPrintConfig(4, 60);
+        JSONObject obj = new() {
+            ["command_options"] = new JSONList(CommandOptions.Select(commandOption => new JSONString(commandOption))),
+            ["libraries"] = new JSONList(Libraries.Select(library => new JSONString(library)))
+        };
+        PrettyPrintConfig printConfig = new(4, 60);
         string fileText = obj.PrettyPrint(printConfig);
-        using (StreamWriter file = new StreamWriter(Path)) {
-            file.Write(fileText);
-        }
+        using StreamWriter file = new(Path);
+        file.Write(fileText);
     }
 }

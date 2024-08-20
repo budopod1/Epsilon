@@ -4,8 +4,8 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Global {
-    string name;
-    Type_ type_;
+    readonly string name;
+    readonly Type_ type_;
 
     public Global(string name, Type_ type_) {
         this.name = name;

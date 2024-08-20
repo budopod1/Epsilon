@@ -11,7 +11,7 @@ public static class InitialTokenizer {
     }
 
     public static IEnumerable<IToken> Tokenize(string str) {
-        List<IToken> result = new List<IToken>();
+        List<IToken> result = [];
 
         bool isEscaped = false;
         int constantStart = -1;
@@ -38,7 +38,7 @@ public static class InitialTokenizer {
                     state = ParseState.STRINGCONSTANT;
                     constantStart = i;
                 } else {
-                    TextToken token = new TextToken(chr.ToString());
+                    TextToken token = new(chr.ToString());
                     token.span = new CodeSpan(i);
                     result.Add(token);
                 }
@@ -58,7 +58,7 @@ public static class InitialTokenizer {
                 if (!isEscaped && chr == '"') {
                     string rawTxt = str.Substring(constantStart, i - constantStart + 1);
 
-                    ConstantValue token = new ConstantValue(StringConstant.FromString(rawTxt));
+                    ConstantValue token = new(StringConstant.FromString(rawTxt));
                     token.span = new CodeSpan(constantStart, i);
                     result.Add(token);
 
@@ -69,7 +69,7 @@ public static class InitialTokenizer {
                 if (!isEscaped && chr == '\'') {
                     string rawTxt = str.Substring(constantStart, i - constantStart + 1);
 
-                    ConstantValue token = new ConstantValue(CharConstant.FromString(rawTxt));
+                    ConstantValue token = new(CharConstant.FromString(rawTxt));
                     token.span = new CodeSpan(constantStart, i);
                     result.Add(token);
 

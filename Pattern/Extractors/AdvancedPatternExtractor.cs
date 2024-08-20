@@ -50,8 +50,8 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
             int lastRepeatStop = -2; // this variable should always be assigned before refrence
             int pi = 0; // part index
             int repeats = 0;
-            List<IToken> tokenList = new List<IToken>();
-            List<IToken> repeatPartList = new List<IToken>();
+            List<IToken> tokenList = [];
+            List<IToken> repeatPartList = [];
             bool spaceTermination = true;
             for (j = 0; (i+j) < tokens.Count; j++) {
                 IToken token = tokens[i+j];
@@ -94,7 +94,7 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
                                 part = Part.END;
                                 continue;
                             }
-                            repeatPartList = new List<IToken>();
+                            repeatPartList = [];
                             lastRepeatStop = j;
                         }
                         continue;

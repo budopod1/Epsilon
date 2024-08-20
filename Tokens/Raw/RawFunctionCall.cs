@@ -1,32 +1,21 @@
 using System;
 using System.Collections.Generic;
 
-public class RawFunctionCall : IParentToken {
+public class RawFunctionCall(List<IPatternSegment> segments, List<IToken> arguments) : IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    HashSet<FunctionDeclaration> matchingFunctions = new HashSet<FunctionDeclaration>();
-    List<IPatternSegment> segments;
-    List<IToken> arguments;
+    readonly HashSet<FunctionDeclaration> matchingFunctions = [];
+    readonly List<IPatternSegment> segments = segments;
+    readonly List<IToken> arguments = arguments;
 
     public int Count {
-        get {
-            return arguments.Count;
-        }
+        get => arguments.Count;
     }
 
     public IToken this[int i] {
-        get {
-            return arguments[i];
-        }
-        set {
-            arguments[i] = (IToken)value;
-        }
-    }
-
-    public RawFunctionCall(List<IPatternSegment> segments, List<IToken> arguments) {
-        this.segments = segments;
-        this.arguments = arguments;
+        get => arguments[i];
+        set => arguments[i] = value;
     }
 
     public HashSet<FunctionDeclaration> GetMatchingFunctions() {
@@ -42,7 +31,7 @@ public class RawFunctionCall : IParentToken {
     }
 
     public override string ToString() {
-        return Utils.WrapName(GetType().Name, String.Join(
+        return Utils.WrapName(GetType().Name, string.Join(
             ", ", arguments.ConvertAll<string>(obj => obj.ToString())
         )) + $"(M: {matchingFunctions.Count})";
     }

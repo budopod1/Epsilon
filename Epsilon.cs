@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class Epsilon {
     public static void Main(string[] args) {
-        ArgumentParser parser = new ArgumentParser(
+        ArgumentParser parser = new(
             "epslc",
             @"
 A compiler for the Epsilon programming language
@@ -55,22 +55,22 @@ Modes:
             "An option for the clang compiler", "-L", "linking-option"
         );
 
-        List<string> libraries = new List<string>();
+        List<string> libraries = [];
 
         parser.AddOption(
             new CaptureExpectation(val => libraries.Add(val), "library-path"),
             "An additional library to load", "l", "library"
         );
 
-        InputExpectation outputFile = new InputExpectation("output file");
+        InputExpectation outputFile = new("output file");
         parser.AddOption(outputFile, "The path to output to", "o", "output");
 
         PossibilitiesExpectation mode = parser.Expect(
             new PossibilitiesExpectation("compile", "compile", "teardown", "create-proj"));
 
-        InputExpectation sourceFile = new InputExpectation("source file", optional: true);
+        InputExpectation sourceFile = new("source file", optional: true);
 
-        InputExpectation projFile = new InputExpectation("proj file location");
+        InputExpectation projFile = new("proj file location");
 
         mode.Then(() => {
             if (mode.Value() == "compile") {
@@ -100,7 +100,7 @@ Modes:
 
         Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
-        Builder builder = new Builder();
+        Builder builder = new();
 
         TestResult(builder.WipeTempDir());
 
@@ -135,7 +135,7 @@ Modes:
 
             string providedOutput = outputFile.IsPresent ? outputFile.Matched : null;
 
-            BuildSettings settings = new BuildSettings(
+            BuildSettings settings = new(
                 input, providedOutput, proj, cache, cacheMode, optimizationLevel, outputType,
                 linkBuiltins, linkLibraries
             );

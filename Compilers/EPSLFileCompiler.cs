@@ -8,14 +8,14 @@ using System.Collections.Generic;
 
 public class EPSLFileCompiler : IFileCompiler {
     Program program;
-    string fileText;
-    string srcPath;
+    readonly string fileText;
+    readonly string srcPath;
     string IR;
 
     public static void Setup() {
         Builder.RegisterDispatcher((BuildSettings _, string path) => {
             string fileText;
-            using (StreamReader file = new StreamReader(path)) {
+            using (StreamReader file = new(path)) {
                 fileText = file.ReadToEnd();
             }
             string stemmed = Utils.Stem(path);
@@ -195,8 +195,8 @@ public class EPSLFileCompiler : IFileCompiler {
     Program TokenizeNames(Program program) {
         IMatcher matcher = new NameMatcher();
         foreach (IToken token in program) {
-            if (!(token is RawFuncSignature)) continue;
-            RawFuncSignature sig = ((RawFuncSignature)token);
+            if (token is not RawFuncSignature) continue;
+            RawFuncSignature sig = (RawFuncSignature)token;
             sig.SetReturnType_(PerformMatching((TreeToken)sig.GetReturnType_(), matcher));
             sig.SetTemplate(PerformMatching((TreeToken)sig.GetTemplate(), matcher));
         }
@@ -215,14 +215,14 @@ public class EPSLFileCompiler : IFileCompiler {
         Program program = (Program)PerformMatching(program_, matcher);
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
-            if (!(token is RawGlobal)) continue;
+            if (token is not RawGlobal) continue;
             program[i] = PerformMatching((RawGlobal)token, matcher);
         }
         return program;
     }
 
     Program TokenizeKeywords(Program program) {
-        Dictionary<string, Type> keywords = new Dictionary<string, Type> {
+        Dictionary<string, Type> keywords = new() {
             {"return", typeof(ReturnKeyword)},
             {"if", typeof(IfKeyword)},
             {"else", typeof(ElseKeyword)},
@@ -239,15 +239,15 @@ public class EPSLFileCompiler : IFileCompiler {
         return DoUnstructuredSyntaxMatching(
             program,
             new PatternMatcher(
-                new List<IPatternSegment> {
+                [
                     new UnitsPatternSegment<string>(
                         typeof(Name), keywords.Keys.ToList()
                     )
-                }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
-                    string name = ((Name)(tokens[0])).GetValue();
-                    return new List<IToken> {(IToken)Activator.CreateInstance(
+                ], new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                    string name = ((Name)tokens[0]).GetValue();
+                    return [(IToken)Activator.CreateInstance(
                         keywords[name]
-                    )};
+                    )];
                 })
             )
         );
@@ -260,8 +260,7 @@ public class EPSLFileCompiler : IFileCompiler {
     List<IToken> RemoveWhiteSpaceFilter(IEnumerable<IToken> tokens) {
         return tokens.Where(
             token => {
-                if (token is TextToken) {
-                    TextToken text = ((TextToken)token);
+                if (token is TextToken text) {
                     return !Utils.Whitespace.Contains(text.GetText()[0]);
                 }
                 return true;
@@ -272,8 +271,7 @@ public class EPSLFileCompiler : IFileCompiler {
     Program RemoveWhitespace(Program program) {
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
-            if (token is RawFuncSignature) {
-                RawFuncSignature sig = ((RawFuncSignature)token);
+            if (token is RawFuncSignature sig) {
                 RawFuncReturnType_ ret = (RawFuncReturnType_)sig.GetReturnType_();
                 sig.SetReturnType_(
                     (RawFuncReturnType_)ret.Copy(
@@ -286,8 +284,7 @@ public class EPSLFileCompiler : IFileCompiler {
                         RemoveWhiteSpaceFilter(template)
                     )
                 );
-            } else if (token is RawGlobal) {
-                RawGlobal rawGlobal = (RawGlobal)token;
+            } else if (token is RawGlobal rawGlobal) {
                 program[i] = rawGlobal.Copy(RemoveWhiteSpaceFilter(rawGlobal));
             }
         }
@@ -308,8 +305,8 @@ public class EPSLFileCompiler : IFileCompiler {
     Program TokenizeFuncArguments(Program program) {
         IMatcher matcher = new FunctionArgumentMatcher();
         foreach (IToken token in program) {
-            if (!(token is RawFuncSignature)) continue;
-            RawFuncSignature sig = ((RawFuncSignature)token);
+            if (token is not RawFuncSignature) continue;
+            RawFuncSignature sig = (RawFuncSignature)token;
             RawFuncTemplate template = (RawFuncTemplate)sig.GetTemplate();
             sig.SetTemplate(PerformMatching(template, matcher));
         }
@@ -318,36 +315,35 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program TokenizeFunctionHolders(Program program) {
         return (Program)PerformMatching(program, new PatternMatcher(
-            new List<IPatternSegment> {
+            [
                 new TypePatternSegment(typeof(RawFuncSignature)),
                 new TypePatternSegment(typeof(Block))
-            }, new WrapperPatternProcessor(typeof(FunctionHolder))
+            ], new WrapperPatternProcessor(typeof(FunctionHolder))
         ));
     }
 
     Program TokenizeStructHolders(Program program) {
         return (Program)PerformMatching(program, new PatternMatcher(
-            new List<IPatternSegment> {
+            [
                 new TypePatternSegment(typeof(Name)),
                 new TypePatternSegment(typeof(Block))
-            }, new WrapperPatternProcessor(typeof(StructHolder))
+            ], new WrapperPatternProcessor(typeof(StructHolder))
         ));
     }
 
     Program ConvertFunctionBlocks(Program program) {
         IMatcher matcher = new PatternMatcher(
-            new List<IPatternSegment> {
+            [
                 new TypePatternSegment(typeof(Block), exact: true)
-            }, new FuncPatternProcessor<List<IToken>>(tokens => {
-                return new List<IToken> {new CodeBlock(
+            ], new FuncPatternProcessor<List<IToken>>(tokens => {
+                return [new CodeBlock(
                     program, ((Block)tokens[0]).GetTokens()
-                )};
+                )];
             })
         );
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
-            if (token is FunctionHolder) {
-                FunctionHolder holder = ((FunctionHolder)token);
+            if (token is FunctionHolder holder) {
                 program[i] = PerformTreeMatching(holder, matcher);
             }
         }
@@ -355,13 +351,13 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     void ComputeBaseTypes_(Program program) {
-        HashSet<LocatedID> structIds = new HashSet<LocatedID>();
+        HashSet<LocatedID> structIds = [];
         foreach (IToken token_ in program) {
-            if (!(token_ is StructHolder)) continue;
-            StructHolder token = ((StructHolder)token_);
+            if (token_ is not StructHolder) continue;
+            StructHolder token = (StructHolder)token_;
             if (token.Count == 0) continue;
             IToken nameToken = token[0];
-            if (!(nameToken is Name)) continue;
+            if (nameToken is not Name) continue;
             string name = ((Name)nameToken).GetValue();
             structIds.Add(new LocatedID(GetIDPath(), name));
         }
@@ -373,8 +369,7 @@ public class EPSLFileCompiler : IFileCompiler {
             IToken token = program[i];
             if (token is RawGlobal) {
                 program[i] = PerformTreeMatching((RawGlobal)token, matcher);
-            } else if (token is Holder) {
-                Holder holder = ((Holder)token);
+            } else if (token is Holder holder) {
                 Block block = holder.GetBlock();
                 if (block == null) continue;
                 TreeToken result = PerformTreeMatching(block, matcher);
@@ -386,9 +381,8 @@ public class EPSLFileCompiler : IFileCompiler {
                     );
                     TreeToken template = (TreeToken)sig.GetTemplate();
                     for (int j = 0; j < template.Count; j++) {
-                        IToken sub = template[j];
-                        if (sub is RawFunctionArgument) {
-                            template[j] = PerformTreeMatching((RawFunctionArgument)sub, matcher);
+                        if (template[j] is RawFunctionArgument argument) {
+                            template[j] = PerformTreeMatching(argument, matcher);
                         }
                     }
                 }
@@ -408,7 +402,7 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     Program TokenizeConstantKeywordValues(Program program) {
-        Dictionary<string, Func<IConstant>> constantValues = new Dictionary<string, Func<IConstant>> {
+        Dictionary<string, Func<IConstant>> constantValues = new() {
             {"true", () => new BoolConstant(true)},
             {"false", () => new BoolConstant(false)},
             {"infinity", () => new FloatConstant(Double.NegativeInfinity)},
@@ -417,15 +411,15 @@ public class EPSLFileCompiler : IFileCompiler {
         };
         return DoStructuredSyntaxMatching(
             program, new PatternMatcher(
-                new List<IPatternSegment> {
+                [
                     new UnitsPatternSegment<string>(
                         typeof(Name), constantValues.Keys.ToList()
                     )
-                }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                ], new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
                     string name = ((Name)tokens[0]).GetValue();
-                    return new List<IToken> {
+                    return [
                         new ConstantValue(constantValues[name]())
-                    };
+                    ];
                 })
             ), false
         );
@@ -451,53 +445,53 @@ public class EPSLFileCompiler : IFileCompiler {
                 throw new SyntaxErrorException(e.Message, span);
             }
             program.AddParsedType_(span, type_);
-            return new List<IToken> {new Type_Token(type_)};
+            return [new Type_Token(type_)];
         };
 
         return DoStructuredSyntaxMatching(
-            program, new CombinedMatchersMatcher(new List<IMatcher> {
+            program, new CombinedMatchersMatcher([
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TextPatternSegment("["),
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("]")
-                    }, new FuncPatternProcessor<List<IToken>>(
+                    ], new FuncPatternProcessor<List<IToken>>(
                         tokens => type_Wrapper(tokens, () =>
                             ((Type_Token)tokens[1]).GetValue().ArrayOf())
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TextPatternSegment(":"),
                         new TypePatternSegment(typeof(Type_Token))
-                    }, new FuncPatternProcessor<List<IToken>>(
+                    ], new FuncPatternProcessor<List<IToken>>(
                         tokens => type_Wrapper(tokens, () =>
                             ((Type_Token)tokens[1]).GetValue().PolyOf())
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("?")
-                    }, new FuncPatternProcessor<List<IToken>>(
+                    ], new FuncPatternProcessor<List<IToken>>(
                         tokens => type_Wrapper(tokens, () =>
                             ((Type_Token)tokens[0]).GetValue().OptionalOf())
                     )
                 ),
                 new Type_Matcher(type_Wrapper),
-            }), true
+            ]), true
         );
     }
 
     Program TokenizeVarDeclarations(Program program) {
         return DoStructuredSyntaxMatching(
             program, new PatternMatcher(
-                new List<IPatternSegment> {
+                [
                     new TypePatternSegment(typeof(Type_Token)),
                     new TextPatternSegment(":"),
                     new TypePatternSegment(typeof(Name))
-                }, new Wrapper2PatternProcessor(
-                    new SlotPatternProcessor(new List<int> {0, 2}),
+                ], new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor([0, 2]),
                     typeof(VarDeclaration)
                 )
             ), false
@@ -505,13 +499,13 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     Program ConvertTemplateArguments(Program program) {
-        List<IPatternSegment> functionArgumentSegments = new List<IPatternSegment> {
+        List<IPatternSegment> functionArgumentSegments = [
             new TypePatternSegment(typeof(Type_Token)),
             new TextPatternSegment(":"),
             new TypePatternSegment(typeof(Name))
-        };
+        ];
         IMatcher argumentConverterMatcher = new PatternMatcher(
-            new List<IPatternSegment> {
+            [
                 new FuncPatternSegment<RawFunctionArgument>(arg => {
                     if (!TokenUtils.FullMatch(functionArgumentSegments, arg.GetTokens())) {
                         throw new SyntaxErrorException(
@@ -520,19 +514,19 @@ public class EPSLFileCompiler : IFileCompiler {
                     }
                     return true;
                 })
-            }, new FuncPatternProcessor<List<IToken>>(tokens => {
+            ], new FuncPatternProcessor<List<IToken>>(tokens => {
                 RawFunctionArgument arg = (RawFunctionArgument)tokens[0];
-                return new List<IToken> {
+                return [
                     new FunctionArgumentToken(
                         ((Name)arg[2]).GetValue(), ((Type_Token)arg[0]).GetValue()
                     )
-                };
+                ];
             })
         );
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
-            if (!(token is FunctionHolder)) continue;
-            FunctionHolder holder = ((FunctionHolder)token);
+            if (token is not FunctionHolder) continue;
+            FunctionHolder holder = (FunctionHolder)token;
             RawFuncSignature sig = holder.GetRawSignature();
             TreeToken template = (TreeToken)sig.GetTemplate();
             template = PerformMatching(template, argumentConverterMatcher);
@@ -544,28 +538,27 @@ public class EPSLFileCompiler : IFileCompiler {
     Program ParseFunctionTemplates(Program program) {
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
-            if (!(token is FunctionHolder)) continue;
-            FunctionHolder holder = ((FunctionHolder)token);
+            if (token is not FunctionHolder) continue;
+            FunctionHolder holder = (FunctionHolder)token;
             RawFuncSignature sig = holder.GetRawSignature();
             RawFuncTemplate rawTemplate = (RawFuncTemplate)sig.GetTemplate();
-            List<IPatternSegment> segments = new List<IPatternSegment>();
-            List<FunctionArgumentToken> arguments = new List<FunctionArgumentToken>();
-            List<int> slots = new List<int>();
+            List<IPatternSegment> segments = [];
+            List<FunctionArgumentToken> arguments = [];
+            List<int> slots = [];
             int j = -1;
             foreach (IToken subtoken in rawTemplate) {
                 j++;
                 Type tokenType = subtoken.GetType();
                 IPatternSegment segment = null;
-                if (subtoken is TextToken) {
+                if (subtoken is TextToken token1) {
                     segment = new TextPatternSegment(
-                        ((TextToken)subtoken).GetText()
+                        token1.GetText()
                     );
-                } else if (subtoken is Unit<string>) {
+                } else if (subtoken is Unit<string> unit) {
                     segment = new UnitPatternSegment<string>(
-                        tokenType, ((Unit<string>)subtoken).GetValue()
+                        tokenType, unit.GetValue()
                     );
-                } else if (subtoken is FunctionArgumentToken) {
-                    FunctionArgumentToken argument = ((FunctionArgumentToken)subtoken);
+                } else if (subtoken is FunctionArgumentToken argument) {
                     arguments.Add(argument);
                     segment = new FuncArgPatternSegment();
                     slots.Add(j);
@@ -590,8 +583,8 @@ public class EPSLFileCompiler : IFileCompiler {
     Program ParseFunctionSignatures(Program program) {
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
-            if (!(token is FunctionHolder)) continue;
-            FunctionHolder holder = ((FunctionHolder)token);
+            if (token is not FunctionHolder) continue;
+            FunctionHolder holder = (FunctionHolder)token;
             RawFuncSignature sig = holder.GetRawSignature();
             holder.SetSignature(
                 new FuncSignature(
@@ -605,20 +598,20 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program JoinAnnotations(Program program) {
         Program result = (Program)PerformMatching(program, new PatternMatcher(
-            new List<IPatternSegment> {
+            [
                 new TypePatternSegment(typeof(RawAnnotation)),
                 new TypePatternSegment(typeof(IAnnotatable))
-            }, new FuncPatternProcessor<List<IToken>>(tokens => {
-                RawAnnotation rawAnnotation = ((RawAnnotation)tokens[0]);
+            ], new FuncPatternProcessor<List<IToken>>(tokens => {
+                RawAnnotation rawAnnotation = (RawAnnotation)tokens[0];
                 IAnnotation annotation = rawAnnotation.ToAnnotation();
-                IAnnotatable annotatable = ((IAnnotatable)tokens[1]);
+                IAnnotatable annotatable = (IAnnotatable)tokens[1];
                 if ((annotation.GetRecipients() & annotatable.RecipientType()) == 0) {
                     throw new SyntaxErrorException(
                         $"Cannot apply annotation of type '{rawAnnotation.AnnotationTypeName()}' to specified token", annotatable
                     );
                 }
                 annotatable.ApplyAnnotation(annotation);
-                return new List<IToken> {annotatable};
+                return [annotatable];
             })
         ));
         IToken unmatchedRaw = result.FirstOrDefault(token => token is RawAnnotation);
@@ -630,37 +623,36 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program ObjectifyingFunctions(Program program) {
         return (Program)PerformMatching(program, new PatternMatcher(
-            new List<IPatternSegment> {
+            [
                 new TypePatternSegment(typeof(FunctionHolder))
-            }, new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
-                FunctionHolder holder = ((FunctionHolder)tokens[0]);
+            ], new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                FunctionHolder holder = (FunctionHolder)tokens[0];
                 FuncSignature sig = holder.GetSignature();
                 FuncTemplate template = sig.GetTemplate();
-                return new List<IToken> {
+                return [
                     new Function(
                         GetIDPath(), program, template.GetValue(), template.GetArguments(),
                         (CodeBlock)holder.GetBlock(), sig.GetReturnType_(), holder.GetAnnotations()
                     )
-                };
+                ];
             })
         ));
     }
 
     Program ComputeStructs(Program program) {
-        ListTokenParser<Field> listParser = new ListTokenParser<Field>(
+        ListTokenParser<Field> listParser = new(
             new TextPatternSegment(","), typeof(VarDeclaration),
             (token) => new Field((VarDeclaration)token)
         );
-        HashSet<Struct> structs = new HashSet<Struct>();
+        HashSet<Struct> structs = [];
         for (int i = 0; i < program.Count; i++) {
             IToken token = program[i];
-            if (token is StructHolder) {
-                StructHolder holder = ((StructHolder)token);
+            if (token is StructHolder holder) {
                 Block block = holder.GetBlock();
                 if (block == null) continue;
                 IToken nameT = holder[0];
-                if (!(nameT is Unit<string>)) continue;
-                Name name = ((Name)nameT);
+                if (nameT is not Unit<string>) continue;
+                Name name = (Name)nameT;
                 string nameStr = name.GetValue();
                 List<Field> fields = listParser.Parse(block);
                 if (fields == null) {
@@ -673,7 +665,7 @@ public class EPSLFileCompiler : IFileCompiler {
             }
         }
         program.SetStructsHere(structs);
-        return (Program)program.Copy(program.Where(token => !(token is StructHolder)).ToList());
+        return (Program)program.Copy(program.Where(token => token is not StructHolder).ToList());
     }
 
     Program LoadStructExtendeesHere(Program program) {
@@ -696,12 +688,11 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program SplitProgramBlocksIntoLines(Program program) {
         foreach (IToken token in TokenUtils.Traverse(program)) {
-            if (token is IParentToken) {
-                IParentToken parent = ((IParentToken)token);
+            if (token is IParentToken parent) {
                 for (int i = 0; i < parent.Count; i++) {
                     IToken sub = parent[i];
-                    if (sub is CodeBlock) {
-                        parent[i] = SplitBlockIntoLines((CodeBlock)sub);
+                    if (sub is CodeBlock block) {
+                        parent[i] = SplitBlockIntoLines(block);
                     }
                 }
             }
@@ -710,16 +701,16 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     CodeBlock SplitBlockIntoLines(CodeBlock block) {
-        SplitTokensParser parser = new SplitTokensParser(
+        SplitTokensParser parser = new(
             new TextPatternSegment(";"), false
         );
         List<List<IToken>> rawLines = parser.Parse(block);
         if (rawLines == null) {
             throw new SyntaxErrorException("Missing semicolon", block);
         }
-        List<IToken> lines = new List<IToken>();
+        List<IToken> lines = [];
         foreach(List<IToken> section in rawLines) {
-            Line line = new Line(section);
+            Line line = new(section);
             line.span = TokenUtils.MergeSpans(section);
             lines.Add(line);
         }
@@ -729,28 +720,28 @@ public class EPSLFileCompiler : IFileCompiler {
     Program ConvertStringLiterals(Program program) {
         return (Program)PerformTreeMatching(
             program, new PatternMatcher(
-                new List<IPatternSegment> {
+                [
                     new FuncPatternSegment<ConstantValue>(
                         constant => constant.GetValue() is StringConstant
                     )
-                }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                ], new FuncPatternProcessor<List<IToken>>(tokens => {
                     ConstantValue sval = (ConstantValue)tokens[0];
-                    string text = (((StringConstant)sval.GetValue()).GetValue());
-                    return new List<IToken> {new StringLiteral(text)};
+                    string text = ((StringConstant)sval.GetValue()).GetValue();
+                    return [new StringLiteral(text)];
                 })
             )
         );
     }
 
     Program TokenizeGroups(Program _program) {
-        List<IMatcher> matchers = new List<IMatcher> {
+        List<IMatcher> matchers = [
             new PatternMatcher(
-                new List<IPatternSegment> {
+                [
                     new TextPatternSegment("("),
                     new TypePatternSegment(typeof(Type_Token)),
                     new TextPatternSegment(")")
-                }, new Wrapper2PatternProcessor(
-                    new SlotPatternProcessor(new List<int> {1}),
+                ], new Wrapper2PatternProcessor(
+                    new SlotPatternProcessor([1]),
                     typeof(UnmatchedCast)
                 )
             ),
@@ -762,7 +753,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 new TextPatternSegment("("), new TextPatternSegment(")"),
                 typeof(RawGroup)
             )
-        };
+        ];
         Program program = _program;
         foreach(IMatcher matcher in matchers) {
             program = (Program)PerformTreeMatching(program, matcher);
@@ -773,20 +764,20 @@ public class EPSLFileCompiler : IFileCompiler {
     Program TokenizeForLoops(Program program) {
         return (Program)PerformTreeMatching(
             program, new PatternMatcher(
-                new List<IPatternSegment> {
+                [
                     new TypePatternSegment(typeof(ForKeyword)),
                     new TypePatternSegment(typeof(RawGroup)),
                     new TypePatternSegment(typeof(CodeBlock))
-                }, new FuncPatternProcessor<List<IToken>>(tokens => {
+                ], new FuncPatternProcessor<List<IToken>>(tokens => {
                     RawGroup condition = (RawGroup)tokens[1];
                     if (condition.Count <= 1) {
                         throw new SyntaxErrorException(
                             "For loop condition cannot be empty and must have at least one clause", tokens[1]
                         );
                     }
-                    return new List<IToken> {new RawFor(
+                    return [new RawFor(
                         condition.GetTokens(), (CodeBlock)tokens[2]
-                    )};
+                    )];
                 })
             )
         );
@@ -795,12 +786,12 @@ public class EPSLFileCompiler : IFileCompiler {
     Program TokenizeGivenBlocks(Program program) {
         return (Program)PerformTreeMatching(
             program, new PatternMatcher(
-                new List<IPatternSegment> {
+                [
                     new TypePatternSegment(typeof(GivenKeyword)),
                     new TypePatternSegment(typeof(RawGroup)),
                     new TypePatternSegment(typeof(CodeBlock))
-                }, new FuncPatternProcessor<List<IToken>>(tokens => {
-                    RawGroup group = ((RawGroup)tokens[1]);
+                ], new FuncPatternProcessor<List<IToken>>(tokens => {
+                    RawGroup group = (RawGroup)tokens[1];
                     int asIdx = -1;
                     for (int i = 0; i < group.Count; i++) {
                         IToken token = group[i];
@@ -832,11 +823,11 @@ public class EPSLFileCompiler : IFileCompiler {
                             "Expected variable declaration", endingToken
                         );
                     }
-                    RawGivenValue givenValue = new RawGivenValue(group.GetTokens().Slice(asIdx));
-                    CodeBlock block = ((CodeBlock)tokens[2]);
-                    return new List<IToken> {new RawGivenPart(
+                    RawGivenValue givenValue = new(group.GetTokens().Slice(asIdx));
+                    CodeBlock block = (CodeBlock)tokens[2];
+                    return [new RawGivenPart(
                         givenValue, var_, block
-                    )};
+                    )];
                 })
             )
         );
@@ -852,10 +843,8 @@ public class EPSLFileCompiler : IFileCompiler {
         program.UpdateParents();
 
         foreach (IToken token in program) {
-            if (token is Function) {
-                Function function = ((Function)token);
-                foreach (VarDeclaration declaration
-                        in TokenUtils.TraverseFind<VarDeclaration>(function)) {
+            if (token is Function function) {
+                foreach (VarDeclaration declaration in TokenUtils.TraverseFind<VarDeclaration>(function)) {
                     string name = declaration.GetName().GetValue();
                     IScope scope = Scope.GetEnclosing(declaration);
                     declaration.SetID(scope.AddVar(
@@ -880,7 +869,7 @@ public class EPSLFileCompiler : IFileCompiler {
                         .ToList())
                     .ToList();
 
-                List<int> matchingIdxs = new List<int>();
+                List<int> matchingIdxs = [];
 
                 for (int j = 0; j < functionsTypes_.Count; j++) {
                     if (phase == 0) {
@@ -903,7 +892,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 }
 
                 if (matchingIdxs.Count > 0) {
-                    List<FunctionDeclaration> newMatchingFunctions = new List<FunctionDeclaration>();
+                    List<FunctionDeclaration> newMatchingFunctions = [];
                     foreach (int idx in matchingIdxs) {
                         newMatchingFunctions.Add(matchingFunctions[idx]);
                     }
@@ -917,19 +906,19 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     List<IToken> IdentifyRawFunctionCall(List<IToken> tokens) {
-        RawFunctionCall rawCall = ((RawFunctionCall)(tokens[0]));
+        RawFunctionCall rawCall = (RawFunctionCall)tokens[0];
 
-        List<Type_> paramTypes_ = new List<Type_>();
-        List<IValueToken> parameters = new List<IValueToken>();
+        List<Type_> paramTypes_ = [];
+        List<IValueToken> parameters = [];
 
         for (int i = 0; i < rawCall.Count; i++) {
-            RawSquareGroup rparameter = (rawCall[i]) as RawSquareGroup;
+            RawSquareGroup rparameter = rawCall[i] as RawSquareGroup;
             if (rparameter.Count == 0) {
                 throw new SyntaxErrorException(
                     "Function parameters cannot be empty", rparameter
                 );
             }
-            IValueToken parameter = (rparameter[0]) as IValueToken;
+            IValueToken parameter = rparameter[0] as IValueToken;
             if (parameter == null || rparameter.Count > 1) {
                 throw new SyntaxErrorException(
                     "Illegal syntax in function parameter", rparameter
@@ -939,9 +928,9 @@ public class EPSLFileCompiler : IFileCompiler {
             parameters.Add(parameter);
         }
 
-        List<IEnumerable<Type_>> type_Alternatives = new List<IEnumerable<Type_>>();
+        List<IEnumerable<Type_>> type_Alternatives = [];
 
-        List<FunctionDeclaration> matchingFunctions = new List<FunctionDeclaration>();
+        List<FunctionDeclaration> matchingFunctions = [];
 
         foreach (FunctionDeclaration function in rawCall.GetMatchingFunctions()) {
             List<FunctionArgument> args = function.GetArguments();
@@ -990,7 +979,7 @@ Expected type{plural}: {expectedTypes_Str}", rawCall
                 } else {
                     call = new FunctionCall(function, parameters);
                 }
-                return new List<IToken> {call};
+                return [call];
             } else {
                 string bestFuncTypes_Str = String.Join(" or", functions.Select(
                     func => stringifyTypes_(func.GetArguments().Select(arg => arg.GetType_()))));
@@ -1003,12 +992,10 @@ Please clarify between the functions that take the types:
     }
 
     Program ParseFunctionCode(Program program) {
-        List<IMatcher> functionRules = new List<IMatcher>();
-        List<IMatcher> addMatchingFunctionRules = new List<IMatcher>();
+        List<IMatcher> functionRules = [];
+        List<IMatcher> addMatchingFunctionRules = [];
 
-        List<FunctionDeclaration> functions = new List<FunctionDeclaration>();
-        functions.AddRange(BuiltinsList.Builtins);
-        functions.AddRange(program.GetExternalDeclarations());
+        List<FunctionDeclaration> functions = [.. BuiltinsList.Builtins, .. program.GetExternalDeclarations()];
 
         foreach (IToken token in program) {
             if (token is Function) {
@@ -1018,7 +1005,7 @@ Please clarify between the functions that take the types:
 
         functions.Sort(FunctionShapeComparer.Singleton);
 
-        List<PatternExtractor<List<IToken>>> extractors = new List<PatternExtractor<List<IToken>>>();
+        List<PatternExtractor<List<IToken>>> extractors = [];
         foreach (FunctionDeclaration function in functions) {
             PatternExtractor<List<IToken>> extractor = function.GetPattern();
             bool unique = true;
@@ -1037,50 +1024,50 @@ Please clarify between the functions that take the types:
             );
         }
 
-        Dictionary<string, Type> floatCompoundableOperators = new Dictionary<string, Type> {
+        Dictionary<string, Type> floatCompoundableOperators = new() {
             {"+", typeof(Addition)}, {"-", typeof(Subtraction)},
             {"*", typeof(Multiplication)}, {"/", typeof(Division)},
             {"%", typeof(Modulo)}
         };
 
-        List<List<IMatcher>> rules = new List<List<IMatcher>> {
+        List<List<IMatcher>> rules = [
             functionRules,
             addMatchingFunctionRules,
-            new List<IMatcher> {
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TextPatternSegment("."),
                         new TypePatternSegment(typeof(Name))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([1]),
                         typeof(MemberAccessPostfix)
                     )
                 )
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new FuncPatternSegment<Name>(
                             (Name name) => Scope.ContainsVar(name, name.GetValue())
                         ),
-                    }, new Wrapper2PatternProcessor(
+                    ], new Wrapper2PatternProcessor(
                         typeof(Variable)
                     )
                 )
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new GroupConverterMatcher(typeof(RawGroup), typeof(Group)),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(RawFunctionCall))
-                    }, new FuncPatternProcessor<List<IToken>>(IdentifyRawFunctionCall)
+                    ], new FuncPatternProcessor<List<IToken>>(IdentifyRawFunctionCall)
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new FuncPatternSegment<RawSquareGroup>(
-                            (RawSquareGroup group) => !(group.parent is RawFunctionCall)
+                            (RawSquareGroup group) => group.parent is not RawFunctionCall
                         )
-                    }, new WrapperPatternProcessor(
+                    ], new WrapperPatternProcessor(
                         new SplitTokensPatternProcessor(
                             new UnwrapperPatternProcessor(),
                             new TextPatternSegment(","),
@@ -1090,579 +1077,579 @@ Please clarify between the functions that take the types:
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(Type_Token)),
                         new TypePatternSegment(typeof(ValueList))
-                    }, new Wrapper2PatternProcessor(
+                    ], new Wrapper2PatternProcessor(
                         typeof(Instantiation)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new FuncPatternSegment<Instantiation>(
                             i => i.GetType_().GetBaseType_().GetName() == "Array"
                         )
-                    }, new Wrapper2PatternProcessor(
+                    ], new Wrapper2PatternProcessor(
                         typeof(ArrayCreation)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new Type_PatternSegment(Type_.Any().ArrayOf()),
                         new TypePatternSegment(typeof(ValueList)),
                         new TextPatternSegment("?")
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 1}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 1]),
                         typeof(OptionalArrayAccess)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new Type_PatternSegment(Type_.Any().ArrayOf()),
                         new TypePatternSegment(typeof(ValueList))
-                    }, new Wrapper2PatternProcessor(
+                    ], new Wrapper2PatternProcessor(
                         typeof(ArrayAccess)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new Type_PatternSegment(Type_.Any()),
                         new TypePatternSegment(typeof(MemberAccessPostfix))
-                    }, new Wrapper2PatternProcessor(
+                    ], new Wrapper2PatternProcessor(
                         typeof(MemberAccess)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(BreakKeyword))
-                    }, new InstantiationPatternProcessor(typeof(Break))
+                    ], new InstantiationPatternProcessor(typeof(Break))
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(ContinueKeyword))
-                    }, new InstantiationPatternProcessor(typeof(Continue))
+                    ], new InstantiationPatternProcessor(typeof(Continue))
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(Given)),
                         new TypePatternSegment(typeof(RawGivenPart))
-                    }, new Wrapper2PatternProcessor(
+                    ], new Wrapper2PatternProcessor(
                         typeof(Given)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(RawGivenPart))
-                    }, new Wrapper2PatternProcessor(
+                    ], new Wrapper2PatternProcessor(
                         typeof(Given)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(Given)),
                         new TypePatternSegment(typeof(ElseKeyword)),
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 2]),
                         typeof(Given)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(IfKeyword)),
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1, 2}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([1, 2]),
                         typeof(Conditional)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(Conditional)),
                         new TypePatternSegment(typeof(ElseIfKeyword)),
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2, 3}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 2, 3]),
                         typeof(Conditional)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(Conditional)),
                         new TypePatternSegment(typeof(ElseKeyword)),
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 2]),
                         typeof(Conditional)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(RawFor))
-                    }, new Wrapper2PatternProcessor(
+                    ], new Wrapper2PatternProcessor(
                         typeof(For)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(WhileKeyword)),
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1, 2}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([1, 2]),
                         typeof(While)
                     )
                 ),
                 new AdvancedPatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(SwitchKeyword)),
                         new TypePatternSegment(typeof(Group))
-                    }, new List<IPatternSegment> {
+                    ], [
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, 1, -1, new List<IPatternSegment> {
+                    ], 1, -1, [
                         new TypePatternSegment(typeof(CodeBlock))
-                    },
+                    ],
                     new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
-                        return new List<IToken> {
+                        return [
                             new Switch((IValueToken)tokens[1], tokens.Skip(2).ToArray())
-                        };
+                        ];
                     })
                 ),
                 new AdvancedPatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(SwitchKeyword)),
                         new TypePatternSegment(typeof(Group))
-                    }, new List<IPatternSegment> {
+                    ], [
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
-                    }, 1, -1, new List<IPatternSegment>(),
+                    ], 1, -1, [],
                     new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
-                        return new List<IToken> {
+                        return [
                             new Switch((IValueToken)tokens[1], tokens.Skip(2).ToArray())
-                        };
+                        ];
                     })
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TextPatternSegment("!"),
                         new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([1]),
                         typeof(Not)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("*"),
                         new Type_PatternSegment(new Type_("W"))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 2]),
                         typeof(ZeroedArrayCreation)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(UnmatchedCast)),
                         new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(typeof(Cast))
+                    ], new Wrapper2PatternProcessor(typeof(Cast))
                 ),
-                new CombinedMatchersMatcher(new List<IMatcher> {
+                new CombinedMatchersMatcher([
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new AndPatternSegment(
                                 new Type_PatternSegment(new Type_("Q")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             ),
                             new TextPatternSegment("+"),
                             new TextPatternSegment("+")
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0]),
                             typeof(PostIncrement)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new AndPatternSegment(
                                 new Type_PatternSegment(new Type_("Q")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             ),
                             new TextPatternSegment("-"),
                             new TextPatternSegment("-")
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0]),
                             typeof(PostDecrement)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new TextPatternSegment("+"),
                             new TextPatternSegment("+"),
                             new AndPatternSegment(
                                 new Type_PatternSegment(new Type_("Q")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             )
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([2]),
                             typeof(PreIncrement)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new TextPatternSegment("-"),
                             new TextPatternSegment("-"),
                             new AndPatternSegment(
                                 new Type_PatternSegment(new Type_("Q")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             )
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([2]),
                             typeof(PreDecrement)
                         )
                     )
-                }),
+                ]),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new Type_PatternSegment(new Type_("Q")),
                         new TextPatternSegment("*"),
                         new TextPatternSegment("*"),
                         new Type_PatternSegment(new Type_("Q"))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 3}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 3]),
                         typeof(Exponentiation)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TextPatternSegment("-"),
                         new Type_PatternSegment(new Type_("Q"))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([1]),
                         typeof(Negation)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(FormatChain)),
                         new TextPatternSegment("%"),
                         new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 2]),
                         typeof(FormatChain)
                     )
                 ),
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new Type_PatternSegment(Type_.String()),
                         new TextPatternSegment("%"),
                         new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 2]),
                         typeof(FormatChain)
                     )
                 ),
-                new CombinedMatchersMatcher(new List<IMatcher> {
+                new CombinedMatchersMatcher([
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment("*"),
                             new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 2]),
                             typeof(Multiplication)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment("/"),
                             new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 2]),
                             typeof(Division)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Z")),
                             new TextPatternSegment("~"),
                             new TextPatternSegment("/"),
                             new Type_PatternSegment(new Type_("Z"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 3]),
                             typeof(IntDivision)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment("%"),
                             new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 2]),
                             typeof(Modulo)
                         )
                     ),
-                }),
-                new CombinedMatchersMatcher(new List<IMatcher> {
+                ]),
+                new CombinedMatchersMatcher([
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment("+"),
                             new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 2]),
                             typeof(Addition)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment("-"),
                             new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 2]),
                             typeof(Subtraction)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TypePatternSegment(typeof(Negation))
-                        }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                        ], new FuncPatternProcessor<List<IToken>>(tokens => [
                             new Subtraction(
                                 (IValueToken)tokens[0], ((Negation)tokens[1]).Sub()
                             )
-                        })
+                        ])
                     ),
-                }),
-                new CombinedMatchersMatcher(new List<IMatcher> {
+                ]),
+                new CombinedMatchersMatcher([
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment(">"),
                             new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 2]),
                             typeof(Greater)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment("<"),
                             new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 2}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 2]),
                             typeof(Less)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment(">"),
                             new TextPatternSegment("="),
                             new Type_PatternSegment(new Type_("Q"))
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 3]),
                             typeof(GreaterEqual)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(new Type_("Q")),
                             new TextPatternSegment("<"),
                             new TextPatternSegment("="),
                             new Type_PatternSegment(new Type_("Q")),
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 3]),
                             typeof(LessEqual)
                         )
                     ),
-                }),
-                new CombinedMatchersMatcher(new List<IMatcher> {
+                ]),
+                new CombinedMatchersMatcher([
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(Type_.Any()),
                             new TextPatternSegment("="),
                             new TextPatternSegment("="),
                             new Type_PatternSegment(Type_.Any())
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 3]),
                             typeof(Equals)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(Type_.Any()),
                             new TextPatternSegment("!"),
                             new TextPatternSegment("="),
                             new Type_PatternSegment(Type_.Any())
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 3]),
                             typeof(NotEquals)
                         )
                     ),
-                }),
-                new CombinedMatchersMatcher(new List<IMatcher> {
+                ]),
+                new CombinedMatchersMatcher([
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(Type_.Any()),
                             new TextPatternSegment("&"),
                             new TextPatternSegment("&"),
                             new Type_PatternSegment(Type_.Any())
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 3]),
                             typeof(And)
                         )
                     ),
                     new PatternMatcher(
-                        new List<IPatternSegment> {
+                        [
                             new Type_PatternSegment(Type_.Any()),
                             new TextPatternSegment("|"),
                             new TextPatternSegment("|"),
                             new Type_PatternSegment(Type_.Any())
-                        }, new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor(new List<int> {0, 3}),
+                        ], new Wrapper2PatternProcessor(
+                            new SlotPatternProcessor([0, 3]),
                             typeof(Or)
                         )
                     ),
-                }),
-            },
-            new List<IMatcher> {
+                ]),
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(VarDeclaration)),
                         new TextPatternSegment("="),
                         new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0, 2}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 2]),
                         typeof(InitialAssignment)
                     )
                 )
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(VarDeclaration))
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {0}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0]),
                         typeof(UninitVarDeclaration)
                     )
                 )
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(IAssignableValue)),
                         new TextPatternSegment("="),
                         new Type_PatternSegment(Type_.Any())
-                    }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                    ], new FuncPatternProcessor<List<IToken>>(tokens => [
                         ((IAssignableValue)tokens[0]).AssignTo(
                             (IValueToken)tokens[2]
                         )
-                    })
+                    ])
                 )
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(IAssignableValue)),
                         new TextsPatternSegment(
                             floatCompoundableOperators.Keys.ToList()
                         ),
                         new TextPatternSegment("="),
                         new Type_PatternSegment(new Type_("Q"))
-                    }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                    ], new FuncPatternProcessor<List<IToken>>(tokens => [
                         new CompoundAssignment(
                             floatCompoundableOperators[
                                 ((TextToken)tokens[1]).GetText()
                             ], (IAssignableValue)tokens[0], (IValueToken)tokens[3]
                         )
-                    })
+                    ])
                 )
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
-                        new FuncPatternSegment<Division>(division => (
+                    [
+                        new FuncPatternSegment<Division>(division =>
                             (division[0] is ConstantValue)
                             && (division[1] is ConstantValue)
                             && (((ConstantValue)division[0]).GetValue() is INumberConstant)
                             && (((ConstantValue)division[1]).GetValue() is INumberConstant)
-                        ))
-                    }, new FuncPatternProcessor<List<IToken>>(tokens => new List<IToken> {
+                        )
+                    ], new FuncPatternProcessor<List<IToken>>(tokens => [
                         new ConstantValue(
                             new FloatConstant(
-                                (
+
                                     ((INumberConstant)
                                         ((ConstantValue)
                                             ((Division)tokens[0])[0]
                                         ).GetValue()
                                     ).GetDoubleValue()
-                                ) / (
+                                 /
                                     ((INumberConstant)
                                         ((ConstantValue)
                                             ((Division)tokens[0])[1]
                                         ).GetValue()
                                     ).GetDoubleValue()
-                                )
+
                             )
                         )
-                    })
+                    ])
                 )
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(AbortKeyword)),
                         new Type_PatternSegment(Type_.String())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([1]),
                         typeof(Abort)
                     )
                 ),
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(AbortKeyword))
-                    }, new InstantiationPatternProcessor(
+                    ], new InstantiationPatternProcessor(
                         typeof(AbortVoid)
                     )
                 ),
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(ReturnKeyword)),
                         new Type_PatternSegment(Type_.Any())
-                    }, new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor(new List<int> {1}),
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([1]),
                         typeof(Return)
                     )
                 ),
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(ReturnKeyword))
-                    }, new InstantiationPatternProcessor(
+                    ], new InstantiationPatternProcessor(
                         typeof(ReturnVoid)
                     )
                 ),
-            },
-            new List<IMatcher> {
+            ],
+            [
                 new PatternMatcher(
-                    new List<IPatternSegment> {
+                    [
                         new TypePatternSegment(typeof(Group)),
-                    }, new UnwrapperPatternProcessor()
+                    ], new UnwrapperPatternProcessor()
                 ),
-            },
-        };
+            ],
+        ];
 
         foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(program)) {
             DoBlockCodeRules(block, rules);
@@ -1690,12 +1677,11 @@ Please clarify between the functions that take the types:
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
                 if (sub is IParentToken && !(sub is IBarMatchingInto || sub is CodeBlock)) {
-                    IParentToken subparent = ((IParentToken)sub);
+                    IParentToken subparent = (IParentToken)sub;
                     parent[i] = DoTreeCodeRules(subparent, ruleset);
                 }
             }
-            if (parent is TreeToken) {
-                TreeToken tree = ((TreeToken)parent);
+            if (parent is TreeToken tree) {
                 foreach (IMatcher rule in ruleset) {
                     Match match = rule.Match(tree);
                     if (match != null) {
@@ -1734,16 +1720,15 @@ Please clarify between the functions that take the types:
 
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
-                if (sub is IParentToken && !(sub is IBarMatchingInto)) {
-                    IParentToken subparent = ((IParentToken)sub);
+                if (sub is IParentToken && sub is not IBarMatchingInto) {
+                    IParentToken subparent = (IParentToken)sub;
                     bool tchanged;
                     (tchanged, parent[i]) = PerformTreeMatching_(subparent, matcher);
                     changed |= tchanged;
                 }
             }
 
-            if (parent is TreeToken) {
-                TreeToken tree = ((TreeToken)parent);
+            if (parent is TreeToken tree) {
                 bool tchanged;
                 (tchanged, parent) = PerformMatchingChanged(tree, matcher);
                 changed |= tchanged;
@@ -1789,7 +1774,7 @@ Please clarify between the functions that take the types:
     }
 
     void VerifyCode(Program program) {
-        TraverseConfig config = new TraverseConfig(
+        TraverseConfig config = new(
             TraverseMode.DEPTH, invert: false, yieldFirst: true,
             avoidTokens: token => false
         );
@@ -1799,11 +1784,11 @@ Please clarify between the functions that take the types:
     }
 
     Dependencies GetDependencies(Program program) {
-        List<RealFunctionDeclaration> declarationDependencies = new List<RealFunctionDeclaration>();
-        List<Struct> structDependencies = new List<Struct>();
+        List<RealFunctionDeclaration> declarationDependencies = [];
+        List<Struct> structDependencies = [];
 
         HashSet<Struct> structsHere = program.GetStructsHere();
-        HashSet<Function> functionsHere = new HashSet<Function>();
+        HashSet<Function> functionsHere = [];
         foreach (IToken token in program) {
             Function function = token as Function;
             if (function != null) functionsHere.Add(function);
@@ -1845,7 +1830,7 @@ Please clarify between the functions that take the types:
     }
 
     void SaveJSON(string json) {
-        using (StreamWriter file = new StreamWriter(Utils.JoinPaths(Utils.TempDir(), "code.json"))) {
+        using (StreamWriter file = new(Utils.JoinPaths(Utils.TempDir(), "code.json"))) {
             file.Write(json);
         }
     }

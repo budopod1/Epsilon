@@ -4,45 +4,41 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class CFileCompiler : IFileCompiler {
-    string path;
-    string idPath;
-    string fileText;
-    bool isCPP;
+    readonly string path;
+    readonly string idPath;
+    readonly string fileText;
+    readonly bool isCPP;
 
-    Dictionary<string, LocatedID> structIDs = new Dictionary<string, LocatedID>();
-    HashSet<Struct> structs = new HashSet<Struct>();
-    List<RealFunctionDeclaration> funcs = new List<RealFunctionDeclaration>();
+    readonly Dictionary<string, LocatedID> structIDs = [];
+    readonly HashSet<Struct> structs = [];
+    readonly List<RealFunctionDeclaration> funcs = [];
 
     string ir = null;
 
-    static string[] cExtensions = new string[] {"c"};
-    static string[] cppExtensions = new string[] {"cpp", "cc", "cxx"};
+    static readonly string[] cExtensions = ["c"];
+    static readonly string[] cppExtensions = ["cpp", "cc", "cxx"];
 
-    class LineReader {
-        string[] parts;
+    class LineReader(string source) {
+        readonly string[] parts = source.Split("\n");
         int i = 0;
-
-        public LineReader(string source) {
-            parts = source.Split("\n");
-        }
 
         public string Line() {
             return parts[i++];
         }
 
         public int Int() {
-            return Int32.Parse(Line());
+            return int.Parse(Line());
         }
     }
 
     public static void Setup() {
         Builder.RegisterDispatcher((BuildSettings settings, string path) => {
             string fileText;
-            using (StreamReader file = new StreamReader(path)) {
+            using (StreamReader file = new(path)) {
                 fileText = file.ReadToEnd();
             }
             return new CFileCompiler(path, fileText);
-        }, cExtensions.Concat(cppExtensions).ToArray());
+        }, [..cExtensions, ..cppExtensions]);
     }
 
     CFileCompiler(string path, string fileText) {
@@ -69,13 +65,13 @@ public class CFileCompiler : IFileCompiler {
 
     Type_ ReadType_(LineReader reader) {
         string baseType_Name = reader.Line();
-        if (structIDs.ContainsKey(baseType_Name))
-            baseType_Name = structIDs[baseType_Name].GetID();
+        if (structIDs.TryGetValue(baseType_Name, out LocatedID? value))
+            baseType_Name = value.GetID();
         if (baseType_Name == "") return null;
         int? baseType_Bits = reader.Int();
         if (baseType_Bits == -1) baseType_Bits = null;
         int genericCount = reader.Int();
-        List<Type_> generics = new List<Type_>();
+        List<Type_> generics = [];
         for (int i = 0; i < genericCount; i++) {
             generics.Add(ReadType_(reader));
         }
@@ -90,7 +86,7 @@ public class CFileCompiler : IFileCompiler {
         }
 
         int fieldCount = reader.Int();
-        List<Field> fields = new List<Field>();
+        List<Field> fields = [];
         for (int i = 0; i < fieldCount; i++) {
             Type_ fieldType_ = ReadType_(reader);
             string fieldName = reader.Line();
@@ -99,15 +95,15 @@ public class CFileCompiler : IFileCompiler {
         return new Struct(idPath, name, fields, "structs."+name, null);
     }
 
-    RealFunctionDeclaration ReadFunc(LineReader reader) {
+    RealExternalFunction ReadFunc(LineReader reader) {
         string symbol = reader.Line();
         Type_ retType_ = ReadType_(reader);
         string name = reader.Line();
         int argCount = reader.Int();
 
-        List<FunctionArgument> arguments = new List<FunctionArgument>();
-        List<IPatternSegment> segments = new List<IPatternSegment>();
-        List<int> argumentIdxs = new List<int>();
+        List<FunctionArgument> arguments = [];
+        List<IPatternSegment> segments = [];
+        List<int> argumentIdxs = [];
 
         segments.Add(new UnitPatternSegment<string>(typeof(Name), name));
 
@@ -150,8 +146,7 @@ public class CFileCompiler : IFileCompiler {
 
     void FetchSignatures(string filename) {
         string scriptPath = $"scripts{Path.DirectorySeparatorChar}fetchsignatures.bash";
-        LineReader reader = new LineReader(CmdUtils.RunScript(
-            scriptPath, FetchSignaturesArgs(filename)));
+        LineReader reader = new(CmdUtils.RunScript(scriptPath, FetchSignaturesArgs(filename)));
         string status = reader.Line();
         switch (status) {
         case "success":
@@ -169,7 +164,7 @@ public class CFileCompiler : IFileCompiler {
     }
 
     public IEnumerable<string> ToImports() {
-        return new string[0];
+        return [];
     }
 
     public SubconfigCollection GetSubconfigs() {

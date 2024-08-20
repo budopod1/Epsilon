@@ -2,16 +2,12 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class NumberMatcher : IMatcher {
-    Program program;
-
-    public NumberMatcher(Program program) {
-        this.program = program;
-    }
+public class NumberMatcher(Program program) : IMatcher {
+    readonly Program program = program;
 
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            List<IToken> replaced = new List<IToken>();
+            List<IToken> replaced = [];
             bool dot = false;
             bool anyMatch = false;
             bool content = false;
@@ -50,9 +46,9 @@ public class NumberMatcher : IMatcher {
                     constant = UnsignedIntConstant.FromString(matchedString);
                 }
 
-                List<IToken> replacement = new List<IToken> {
+                List<IToken> replacement = [
                     new ConstantValue(constant)
-                };
+                ];
 
                 return new Match(i, j-1, replacement, replaced);
             }

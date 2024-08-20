@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 
 public class FunctionArgument : IEquatable<FunctionArgument> {
-    string name;
-    Type_ type_;
-    bool exactType_Match;
+    readonly string name;
+    readonly Type_ type_;
+    readonly bool exactType_Match;
     int id;
 
     public FunctionArgument(string name, Type_ type_, bool exactType_Match=false, int id = -1) {
@@ -15,10 +15,10 @@ public class FunctionArgument : IEquatable<FunctionArgument> {
     }
 
     public FunctionArgument(FunctionArgumentToken token) {
-        this.name = token.GetName();
-        this.type_ = token.GetType_();
+        name = token.GetName();
+        type_ = token.GetType_();
         exactType_Match = false;
-        this.id = token.GetID();
+        id = token.GetID();
     }
 
     public string GetName() {
@@ -50,11 +50,11 @@ public class FunctionArgument : IEquatable<FunctionArgument> {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["name"] = new JSONString(name);
-        obj["type_"] = type_.GetJSON();
-        obj["variable"] = new JSONInt(id);
-        return obj;
+        return new JSONObject {
+            ["name"] = new JSONString(name),
+            ["type_"] = type_.GetJSON(),
+            ["variable"] = new JSONInt(id)
+        };
     }
 
     public bool Equals(FunctionArgument other) {

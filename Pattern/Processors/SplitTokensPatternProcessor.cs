@@ -3,9 +3,9 @@ using System.Reflection;
 using System.Collections.Generic;
 
 public class SplitTokensPatternProcessor : IPatternProcessor<List<IToken>> {
-    Type wrapper;
-    IPatternSegment seperator;
-    IPatternProcessor<List<IToken>> subprocessor;
+    readonly Type wrapper;
+    readonly IPatternSegment seperator;
+    readonly IPatternProcessor<List<IToken>> subprocessor;
 
     public SplitTokensPatternProcessor(IPatternProcessor<List<IToken>> subprocessor,
                                 IPatternSegment seperator, Type wrapper) {
@@ -25,11 +25,11 @@ public class SplitTokensPatternProcessor : IPatternProcessor<List<IToken>> {
         if (subprocessor != null) {
             tokens = subprocessor.Process(tokens, start, end);
         }
-        SplitTokensParser parser = new SplitTokensParser(
+        SplitTokensParser parser = new(
             seperator, true
         );
         List<List<IToken>> split = parser.Parse(tokens);
-        List<IToken> result = new List<IToken>();
+        List<IToken> result = [];
         foreach (List<IToken> section in split) {
             IToken token = (IToken)Activator.CreateInstance(
                 wrapper, new object[] {section}

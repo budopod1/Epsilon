@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class PostDecrement : UnaryOperation<IAssignableValue>, IValueToken {
-    public PostDecrement(IAssignableValue o) : base(o) {}
-
+public class PostDecrement(IAssignableValue o) : UnaryOperation<IAssignableValue>(o), IValueToken {
     public Type_ GetType_() {
         return o.GetType_();
     }

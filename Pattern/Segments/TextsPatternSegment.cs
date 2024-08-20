@@ -2,20 +2,16 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class TextsPatternSegment : IPatternSegment {
-    List<string> texts;
+public class TextsPatternSegment(List<string> texts) : IPatternSegment {
+    readonly List<string> texts = texts;
 
     public List<string> GetTexts() {
         return texts;
     }
 
-    public TextsPatternSegment(List<string> texts) {
-        this.texts = texts;
-    }
-
     public bool Matches(IToken token) {
-        return (token is TextToken
-            && texts.Contains(((TextToken)token).GetText()));
+        return token is TextToken
+            && texts.Contains(((TextToken)token).GetText());
     }
 
     public bool Equals(IPatternSegment obj) {

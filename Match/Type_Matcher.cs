@@ -2,14 +2,9 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 
-public class Type_Matcher : IMatcher {
-    Func<List<IToken>, Func<Type_>, List<IToken>> type_Wrapper;
-
-    public Type_Matcher(Func<List<IToken>, Func<Type_>, List<IToken>> type_Wrapper) {
-        this.type_Wrapper = type_Wrapper;
-    }
-
-    ListTokenParser<Type_> listParser = new ListTokenParser<Type_>(
+public class Type_Matcher(Func<List<IToken>, Func<Type_>, List<IToken>> type_Wrapper) : IMatcher {
+    readonly Func<List<IToken>, Func<Type_>, List<IToken>> type_Wrapper = type_Wrapper;
+    readonly ListTokenParser<Type_> listParser = new(
         new TextPatternSegment(","), typeof(Type_Token),
         (IToken generic) => ((Type_Token)generic).GetValue()
     );
@@ -24,7 +19,7 @@ public class Type_Matcher : IMatcher {
 
             int j = i;
 
-            List<IToken> replaced = new List<IToken> {token};
+            List<IToken> replaced = [token];
 
             List<IToken> replacement = null;
             if (i + 1 < tokens.Count) {

@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-public class FuncPatternSegment<T> : IPatternSegment where T : class {
-    Func<T, bool> func;
+public class FuncPatternSegment<T>(Func<T, bool> func) : IPatternSegment where T : class {
+    readonly Func<T, bool> func = func;
 
     public Func<T, bool> GetFunction() {
         return func;
-    }
-
-    public FuncPatternSegment(Func<T, bool> func) {
-        this.func = func;
     }
 
     public bool Matches(IToken token) {

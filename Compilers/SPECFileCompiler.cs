@@ -3,19 +3,12 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-public class SPECFileCompiler : IFileCompiler {
-    string curPath;
-    string idPath;
-    string fileText;
-    ShapedJSON obj;
-    Dictionary<string, Type_> types_ = new Dictionary<string, Type_>();
-
-    public SPECFileCompiler(string path, string fileText, ShapedJSON obj) {
-        curPath = path;
-        idPath = obj["id_path"].GetString();
-        this.fileText = fileText;
-        this.obj = obj;
-    }
+public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IFileCompiler {
+    readonly string curPath = path;
+    readonly string idPath = obj["id_path"].GetString();
+    readonly string fileText = fileText;
+    readonly ShapedJSON obj = obj;
+    readonly Dictionary<string, Type_> types_ = [];
 
     public string GetText() {
         return fileText;
@@ -53,11 +46,11 @@ public class SPECFileCompiler : IFileCompiler {
     Dictionary<string, string> structIds;
 
     public HashSet<LocatedID> ToStructIDs() {
-        HashSet<LocatedID> result = new HashSet<LocatedID>();
-        structIds = new Dictionary<string, string>();
+        HashSet<LocatedID> result = [];
+        structIds = [];
         foreach (ShapedJSON struct_ in obj["structs"].IterList()) {
             string name = struct_["name"].GetString();
-            LocatedID id = new LocatedID(idPath, name);
+            LocatedID id = new(idPath, name);
             result.Add(id);
             structIds[name] = id.GetID();
         }
@@ -67,14 +60,14 @@ public class SPECFileCompiler : IFileCompiler {
 
     public void LoadSPECTypes_() {
         foreach (ShapedJSON type_Data in obj["types_"].IterList()) {
-            List<Type_> generics = new List<Type_>();
+            List<Type_> generics = [];
             foreach (ShapedJSON generic_Name in type_Data["generics"].IterList()) {
                 generics.Add(MakeSPECType_(generic_Name));
             }
             string type_Name = type_Data["name"].GetString();
-            if (structIds.ContainsKey(type_Name)) type_Name = structIds[type_Name];
+            if (structIds.TryGetValue(type_Name, out string? value)) type_Name = value;
             int? type_Bits = type_Data["bits"].GetIntOrNull();
-            Type_ type_ = new Type_(type_Name, type_Bits, generics);
+            Type_ type_ = new(type_Name, type_Bits, generics);
             types_[type_Data["given_name"].GetString()] = type_;
         }
     }
@@ -83,12 +76,12 @@ public class SPECFileCompiler : IFileCompiler {
 
     Type_ MakeSPECType_(ShapedJSON str) {
         string text = str.GetString();
-        if (!types_.ContainsKey(text)) {
+        if (!types_.TryGetValue(text, out Type_? value)) {
             throw new InvalidJSONException(
                 $"Invalid JSON type_ '{text}'", str.GetJSON()
             );
         }
-        return types_[text];
+        return value;
     }
 
     public HashSet<Struct> ToStructs() {
@@ -110,9 +103,9 @@ public class SPECFileCompiler : IFileCompiler {
 
     public List<RealFunctionDeclaration> ToDeclarations() {
         return obj["functions"].IterList().Select(func => {
-            List<FunctionArgument> arguments = new List<FunctionArgument>();
-            List<IPatternSegment> segments = new List<IPatternSegment>();
-            List<int> argumentIdxs = new List<int>();
+            List<FunctionArgument> arguments = [];
+            List<IPatternSegment> segments = [];
+            List<int> argumentIdxs = [];
             ShapedJSON template = func["template"];
             for (int i = 0; i < template.ListCount(); i++) {
                 ShapedJSON sobj = template[i];
@@ -156,7 +149,7 @@ public class SPECFileCompiler : IFileCompiler {
                 case "argument":
                     string name2 = sobj["name"].GetString();
                     Type_ type_ = MakeSPECType_(sobj["type_"]);
-                    FunctionArgument argument = new FunctionArgument(name2, type_);
+                    FunctionArgument argument = new(name2, type_);
                     arguments.Add(argument);
                     segments.Add(new FuncArgPatternSegment());
                     argumentIdxs.Add(i);
@@ -171,7 +164,7 @@ public class SPECFileCompiler : IFileCompiler {
             bool doesReturnVoid = func["return_type_"].IsNull();
             if (!doesReturnVoid)
                 returnType_ = MakeSPECType_(func["return_type_"]);
-            Enum.TryParse<FunctionSource>(func["source"].GetString(), out FunctionSource source);
+            Enum.TryParse(func["source"].GetString(), out FunctionSource source);
             return (RealFunctionDeclaration)new RealExternalFunction(
                 new ConfigurablePatternExtractor<List<IToken>>(
                     segments, new SlotPatternProcessor(argumentIdxs)
@@ -257,8 +250,7 @@ public class SPECFileCompiler : IFileCompiler {
     }
 
     public FileSourceType GetFileSourceType() {
-        Enum.TryParse<FileSourceType>(obj["source_type"].GetString(),
-            out FileSourceType source);
+        Enum.TryParse(obj["source_type"].GetString(), out FileSourceType source);
         return source;
     }
 }

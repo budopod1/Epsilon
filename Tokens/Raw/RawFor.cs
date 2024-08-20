@@ -6,9 +6,9 @@ public class RawFor : IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    public static List<string> ClauseNames = new List<string> {
+    public static List<string> ClauseNames = [
         "to", "from", "step", "in", "enumerating"
-    };
+    ];
 
     public int Count {
         get => 1 + clauses.Count;
@@ -24,21 +24,20 @@ public class RawFor : IParentToken {
         }
         set {
             if (i == 0) {
-                block = ((CodeBlock)value);
+                block = (CodeBlock)value;
             } else {
-                clauses[i-1] = ((RawForClause)value);
+                clauses[i-1] = (RawForClause)value;
             }
         }
     }
 
-    List<RawForClause> clauses;
-    int declarationID;
-    Type_ type_;
+    readonly List<RawForClause> clauses;
+    readonly int declarationID;
+    readonly Type_ type_;
     CodeBlock block;
 
     public RawFor(List<IToken> condition, CodeBlock block) {
-        VarDeclaration declaration = condition[0] as VarDeclaration;
-        if (declaration == null) {
+        if (condition[0] is not VarDeclaration declaration) {
             throw new SyntaxErrorException(
                 "For loop condition must start with variable declaration", condition[0]
             );
@@ -48,8 +47,7 @@ public class RawFor : IParentToken {
         declarationID = block.GetScope().AddVar(
             declarationName, type_
         );
-        Name startingClauseToken = condition[1] as Name;
-        if (startingClauseToken == null) {
+        if (condition[1] is not Name startingClauseToken) {
             throw new SyntaxErrorException(
                 "For loop condition must start with a clause", condition[1]
             );
@@ -60,11 +58,10 @@ public class RawFor : IParentToken {
                 "Invalid clause name", startingClauseToken
             );
         }
-        RawForClause clause = new RawForClause(startingClauseName);
-        clauses = new List<RawForClause> {clause};
+        RawForClause clause = new(startingClauseName);
+        clauses = [clause];
         foreach (IToken token in condition.Skip(2)) {
-            Name name = token as Name;
-            if (name != null) {
+            if (token is Name name){
                 string clauseName = name.GetValue();
                 if (ClauseNames.Contains(clauseName)) {
                     clause = new RawForClause(clauseName);

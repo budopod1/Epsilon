@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-public class RawAnnotation : TreeToken {
-    string type;
-
-    public RawAnnotation(string type, List<IToken> tokens) : base(tokens) {
-        this.type = type;
-    }
+public class RawAnnotation(string type, List<IToken> tokens) : TreeToken(tokens) {
+    readonly string type = type;
 
     public IAnnotation ToAnnotation() {
         switch (type) {

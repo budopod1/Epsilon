@@ -13,9 +13,8 @@ public class NameMatcher : IMatcher {
             if (!Utils.NameStartChars.Contains(nameStart)) {
                 continue;
             }
-            StringBuilder name = new StringBuilder(nameStart);
-            List<IToken> replaced = new List<IToken>();
-            replaced.Add(stoken);
+            StringBuilder name = new(nameStart);
+            List<IToken> replaced = [stoken];
             int j;
             for (j = i+1; j < tokens.Count; j++) {
                 IToken token = tokens[j];
@@ -30,8 +29,7 @@ public class NameMatcher : IMatcher {
                 }
                 break;
             }
-            List<IToken> replacement = new List<IToken>();
-            replacement.Add(new Name(name.ToString()));
+            List<IToken> replacement = [new Name(name.ToString())];
             return new Match(i, j-1, replacement, replaced);
         }
         return null;

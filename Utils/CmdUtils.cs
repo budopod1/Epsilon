@@ -41,7 +41,7 @@ public static class CmdUtils {
     }
 
     public static void LinkLLVM(IEnumerable<string> sources, string output, bool toLL=false) {
-        List<string> args = new List<string> {"-o", output};
+        List<string> args = ["-o", output];
         if (toLL) {
             args.Add("-S");
         }
@@ -88,8 +88,8 @@ public static class CmdUtils {
     }
 
     public static void FilesToObject(IEnumerable<string> sources, string output) {
-        List<string> objs = new List<string>();
-        List<string> llvm = new List<string>();
+        List<string> objs = [];
+        List<string> llvm = [];
 
         foreach (string source in sources) {
             switch (Utils.GetExtension(source)) {

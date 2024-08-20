@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-public class VoidFunctionCall : IFunctionCall, ICompleteLine, IParentToken {
+public class VoidFunctionCall(FunctionDeclaration function, List<IValueToken> arguments) : IFunctionCall, ICompleteLine, IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    FunctionDeclaration function;
-    List<IValueToken> arguments;
+    readonly FunctionDeclaration function = function;
+    readonly List<IValueToken> arguments = arguments;
 
     public int Count {
         get {
@@ -21,11 +21,6 @@ public class VoidFunctionCall : IFunctionCall, ICompleteLine, IParentToken {
         set {
             arguments[i] = (IValueToken)value;
         }
-    }
-
-    public VoidFunctionCall(FunctionDeclaration function, List<IValueToken> arguments) {
-        this.function = function;
-        this.arguments = arguments;
     }
 
     public FunctionDeclaration GetFunction() {

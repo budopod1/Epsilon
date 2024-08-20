@@ -21,7 +21,7 @@ abstract public class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<Patte
         for (int i = 0; i <= maxStart; i++) {
             bool matches = true;
             int j;
-            List<IToken> tokenList = new List<IToken>();
+            List<IToken> tokenList = [];
             for (j = 0; j < segments.Count; j++) {
                 IPatternSegment segment = segments[j];
                 IToken token = tokens[i+j];

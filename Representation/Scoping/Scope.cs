@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-public class Scope : IScope {
-    IDCounter scopeVarIDCounter;
-    Dictionary<int, ScopeVar> variables = new Dictionary<int, ScopeVar>();
-
-    public Scope(IDCounter scopeVarIDCounter) {
-        this.scopeVarIDCounter = scopeVarIDCounter;
-    }
+public class Scope(IDCounter scopeVarIDCounter) : IScope {
+    readonly IDCounter scopeVarIDCounter = scopeVarIDCounter;
+    readonly Dictionary<int, ScopeVar> variables = [];
 
     T WithParentScope<T>(IHasScope hs, Func<IScope, IHasScope, T> action) {
-        if (hs == null) return default(T);
+        if (hs == null) return default;
         IHasScope parenths = TokenUtils.GetParentOfType<IHasScope>(hs);
         return action(parenths?.GetScope(), parenths);
     }

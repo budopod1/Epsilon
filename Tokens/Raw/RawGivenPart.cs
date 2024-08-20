@@ -6,8 +6,8 @@ public class RawGivenPart : IParentToken {
 
     RawGivenValue rawGivenValue;
     CodeBlock block;
-    Type_ toType_;
-    int varID;
+    readonly Type_ toType_;
+    readonly int varID;
 
     public int Count {
         get => 2;
@@ -23,9 +23,9 @@ public class RawGivenPart : IParentToken {
         }
         set {
             if (i == 0) {
-                rawGivenValue = ((RawGivenValue)value);
+                rawGivenValue = (RawGivenValue)value;
             } else {
-                block = ((CodeBlock)value);
+                block = (CodeBlock)value;
             }
         }
     }

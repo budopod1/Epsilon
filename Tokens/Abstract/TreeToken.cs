@@ -2,15 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public abstract class TreeToken : IParentToken, IEnumerable<IToken> {
+public abstract class TreeToken(List<IToken> tokens) : IParentToken, IEnumerable<IToken> {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    List<IToken> tokens;
-
-    public TreeToken(List<IToken> tokens) {
-        this.tokens = tokens;
-    }
+    List<IToken> tokens = tokens;
 
     public List<IToken> GetTokens() {
         return tokens;

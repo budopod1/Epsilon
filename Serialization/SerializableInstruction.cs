@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class SerializableInstruction {
-    JSONObject obj = new JSONObject();
+    readonly JSONObject obj = [];
 
     public SerializableInstruction(string name, List<int> parameters=null, Type_ type_=null) {
         obj["name"] = new JSONString(name);
@@ -22,7 +22,7 @@ public class SerializableInstruction {
         obj["name"] = new JSONString(Utils.CammelToSnake(
             token.GetType().Name
         ));
-        JSONList parameters = new JSONList();
+        JSONList parameters = [];
         for (int i = 0; i < token.Count; i++) {
             ISerializableToken sub = token[i] as ISerializableToken;
             if (sub != null) parameters.Add(new JSONInt(context.SerializeInstruction(sub)));

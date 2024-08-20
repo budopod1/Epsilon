@@ -6,18 +6,15 @@ public class Conditional : IFlowControl, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    List<Condition> conditions;
+    readonly List<Condition> conditions;
     CodeBlock elseBlock;
 
     public int Count {
-        get { return conditions.Count + (elseBlock==null?0:1); }
+        get => conditions.Count + (elseBlock==null?0:1);
     }
 
     public IToken this[int i] {
-        get {
-            if (i == conditions.Count) return elseBlock;
-            return conditions[i];
-        }
+        get => i == conditions.Count ? elseBlock : conditions[i];
         set {
             if (i == conditions.Count) {
                 elseBlock = (CodeBlock)value;
@@ -28,14 +25,14 @@ public class Conditional : IFlowControl, IFunctionTerminator {
     }
 
     public Conditional(IValueToken condition, CodeBlock block) {
-        Condition cond = new Condition(condition, block);
+        Condition cond = new(condition, block);
         cond.span = TokenUtils.MergeSpans(condition, block);
-        conditions = new List<Condition> {cond};
+        conditions = [cond];
     }
 
     public Conditional(Conditional conditional, IValueToken condition, CodeBlock block) {
         conditions = new List<Condition>(conditional.GetConditions());
-        Condition cond = new Condition(condition, block);
+        Condition cond = new(condition, block);
         if (conditional.GetElseBlock() != null) {
             throw new SyntaxErrorException(
                 "Cannot add condition to conditional already terminated with else block", cond
@@ -69,7 +66,7 @@ public class Conditional : IFlowControl, IFunctionTerminator {
     }
 
     public override string ToString() {
-        string result = String.Join(", ", conditions);
+        string result = string.Join(", ", conditions);
         if (elseBlock != null) {
             result += ", Else: " + elseBlock.ToString();
         }
@@ -77,12 +74,13 @@ public class Conditional : IFlowControl, IFunctionTerminator {
     }
 
     public int Serialize(SerializationContext context) {
-        JSONList conditionsJSON = new JSONList();
+        JSONList conditionsJSON = [];
         foreach (Condition condition in conditions) {
             SerializationContext sub = context.AddSubContext();
             sub.Serialize(condition.GetBlock());
-            JSONObject conditionObj = new JSONObject();
-            conditionObj["block"] = new JSONInt(sub.GetIndex());
+            JSONObject conditionObj = new() {
+                ["block"] = new JSONInt(sub.GetIndex())
+            };
             SerializationContext conditionCtx = context.AddSubContext(hidden: true);
             conditionCtx.SerializeInstruction(condition.GetCondition());
             conditionObj["condition"] = conditionCtx.Serialize();

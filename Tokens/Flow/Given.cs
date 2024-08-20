@@ -6,7 +6,7 @@ public class Given : IFlowControl, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    List<GivenPart> parts;
+    readonly List<GivenPart> parts;
     CodeBlock else_ = null;
 
     public int Count {
@@ -28,7 +28,7 @@ public class Given : IFlowControl, IFunctionTerminator {
     }
 
     public Given(RawGivenPart part) {
-        parts = new List<GivenPart> {new GivenPart(part)};
+        parts = [new(part)];
     }
 
     public Given(Given given, RawGivenPart part) {

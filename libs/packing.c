@@ -21,7 +21,7 @@ struct ByteArray {
     char *content;
 };
 
-inline bool _packing_isNetworkByteOrder() {
+extern inline bool _packing_isNetworkByteOrder() {
     return htons(1) == 1;
 }
 

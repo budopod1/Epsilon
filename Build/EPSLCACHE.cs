@@ -6,11 +6,11 @@ public class EPSLCACHE {
     public bool IsFromFile = false;
     public string Path;
     public long? CompileStartTime = null;
-    public List<string> EPSLSPECS = new List<string>();
+    public List<string> EPSLSPECS = [];
     public OutputType LastOutputType;
 
     public static IJSONShape Shape { get => _Shape; }
-    static IJSONShape _Shape;
+    static readonly IJSONShape _Shape;
 
     static EPSLCACHE() {
         _Shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
@@ -35,7 +35,7 @@ public class EPSLCACHE {
     }
 
     public static EPSLCACHE FromText(string path, IJSONValue jsonValue) {
-        ShapedJSON json = new ShapedJSON(jsonValue, Shape);
+        ShapedJSON json = new(jsonValue, Shape);
         int? a = json["compile_start_time_1"].GetIntOrNull();
         int? b = json["compile_start_time_2"].GetIntOrNull();
         long? compileStartTime = Utils.IntsToLong((a, b));
@@ -54,7 +54,7 @@ public class EPSLCACHE {
     }
 
     public void ToFile() {
-        JSONObject obj = new JSONObject();
+        JSONObject obj = [];
         (int? a, int? b) = Utils.LongToInts(CompileStartTime);
         obj["compile_start_time_1"] = JSONInt.OrNull(a);
         obj["compile_start_time_2"] = JSONInt.OrNull(b);

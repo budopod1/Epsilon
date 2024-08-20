@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public abstract class Holder : TreeToken {
-    public Holder(List<IToken> tokens) : base(tokens) {}
-
+public abstract class Holder(List<IToken> tokens) : TreeToken(tokens) {
     public Block GetBlock() {
         if (Count < 2) return null;
         IToken token = this[1];

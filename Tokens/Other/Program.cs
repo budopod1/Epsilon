@@ -3,14 +3,14 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class Program : TreeToken, IVerifier, IHasScope {
-    string path;
-    HashSet<LocatedID> structIds = new HashSet<LocatedID>();
-    IDCounter functionIDCounter = new IDCounter();
-    IDCounter scopeVarIDCounter = new IDCounter();
-    HashSet<Struct> structsHere = new HashSet<Struct>();
-    List<(CodeSpan, Type_)> parsedTypes_ = new List<(CodeSpan, Type_)>();
-    List<RealFunctionDeclaration> externalDeclarations = new List<RealFunctionDeclaration>();
-    IScope scope;
+    readonly string path;
+    readonly HashSet<LocatedID> structIds = [];
+    readonly IDCounter functionIDCounter = new();
+    readonly IDCounter scopeVarIDCounter = new();
+    HashSet<Struct> structsHere = [];
+    readonly List<(CodeSpan, Type_)> parsedTypes_ = [];
+    readonly List<RealFunctionDeclaration> externalDeclarations = [];
+    readonly IScope scope;
 
     public Program(string path, List<IToken> tokens) : base(tokens) {
         this.path = path;
@@ -110,8 +110,8 @@ public class Program : TreeToken, IVerifier, IHasScope {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        JSONList functions = new JSONList();
+        JSONObject obj = [];
+        JSONList functions = [];
         foreach (IToken token in this) {
             if (token is Function) {
                 functions.Add(((Function)token).GetFullJSON());

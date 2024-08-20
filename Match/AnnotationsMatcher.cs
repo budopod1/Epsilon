@@ -6,7 +6,7 @@ public class AnnotationsMatcher : IMatcher {
         for (int i = 0; i < tokens.Count; i++) {
             TextToken stoken = tokens[i] as TextToken;
             if (stoken == null || stoken.GetText() != "@") continue;
-            List<IToken> matched = new List<IToken> {stoken};
+            List<IToken> matched = [stoken];
             string type = null;
             if (i + 1 < tokens.Count) {
                 Name name = tokens[i+1] as Name;
@@ -20,7 +20,7 @@ public class AnnotationsMatcher : IMatcher {
                     "Expected annotation name after toplevel '@'", stoken
                 );
             }
-            List<IToken> arguments = new List<IToken>();
+            List<IToken> arguments = [];
             bool completed = false;
             int j = i + 2;
             for (; j < tokens.Count; j++) {
@@ -46,8 +46,8 @@ public class AnnotationsMatcher : IMatcher {
                     matched[matched.Count - 1]
                 );
             }
-            RawAnnotation annotation = new RawAnnotation(type, arguments);
-            return new Match(i, j, new List<IToken> {annotation}, matched);
+            RawAnnotation annotation = new(type, arguments);
+            return new Match(i, j, [annotation], matched);
         }
         return null;
     }

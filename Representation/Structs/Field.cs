@@ -1,8 +1,8 @@
 using System;
 
 public class Field : IEquatable<Field> {
-    string name;
-    Type_ type_;
+    readonly string name;
+    readonly Type_ type_;
 
     public Field(string name, Type_ type_) {
         this.name = name;
@@ -10,8 +10,8 @@ public class Field : IEquatable<Field> {
     }
 
     public Field(VarDeclaration declaration) {
-        this.name = declaration.GetName().GetValue();
-        this.type_ = declaration.GetType_();
+        name = declaration.GetName().GetValue();
+        type_ = declaration.GetType_();
     }
 
     public string GetName() {
@@ -27,10 +27,10 @@ public class Field : IEquatable<Field> {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["name"] = new JSONString(name);
-        obj["type_"] = type_.GetJSON();
-        return obj;
+        return new JSONObject {
+            ["name"] = new JSONString(name),
+            ["type_"] = type_.GetJSON()
+        };
     }
 
     public bool Equals(Field other) {

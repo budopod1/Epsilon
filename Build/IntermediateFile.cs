@@ -1,24 +1,18 @@
 using System;
 
-public class IntermediateFile {
+public class IntermediateFile(IntermediateFile.IntermediateType fileType, string path, bool isInUserDir) {
     public enum IntermediateType {
         IR,
         Obj
     }
 
-    public IntermediateType FileType;
-    public string Path;
-    public bool IsInUserDir;
-
-    public IntermediateFile(IntermediateType fileType, string path, bool isInUserDir) {
-        FileType = fileType;
-        Path = path;
-        IsInUserDir = isInUserDir;
-    }
+    public IntermediateType FileType = fileType;
+    public string Path = path;
+    public bool IsInUserDir = isInUserDir;
 
     public static IntermediateFile FromFileTree(FileTree file, bool shouldBeIR) {
-        var IRType = IntermediateFile.IntermediateType.IR;
-        var ObjType = IntermediateFile.IntermediateType.Obj;
+        var IRType = IntermediateType.IR;
+        var ObjType = IntermediateType.Obj;
         if (shouldBeIR) {
             if (file.IR != null) {
                 return new IntermediateFile(IRType, file.IR, file.IRIsInUserDir);

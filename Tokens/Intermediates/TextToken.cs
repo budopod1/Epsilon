@@ -1,14 +1,10 @@
 using System;
 
-public class TextToken : IVerifier {
+public class TextToken(string text) : IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    string text;
-
-    public TextToken(string text) {
-        this.text = text;
-    }
+    string text = text;
 
     public string GetText() {
         return text;

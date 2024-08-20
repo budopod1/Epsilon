@@ -4,8 +4,8 @@ public class VarDeclaration : IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    Type_ type_;
-    Name name;
+    readonly Type_ type_;
+    readonly Name name;
     int id;
 
     public VarDeclaration(Type_ type_, Name name) {

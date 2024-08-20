@@ -1,16 +1,10 @@
 using System;
 using System.IO;
 
-public class InvalidSPECResourceException : Exception {
-    ShapedJSON obj;
-    string epslspec;
-    string source;
-
-    public InvalidSPECResourceException(ShapedJSON obj, string epslspec, string source) {
-        this.obj = obj;
-        this.epslspec = epslspec;
-        this.source = source;
-    }
+public class InvalidSPECResourceException(ShapedJSON obj, string epslspec, string source) : Exception {
+    readonly ShapedJSON obj = obj;
+    readonly string epslspec = epslspec;
+    readonly string source = source;
 
     public ShapedJSON GetObj() {
         return obj;

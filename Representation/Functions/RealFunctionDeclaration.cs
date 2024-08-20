@@ -18,16 +18,16 @@ public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<
     }
 
     public JSONObject GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["id"] = new JSONString(GetID());
-        obj["callee"] = new JSONString(GetCallee());
-        obj["arguments"] = new JSONList(GetArguments().Select(
-            argument => argument.GetJSON()
-        ));
-        obj["return_type_"] = DoesReturnVoid() ? new JSONNull() : GetReturnType_().GetJSON();
-        obj["takes_ownership"] = new JSONBool(TakesOwnership());
-        obj["result_in_params"] = new JSONBool(ResultInParams());
-        return obj;
+        return new JSONObject {
+            ["id"] = new JSONString(GetID()),
+            ["callee"] = new JSONString(GetCallee()),
+            ["arguments"] = new JSONList(GetArguments().Select(
+                argument => argument.GetJSON()
+            )),
+            ["return_type_"] = DoesReturnVoid() ? new JSONNull() : GetReturnType_().GetJSON(),
+            ["takes_ownership"] = new JSONBool(TakesOwnership()),
+            ["result_in_params"] = new JSONBool(ResultInParams())
+        };
     }
 
     public bool Equals(RealFunctionDeclaration other) {

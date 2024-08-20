@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public static class Extensions {
     public static List<T> Slice<T>(this IList<T> list, int length) {
-        List<T> result = new List<T>();
+        List<T> result = [];
         for (int i = 0; i < length; i++) {
             result.Add(list[i]);
         }
@@ -12,7 +12,7 @@ public static class Extensions {
     }
 
     public static List<T> Slice<T>(this IList<T> list, int start, int length) {
-        List<T> result = new List<T>();
+        List<T> result = [];
         for (int i = start; i < length; i++) {
             result.Add(list[i]);
         }
@@ -81,7 +81,7 @@ public static class Extensions {
     }
 
     public static (IEnumerable<T>, IEnumerable<TSub>) ParitionSubclass<T, TSub>(this IEnumerable<T> vals) where TSub : T {
-        SubclassPartitioningManager<T, TSub> manager = new SubclassPartitioningManager<T, TSub>(vals);
+        SubclassPartitioningManager<T, TSub> manager = new(vals);
         return (PartitionSubclassOther(manager), PartitionSubclassSub(manager));
     }
 
@@ -109,14 +109,10 @@ public static class Extensions {
         }
     }
 
-    class SubclassPartitioningManager<T, TSub> where TSub : T {
-        IEnumerator<T> vals;
-        Queue<TSub> subBuffer = new Queue<TSub>();
-        Queue<T> otherBuffer = new Queue<T>();
-
-        public SubclassPartitioningManager(IEnumerable<T> vals) {
-            this.vals = vals.GetEnumerator();
-        }
+    class SubclassPartitioningManager<T, TSub>(IEnumerable<T> vals) where TSub : T {
+        readonly IEnumerator<T> vals = vals.GetEnumerator();
+        readonly Queue<TSub> subBuffer = new();
+        readonly Queue<T> otherBuffer = new();
 
         public TSub RequestSub() {
             if (subBuffer.Count == 0) {

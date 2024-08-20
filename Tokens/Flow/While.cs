@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop, IFunctionTerminator {
-    public While(IValueToken o1, CodeBlock o2) : base(o1, o2) {}
-
+public class While(IValueToken o1, CodeBlock o2) : BinaryOperation<IValueToken, CodeBlock>(o1, o2), ILoop, IFunctionTerminator {
     public CodeBlock GetBlock() {
         return o2;
     }
@@ -21,10 +19,9 @@ public class While : BinaryOperation<IValueToken, CodeBlock>, ILoop, IFunctionTe
     }
 
     public bool DoesTerminateFunction() {
-        ConstantValue constantT = o1 as ConstantValue;
-        if (constantT == null) return false;
+        if (o1 is not ConstantValue constantT) return false;
         if (!constantT.GetValue().IsTruthy()) return false;
-        TraverseConfig config = new TraverseConfig(
+        TraverseConfig config = new(
             TraverseMode.DEPTH, invert: false, yieldFirst: false,
             avoidTokens: token => token is ILoop
         );

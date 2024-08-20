@@ -1,24 +1,18 @@
 using System;
 using System.Collections.Generic;
 
-public class ListTokenParser<T> {
+public class ListTokenParser<T>(IPatternSegment seperator, Type item, Func<IToken, T> parser) {
     enum ParseState {
         EXPECTITEM,
         EXPECTSEPARATOR
     }
 
-    IPatternSegment seperator;
-    Type item;
-    Func<IToken, T> parser;
-
-    public ListTokenParser(IPatternSegment seperator, Type item, Func<IToken, T> parser) {
-        this.seperator = seperator;
-        this.item = item;
-        this.parser = parser;
-    }
+    readonly IPatternSegment seperator = seperator;
+    readonly Type item = item;
+    readonly Func<IToken, T> parser = parser;
 
     public List<T> Parse(IParentToken tree) {
-        List<T> list = new List<T>();
+        List<T> list = [];
         ParseState state = ParseState.EXPECTITEM;
         for (int i = 0; i < tree.Count; i++) {
             IToken token = tree[i];

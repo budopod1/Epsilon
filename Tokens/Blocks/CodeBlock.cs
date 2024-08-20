@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 public class CodeBlock : Block, IHasScope {
-    Scope scope;
+    readonly Scope scope;
 
     public CodeBlock(Program program, List<IToken> tokens) : base(tokens) {
         scope = new Scope(program.GetScopeVarIDCounter());

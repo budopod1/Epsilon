@@ -2,20 +2,20 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class EPSLSPEC {
-    public IEnumerable<RealFunctionDeclaration> Functions;
-    public IEnumerable<Struct> Structs;
-    public Dependencies Dependencies;
-    public SubconfigCollection Subconfigs;
-    public IEnumerable<string> Imports;
-    public string IR;
-    public string Obj;
-    public string Source;
-    public FileSourceType SourceType;
-    public string IDPath;
+public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerable<Struct> structs, Dependencies dependencies, SubconfigCollection subconfigs, IEnumerable<string> imports, string IR, string obj, string source, FileSourceType sourceType, string idPath) {
+    public IEnumerable<RealFunctionDeclaration> Functions = functions;
+    public IEnumerable<Struct> Structs = structs;
+    public Dependencies Dependencies = dependencies;
+    public SubconfigCollection Subconfigs = subconfigs;
+    public IEnumerable<string> Imports = imports;
+    public string IR = IR;
+    public string Obj = obj;
+    public string Source = source;
+    public FileSourceType SourceType = sourceType;
+    public string IDPath = idPath;
 
     public static IJSONShape Shape { get => _Shape; }
-    static IJSONShape _Shape;
+    static readonly IJSONShape _Shape;
 
     static EPSLSPEC() {
         _Shape = new JSONObjectShape(new Dictionary<string, IJSONShape> {
@@ -31,9 +31,9 @@ public class EPSLSPEC {
                     ))},
                     {"takes_ownership", new JSONBoolShape()},
                     {"result_in_params", new JSONBoolShape()},
-                    {"source", new JSONStringOptionsShape(new List<string> {
+                    {"source", new JSONStringOptionsShape([
                         "Program", "Library", "Builtin"
-                    })}
+                    ])}
                 }
             ))},
             {"types_", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
@@ -70,126 +70,106 @@ public class EPSLSPEC {
             {"ir", new JSONNullableShape(new JSONStringShape())},
             {"obj", new JSONNullableShape(new JSONStringShape())},
             {"source", new JSONNullableShape(new JSONStringShape())},
-            {"source_type", new JSONStringOptionsShape(new List<string> {"Library", "User"})},
+            {"source_type", new JSONStringOptionsShape(["Library", "User"])},
             {"id_path", new JSONStringShape()}
         });
     }
 
-    public EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerable<Struct> structs, Dependencies dependencies, SubconfigCollection subconfigs, IEnumerable<string> imports, string IR, string obj, string source, FileSourceType sourceType, string idPath) {
-        Functions = functions;
-        Structs = structs;
-        Dependencies = dependencies;
-        Subconfigs = subconfigs;
-        Imports = imports;
-        this.IR = IR;
-        Obj = obj;
-        Source = source;
-        SourceType = sourceType;
-        IDPath = idPath;
-    }
-
     public JSONObject ToJSON(Builder builder) {
-        SPECType_Creator type_Creator = new SPECType_Creator();
+        SPECType_Creator type_Creator = new();
 
-        JSONObject obj = new JSONObject();
-
-        obj["functions"] = new JSONList(Functions.Select(function => {
-            JSONObject dobj = new JSONObject();
-            dobj["id"] = new JSONString(function.GetID());
-            dobj["callee"] = new JSONString(function.GetCallee());
-            if (function.DoesReturnVoid()) {
-                dobj["return_type_"] = new JSONNull();
-            } else {
-                string returnType_ = type_Creator.MakeSPECType_(function.GetReturnType_());
-                dobj["return_type_"] = new JSONString(returnType_);
-            }
-            List<IPatternSegment> segments = function.GetPattern().GetSegments();
-            List<FunctionArgument> arguments = function.GetArguments();
-            int argumentCounter = 0;
-            dobj["template"] = new JSONList(segments.Select(segment => {
-                JSONObject sobj = new JSONObject();
-                if (segment is UnitPatternSegment<string>) {
-                    sobj["type"] = new JSONString("name");
-                    string name = ((UnitPatternSegment<string>)segment).GetValue();
-                    sobj["name"] = new JSONString(name);
-                } else if (segment is TextPatternSegment) {
-                    sobj["type"] = new JSONString("text");
-                    string text = ((TextPatternSegment)segment).GetText();
-                    sobj["text"] = new JSONString(text);
-                } else if (segment is FuncArgPatternSegment) {
-                    sobj["type"] = new JSONString("argument");
-                    FunctionArgument argument = arguments[argumentCounter++];
-                    sobj["name"] = new JSONString(argument.GetName());
-                    string type_ = type_Creator.MakeSPECType_(argument.GetType_());
-                    sobj["type_"] = new JSONString(type_);
-                    // We don't need to save whether the argument uses exactType_Match, because only builtins should
+        return new JSONObject {
+            ["functions"] = new JSONList(Functions.Select(function => {
+                JSONObject dobj = [];
+                dobj["id"] = new JSONString(function.GetID());
+                dobj["callee"] = new JSONString(function.GetCallee());
+                if (function.DoesReturnVoid()) {
+                    dobj["return_type_"] = new JSONNull();
                 } else {
-                    throw new InvalidOperationException();
+                    string returnType_ = type_Creator.MakeSPECType_(function.GetReturnType_());
+                    dobj["return_type_"] = new JSONString(returnType_);
                 }
-                return sobj;
-            }));
-            dobj["takes_ownership"] = new JSONBool(function.TakesOwnership());
-            dobj["result_in_params"] = new JSONBool(function.ResultInParams());
-            dobj["source"] = new JSONString(function.GetSource().ToString());
-            return dobj;
-        }));
-
-        obj["structs"] = new JSONList(Structs.Select(struct_ => {
-            JSONObject sobj = new JSONObject();
-            sobj["name"] = new JSONString(struct_.GetName());
-            sobj["fields"] = new JSONList(struct_.GetFields().Select(field => {
-                JSONObject fobj = new JSONObject();
-                fobj["name"] = new JSONString(field.GetName());
-                string type_ = type_Creator.MakeSPECType_(field.GetType_());
-                fobj["type_"] = new JSONString(type_);
-                return fobj;
-            }));
-            sobj["symbol"] = new JSONString(struct_.GetSymbol());
-            sobj["extendee"] = JSONString.OrNull(struct_.GetExtendeeID());
-            return sobj;
-        }));
-
-        obj["types_"] = type_Creator.GetJSON();
-
-        obj["dependencies"] = new JSONList(
-            Dependencies.GetStructs().GroupBy(struct_ => struct_.GetPath()).ToDictionary(
-                group => group.Key, group => group.ToList()
-            ).MergeToPairs(
-                Dependencies.GetFunctions().GroupBy(func => func.GetSourcePath()).ToDictionary(
-                    group => group.Key, group => group.ToList()
-                ), () => new List<Struct>(), () => new List<RealFunctionDeclaration>()
-            ).Select((KeyValuePair<string, (List<Struct> structs, List<RealFunctionDeclaration> functions)> kvpair) => {
-                FileTree file = builder.GetFileByIDPath(kvpair.Key);
-                JSONObject dobj = new JSONObject();
-                dobj["path"] = new JSONString(kvpair.Key);
-                dobj["functions"] = new JSONList(kvpair.Value.functions.Select(
-                    func => new JSONInt(file.Declarations.IndexOf(func))
-                ));
-                dobj["structs"] = new JSONList(kvpair.Value.structs.Select(
-                    struct_ => new JSONString(struct_.GetName())
-                ));
+                List<IPatternSegment> segments = function.GetPattern().GetSegments();
+                List<FunctionArgument> arguments = function.GetArguments();
+                int argumentCounter = 0;
+                dobj["template"] = new JSONList(segments.Select(segment => {
+                    JSONObject sobj = [];
+                    if (segment is UnitPatternSegment<string> segment1) {
+                        sobj["type"] = new JSONString("name");
+                        string name = segment1.GetValue();
+                        sobj["name"] = new JSONString(name);
+                    } else if (segment is TextPatternSegment segment2) {
+                        sobj["type"] = new JSONString("text");
+                        string text = segment2.GetText();
+                        sobj["text"] = new JSONString(text);
+                    } else if (segment is FuncArgPatternSegment) {
+                        sobj["type"] = new JSONString("argument");
+                        FunctionArgument argument = arguments[argumentCounter++];
+                        sobj["name"] = new JSONString(argument.GetName());
+                        string type_ = type_Creator.MakeSPECType_(argument.GetType_());
+                        sobj["type_"] = new JSONString(type_);
+                        // We don't need to save whether the argument uses exactType_Match, because only builtins should
+                    } else {
+                        throw new InvalidOperationException();
+                    }
+                    return sobj;
+                }));
+                dobj["takes_ownership"] = new JSONBool(function.TakesOwnership());
+                dobj["result_in_params"] = new JSONBool(function.ResultInParams());
+                dobj["source"] = new JSONString(function.GetSource().ToString());
                 return dobj;
-            })
-        );
+            })),
 
-        obj["clang_parse_subconfigs"] = new JSONList(
-            Subconfigs.ClangParseConfigs.Select(item => item.GetJSON()));
+            ["structs"] = new JSONList(Structs.Select(struct_ => {
+                JSONObject sobj = [];
+                sobj["name"] = new JSONString(struct_.GetName());
+                sobj["fields"] = new JSONList(struct_.GetFields().Select(field => new JSONObject {
+                    ["name"] = new JSONString(field.GetName()),
+                    ["type_"] = new JSONString(type_Creator.MakeSPECType_(field.GetType_()))
+                }));
+                sobj["symbol"] = new JSONString(struct_.GetSymbol());
+                sobj["extendee"] = JSONString.OrNull(struct_.GetExtendeeID());
+                return sobj;
+            })),
 
-        obj["linking_configs"] = new JSONList(
-            Subconfigs.LinkingConfigs.Select(item => item.GetJSON()));
+            ["types_"] = type_Creator.GetJSON(),
 
-        obj["imports"] = new JSONList(Imports.Select(import => new JSONString(import)));
+            ["dependencies"] = new JSONList(
+                Dependencies.GetStructs().GroupBy(struct_ => struct_.GetPath()).ToDictionary(
+                    group => group.Key, group => group.ToList()
+                ).MergeToPairs(
+                    Dependencies.GetFunctions().GroupBy(func => func.GetSourcePath()).ToDictionary(
+                        group => group.Key, group => group.ToList()
+                    ), () => [], () => []
+                ).Select((KeyValuePair<string, (List<Struct> structs, List<RealFunctionDeclaration> functions)> kvpair) => {
+                    FileTree file = builder.GetFileByIDPath(kvpair.Key);
+                    JSONObject dobj = [];
+                    dobj["path"] = new JSONString(kvpair.Key);
+                    dobj["functions"] = new JSONList(kvpair.Value.functions.Select(
+                        func => new JSONInt(file.Declarations.IndexOf(func))
+                    ));
+                    dobj["structs"] = new JSONList(kvpair.Value.structs.Select(
+                        struct_ => new JSONString(struct_.GetName())
+                    ));
+                    return dobj;
+                })
+            ),
 
-        obj["ir"] = JSONString.OrNull(IR);
+            ["clang_parse_subconfigs"] = new JSONList(Subconfigs.ClangParseConfigs.Select(item => item.GetJSON())),
 
-        obj["obj"] = JSONString.OrNull(Obj);
+            ["linking_configs"] = new JSONList(Subconfigs.LinkingConfigs.Select(item => item.GetJSON())),
 
-        obj["source"] = JSONString.OrNull(Source);
+            ["imports"] = new JSONList(Imports.Select(import => new JSONString(import))),
 
-        obj["source_type"] = new JSONString(SourceType.ToString());
+            ["ir"] = JSONString.OrNull(IR),
 
-        obj["id_path"] = new JSONString(IDPath);
+            ["obj"] = JSONString.OrNull(Obj),
 
-        return obj;
+            ["source"] = JSONString.OrNull(Source),
+
+            ["source_type"] = new JSONString(SourceType.ToString()),
+
+            ["id_path"] = new JSONString(IDPath)
+        };
     }
 }

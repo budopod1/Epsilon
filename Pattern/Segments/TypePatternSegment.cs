@@ -1,8 +1,8 @@
 using System;
 
 public class TypePatternSegment : IPatternSegment {
-    Type type;
-    bool exact = false;
+    readonly Type type;
+    readonly bool exact = false;
 
     public Type GetMType() {
         return type;

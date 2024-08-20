@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 public class FuncPatternProcessor<T> : IPatternProcessor<T> {
-    Func<List<IToken>, int, int, T> func;
+    readonly Func<List<IToken>, int, int, T> func;
 
     public FuncPatternProcessor(Func<List<IToken>, int, int, T> func) {
         this.func = func;

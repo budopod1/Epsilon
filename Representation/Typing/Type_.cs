@@ -1,14 +1,13 @@
 using System;
-using System.Linq;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 public class Type_ : IEquatable<Type_> {
     public static Type_ String() {
         return new Type_("Byte").ArrayOf();
     }
 
-    BaseType_ baseType_;
-    List<Type_> generics;
+    readonly BaseType_ baseType_;
+    readonly List<Type_> generics;
 
     public static Type_ Any() {
         return new Type_("Any");
@@ -66,7 +65,7 @@ public class Type_ : IEquatable<Type_> {
         if (a.HasGenerics() || b.HasGenerics()) return null;
         int? abits = a.GetBaseType_().GetBits();
         int? bbits = b.GetBaseType_().GetBits();
-        int? bits = null;
+        int? bits;
         if (abits == null) {
             bits = bbits;
         } else if (bbits == null) {
@@ -89,29 +88,20 @@ public class Type_ : IEquatable<Type_> {
 
     public Type_(BaseType_ baseType_, List<Type_> generics = null) {
         this.baseType_ = baseType_;
-        if (generics == null) {
-            generics = new List<Type_>();
-        }
-        this.generics = generics;
-        CheckGenerics(baseType_, generics);
+        this.generics = generics ?? [];
+        CheckGenerics(baseType_, this.generics);
     }
 
     public Type_(string name, int? bits, List<Type_> generics = null) {
         baseType_ = new BaseType_(name, bits);
-        if (generics == null) {
-            generics = new List<Type_>();
-        }
-        this.generics = generics;
-        CheckGenerics(baseType_, generics);
+        this.generics = generics ?? [];
+        CheckGenerics(baseType_, this.generics);
     }
 
     public Type_(string name, List<Type_> generics = null) {
         baseType_ = new BaseType_(name);
-        if (generics == null) {
-            generics = new List<Type_>();
-        }
-        this.generics = generics;
-        CheckGenerics(baseType_, generics);
+        this.generics = generics ?? [];
+        CheckGenerics(baseType_, this.generics);
     }
 
     void CheckGenerics(BaseType_ baseType_, List<Type_> generics) {
@@ -161,16 +151,16 @@ public class Type_ : IEquatable<Type_> {
         if (baseType_.GetName() == "Optional") {
             return this;
         } else {
-            return new Type_("Optional", new List<Type_> {this});
+            return new Type_("Optional", [this]);
         }
     }
 
     public Type_ ArrayOf() {
-        return new Type_("Array", new List<Type_> {this});
+        return new Type_("Array", [this]);
     }
 
     public Type_ PolyOf() {
-        return new Type_("Poly", new List<Type_> {this});
+        return new Type_("Poly", [this]);
     }
 
     public Type_ UnwrapOptional() {
@@ -236,7 +226,6 @@ public class Type_ : IEquatable<Type_> {
 
     public bool IsConvertibleTo(Type_ other) {
         Type_ this_ = this;
-        BaseType_ otherBaseType_ = other.GetBaseType_();
         if (baseType_.IsAny() || other.GetBaseType_().IsAny())
             return true;
         if (this_.IsConvertibleNullTo(other)) return true;
@@ -344,10 +333,10 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new JSONObject();
-        obj["name"] = new JSONString(baseType_.GetName());
-        obj["bits"] = JSONInt.OrNull(baseType_.GetBitsOrDefaultIfMeaningful());
-        obj["generics"] = new JSONList(generics.Select(generic=>generic.GetJSON()));
-        return obj;
+        return new JSONObject {
+            ["name"] = new JSONString(baseType_.GetName()),
+            ["bits"] = JSONInt.OrNull(baseType_.GetBitsOrDefaultIfMeaningful()),
+            ["generics"] = new JSONList(generics.Select(generic => generic.GetJSON()))
+        };
     }
 }

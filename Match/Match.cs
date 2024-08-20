@@ -1,19 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-public class Match {
-    int start;
-    int end;
-    List<IToken> replacement;
-    List<IToken> matched;
-
-    public Match(int start, int end, List<IToken> replacement,
-                 List<IToken> matched) {
-        this.start = start;
-        this.end = end;
-        this.replacement = replacement;
-        this.matched = matched;
-    }
+public class Match(int start, int end, List<IToken> replacement, List<IToken> matched) {
+    readonly int start = start;
+    readonly int end = end;
+    readonly List<IToken> replacement = replacement;
+    readonly List<IToken> matched = matched;
 
     void UpdateSpans(List<IToken> tokens) {
         CodeSpan span = TokenUtils.MergeSpans(tokens);
@@ -23,8 +15,8 @@ public class Match {
     }
 
     public TreeToken Replace(TreeToken tokens) {
-        List<IToken> result = new List<IToken>();
-        List<IToken> formerTokens = new List<IToken>();
+        List<IToken> result = [];
+        List<IToken> formerTokens = [];
         for (int j = start; j <= end; j++) {
             formerTokens.Add(tokens[j]);
         }
@@ -47,7 +39,7 @@ public class Match {
                 "SingleReplace can only be used on Matches with length 1"
             );
         }
-        UpdateSpans(new List<IToken> {tokens[start]});
+        UpdateSpans([tokens[start]]);
         tokens[start] = replacement[0];
     }
 

@@ -6,7 +6,7 @@ public class Continue : IVerifier, IBlockEndOnly {
 
     public void Verify() {
         IToken parent = TokenUtils.GetParentWithCond(
-            this, (IToken token) => (token is ILoop)
+            this, (IToken token) => token is ILoop
         );
         if (parent == null) {
             throw new SyntaxErrorException(
@@ -21,7 +21,7 @@ public class Continue : IVerifier, IBlockEndOnly {
 
     public int Serialize(SerializationContext context) {
         ILoop loop = (ILoop)TokenUtils.GetParentWithCond(
-            this, (IToken token) => (token is ILoop)
+            this, (IToken token) => token is ILoop
         );
         int id = context.GetFunction().GetContextIdByBlock(loop.GetBlock()).Value;
         return context.AddInstruction(

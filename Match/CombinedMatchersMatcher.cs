@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-public class CombinedMatchersMatcher : IMatcher {
-    List<IMatcher> matchers;
-
-    public CombinedMatchersMatcher(List<IMatcher> matchers) {
-        this.matchers = matchers;
-    }
+public class CombinedMatchersMatcher(List<IMatcher> matchers) : IMatcher {
+    readonly List<IMatcher> matchers = matchers;
 
     public Match Match(IParentToken tokens) {
         int minStart = tokens.Count+1;

@@ -2,17 +2,12 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class UnitsPatternSegment<T> : IPatternSegment where T : IEquatable<T> {
-    List<T> values;
-    Type unit;
+public class UnitsPatternSegment<T>(Type unit, List<T> values) : IPatternSegment where T : IEquatable<T> {
+    readonly List<T> values = values;
+    readonly Type unit = unit;
 
     public List<T> GetValue() {
         return values;
-    }
-
-    public UnitsPatternSegment(Type unit, List<T> values) {
-        this.values = values;
-        this.unit = unit;
     }
 
     public bool Matches(IToken token) {

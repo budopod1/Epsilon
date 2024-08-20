@@ -1,19 +1,15 @@
 using System;
 
-public class Type_PatternSegment : IPatternSegment {
-    Type_ type_;
+public class Type_PatternSegment(Type_ type_) : IPatternSegment {
+    readonly Type_ type_ = type_;
 
     public Type_ GetType_() {
         return type_;
     }
 
-    public Type_PatternSegment(Type_ type_) {
-        this.type_ = type_;
-    }
-
     public bool Matches(IToken token) {
-        return (token is IValueToken
-            && ((IValueToken)token).GetType_().IsConvertibleTo(type_));
+        return token is IValueToken
+            && ((IValueToken)token).GetType_().IsConvertibleTo(type_);
     }
 
     public bool Equals(IPatternSegment obj) {

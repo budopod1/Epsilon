@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 
 public class SerializationContext {
-    Function function;
-    JSONList instructions = new JSONList();
+    readonly Function function;
+    readonly JSONList instructions = [];
     CodeBlock block;
-    int index;
-    bool hidden;
-    JSONList parentDeclarations;
-    JSONList initialDeclarations = new JSONList();
+    readonly int index;
+    readonly bool hidden;
+    readonly JSONList parentDeclarations;
+    readonly JSONList initialDeclarations = [];
     bool doesTerminateFunction = false;
 
     public SerializationContext(Function function, bool hidden=false, JSONList parentDeclarations=null) {
-        if (parentDeclarations == null) parentDeclarations = new JSONList();
-        this.parentDeclarations = parentDeclarations;
+        this.parentDeclarations = parentDeclarations ?? [];
         this.function = function;
         this.hidden = hidden;
         if (!hidden) {
@@ -30,8 +29,7 @@ public class SerializationContext {
         this.block = block;
         doesTerminateFunction = block.DoesTerminateFunction();
         foreach (IToken token in block) {
-            if (token is Line) {
-                Line line = ((Line)token);
+            if (token is Line line) {
                 ICompleteLine instruction = (ICompleteLine)line[0];
                 SerializeInstruction(instruction);
             }
@@ -39,7 +37,7 @@ public class SerializationContext {
     }
 
     public SerializationContext AddSubContext(bool hidden=false) {
-        JSONList declarations = new JSONList(parentDeclarations);
+        JSONList declarations = new(parentDeclarations);
         foreach (IJSONValue declaration in initialDeclarations) {
             declarations.Add(declaration);
         }
@@ -53,12 +51,12 @@ public class SerializationContext {
     }
 
     public IJSONValue Serialize() {
-        JSONObject obj = new JSONObject();
-        obj["instructions"] = instructions;
-        obj["initial_declarations"] = initialDeclarations;
-        obj["parent_declarations"] = parentDeclarations;
-        obj["does_terminate_function"] = new JSONBool(doesTerminateFunction);
-        return obj;
+        return new JSONObject {
+            ["instructions"] = instructions,
+            ["initial_declarations"] = initialDeclarations,
+            ["parent_declarations"] = parentDeclarations,
+            ["does_terminate_function"] = new JSONBool(doesTerminateFunction)
+        };
     }
 
     public CodeBlock GetBlock() {
@@ -78,8 +76,8 @@ public class SerializationContext {
     }
 
     public int SerializeInstruction(ISerializableToken token) {
-        if (function.Serialized.ContainsKey(token))
-            return function.Serialized[token];
+        if (function.Serialized.TryGetValue(token, out int value))
+            return value;
         int id = token.Serialize(this);
         function.Serialized[token] = id;
         return id;

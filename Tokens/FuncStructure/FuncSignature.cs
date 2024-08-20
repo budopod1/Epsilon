@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-public class FuncSignature : IParentToken, IBarMatchingInto {
+public class FuncSignature(Type_ returnType_, FuncTemplate template) : IParentToken, IBarMatchingInto {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    Type_ returnType_;
-    FuncTemplate template;
+    readonly Type_ returnType_ = returnType_;
+    FuncTemplate template = template;
 
     public int Count {
         get { return 1; }
@@ -19,11 +19,6 @@ public class FuncSignature : IParentToken, IBarMatchingInto {
         set {
             template = (FuncTemplate)value;
         }
-    }
-
-    public FuncSignature(Type_ returnType_, FuncTemplate template) {
-        this.returnType_ = returnType_;
-        this.template = template;
     }
 
     public Type_ GetReturnType_() {

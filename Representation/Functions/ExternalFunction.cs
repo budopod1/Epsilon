@@ -3,12 +3,12 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class ExternalFunction : FunctionDeclaration {
-    PatternExtractor<List<IToken>> pattern;
-    List<FunctionArgument> arguments;
-    string id;
-    Func<List<IValueToken>, Type_> returnType_;
-    FunctionSource source;
-    bool doesReturnVoid = false;
+    readonly PatternExtractor<List<IToken>> pattern;
+    readonly List<FunctionArgument> arguments;
+    readonly string id;
+    readonly Func<List<IValueToken>, Type_> returnType_;
+    readonly FunctionSource source;
+    readonly bool doesReturnVoid = false;
 
     public ExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, Func<List<Type_>, Type_> returnType_, FunctionSource source, bool doesReturnVoid=false) {
         this.pattern = pattern;

@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class For : IParentToken, ILoop, IVerifier, ISerializableToken {
+public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
@@ -20,26 +20,19 @@ public class For : IParentToken, ILoop, IVerifier, ISerializableToken {
         }
         set {
             if (i == 0) {
-                block = ((CodeBlock)value);
+                block = (CodeBlock)value;
             } else {
-                clauses[i-1] = ((ForClause)value);
+                clauses[i-1] = (ForClause)value;
             }
         }
     }
 
-    List<ForClause> clauses;
-    int declarationID;
-    Type_ type_;
-    CodeBlock block;
-
-    public For(RawFor source) {
-        clauses = source.GetClauses().Select(
-            clause=>new ForClause(clause)
+    readonly List<ForClause> clauses = source.GetClauses().Select(
+            clause => new ForClause(clause)
         ).ToList();
-        declarationID = source.GetDeclarationID();
-        type_ = source.GetType_();
-        block = source.GetBlock();
-    }
+    readonly int declarationID = source.GetDeclarationID();
+    readonly Type_ type_ = source.GetType_();
+    CodeBlock block = source.GetBlock();
 
     public void Verify() {
         List<string> clauseNames = clauses.Select(
@@ -103,8 +96,8 @@ public class For : IParentToken, ILoop, IVerifier, ISerializableToken {
         SerializationContext loop = context.AddSubContext();
         loop.Serialize(block);
         loop.AddDeclaration(declarationID);
-        List<int> clauseIdxs = new List<int>();
-        JSONList clauseNames = new JSONList();
+        List<int> clauseIdxs = [];
+        JSONList clauseNames = [];
         foreach (ForClause clause in clauses) {
             string clauseName = clause.GetName();
             if (clauseName == "in") {

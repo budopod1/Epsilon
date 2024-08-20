@@ -7,7 +7,7 @@ public class FileTree {
     public string PartialPath;
     public SPECFileCompiler OldCompiler;
     public string GeneratedEPSLSPEC = null;
-    public List<FileTree> Imported = new List<FileTree>();
+    public List<FileTree> Imported = [];
     public IEnumerable<string> Imports;
     public bool TreeLoaded = false;
 
@@ -24,7 +24,7 @@ public class FileTree {
     string _Text;
     public string Text {
         get {
-            if (_Text == null) _Text = Compiler.GetText();
+            _Text ??= Compiler.GetText();
             return _Text;
         }
         set {
@@ -48,13 +48,12 @@ public class FileTree {
 
     EPSLSPEC _spec = null;
     public EPSLSPEC EPSLSPEC {
-        // The version of C# I'm using doesn't have support for the ??= operator
-        get => _spec = _spec ?? MakeSPEC();
+        get => _spec ??= MakeSPEC();
     }
 
     string _idPath = null;
     public string IDPath {
-        get => _idPath = _idPath ?? Compiler.GetIDPath();
+        get => _idPath ??= Compiler.GetIDPath();
     }
 
     public string OldPath;
@@ -106,7 +105,7 @@ public class FileTree {
 
     public string GetName() {
         string name = Utils.GetFileNameWithoutExtension(Path_);
-        if (name[0] == '.') return name.Substring(1);
+        if (name[0] == '.') return name[1..];
         return name;
     }
 }

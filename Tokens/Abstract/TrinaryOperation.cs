@@ -1,12 +1,12 @@
 using System;
 
-public abstract class TrinaryOperation<T1, T2, T3> : IParentToken, ISerializableToken where T1 : IToken where T2 : IToken where T3 : IToken {
+public abstract class TrinaryOperation<T1, T2, T3>(T1 o1, T2 o2, T3 o3) : IParentToken, ISerializableToken where T1 : IToken where T2 : IToken where T3 : IToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    protected T1 o1;
-    protected T2 o2;
-    protected T3 o3;
+    protected T1 o1 = o1;
+    protected T2 o2 = o2;
+    protected T3 o3 = o3;
 
     public int Count {
         get { return 3; }
@@ -27,12 +27,6 @@ public abstract class TrinaryOperation<T1, T2, T3> : IParentToken, ISerializable
                 o3 = (T3)value;
             }
         }
-    }
-
-    public TrinaryOperation(T1 o1, T2 o2, T3 o3) {
-        this.o1 = o1;
-        this.o2 = o2;
-        this.o3 = o3;
     }
 
     public override string ToString() {

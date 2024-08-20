@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class SubOne : UnaryOperation<IValueToken>, IValueToken {
-    public SubOne(IValueToken o) : base(o) {}
-
+public class SubOne(IValueToken o) : UnaryOperation<IValueToken>(o), IValueToken {
     public Type_ GetType_() {
         return o.GetType_();
     }

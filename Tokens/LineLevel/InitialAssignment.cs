@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-public class InitialAssignment : UnaryOperation<IValueToken>, IVerifier, ICompleteLine, ISerializableToken {
-    int id;
-
-    public InitialAssignment(VarDeclaration declaration, IValueToken o) : base(o) {
-        id = declaration.GetID();
-    }
+public class InitialAssignment(VarDeclaration declaration, IValueToken o) : UnaryOperation<IValueToken>(o), IVerifier, ICompleteLine, ISerializableToken {
+    readonly int id = declaration.GetID();
 
     public void Verify() {
         Type_ valueType_ = o.GetType_();

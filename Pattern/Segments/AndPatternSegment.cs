@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class AndPatternSegment : IPatternSegment {
-    List<IPatternSegment> segments;
+    readonly List<IPatternSegment> segments;
 
     public List<IPatternSegment> GetSegments() {
         return segments;
@@ -14,7 +14,7 @@ public class AndPatternSegment : IPatternSegment {
     }
 
     public AndPatternSegment(IPatternSegment a, IPatternSegment b) {
-        this.segments = new List<IPatternSegment> {a, b};
+        this.segments = [a, b];
     }
 
     public bool Matches(IToken token) {

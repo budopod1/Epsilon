@@ -1,5 +1,4 @@
 using System;
 
-public class UserBaseType_Token : Unit<UserBaseType_> {
-    public UserBaseType_Token(UserBaseType_ type_) : base(type_) {}
+public class UserBaseType_Token(UserBaseType_ type_) : Unit<UserBaseType_>(type_) {
 }

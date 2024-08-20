@@ -1,14 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-public class IDAnnotation : IAnnotation {
-    CodeSpan span;
-    string id;
-
-    public IDAnnotation(CodeSpan span, string id) {
-        this.span = span;
-        this.id = id;
-    }
+public class IDAnnotation(CodeSpan span, string id) : IAnnotation {
+    readonly CodeSpan span = span;
+    readonly string id = id;
 
     public static IDAnnotation FromTokens(IToken base_, List<IToken> arguments) {
         if (arguments.Count == 0) {

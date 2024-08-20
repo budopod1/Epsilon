@@ -2,26 +2,14 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class BuildSettings {
-    public string InputPath;
-    public string ProvidedOutput;
-    public EPSLPROJ Proj;
-    public EPSLCACHE Cache;
-    public CacheMode CacheMode;
-    public OptimizationLevel OptLevel;
-    public OutputType Output_Type;
-    public bool LinkBuiltins;
-    public bool LinkLibraries;
-
-    public BuildSettings(string inputPath, string providedOutput, EPSLPROJ proj, EPSLCACHE cache, CacheMode cacheMode, OptimizationLevel optLevel, OutputType outputType, bool linkBuiltins, bool linkLibraries) {
-        InputPath = inputPath;
-        ProvidedOutput = providedOutput;
-        Proj = proj;
-        Cache = cache;
-        CacheMode = cacheMode;
-        OptLevel = optLevel;
-        Output_Type = outputType;
-        LinkBuiltins = linkBuiltins;
-        LinkLibraries = linkLibraries;
-    }
+public class BuildSettings(string inputPath, string providedOutput, EPSLPROJ proj, EPSLCACHE cache, CacheMode cacheMode, OptimizationLevel optLevel, OutputType outputType, bool linkBuiltins, bool linkLibraries) {
+    public string InputPath = inputPath;
+    public string ProvidedOutput = providedOutput;
+    public EPSLPROJ Proj = proj;
+    public EPSLCACHE Cache = cache;
+    public CacheMode CacheMode = cacheMode;
+    public OptimizationLevel OptLevel = optLevel;
+    public OutputType Output_Type = outputType;
+    public bool LinkBuiltins = linkBuiltins;
+    public bool LinkLibraries = linkLibraries;
 }

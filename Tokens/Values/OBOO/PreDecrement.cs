@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class PreDecrement : UnaryOperation<IAssignableValue>, IValueToken {
-    public PreDecrement(IAssignableValue o) : base(o) {}
-
+public class PreDecrement(IAssignableValue o) : UnaryOperation<IAssignableValue>(o), IValueToken {
     public Type_ GetType_() {
         return o.GetType_();
     }

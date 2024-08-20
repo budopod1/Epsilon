@@ -1,12 +1,8 @@
 using System;
 using System.Reflection;
 
-public class CompoundAssignment : BinaryOperation<IAssignableValue, IValueToken>, ICompleteLine {
-    Type type;
-
-    public CompoundAssignment(Type type, IAssignableValue o1, IValueToken o2) : base(o1, o2) {
-        this.type = type;
-    }
+public class CompoundAssignment(Type type, IAssignableValue o1, IValueToken o2) : BinaryOperation<IAssignableValue, IValueToken>(o1, o2), ICompleteLine {
+    readonly Type type = type;
 
     public override int Serialize(SerializationContext context) {
         IValueToken newValue = (IValueToken)Activator.CreateInstance(

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-public class FunctionCall : IFunctionCall, IParentToken, IValueToken {
+public class FunctionCall(FunctionDeclaration function, List<IValueToken> arguments) : IFunctionCall, IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    FunctionDeclaration function;
-    List<IValueToken> arguments;
+    readonly FunctionDeclaration function = function;
+    readonly List<IValueToken> arguments = arguments;
 
     public int Count {
         get {
@@ -21,11 +21,6 @@ public class FunctionCall : IFunctionCall, IParentToken, IValueToken {
         set {
             arguments[i] = (IValueToken)value;
         }
-    }
-
-    public FunctionCall(FunctionDeclaration function, List<IValueToken> arguments) {
-        this.function = function;
-        this.arguments = arguments;
     }
 
     public FunctionDeclaration GetFunction() {

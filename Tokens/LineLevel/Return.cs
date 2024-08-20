@@ -1,8 +1,6 @@
 using System;
 
-public class Return : UnaryOperation<IValueToken>, IVerifier, IFunctionTerminator, IBlockEndOnly {
-    public Return(IValueToken o) : base(o) {}
-
+public class Return(IValueToken o) : UnaryOperation<IValueToken>(o), IVerifier, IFunctionTerminator, IBlockEndOnly {
     public void Verify() {
         Function func = TokenUtils.GetParentOfType<Function>(this);
         if (func.DoesReturnVoid()) {

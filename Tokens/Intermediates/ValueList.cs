@@ -12,10 +12,10 @@ public class ValueList : IParentToken {
 
     public IToken this[int i] {
         get { return values[i]; }
-        set { values[i] = ((ValueListItem)value); }
+        set { values[i] = (ValueListItem)value; }
     }
 
-    List<ValueListItem> values;
+    readonly List<ValueListItem> values;
 
     public ValueList(List<IToken> values) {
         this.values = values.Cast<ValueListItem>().ToList();

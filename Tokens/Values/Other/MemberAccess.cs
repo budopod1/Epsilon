@@ -1,14 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-public class MemberAccess : UnaryOperation<IValueToken>, IAssignableValue, IVerifier {
-    string member;
-    Type_ structType_;
-
-    public MemberAccess(IValueToken o, MemberAccessPostfix member) : base(o) {
-        this.member = member.GetValue();
-        structType_ = o.GetType_().UnwrapPoly();
-    }
+public class MemberAccess(IValueToken o, MemberAccessPostfix member) : UnaryOperation<IValueToken>(o), IAssignableValue, IVerifier {
+    readonly string member = member.GetValue();
+    readonly Type_ structType_ = o.GetType_().UnwrapPoly();
 
     public Type_ GetType_() {
         Type_ type_ = o.GetType_();

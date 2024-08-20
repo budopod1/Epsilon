@@ -3,10 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 
 public static class Subconfigs {
-    static List<ISubconfig> ClangParseConfigs = new List<ISubconfig>();
-    static List<ISubconfig> LinkingConfigs = new List<ISubconfig> {};
+    static readonly List<ISubconfig> ClangParseConfigs = [];
+    static readonly List<ISubconfig> LinkingConfigs = [];
 
-    static Dictionary<ISubconfig, IEnumerable<string>> cache = new Dictionary<ISubconfig, IEnumerable<string>>();
+    static readonly Dictionary<ISubconfig, IEnumerable<string>> cache = [];
 
     static IEnumerable<string> ExpandSubconfigs(IEnumerable<ISubconfig> subconfigs) {
         return subconfigs.SelectMany(subconfig => {
@@ -44,7 +44,7 @@ public static class Subconfigs {
     }
 
     public static IEnumerable<string> GetLinkingConfigs() {
-        return ExpandSubconfigs(LinkingConfigs).Concat(new string[] {"-lc", "-lm"});
+        return ExpandSubconfigs(LinkingConfigs).Concat(["-lc", "-lm"]);
     }
 
     public static SubconfigCollection ToSubconfigCollection() {

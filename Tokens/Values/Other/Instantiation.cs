@@ -6,8 +6,8 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
-    Type_ type_;
-    List<IValueToken> values;
+    readonly Type_ type_;
+    readonly List<IValueToken> values;
 
     public int Count {
         get {
@@ -20,7 +20,7 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
             return values[i];
         }
         set {
-            values[i] = ((IValueToken)value);
+            values[i] = (IValueToken)value;
         }
     }
 
@@ -31,7 +31,7 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
 
     public Instantiation(Type_Token type_token, ValueList list) {
         this.type_ = type_token.GetValue();
-        values = new List<IValueToken>();
+        values = [];
         foreach (ValueListItem listItem in list.GetValues()) {
             if (listItem.Count == 0) continue;
             if (listItem.Count != 1 || !(listItem[0] is IValueToken)) {
