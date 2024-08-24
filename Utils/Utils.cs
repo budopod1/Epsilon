@@ -61,7 +61,7 @@ public static class Utils {
     public static string ProjectAbsolutePath() {
         DirectoryInfo dir = new(AppDomain.CurrentDomain.BaseDirectory);
         do {
-            if (dir.Name == "_sub") {
+            if (dir.Name == "EpsilonLang") {
                 return dir.FullName;
             }
             dir = dir.Parent;
@@ -181,6 +181,16 @@ public static class Utils {
             return false;
         } catch (UnauthorizedAccessException) {
             return false;
+        }
+    }
+
+    public static void CreateFileUnlessExists(string path) {
+        try {
+            File.Open(path, FileMode.OpenOrCreate, FileAccess.Read).Close();
+        } catch (UnauthorizedAccessException e) {
+            throw e;
+        } catch (NotSupportedException e) {
+            throw e;
         }
     }
 

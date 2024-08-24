@@ -91,13 +91,27 @@ public class Builder {
         });
     }
 
+    public ResultStatus ComputeInputPath(string baseInput, out string input) {
+        string _input = baseInput ?? "";
+        ResultStatus result = RunWrapped(() => {
+            if (!Path.IsPathRooted(_input))
+                _input = $".{Path.DirectorySeparatorChar}{_input}";
+            _input = Utils.GetFullPath(_input);
+            if (Utils.GetFileName(_input) == "") {
+                _input = Utils.JoinPaths(_input, "entry");
+            }
+        });
+        input = _input;
+        return result;
+    }
+
     public ResultStatus LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
         EPSLPROJ proj = null;
 
         string projLocation = null;
         ResultStatus status1 = RunWrapped(() => {
             string projDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
-            string projName = Utils.GetFileNameWithoutExtension(input) + ".epslproj";
+            string projName = Utils.SetExtension(input, "epslproj");
             projLocation = Utils.JoinPaths(projDirectory, projName);
         });
         if (status1 != ResultStatus.GOOD) {
@@ -1007,7 +1021,9 @@ public class Builder {
 
     public ResultStatus CreateEPSLPROJ(string path) {
         return RunWrapped(() => {
-            EPSLPROJ proj = new(Utils.GetFullPath(path));
+            string fullPath = Utils.GetFullPath(path);
+            Utils.CreateFileUnlessExists(Utils.SetExtension(fullPath, "epsl"));
+            EPSLPROJ proj = new(Utils.SetExtension(fullPath, "epslproj"));
             proj.ToFile();
         });
     }

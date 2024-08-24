@@ -104,9 +104,8 @@ Modes:
 
         TestResult(builder.WipeTempDir());
 
-        string input = sourceFile.Matched ?? "entry";
-        if (!input.StartsWith(Path.DirectorySeparatorChar))
-            input = $".{Path.DirectorySeparatorChar}" + input;
+        TestResult(builder.ComputeInputPath(
+            sourceFile.Matched ?? projFile.Matched, out string input));
 
         if (mode.Value() == "compile") {
             TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
@@ -148,7 +147,7 @@ Modes:
 
             TestResult(builder.Teardown(cache));
         } else if (mode.Value() == "create-proj") {
-            TestResult(builder.CreateEPSLPROJ(projFile.Matched));
+            TestResult(builder.CreateEPSLPROJ(input));
         } else {
             throw new InvalidOperationException();
         }
