@@ -7,7 +7,7 @@ if [ ./Utils/runcommand.c -nt ./Utils/runcommand.so ]; then
 fi
 
 if [ ./Compilers/signatures.c -nt ./Compilers/signatures ]; then
-    clang ./Compilers/signatures.c -o ./Compilers/signatures -v -lclang -Wall -Wextra -Wno-unused-parameter
+    clang ./Compilers/signatures.c -o ./Compilers/signatures -lclang -Wall -Wextra -Wno-unused-parameter
 fi
 
 dotnet build

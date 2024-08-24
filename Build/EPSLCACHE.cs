@@ -61,6 +61,6 @@ public class EPSLCACHE {
         obj["epslspecs"] = new JSONList(EPSLSPECS.Select(
             epslspec => new JSONString(epslspec)));
         obj["output_type"] = new JSONInt((int)LastOutputType);
-        BJSONEnv.WriteFile(Path, obj);
+        BinJSONEnv.WriteFile(Path, obj);
     }
 }

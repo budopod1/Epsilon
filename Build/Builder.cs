@@ -64,8 +64,8 @@ public class Builder {
         } catch (InvalidJSONException e) {
             JSONTools.ShowError(currentText, e, currentFile);
             return ResultStatus.USERERR;
-        } catch (InvalidBJSONException e) {
-            Console.WriteLine($"Error while reading BJSON file {currentFile}: {e.Message}");
+        } catch (InvalidBinJSONException e) {
+            Console.WriteLine($"Error while reading BinJSON file {currentFile}: {e.Message}");
             return ResultStatus.FAIL;
         } catch (ModuleNotFoundException e) {
             Console.WriteLine($"Cannot find requested module '{e.Path}'");
@@ -703,7 +703,7 @@ public class Builder {
                 string path = Utils.JoinPaths(directory, $".{filename}.epslspec");
                 file.GeneratedEPSLSPEC = path;
                 currentFile = path;
-                BJSONEnv.WriteFile(path, spec);
+                BinJSONEnv.WriteFile(path, spec);
             }
         }
     }
@@ -982,7 +982,7 @@ public class Builder {
         );
 
         string epslspecDest = Utils.JoinPaths(output, outputName+".epslspec");
-        BJSONEnv.WriteFile(epslspecDest, newEPSLSPEC.ToJSON(this));
+        BinJSONEnv.WriteFile(epslspecDest, newEPSLSPEC.ToJSON(this));
     }
 
     void ToObject(BuildInfo buildInfo) {
