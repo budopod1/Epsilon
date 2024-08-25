@@ -147,8 +147,10 @@ struct Array *concat(const struct Array *array1, const struct Array *array2, uin
     newArray->capacity = newCap;
     uint64_t elemSize = elem >> 2;
     void *content = malloc(elemSize*newCap);
-    memcpy(content, array1->content, len1*elemSize);
-    memcpy(content+len1, array2->content, len2*elemSize);
+    uint64_t size1 = len1*elemSize;
+    uint64_t size2 = len2*elemSize;
+    memcpy(content, array1->content, size1);
+    memcpy(content+size1, array2->content, size2);
     newArray->content = content;
     incrementArrayRefCounts(newArray, elem);
     return newArray;
