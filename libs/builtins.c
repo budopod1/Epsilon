@@ -133,7 +133,7 @@ void extend(struct Array *array1, const struct Array *array2, uint64_t elem) {
     increaceCapacity(array1, newLen, elemSize);
     array1->length = newLen;
     incrementArrayRefCounts(array2, elem);
-    memcpy(array1->content+len1, array2->content, len2*elemSize);
+    memcpy(array1->content+len1*elemSize, array2->content, len2*elemSize);
 }
 
 struct Array *concat(const struct Array *array1, const struct Array *array2, uint64_t elem) {
