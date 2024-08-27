@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<RealFunctionDeclaration> {
     protected abstract Type_ _GetReturnType_();
     public abstract string GetCallee();

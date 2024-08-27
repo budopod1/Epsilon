@@ -1,52 +1,33 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class SerializableInstruction {
+    readonly SerializationContext ctx;
     readonly JSONObject obj = [];
 
-    public SerializableInstruction(string name, List<int> parameters=null, Type_ type_=null) {
-        obj["name"] = new JSONString(name);
-        if (parameters == null) {
-            obj["parameters"] = new JSONList();
-        } else {
-            obj["parameters"] = new JSONList(parameters.Select(
-                param=>new JSONInt(param)
-            ));
+    public object this[string key] {
+        set => obj[key] = ctx.ObjToJSON(value);
+    }
+
+    public SerializableInstruction(SerializationContext ctx, ISerializableToken token) {
+        this.ctx = ctx;
+        obj["type"] = new JSONString(Utils.CammelToSnake(token.GetType().Name));
+        SetOperands([]);
+        if (token is IValueToken valueToken) {
+            obj["type_"] = valueToken.GetType_().GetJSON();
+            if (token is IParentToken parentToken) {
+                List<ISerializableToken> operands = [];
+                for (int i = 0; i < parentToken.Count; i++) {
+                    operands.Add((ISerializableToken)parentToken[i]);
+                }
+                SetOperands(operands);
+            }
         }
-        if (type_ != null) obj["type_"] = type_.GetJSON();
     }
 
-    public SerializableInstruction(IParentToken token,
-                                   SerializationContext context) {
-        obj["name"] = new JSONString(Utils.CammelToSnake(
-            token.GetType().Name
-        ));
-        JSONList parameters = [];
-        for (int i = 0; i < token.Count; i++) {
-            ISerializableToken sub = token[i] as ISerializableToken;
-            if (sub != null) parameters.Add(new JSONInt(context.SerializeInstruction(sub)));
-        }
-        obj["parameters"] = parameters;
-        IValueToken valueToken = token as IValueToken;
-        if (valueToken != null) obj["type_"] = valueToken.GetType_().GetJSON();
-    }
-
-    public SerializableInstruction(IToken token) {
-        obj["name"] = new JSONString(Utils.CammelToSnake(
-            token.GetType().Name
-        ));
-        obj["parameters"] = new JSONList();
-        IValueToken valueToken = token as IValueToken;
-        if (valueToken != null) obj["type_"] = valueToken.GetType_().GetJSON();
-    }
-
-    public SerializableInstruction AddData(string name, IJSONValue value) {
-        obj[name] = value;
+    public SerializableInstruction SetOperands(IEnumerable<ISerializableToken> operands) {
+        obj["operands"] = new JSONList(operands.Select(operand => new JSONInt(operand.Serialize(ctx))));
         return this;
     }
 
-    public IJSONValue GetJSON() {
-        return obj;
+    public int Register() {
+        return ctx.AddInstructionJSON(obj);
     }
 }

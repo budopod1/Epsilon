@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class MatcherPatternProcessor(IPatternProcessor<List<IToken>> subprocessor) : IPatternProcessor<Match> {
     readonly IPatternProcessor<List<IToken>> subprocessor = subprocessor;
 

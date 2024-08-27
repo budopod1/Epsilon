@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class Scope(IDCounter scopeVarIDCounter) : IScope {
     readonly IDCounter scopeVarIDCounter = scopeVarIDCounter;
     readonly Dictionary<int, ScopeVar> variables = [];

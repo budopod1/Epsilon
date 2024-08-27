@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public interface IFileCompiler {
     string GetText();
     string GetIDPath();

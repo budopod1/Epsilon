@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class FunctionArgumentMatcher : IMatcher {
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count-1; i++) {

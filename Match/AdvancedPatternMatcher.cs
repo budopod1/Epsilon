@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class AdvancedPatternMatcher : AdvancedPatternExtractor<Match>, IMatcher {
     public AdvancedPatternMatcher(
         List<IPatternSegment> start, List<IPatternSegment> repeated, int minRepeats,

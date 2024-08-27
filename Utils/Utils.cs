@@ -1,8 +1,4 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Collections.Generic;
 
 public static class Utils {
     public static string Tab = "    ";
@@ -36,12 +32,12 @@ public static class Utils {
         return a == b;
     }
 
-    public static bool IsInstance(Object a, Type b) {
+    public static bool IsInstance(object a, Type b) {
         return IsInstance(a.GetType(), b);
     }
 
     public static string TitleCase(string text) {
-        return Char.ToUpper(text[0]) + text.Substring(1).ToLower();
+        return char.ToUpper(text[0]) + text.Substring(1).ToLower();
     }
 
     public static string CammelToSnake(string str) {
@@ -49,20 +45,23 @@ public static class Utils {
         bool first = true;
         bool wasUpper = false;
         foreach (char chr in str) {
-            bool isUpper = Char.IsUpper(chr);
+            bool isUpper = char.IsUpper(chr);
             if (isUpper && !wasUpper && !first) result.Append('_');
-            result.Append(Char.ToLower(chr));
+            result.Append(char.ToLower(chr));
             wasUpper = isUpper;
             first = false;
         }
         return result.ToString();
     }
 
+    static string? projectAbsolutePath = null;
+
     public static string ProjectAbsolutePath() {
+        if (projectAbsolutePath != null) return projectAbsolutePath;
         DirectoryInfo dir = new(AppDomain.CurrentDomain.BaseDirectory);
         do {
             if (dir.Name == "EpsilonLang") {
-                return dir.FullName;
+                return projectAbsolutePath = dir.FullName;
             }
             dir = dir.Parent;
         } while (dir != null);
@@ -219,12 +218,12 @@ public static class Utils {
 
     public static (int?, int?) LongToInts(long? num) {
         if (num == null) return (null, null);
-        return ((int)(num.Value >> 32), (int)(num.Value & ~(int)0));
+        return ((int)(num.Value >> 32), (int)(num.Value & ~0));
     }
 
     public static long? IntsToLong((int?, int?) vals) {
         (int? a, int? b) = vals;
         if (a == null || b == null) return null;
-        return ((long)a.Value << 32) + (long)b.Value;
+        return ((long)a.Value << 32) + b.Value;
     }
 }

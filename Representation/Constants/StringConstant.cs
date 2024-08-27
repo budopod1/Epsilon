@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class StringConstant(string value) : IConstant {
     readonly string value = value;
 

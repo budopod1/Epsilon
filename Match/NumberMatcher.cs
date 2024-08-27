@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class NumberMatcher(Program program) : IMatcher {
     readonly Program program = program;
 
@@ -14,7 +10,7 @@ public class NumberMatcher(Program program) : IMatcher {
             int j;
             for (j = i; j < tokens.Count; j++) {
                 IToken token = tokens[j];
-                if (!(token is TextToken)) {
+                if (token is not TextToken) {
                     break;
                 }
                 string digit = ((TextToken)token).GetText();
@@ -33,7 +29,7 @@ public class NumberMatcher(Program program) : IMatcher {
                 replaced.Add(token);
             }
             if (anyMatch && content) {
-                string matchedString = String.Join(
+                string matchedString = string.Join(
                     "", replaced.Select(
                         sub => ((TextToken)sub).GetText()
                     )

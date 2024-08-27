@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 abstract public class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<PatternExtractor<T>> {
     protected List<IPatternSegment> segments;
     protected IPatternProcessor<T> processor;

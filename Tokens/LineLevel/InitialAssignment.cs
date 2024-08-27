@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class InitialAssignment(VarDeclaration declaration, IValueToken o) : UnaryOperation<IValueToken>(o), IVerifier, ICompleteLine, ISerializableToken {
     readonly int id = declaration.GetID();
 
@@ -16,12 +13,10 @@ public class InitialAssignment(VarDeclaration declaration, IValueToken o) : Unar
     }
 
     public override int Serialize(SerializationContext context) {
-        context.AddDeclaration(id);
-        ScopeVar svar = Scope.GetVarByID(this, id);
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("variable", new JSONInt(id))
-                .AddData("var_type_", svar.GetType_().GetJSON())
-        );
+        context.RegisterVarDecl(id);
+        return new SerializableInstruction(context, this) {
+            ["variable"] = id,
+            ["var_type_"] = Scope.GetVarByID(this, id).GetType_()
+        }.SetOperands([o]).Register();
     }
 }

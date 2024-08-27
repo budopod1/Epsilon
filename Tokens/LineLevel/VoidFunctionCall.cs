@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class VoidFunctionCall(FunctionDeclaration function, List<IValueToken> arguments) : IFunctionCall, ICompleteLine, IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -28,15 +25,14 @@ public class VoidFunctionCall(FunctionDeclaration function, List<IValueToken> ar
     }
 
     public override string ToString() {
-        return Utils.WrapName(GetType().Name, String.Join(
+        return Utils.WrapName(GetType().Name, string.Join(
             ", ", arguments.ConvertAll<string>(obj => obj.ToString())
         ));
     }
 
     public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("function", new JSONString(function.GetID()))
-        );
+        return new SerializableInstruction(context, this) {
+            ["function"] = function.GetID()
+        }.Register();
     }
 }

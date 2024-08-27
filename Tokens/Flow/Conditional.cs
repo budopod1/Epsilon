@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Conditional : IFlowControl, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -74,29 +70,12 @@ public class Conditional : IFlowControl, IFunctionTerminator {
     }
 
     public int Serialize(SerializationContext context) {
-        JSONList conditionsJSON = [];
-        foreach (Condition condition in conditions) {
-            SerializationContext sub = context.AddSubContext();
-            sub.Serialize(condition.GetBlock());
-            JSONObject conditionObj = new() {
-                ["block"] = new JSONInt(sub.GetIndex())
-            };
-            SerializationContext conditionCtx = context.AddSubContext(hidden: true);
-            conditionCtx.SerializeInstruction(condition.GetCondition());
-            conditionObj["condition"] = conditionCtx.Serialize();
-            conditionsJSON.Add(conditionObj);
-        }
-        IJSONValue elseJSON = new JSONNull();
-        if (elseBlock != null) {
-            SerializationContext sub = context.AddSubContext();
-            sub.Serialize(elseBlock);
-            elseJSON = new JSONInt(sub.GetIndex());
-        }
-        return context.AddInstruction(
-            new SerializableInstruction(this)
-                .AddData("conditions", conditionsJSON)
-                .AddData("else", elseJSON)
-        );
+        return new SerializableInstruction(context, this) {
+            ["conditions"] = conditions.Select(condition => new Dictionary<string, object> {
+                {"block", condition.GetBlock()}, {"condition", condition.GetCondition()}
+            }),
+            ["else"] = elseBlock
+        }.Register();
     }
 
     public bool DoesTerminateFunction() {

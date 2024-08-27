@@ -1,11 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.Diagnostics;
-using System.Collections.Generic;
-
 public class EPSLFileCompiler : IFileCompiler {
     Program program;
     readonly string fileText;
@@ -154,9 +146,7 @@ public class EPSLFileCompiler : IFileCompiler {
     public void FinishCompilation(string destPath, bool recommendLLVM) {
         AddUnusedValueWrappers(program);
 
-        string json = GetJSONString(program);
-
-        SaveJSON(json);
+        SaveProgramJSON(program);
 
         CreateLLVMIR();
 
@@ -405,8 +395,8 @@ public class EPSLFileCompiler : IFileCompiler {
         Dictionary<string, Func<IConstant>> constantValues = new() {
             {"true", () => new BoolConstant(true)},
             {"false", () => new BoolConstant(false)},
-            {"infinity", () => new FloatConstant(Double.NegativeInfinity)},
-            {"NaN", () => new FloatConstant(Double.NaN)},
+            {"infinity", () => new FloatConstant(double.NegativeInfinity)},
+            {"NaN", () => new FloatConstant(double.NaN)},
             {"pi", () => new FloatConstant(MathF.PI)},
         };
         return DoStructuredSyntaxMatching(
@@ -951,7 +941,7 @@ public class EPSLFileCompiler : IFileCompiler {
         }
 
         Func<IEnumerable<Type_>, string> stringifyTypes_ = types_ =>
-            String.Join(", ", types_.Select(type_ => type_.ToString()));
+            string.Join(", ", types_.Select(type_ => type_.ToString()));
         string plural = paramTypes_.Count == 1 ? "" : "s";
 
         if (matchingFunctions.Count == 0) {
@@ -959,7 +949,7 @@ public class EPSLFileCompiler : IFileCompiler {
             if (type_Alternatives.Count == 1) {
                 expectedTypes_Str = stringifyTypes_(type_Alternatives[0]);
             } else {
-                expectedTypes_Str = "\n" + String.Join(
+                expectedTypes_Str = "\n" + string.Join(
                     " or\n", type_Alternatives.Select(stringifyTypes_));
             }
 
@@ -981,7 +971,7 @@ Expected type{plural}: {expectedTypes_Str}", rawCall
                 }
                 return [call];
             } else {
-                string bestFuncTypes_Str = String.Join(" or", functions.Select(
+                string bestFuncTypes_Str = string.Join(" or", functions.Select(
                     func => stringifyTypes_(func.GetArguments().Select(arg => arg.GetType_()))));
                 throw new SyntaxErrorException($@"Function call is ambiguous:
 Got type{plural}: {stringifyTypes_(paramTypes_)}
@@ -1746,7 +1736,7 @@ Please clarify between the functions that take the types:
         while (true) {
             Match match = matcher.Match(tree);
             if (match == null) break;
-            tree = (TreeToken)match.Replace(tree);
+            tree = match.Replace(tree);
         }
         return tree;
     }
@@ -1757,7 +1747,7 @@ Please clarify between the functions that take the types:
             Match match = matcher.Match(tree);
             if (match == null) break;
             changed = true;
-            tree = (TreeToken)match.Replace(tree);
+            tree = match.Replace(tree);
         }
         return (changed, tree);
     }
@@ -1835,7 +1825,12 @@ Please clarify between the functions that take the types:
         }
     }
 
+    void SaveProgramJSON(Program program) {
+        IJSONValue json = program.GetJSON();
+        BinJSONEnv.WriteFile(Utils.JoinPaths(Utils.TempDir(), "code.binjson"), json);
+    }
+
     void CreateLLVMIR() {
-        CmdUtils.RunScript($"scripts{Path.DirectorySeparatorChar}runpython.bash");
+        CmdUtils.RunScript($"scripts{Path.DirectorySeparatorChar}runbackend.bash");
     }
 }

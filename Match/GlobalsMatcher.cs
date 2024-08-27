@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class GlobalsMatcher : IMatcher {
     public Match Match(IParentToken tokens) {
         bool wasNL = true;

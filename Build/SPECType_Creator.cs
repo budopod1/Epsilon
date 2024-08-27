@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class SPECType_Creator {
     readonly List<Type_> types_ = [];
 

@@ -1,5 +1,3 @@
-using System;
-
 public class AbortVoid : IFunctionTerminator, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -9,7 +7,7 @@ public class AbortVoid : IFunctionTerminator, IBlockEndOnly {
     }
 
     public int Serialize(SerializationContext context) {
-        return context.AddInstruction(new SerializableInstruction(this));
+        return new SerializableInstruction(context, this).Register();
     }
 
     public bool DoesTerminateFunction() {

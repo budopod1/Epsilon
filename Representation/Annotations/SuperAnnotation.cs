@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class SuperAnnotation(CodeSpan span) : IAnnotation {
     readonly CodeSpan span = span;
 

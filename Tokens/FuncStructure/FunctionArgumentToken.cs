@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class FunctionArgumentToken(string name, Type_ type_, int id = -1) : IToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

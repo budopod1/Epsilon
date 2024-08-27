@@ -1,5 +1,3 @@
-using System;
-
 public class VarDeclaration : IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

@@ -1,5 +1,3 @@
-using System;
-
 public abstract class Comparison(IValueToken o1, IValueToken o2) : BinaryOperation<IValueToken, IValueToken>(o1, o2), IValueToken, IVerifier {
     public Type_ GetType_() {
         return new Type_("Bool");
@@ -14,10 +12,8 @@ public abstract class Comparison(IValueToken o1, IValueToken o2) : BinaryOperati
     }
 
     public override int Serialize(SerializationContext context) {
-        Type_ common = Type_.CommonNonNull(this, o1.GetType_(), o2.GetType_());
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("common_type_", common.GetJSON())
-        );
+        return new SerializableInstruction(context, this) {
+            ["common_type_"] = Type_.CommonNonNull(this, o1.GetType_(), o2.GetType_())
+        }.Register();
     }
 }

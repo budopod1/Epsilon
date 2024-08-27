@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class AndPatternSegment : IPatternSegment {
     readonly List<IPatternSegment> segments;
 
@@ -14,7 +10,7 @@ public class AndPatternSegment : IPatternSegment {
     }
 
     public AndPatternSegment(IPatternSegment a, IPatternSegment b) {
-        this.segments = [a, b];
+        segments = [a, b];
     }
 
     public bool Matches(IToken token) {

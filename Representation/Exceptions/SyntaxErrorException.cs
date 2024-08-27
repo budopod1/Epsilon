@@ -1,5 +1,3 @@
-using System;
-
 public class SyntaxErrorException : Exception {
     public CodeSpan span;
 

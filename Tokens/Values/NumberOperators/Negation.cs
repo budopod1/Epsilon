@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class Negation(IValueToken o) : UnaryOperation<IValueToken>(o), IValueToken {
     public Type_ GetType_() {
         Type_ type_ = o.GetType_();

@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 
 public class IntConstant(int value) : IIntConstant {

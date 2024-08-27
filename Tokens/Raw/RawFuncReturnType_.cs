@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-
 public class RawFuncReturnType_(List<IToken> tokens) : TreeToken(tokens) {
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return (TreeToken)new RawFuncReturnType_(tokens);
+        return new RawFuncReturnType_(tokens);
     }
 
     public Type_ GetType_() {

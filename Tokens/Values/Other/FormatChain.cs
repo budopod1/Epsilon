@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class FormatChain : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -36,7 +33,7 @@ public class FormatChain : IParentToken, IValueToken {
 
     public FormatChain(IValueToken template, IValueToken value1) {
         this.template = template;
-        this.values = [value1];
+        values = [value1];
     }
 
     public IValueToken GetTemplate() {
@@ -54,7 +51,7 @@ public class FormatChain : IParentToken, IValueToken {
     public override string ToString() {
         return Utils.WrapName(
             GetType().Name,
-            template.ToString() + ": " + String.Join(
+            template.ToString() + ": " + string.Join(
                 ", ", values.ConvertAll<string>(
                     obj => obj.ToString()
                 )
@@ -63,8 +60,6 @@ public class FormatChain : IParentToken, IValueToken {
     }
 
     public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-        );
+        return new SerializableInstruction(context, this).Register();
     }
 }

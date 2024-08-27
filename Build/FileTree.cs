@@ -1,8 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-
 public class FileTree {
     public string PartialPath;
     public SPECFileCompiler OldCompiler;

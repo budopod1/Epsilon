@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class AddMatchingFunctionMatcher(FunctionDeclaration func) : IMatcher {
     readonly FunctionDeclaration func = func;
     readonly List<IPatternSegment> segments = func.GetPattern().GetSegments();

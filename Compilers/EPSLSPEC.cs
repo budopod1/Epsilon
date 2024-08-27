@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerable<Struct> structs, Dependencies dependencies, SubconfigCollection subconfigs, IEnumerable<string> imports, string IR, string obj, string source, FileSourceType sourceType, string idPath) {
     public IEnumerable<RealFunctionDeclaration> Functions = functions;
     public IEnumerable<Struct> Structs = structs;

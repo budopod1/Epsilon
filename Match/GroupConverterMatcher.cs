@@ -1,7 +1,3 @@
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-
 public class GroupConverterMatcher(Type source, Type dest) : IMatcher {
     readonly Type source = source;
     readonly Type dest = dest;
@@ -15,7 +11,7 @@ public class GroupConverterMatcher(Type source, Type dest) : IMatcher {
                     IToken inner = tree[0];
                     if (inner is IValueToken) {
                         IToken result = (IToken)Activator.CreateInstance(
-                            dest, new object[] {(IValueToken)inner}
+                            dest, [(IValueToken)inner]
                         );
                         return new Match(
                             i, i, [result], [token]

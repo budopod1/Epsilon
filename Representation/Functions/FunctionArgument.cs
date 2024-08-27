@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class FunctionArgument : IEquatable<FunctionArgument> {
     readonly string name;
     readonly Type_ type_;

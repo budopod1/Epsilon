@@ -1,5 +1,3 @@
-using System;
-
 public class TextPatternSegment(string text) : IPatternSegment {
     readonly string text = text;
 

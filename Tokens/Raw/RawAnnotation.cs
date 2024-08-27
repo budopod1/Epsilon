@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class RawAnnotation(string type, List<IToken> tokens) : TreeToken(tokens) {
     readonly string type = type;
 
@@ -22,6 +19,6 @@ public class RawAnnotation(string type, List<IToken> tokens) : TreeToken(tokens)
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return (TreeToken)new RawAnnotation(type, tokens);
+        return new RawAnnotation(type, tokens);
     }
 }

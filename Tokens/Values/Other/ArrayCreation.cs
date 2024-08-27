@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class ArrayCreation : IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -52,7 +48,7 @@ public class ArrayCreation : IParentToken, IValueToken {
                 type_.ToString(),
                 "<", ">"
             ),
-            String.Join(
+            string.Join(
                 ", ", values.ConvertAll<string>(
                     obj => obj.ToString()
                 )
@@ -61,9 +57,8 @@ public class ArrayCreation : IParentToken, IValueToken {
     }
 
     public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("elem_type_", type_.GetJSON())
-        );
+        return new SerializableInstruction(context, this) {
+            ["elem_type_"] = type_
+        }.Register();
     }
 }

@@ -1,8 +1,4 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
 public class Builder {
@@ -133,7 +129,6 @@ public class Builder {
             return ResultStatus.USERERR;
         }
 
-        // This C# version does not support the ??= operator
         projOut = proj ?? new EPSLPROJ(projLocation);
 
         return status2;
@@ -180,7 +175,6 @@ public class Builder {
             }
         });
 
-        // This C# version does not support the ??= operator
         cacheOut = cache ?? new EPSLCACHE(cacheLocation);
 
         return status2;
@@ -331,17 +325,12 @@ public class Builder {
     }
 
     bool doesSaveCache(BuildSettings settings) {
-        switch (settings.CacheMode) {
-        case CacheMode.DONTUSE:
-            return false;
-        case CacheMode.DONTLOAD:
-        case CacheMode.AUTO:
-            return shouldCache;
-        case CacheMode.ALWAYS:
-            return true;
-        default:
-            throw new InvalidOperationException();
-        }
+        return settings.CacheMode switch {
+            CacheMode.DONTUSE => false,
+            CacheMode.DONTLOAD or CacheMode.AUTO => shouldCache,
+            CacheMode.ALWAYS => true,
+            _ => throw new InvalidOperationException(),
+        };
     }
 
     void SwitchFile(FileTree file) {

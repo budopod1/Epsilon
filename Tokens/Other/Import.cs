@@ -1,8 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Import(List<string> path) : ITopLevel {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -14,7 +9,7 @@ public class Import(List<string> path) : ITopLevel {
     }
 
     public string GetRealPath() {
-        return String.Join(
+        return string.Join(
             Path.DirectorySeparatorChar,
             path.Select(part => part == "" ? ".." : part)
         );

@@ -1,5 +1,3 @@
-using System;
-
 public class IDCounter {
     int counter = 0;
 

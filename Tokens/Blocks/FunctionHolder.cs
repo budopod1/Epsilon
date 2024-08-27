@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class FunctionHolder : Holder, IAnnotatable {
     readonly List<IAnnotation> annotations;
 
@@ -13,7 +10,7 @@ public class FunctionHolder : Holder, IAnnotatable {
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return (TreeToken)new FunctionHolder(tokens, annotations);
+        return new FunctionHolder(tokens, annotations);
     }
 
     public RawFuncSignature GetRawSignature() {

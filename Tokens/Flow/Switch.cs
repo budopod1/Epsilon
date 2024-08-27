@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -85,28 +81,12 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     }
 
     public int Serialize(SerializationContext context) {
-        JSONList armsJSON = [];
-        foreach (SwitchArm arm in arms) {
-            SerializationContext sub = context.AddSubContext();
-            sub.Serialize(arm.GetBlock());
-            JSONObject armObj = new() {
-                ["block"] = new JSONInt(sub.GetIndex()),
-                ["target"] = arm.GetTarget().GetValue().GetJSON()
-            };
-            armsJSON.Add(armObj);
-        }
-        IJSONValue defaultJSON = new JSONNull();
-        if (default_ != null) {
-            SerializationContext sub = context.AddSubContext();
-            sub.Serialize(default_);
-            defaultJSON = new JSONInt(sub.GetIndex());
-        }
-        return context.AddInstruction(
-            new SerializableInstruction(
-                "switch", [value.Serialize(context)]
-            ).AddData("arms", armsJSON).AddData("default", defaultJSON)
-             .AddData("value_type_", value.GetType_().GetJSON())
-        );
+        return new SerializableInstruction(context, this) {
+            ["arms"] = arms.Select(arm => new Dictionary<string, object> {
+                {"block", arm.GetBlock()}, {"target", arm.GetTarget().GetValue()}
+            }),
+            ["default"] = default_
+        }.SetOperands([value]).Register();
     }
 
     public void Verify() {

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class FuncSignature(Type_ returnType_, FuncTemplate template) : IParentToken, IBarMatchingInto {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

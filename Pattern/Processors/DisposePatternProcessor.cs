@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class DisposePatternProcessor : IPatternProcessor<List<IToken>> {
     readonly Action<List<IToken>> action;
 
@@ -9,7 +6,7 @@ public class DisposePatternProcessor : IPatternProcessor<List<IToken>> {
     }
 
     public DisposePatternProcessor() {
-        this.action = null;
+        action = null;
     }
 
     public List<IToken> Process(List<IToken> tokens, int start, int end) {

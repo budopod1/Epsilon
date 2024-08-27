@@ -1,26 +1,307 @@
-#import irgen;
 #import binjson;
 #import eewriter;
+#import instructions;
+
+ScopeVar {
+    Str:name,
+    Type_:type_,
+    W:id,
+    Val:addr,
+}
+
+FuncProto {
+    Str:id,
+    Type_?:ret_type_,
+    Str:callee,
+    [Type_]:arg_types_,
+}
+
+FuncState {
+    FuncProto:proto,
+    [Val]:special_allocs,
+    [ScopeVar]:vars,
+    [ScopeVar]:arg_vars,
+    [ScopeVar]:block_vars,
+    [ScopeVar]:active_vars,
+}
+
+State {
+    BinJSON:binjson,
+    [Struct_]?:structs,
+    [ScopeVar]?:globals,
+    [FuncProto]?:protos,
+    FuncState?:func_state,
+}
+
+#global State?:state;
+
+State#get state {
+    return [state].unwrap;
+}
+
+FuncState#get func state {
+    return [get state.func_state].unwrap;
+}
+
+Type_#read type_ <BinJSON:binjson> {
+    [Type_]:generics = [Type_] [];
+    for (BinJSON:generic_json in [[binjson].get["generics"]].get_list) {
+        [generics].append[read type_ [generic_json]];
+    };
+    Z:bits = -1;
+    BinJSON:bits_json = [binjson].get["bits"];
+    if (![bits_json].is_null) {
+        bits = [bits_json].get_int;
+    };
+    return Type_ [[[binjson].get["name"]].get_str, bits, generics];
+}
+
+Type_?#read voidable type_ <BinJSON:binjson> {
+    if ([binjson].is_null) {
+        return null;
+    };
+    [Type_]:generics = [Type_] [];
+    for (BinJSON:generic_json in [[binjson].get["generics"]].get_list) {
+        [generics].append[read type_ [generic_json]];
+    };
+    Z:bits = -1;
+    BinJSON:bits_json = [binjson].get["bits"];
+    if (![bits_json].is_null) {
+        bits = [bits_json].get_int;
+    };
+    return Type_ [[[binjson].get["name"]].get_str, bits, generics];
+}
+
+FuncProto#read func proto <BinJSON:binjson> {
+    [Type_]:arg_types_ = [Type_] [];
+    for (BinJSON:arg_json in [[binjson].get["arguments"]].get_list) {
+        [arg_types_].append[read type_ [[arg_json].get["type_"]]];
+    };
+    return FuncProto [
+        [[binjson].get["id"]].get_str,
+        read voidable type_ [[binjson].get["return_type_"]],
+        [[binjson].get["callee"]].get_str,
+        arg_types_
+    ];
+}
 
 Z#main {
-    start irgen ["/example/path/to/file"];
-    ir entry;
-    end irgen;
+    BinJSON:binjson = read BinJSON_;
+
+    state = State [binjson, null, null, null, null];
+
+    start irgen [[[binjson].get["id_path"]].get_str];
+    load structs;
+    generate globals;
+    define func protos;
+    build funcs;
+    Str:result = end irgen;
+    state = null;
+
+    write result [result];
 
     return 0;
 }
 
-#ir entry {
-if (fn [Z_] ["main"] [[Type_] []]) {
-    Val:arr = new array [Array_ [W_]] [[Val] [c [1], c [2]]] with capacity [10];
-    [arr].check_ref;
+BinJSON#read BinJSON_ {
+    File?:maybe_file = open_file["temp/code.binjson"][[FILE_READ_MODE] | [FILE_BINARY_MODE]];
+    if ([maybe_file].is_null) {
+        abort "Failed to open code.binjson";
+    };
+    File:file = [maybe_file].unwrap;
+    Str?:bytes = [file].read_all;
+    if ([bytes].is_null) {
+        abort "Failed to read code.binjson";
+    };
+    return parse_BinJSON[[bytes].unwrap];
+}
 
-    Val:str = mut str ["Hello, world!"] [1];
-    free[str];
+#load structs {
+    [Struct_]:structs = [Struct_] [];
+    for (BinJSON:struct_json in [[get state.binjson].get["structs"]].get_list) {
+        [Field]:fields = [Field] [];
+        for (BinJSON:field_json in [[struct_json].get["fields"]].get_list) {
+            [fields].append [Field [
+                [[field_json].get["name"]].get_str,
+                read type_ [[field_json].get["type_"]]
+            ]];
+        };
+        Struct_:struct_ = Struct_ [
+            [[struct_json].get["id"]].get_str, [[struct_json].get["name"]].get_str,
+            [[struct_json].get["symbol"]].get_str, true, fields
+        ];
+        [structs].append[struct_];
+        [struct_].register;
+    };
+    get state.structs = structs;
+}
 
-    Val:a = var [c [1.2]];
-    [a] = [[a] + [c [0.9]]];
-    ret [cast [a] to [Z_]];
+#generate globals {
+    [ScopeVar]:globals = [ScopeVar] [];
+    [BinJSON]:globals_json = [[get state.binjson].get["globals"]].get_list;
+    for (BinJSON:global_json in globals_json) {
+        Str:name = [[global_json].get["name"]].get_str;
+        Type_:type_ = read type_ [[global_json].get["type_"]];
+        W:id = (W)[[global_json].get["id"]].get_int;
+        Val:addr = make global [type_] [null] [c null_ [type_]];
+        [globals].append[ScopeVar [name, type_, id, addr]];
+    };
+    get state.globals = globals;
+}
+
+#define func protos {
+    [FuncProto]:protos = [FuncProto] [];
+    BinJSON:binjson = get state.binjson;
+    for (BinJSON:proto_json in [[[binjson].get["functions"]].get_list] + [[[binjson].get["extern_functions"]].get_list]) {
+        FuncProto:proto = read func proto [proto_json];
+        extern fn [proto.ret_type_] [proto.callee] [proto.arg_types_];
+        [protos].append[proto];
+    };
+    get state.protos = protos;
+}
+
+#build funcs {
+    for (BinJSON:func_json in [[get state.binjson].get["functions"]].get_list) {
+        build func [func_json];
+    };
+}
+
+#build func <BinJSON:func_json> {
+    FuncProto:proto = read func proto [func_json];
+if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
+    [ScopeVar]:vars = [ScopeVar] [];
+
+    [ScopeVar]:arg_vars = [ScopeVar] [];
+    [BinJSON]:arg_list = [[func_json].get["arguments"]].get_list;
+    for (L:i enumerating arg_list) {
+        BinJSON:arg_json = arg_list[i];
+        Type_:type_ = read type_ [[arg_json].get["type_"]];
+        Val:arg = func arg [i];
+        Val:addr = &[var [type_] [arg]];
+        [arg].incr_ref;
+        Str:name = [[arg_json].get["name"]].get_str;
+        W:id = (W)[[arg_json].get["variable"]].get_int;
+        [arg_vars].append[ScopeVar [name, type_, id, addr]];
+    };
+    [vars].extend[arg_vars];
+
+    for (BinJSON:var_json in [[func_json].get["vars"]].get_list) {
+        Type_:type_ = read type_ [[var_json].get["type_"]];
+        Val:addr = &[var [type_]];
+        Str:name = [[var_json].get["name"]].get_str;
+        W:id = (W)[[var_json].get["id"]].get_int;
+        [vars].append[ScopeVar [name, type_, id, addr]];
+    };
+
+    [Val]:special_allocs = [Val] [];
+
+    for (BinJSON:alloc_json in [[func_json].get["special_allocs"]].get_list) {
+        [special_allocs].append[&[var [read type_ [alloc_json]]]];
+    };
+
+    get state.func_state = FuncState [
+        proto, special_allocs, vars, arg_vars, [ScopeVar] [], [ScopeVar] []
+    ];
+
+    build block [[func_json].get["block"]];
 end fn;
+} else {
+    abort "Duplicate function callee {}" % proto.callee;
 };
+}
+
+ScopeVar#get var <W:id> {
+    for (ScopeVar:var in get func state.vars) {
+        if (var.id == id) {
+            return var;
+        };
+    };
+    abort "Cannot find a var with ID {}" % id;
+}
+
+[ScopeVar]#get var list <BinJSON:list_json> {
+    [ScopeVar]:result = [ScopeVar] [];
+    for (BinJSON:id_json in [list_json].get_list) {
+        [result].append[get var [(W)[id_json].get_int]];
+    };
+    return result;
+}
+
+#cleanup var list <[ScopeVar]:var_list> {
+    for (ScopeVar:var in var_list) {
+        [*[var.addr]].decr_ref;
+    };
+}
+
+#perpare for_ block termination {
+    cleanup var list [get func state.block_vars];
+}
+
+#perpare for_ function termination returning <Val?:ret_val> {
+    if (ret_val) {
+        [[ret_val].unwrap].incr_ref;
+    };
+    cleanup var list [get func state.active_vars];
+    if (ret_val) {
+        [[ret_val].unwrap].checkless_decr_ref;
+    };
+}
+
+#perpare for_ function termination {
+    perpare for_ function termination returning [null];
+}
+
+[Val?]#build ir <BinJSON:ir_json> {
+    [Val?]:results = [Val?] [];
+    for (BinJSON:instruction_json in [ir_json].get_list) {
+        [Val]:operands = [Val] [];
+        for (BinJSON:operand_json in [[instruction_json].get["operands"]].get_list) {
+            Val?:result = results[(W)[operand_json].get_int];
+            if ([result].is_null) {
+                abort "Cannot use void instruction as operand";
+            };
+            [operands].append[[result].unwrap];
+        };
+        [results].append[build instruction [instruction_json] using [operands]];
+    };
+    return results;
+}
+
+#build block <BinJSON:block_json> {
+    [ScopeVar]:block_vars = get var list [[block_json].get["vars_here"]];
+    get func state.block_vars = block_vars;
+    [ScopeVar]:active_vars = get var list [[block_json].get["intialized_vars"]];
+    [active_vars].extend[block_vars];
+    [active_vars].extend[get func state.arg_vars];
+    get func state.active_vars = active_vars;
+    build ir [[block_json].get["ir"]];
+    if (!is block terminated) {
+        if ([[block_json].get["does_terminate_function"]].get_bool) {
+            mark as unreachable;
+        } else {
+            perpare for_ function termination;
+            ret void;
+        };
+    };
+}
+
+Val#build seperated values <BinJSON:val_json> {
+    [Val?]:results = build ir [[val_json].get["ir"]];
+    Val?:result = results[(W)[[val_json].get["val"]].get_int];
+    if (result) {
+        return [result].unwrap;
+    } else {
+        abort "Seperated value references non-value instruction";
+    };
+}
+
+#write result <Str:result> {
+    File?:maybe_file = open_file["temp/code.ll"][FILE_WRITE_MODE];
+    if ([maybe_file].is_null) {
+        abort "Failed to open code.ll";
+    };
+    File:file = [maybe_file].unwrap;
+    if (![file].write[result]) {
+        abort "Failed to write to code.ll";
+    };
 }

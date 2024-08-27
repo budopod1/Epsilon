@@ -1,6 +1,4 @@
-using System;
-
-public class ArrayAssignment : TrinaryOperation<IValueToken, IValueToken, IValueToken>, IVerifier, ICompleteLine {
+public class ArrayAssignment : TrinaryAction<IValueToken, IValueToken, IValueToken>, ISerializableToken, IVerifier, ICompleteLine {
     public ArrayAssignment(IValueToken array, IValueToken index, IValueToken value) : base(array, index, value) {}
     public ArrayAssignment(ArrayAccess access, IValueToken value) : base(access.GetArray(), access.GetIndex(), value) {}
 
@@ -16,10 +14,9 @@ public class ArrayAssignment : TrinaryOperation<IValueToken, IValueToken, IValue
             );
     }
 
-    public override int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("elem_type_", o1.GetType_().GetGeneric(0).GetJSON())
-        );
+    public int Serialize(SerializationContext context) {
+        return new SerializableInstruction(context, this) {
+            ["elem_type_"] = o1.GetType_().GetGeneric(0)
+        }.SetOperands([o2, o3]).Register();
     }
 }

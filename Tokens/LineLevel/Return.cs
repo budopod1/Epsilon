@@ -1,5 +1,3 @@
-using System;
-
 public class Return(IValueToken o) : UnaryOperation<IValueToken>(o), IVerifier, IFunctionTerminator, IBlockEndOnly {
     public void Verify() {
         Function func = TokenUtils.GetParentOfType<Function>(this);

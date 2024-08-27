@@ -1,5 +1,3 @@
-using System;
-
 public class FuncArgPatternSegment : IPatternSegment {
     public bool Matches(IToken token) {
         return token is RawSquareGroup;

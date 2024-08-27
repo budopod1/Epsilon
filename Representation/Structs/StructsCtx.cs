@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public static class StructsCtx {
     static readonly Dictionary<string, Struct> structs = [];
     static bool structsLoaded = false;

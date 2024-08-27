@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Dependencies(IEnumerable<Struct> structs, IEnumerable<RealFunctionDeclaration> functions) {
     readonly IEnumerable<Struct> structs = structs;
     readonly IEnumerable<RealFunctionDeclaration> functions = functions;

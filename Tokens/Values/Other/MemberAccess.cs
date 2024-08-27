@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class MemberAccess(IValueToken o, MemberAccessPostfix member) : UnaryOperation<IValueToken>(o), IAssignableValue, IVerifier {
     readonly string member = member.GetValue();
     readonly Type_ structType_ = o.GetType_().UnwrapPoly();
@@ -34,15 +31,14 @@ public class MemberAccess(IValueToken o, MemberAccessPostfix member) : UnaryOper
         GetType_();
     }
 
-    public override int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("member", new JSONString(member))
-                .AddData("struct_type_", structType_.GetJSON())
-        );
-    }
-
     public ICompleteLine AssignTo(IValueToken value) {
         return new MemberAssignment(this, value);
+    }
+
+    public override int Serialize(SerializationContext context) {
+        return new SerializableInstruction(context, this) {
+            ["member"] = member,
+            ["struct_type_"] = structType_
+        }.Register();
     }
 }

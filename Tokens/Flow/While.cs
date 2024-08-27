@@ -1,21 +1,13 @@
-using System;
-using System.Collections.Generic;
-
-public class While(IValueToken o1, CodeBlock o2) : BinaryOperation<IValueToken, CodeBlock>(o1, o2), ILoop, IFunctionTerminator {
+public class While(IValueToken o1, CodeBlock o2) : BinaryAction<IValueToken, CodeBlock>(o1, o2), ILoop, IFunctionTerminator {
     public CodeBlock GetBlock() {
         return o2;
     }
 
-    public override int Serialize(SerializationContext context) {
-        SerializationContext sub = context.AddSubContext();
-        sub.Serialize(o2);
-        SerializationContext conditionCtx = context.AddSubContext(hidden: true);
-        conditionCtx.SerializeInstruction(o1);
-        return context.AddInstruction(
-            new SerializableInstruction(this)
-                .AddData("block", new JSONInt(sub.GetIndex()))
-                .AddData("condition", conditionCtx.Serialize())
-        );
+    public int Serialize(SerializationContext context) {
+        return new SerializableInstruction(context, this) {
+            ["condition"] = o1,
+            ["block"] = o2
+        }.Register();
     }
 
     public bool DoesTerminateFunction() {

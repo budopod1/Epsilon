@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 public static class Log {
     public static LogLevel Verbosity = LogLevel.NONE;
 

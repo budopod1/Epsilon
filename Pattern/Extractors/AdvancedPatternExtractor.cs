@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
     enum Part {
         START,

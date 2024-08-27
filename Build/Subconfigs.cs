@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public static class Subconfigs {
     static readonly List<ISubconfig> ClangParseConfigs = [];
     static readonly List<ISubconfig> LinkingConfigs = [];

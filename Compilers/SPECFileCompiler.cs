@@ -1,8 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-
 public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IFileCompiler {
     readonly string curPath = path;
     readonly string idPath = obj["id_path"].GetString();

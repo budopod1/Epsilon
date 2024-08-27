@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class RealExternalFunction(PatternExtractor<List<IToken>> pattern, List<FunctionArgument> arguments, string id, string sourcePath, string callee, Type_ returnType_, bool doesReturnVoid, FunctionSource source, bool takesOwnership = false, bool resultInParams = false) : RealFunctionDeclaration {
     readonly PatternExtractor<List<IToken>> pattern = pattern;
     readonly List<FunctionArgument> arguments = arguments;

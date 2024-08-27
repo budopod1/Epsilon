@@ -1,5 +1,3 @@
-using System;
-
 public class ReturnVoid : IVerifier, IFunctionTerminator, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -18,7 +16,7 @@ public class ReturnVoid : IVerifier, IFunctionTerminator, IBlockEndOnly {
     }
 
     public int Serialize(SerializationContext context) {
-        return context.AddInstruction(new SerializableInstruction(this));
+        return new SerializableInstruction(context, this).Register();
     }
 
     public bool DoesTerminateFunction() {

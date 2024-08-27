@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -9,7 +5,6 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     static readonly List<IPatternSegment> mainPattern = [
         new UnitPatternSegment<string>(typeof(Name), "main")
     ];
-    public readonly Dictionary<ISerializableToken, int> Serialized = [];
 
     public int Count {
         get { return 1; }
@@ -30,17 +25,16 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     CodeBlock block;
     readonly Type_ returnType_;
     readonly bool doesReturnVoid;
-    readonly List<Type_> specialAllocs = [];
     readonly string id;
     readonly string callee;
-    readonly List<SerializationContext> contexts = [];
+    readonly List<Type_> specialAllocs = [];
 
     public Function(string idPath, Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_, List<IAnnotation> annotations) {
-        this.sourcePath = idPath;
+        sourcePath = idPath;
         this.pattern = pattern;
         this.block = block;
         this.returnType_ = returnType_;
-        this.doesReturnVoid = returnType_ == null;
+        doesReturnVoid = returnType_ == null;
         IScope scope = block.GetScope();
         foreach (FunctionArgumentToken argument in arguments) {
             argument.SetID(scope.AddVar(
@@ -124,36 +118,14 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         return Utils.WrapName(title, block.ToString());
     }
 
-    public int RegisterContext(SerializationContext context) {
-        contexts.Add(context);
-        return contexts.Count-1;
-    }
-
-    public int? GetContextIdByBlock(CodeBlock block) {
-        int i = 0;
-        foreach (SerializationContext context in contexts) {
-            if (context.GetBlock() == block) {
-                return i;
-            }
-            i++;
-        }
-        return null;
-    }
-
     public JSONObject GetFullJSON() {
         JSONObject obj = GetJSON();
-        new SerializationContext(this).Serialize(block);
-        obj["blocks"] = new JSONList(contexts.Select(
-            context=>context.Serialize()
-        ));
-        JSONList declarations = new(
+        obj["block"] = SerializationContext.SerializeBlock(null, block);
+        obj["vars"] = new JSONList(
             TokenUtils.TraverseFind<CodeBlock>(this).SelectMany(
-                block => Scope.GetVarsJSON(block.GetScope())
-            )
-        );
-        obj["declarations"] = declarations;
+                block => Scope.GetVarsJSON(block.GetScope())));
         obj["special_allocs"] = new JSONList(
-            specialAllocs.Select(specialAlloc=>specialAlloc.GetJSON())
+            specialAllocs.Select(type_=>type_.GetJSON())
         );
         obj["is_main"] = new JSONBool(IsMain());
         return obj;

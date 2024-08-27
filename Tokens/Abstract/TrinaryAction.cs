@@ -1,6 +1,4 @@
-using System;
-
-public abstract class TrinaryOperation<T1, T2, T3>(T1 o1, T2 o2, T3 o3) : IParentToken, ISerializableToken where T1 : IToken where T2 : IToken where T3 : IToken {
+public abstract class TrinaryAction<T1, T2, T3>(T1 o1, T2 o2, T3 o3) : IParentToken where T1 : IToken where T2 : IToken where T3 : IToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
@@ -32,12 +30,6 @@ public abstract class TrinaryOperation<T1, T2, T3>(T1 o1, T2 o2, T3 o3) : IParen
     public override string ToString() {
         return Utils.WrapName(
             GetType().Name, $"{o1.ToString()}, {o2.ToString()}, {o3.ToString()}"
-        );
-    }
-
-    public virtual int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
         );
     }
 }

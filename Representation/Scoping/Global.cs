@@ -1,8 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Global {
     readonly string name;
     readonly Type_ type_;

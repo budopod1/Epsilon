@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class BoolConstant(bool value) : INumberConstant, IIntConstant {
     readonly bool value = value;
 

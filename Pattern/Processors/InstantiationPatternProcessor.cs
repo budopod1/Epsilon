@@ -1,7 +1,3 @@
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-
 public class InstantiationPatternProcessor(Type type) : IPatternProcessor<List<IToken>> {
     readonly Type type = type;
 

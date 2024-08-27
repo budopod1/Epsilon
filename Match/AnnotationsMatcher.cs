@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-
 public class AnnotationsMatcher : IMatcher {
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
-            TextToken stoken = tokens[i] as TextToken;
-            if (stoken == null || stoken.GetText() != "@") continue;
+            if (tokens[i] is not TextToken stoken || stoken.GetText() != "@") continue;
             List<IToken> matched = [stoken];
             string type = null;
             if (i + 1 < tokens.Count) {
@@ -25,8 +21,8 @@ public class AnnotationsMatcher : IMatcher {
             int j = i + 2;
             for (; j < tokens.Count; j++) {
                 IToken token = tokens[j];
-                if (token is TextToken) {
-                    string text = ((TextToken)token).GetText();
+                if (token is TextToken token1) {
+                    string text = token1.GetText();
                     if (text == "@") {
                         completed = true;
                         j--;
@@ -43,7 +39,7 @@ public class AnnotationsMatcher : IMatcher {
             if (!completed) {
                 throw new SyntaxErrorException(
                     "Expected another annotation argument, '@', or ';', found EOF",
-                    matched[matched.Count - 1]
+                    matched[^1]
                 );
             }
             RawAnnotation annotation = new(type, arguments);

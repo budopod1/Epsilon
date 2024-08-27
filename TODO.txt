@@ -21,3 +21,4 @@ TODO:
 * remove and replace every function that uses memcmp in builtins.c (except formatString) as every usage of memcmp in builtins.c is unsafe except formatString's usage (again due to padding bytes)
 * add `<Optional<Any>:optional>.expect<Str:fail_msg>` builtin akin to Rust's
 * once custom struct destructors are supported, File and its associated functions shouldn't be builtins
+* instead of mangling check_ref names, just make the functions private

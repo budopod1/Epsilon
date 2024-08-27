@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Program : TreeToken, IVerifier, IHasScope {
     readonly string path;
     readonly HashSet<LocatedID> structIds = [];
@@ -90,13 +86,12 @@ public class Program : TreeToken, IVerifier, IHasScope {
     public void Verify() {
         bool foundMain = false;
         foreach (IToken token in this) {
-            if (!(token is ITopLevel)) {
+            if (token is not ITopLevel) {
                 throw new SyntaxErrorException(
                     "Invalid toplevel syntax", token
                 );
             }
-            Function func = token as Function;
-            if (func != null) {
+            if (token is Function func) {
                 if (func.IsMain()) {
                     if (foundMain) {
                         throw new SyntaxErrorException(
@@ -110,20 +105,17 @@ public class Program : TreeToken, IVerifier, IHasScope {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = [];
-        JSONList functions = [];
-        foreach (IToken token in this) {
-            if (token is Function) {
-                functions.Add(((Function)token).GetFullJSON());
-            }
-        }
-        obj["functions"] = functions;
-        obj["module_functions"] = new JSONList(
-            externalDeclarations.Select(declaration => declaration.GetJSON())
-        );
-        obj["structs"] = new JSONList(StructsCtx.Structs().Select(struct_ => struct_.GetJSON()));
-        obj["path"] = new JSONString(path);
-        obj["scope"] = new JSONList(Scope.GetVarsJSON(scope));
+        JSONObject obj = new() {
+            ["functions"] = new JSONList(this.OfType<Function>().Select(
+                function => function.GetFullJSON()
+            )),
+            ["extern_functions"] = new JSONList(
+                externalDeclarations.Select(declaration => declaration.GetJSON())
+            ),
+            ["structs"] = new JSONList(StructsCtx.Structs().Select(struct_ => struct_.GetJSON())),
+            ["id_path"] = new JSONString(path),
+            ["globals"] = new JSONList(Scope.GetVarsJSON(scope))
+        };
         return obj;
     }
 }

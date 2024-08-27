@@ -1,5 +1,3 @@
-using System;
-
 public class IntermediateFile(IntermediateFile.IntermediateType fileType, string path, bool isInUserDir) {
     public enum IntermediateType {
         IR,

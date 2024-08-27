@@ -1,8 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-
 public class CFileCompiler : IFileCompiler {
     readonly string path;
     readonly string idPath;

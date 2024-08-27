@@ -1,5 +1,3 @@
-using System;
-
 public class RawGivenPart : IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

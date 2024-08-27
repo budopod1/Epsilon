@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class PostIncrement(IAssignableValue o) : UnaryOperation<IAssignableValue>(o), IValueToken {
     public Type_ GetType_() {
         return o.GetType_();
@@ -11,7 +8,7 @@ public class PostIncrement(IAssignableValue o) : UnaryOperation<IAssignableValue
         ICompleteLine line = o.AssignTo(newValue);
         line.parent = this;
         newValue.parent = (IParentToken)line;
-        context.SerializeInstruction(line);
-        return context.SerializeInstruction(o);
+        new SerializableInstruction(context, line).Register();
+        return new SerializableInstruction(context, o).Register();
     }
 }

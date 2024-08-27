@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-
-public class Line(List<IToken> tokens) : TreeToken(tokens), IVerifier {
+public class Line(List<IToken> tokens) : TreeToken(tokens), IVerifier, ISerializableToken {
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return (TreeToken)new Line(tokens);
+        return new Line(tokens);
     }
 
     public void Verify() {
@@ -28,5 +25,14 @@ public class Line(List<IToken> tokens) : TreeToken(tokens), IVerifier {
                 );
             }
         }
+    }
+
+    public ICompleteLine GetChild() {
+        Verify();
+        return (ICompleteLine)this[0];
+    }
+
+    public int Serialize(SerializationContext context) {
+        return GetChild().Serialize(context);
     }
 }

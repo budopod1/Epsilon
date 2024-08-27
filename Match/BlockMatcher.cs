@@ -1,7 +1,3 @@
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-
 public class BlockMatcher : IMatcher {
     readonly IPatternSegment prior;
     readonly IPatternSegment start;
@@ -51,7 +47,7 @@ public class BlockMatcher : IMatcher {
                     List<IToken> replace = new(replaced);
                     replace.RemoveAt(0);
                     replace.RemoveAt(replace.Count-1);
-                    IToken holderToken = (IToken)Activator.CreateInstance(holder, new object[] {replace});
+                    IToken holderToken = (IToken)Activator.CreateInstance(holder, [replace]);
                     replacement.Add(holderToken);
                     return new Match(i, j, replacement, replaced);
                 }

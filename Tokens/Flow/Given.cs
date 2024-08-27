@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Given : IFlowControl, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -37,8 +33,10 @@ public class Given : IFlowControl, IFunctionTerminator {
                 "Cannot add part to given already terminated with else", part
             );
         }
-        parts = new List<GivenPart>(given.GetParts());
-        parts.Add(new GivenPart(part));
+        parts = new List<GivenPart>(given.GetParts())
+        {
+            new GivenPart(part)
+        };
     }
 
     public Given(Given given, CodeBlock else_) {
@@ -60,9 +58,13 @@ public class Given : IFlowControl, IFunctionTerminator {
     }
 
     public int Serialize(SerializationContext context) {
-        throw new NotImplementedException(
-            "Serialization and complete compilation of givens is not yet implemented"
-        );
+        return new SerializableInstruction(context, this) {
+            ["parts"] = parts.Select(part => new Dictionary<string, object> {
+                {"val", part.GetValue()}, {"to_type_", part.GetToType_()},
+                {"var_id", part.GetVarID()}, {"block", part.GetBlock()}
+            }),
+            ["else"] = else_
+        }.Register();
     }
 
     public bool DoesTerminateFunction() {

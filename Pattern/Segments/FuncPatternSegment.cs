@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class FuncPatternSegment<T>(Func<T, bool> func) : IPatternSegment where T : class {
     readonly Func<T, bool> func = func;
 

@@ -1,7 +1,3 @@
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-
 public class SplitTokensPatternProcessor : IPatternProcessor<List<IToken>> {
     readonly Type wrapper;
     readonly IPatternSegment seperator;
@@ -17,7 +13,7 @@ public class SplitTokensPatternProcessor : IPatternProcessor<List<IToken>> {
     public SplitTokensPatternProcessor(IPatternSegment seperator, Type wrapper) {
         this.wrapper = wrapper;
         this.seperator = seperator;
-        this.subprocessor = null;
+        subprocessor = null;
     }
 
     public List<IToken> Process(List<IToken> tokens_, int start, int end) {
@@ -32,7 +28,7 @@ public class SplitTokensPatternProcessor : IPatternProcessor<List<IToken>> {
         List<IToken> result = [];
         foreach (List<IToken> section in split) {
             IToken token = (IToken)Activator.CreateInstance(
-                wrapper, new object[] {section}
+                wrapper, [section]
             );
             token.span = TokenUtils.MergeSpans(section);
             result.Add(token);

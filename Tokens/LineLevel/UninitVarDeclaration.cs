@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class UninitVarDeclaration(VarDeclaration declaration) : ICompleteLine, ISerializableToken, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -18,9 +15,9 @@ public class UninitVarDeclaration(VarDeclaration declaration) : ICompleteLine, I
     }
 
     public int Serialize(SerializationContext context) {
-        context.AddDeclaration(id);
-        return context.AddInstruction(
-            new SerializableInstruction(this).AddData("variable", new JSONInt(id))
-        );
+        context.RegisterVarDecl(id);
+        return new SerializableInstruction(context, this) {
+            ["variable"] = id
+        }.Register();
     }
 }

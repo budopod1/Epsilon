@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class RawForClause : TreeToken {
     readonly string name;
 
@@ -13,7 +10,7 @@ public class RawForClause : TreeToken {
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return (TreeToken)new RawForClause(name, tokens);
+        return new RawForClause(name, tokens);
     }
 
     public string GetName() {

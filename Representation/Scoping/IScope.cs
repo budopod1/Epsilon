@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public interface IScope {
     bool ContainsVar(IHasScope hs, string name);
     ScopeVar GetVarByID(IHasScope hs, int id);

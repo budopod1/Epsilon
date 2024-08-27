@@ -1,6 +1,3 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 public class Type_ : IEquatable<Type_> {
     public static Type_ String() {
         return new Type_("Byte").ArrayOf();

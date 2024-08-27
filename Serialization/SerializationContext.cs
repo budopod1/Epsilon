@@ -1,85 +1,99 @@
-using System;
-using System.Collections.Generic;
+using System.Collections;
 
 public class SerializationContext {
-    readonly Function function;
-    readonly JSONList instructions = [];
-    CodeBlock block;
-    readonly int index;
-    readonly bool hidden;
-    readonly JSONList parentDeclarations;
-    readonly JSONList initialDeclarations = [];
-    bool doesTerminateFunction = false;
+    private readonly SerializationContext parent = null;
+    private readonly List<int> varsHere = [];
+    private readonly JSONList json = [];
 
-    public SerializationContext(Function function, bool hidden=false, JSONList parentDeclarations=null) {
-        this.parentDeclarations = parentDeclarations ?? [];
-        this.function = function;
-        this.hidden = hidden;
-        if (!hidden) {
-            index = function.RegisterContext(this);
-        }
+    SerializationContext(SerializationContext parent) {
+        this.parent = parent;
     }
 
-    public int AddInstruction(SerializableInstruction instruction) {
-        instructions.Add(instruction.GetJSON());
-        return instructions.Count-1;
+    public SerializationContext GetParent() {
+        return parent;
     }
 
-    public void Serialize(CodeBlock block) {
-        this.block = block;
-        doesTerminateFunction = block.DoesTerminateFunction();
-        foreach (IToken token in block) {
-            if (token is Line line) {
-                ICompleteLine instruction = (ICompleteLine)line[0];
-                SerializeInstruction(instruction);
-            }
-        }
+    public void RegisterVarDecl(int var) {
+        varsHere.Add(var);
     }
 
-    public SerializationContext AddSubContext(bool hidden=false) {
-        JSONList declarations = new(parentDeclarations);
-        foreach (IJSONValue declaration in initialDeclarations) {
-            declarations.Add(declaration);
-        }
-        return new SerializationContext(
-            function, hidden, declarations
-        );
-    }
-
-    public int GetIndex() {
-        return index;
-    }
-
-    public IJSONValue Serialize() {
+    public static IJSONValue SerializeValue(SerializationContext parentCtx, IValueToken val) {
+        SerializationContext ctx = new(parentCtx);
+        int result = val.Serialize(ctx);
         return new JSONObject {
-            ["instructions"] = instructions,
-            ["initial_declarations"] = initialDeclarations,
-            ["parent_declarations"] = parentDeclarations,
-            ["does_terminate_function"] = new JSONBool(doesTerminateFunction)
+            ["ir"] = ctx.GetJSON(),
+            ["val"] = new JSONInt(result)
         };
     }
 
-    public CodeBlock GetBlock() {
-        return block;
+    public static IJSONValue SerializeBlock(SerializationContext parentCtx, CodeBlock block) {
+        SerializationContext ctx = new(parentCtx);
+        foreach (IToken child in block) {
+            ((ISerializableToken)child).Serialize(ctx);
+        }
+        return new JSONObject {
+            ["ir"] = ctx.GetJSON(),
+            ["vars_here"] = new JSONList(ctx.GetVarsHere().Select(id => new JSONInt(id))),
+            ["intialized_vars"] = new JSONList(ctx.GetInitializedVars().Select(id => new JSONInt(id))),
+            ["does_terminate_function"] = new JSONBool(block.DoesTerminateFunction()),
+        };
     }
 
-    public Function GetFunction() {
-        return function;
+    public IEnumerable<int> GetVarsHere() {
+        return varsHere;
     }
 
-    public bool IsHidden() {
-        return hidden;
+    public IEnumerable<int> GetInitializedVars() {
+        IEnumerable<int> result = GetVarsHere();
+        if (parent == null) {
+            return result;
+        } else {
+            return result.Concat(parent.GetInitializedVars());
+        }
     }
 
-    public void AddDeclaration(int varID) {
-        initialDeclarations.Add(new JSONInt(varID));
+    public IJSONValue ObjToJSON(object obj) {
+        if (obj == null) {
+            return new JSONNull();
+        } else if (obj is IJSONValue json) {
+            return json;
+        } else if (obj is int i) {
+            return new JSONInt(i);
+        } else if (obj is double d) {
+            return new JSONDouble(d);
+        } else if (obj is string str) {
+            return new JSONString(str);
+        } else if (obj is Type_ type_) {
+            return type_.GetJSON();
+        } else if (obj is IConstant constant) {
+            return constant.GetJSON();
+        } else if (obj is CodeBlock block) {
+            return SerializeBlock(this, block);
+        } else if (obj is IValueToken val) {
+            return SerializeValue(this, val);
+        } else if (obj is IDictionary dict) {
+            JSONObject result = [];
+            foreach (DictionaryEntry entry in dict) {
+                result[(string)entry.Key] = ObjToJSON(entry.Value);
+            }
+            return result;
+        } else if (obj is IEnumerable enumerable) {
+            JSONList result = [];
+            foreach (object sub in enumerable) {
+                result.Add(ObjToJSON(sub));
+            }
+            return result;
+        } else {
+            throw new InvalidOperationException($"Don't know how to add value {obj} to SerializableInstruction");
+        }
     }
 
-    public int SerializeInstruction(ISerializableToken token) {
-        if (function.Serialized.TryGetValue(token, out int value))
-            return value;
-        int id = token.Serialize(this);
-        function.Serialized[token] = id;
-        return id;
+    JSONList GetJSON() {
+        return json;
+    }
+
+    public int AddInstructionJSON(JSONObject obj) {
+        json.Add(obj);
+        return json.Count - 1;
     }
 }

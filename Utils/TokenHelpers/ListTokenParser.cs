@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class ListTokenParser<T>(IPatternSegment seperator, Type item, Func<IToken, T> parser) {
     enum ParseState {
         EXPECTITEM,

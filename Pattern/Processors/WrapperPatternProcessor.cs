@@ -1,7 +1,3 @@
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-
 public class WrapperPatternProcessor : IPatternProcessor<List<IToken>> {
     readonly Type wrapper;
     readonly IPatternProcessor<List<IToken>> subprocessor;
@@ -14,7 +10,7 @@ public class WrapperPatternProcessor : IPatternProcessor<List<IToken>> {
 
     public WrapperPatternProcessor(Type wrapper) {
         this.wrapper = wrapper;
-        this.subprocessor = null;
+        subprocessor = null;
     }
 
     public List<IToken> Process(List<IToken> tokens, int start, int end) {
@@ -23,7 +19,7 @@ public class WrapperPatternProcessor : IPatternProcessor<List<IToken>> {
             ntokens = subprocessor.Process(tokens, start, end);
         }
         IToken result = (IToken)Activator.CreateInstance(
-            wrapper, new object[] {ntokens}
+            wrapper, [ntokens]
         );
         return [result];
     }

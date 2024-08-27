@@ -1,5 +1,3 @@
-using System;
-
 public class Continue : IVerifier, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -20,12 +18,6 @@ public class Continue : IVerifier, IBlockEndOnly {
     }
 
     public int Serialize(SerializationContext context) {
-        ILoop loop = (ILoop)TokenUtils.GetParentWithCond(
-            this, (IToken token) => token is ILoop
-        );
-        int id = context.GetFunction().GetContextIdByBlock(loop.GetBlock()).Value;
-        return context.AddInstruction(
-            new SerializableInstruction(this).AddData("block", new JSONInt(id))
-        );
+        return new SerializableInstruction(context, this).Register();
     }
 }

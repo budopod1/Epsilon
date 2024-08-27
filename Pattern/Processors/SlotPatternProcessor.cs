@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class SlotPatternProcessor(List<int> indices) : IPatternProcessor<List<IToken>> {
     readonly List<int> indices = indices;
 

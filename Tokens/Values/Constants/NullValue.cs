@@ -1,5 +1,3 @@
-using System;
-
 public class NullValue : IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -9,6 +7,6 @@ public class NullValue : IValueToken {
     }
 
     public int Serialize(SerializationContext context) {
-        return context.AddInstruction(new SerializableInstruction(this));
+        return new SerializableInstruction(context, this).Register();
     }
 }

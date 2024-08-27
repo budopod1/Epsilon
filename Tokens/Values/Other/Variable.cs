@@ -1,5 +1,3 @@
-using System;
-
 public class Variable : IAssignableValue {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -39,10 +37,9 @@ public class Variable : IAssignableValue {
     }
 
     public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this)
-                .AddData("variable", new JSONInt(GetID()))
-        );
+        return new SerializableInstruction(context, this) {
+            ["variable"] = GetID()
+        }.Register();
     }
 
     public ICompleteLine AssignTo(IValueToken value) {

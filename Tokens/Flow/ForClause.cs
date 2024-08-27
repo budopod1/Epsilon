@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class ForClause : UnaryOperation<IValueToken> {
     readonly string name;
 

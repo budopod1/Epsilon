@@ -19,7 +19,6 @@ replit.nix
 # Misc tools
 .ackrc
 vgcore.*
-.clang
 .vscode
 
 # C# stuff
@@ -37,3 +36,5 @@ bin
 # Epsilon specific
 *.epslcache
 .*.epslspec
+
+_sub

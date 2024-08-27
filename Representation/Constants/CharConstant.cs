@@ -1,6 +1,3 @@
-using System;
-using System.Globalization;
-
 public class CharConstant : IIntConstant {
     readonly byte value;
 

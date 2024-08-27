@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class StructHolder : Holder, IAnnotatable {
     readonly List<IAnnotation> annotations;
 
@@ -13,7 +10,7 @@ public class StructHolder : Holder, IAnnotatable {
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return (TreeToken)new StructHolder(tokens, annotations);
+        return new StructHolder(tokens, annotations);
     }
 
     public List<IAnnotation> GetAnnotations() {

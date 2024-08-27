@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 
 public class FloatConstant(double value) : INumberConstant {
@@ -23,20 +22,22 @@ public class FloatConstant(double value) : INumberConstant {
     }
 
     public IJSONValue GetJSON() {
-        JSONObject obj = new() {
-            ["type"] = new JSONString("float")
-        };
-        IJSONValue json;
+        throw new InvalidOperationException("Float constants are currently not implemented");
+        /*
+        IJSONValue valJSON;
         if (double.IsNaN(value)) {
-            json = new JSONString("NaN");
+            valJSON = new JSONString("NaN");
         } else if (double.IsPositiveInfinity(value)) {
-            json = new JSONString("+Infinity");
+            valJSON = new JSONString("+Infinity");
         } else if (double.IsNegativeInfinity(value)) {
-            json = new JSONString("-Infinity");
+            valJSON = new JSONString("-Infinity");
         } else {
-            json = new JSONDouble(value);
+            valJSON = new JSONDouble(value);
         }
-        obj["value"] = json;
-        return obj;
+        return new JSONObject() {
+            ["type"] = new JSONString("float"),
+            ["value"] = valJSON
+        };
+        */
     }
 }

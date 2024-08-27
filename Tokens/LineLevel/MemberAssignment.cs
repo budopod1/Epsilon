@@ -1,5 +1,3 @@
-using System;
-
 public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVerifier, ICompleteLine {
     readonly string member;
     readonly Type_ structType_;
@@ -41,10 +39,9 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
     }
 
     public override int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("member", new JSONString(member))
-                .AddData("struct_type_", structType_.GetJSON())
-        );
+        return new SerializableInstruction(context, this) {
+            ["member"] = member,
+            ["struct_type_"] = structType_
+        }.Register();
     }
 }

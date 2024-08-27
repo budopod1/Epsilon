@@ -1,5 +1,3 @@
-using System;
-
 public class ArrayAccess : BinaryOperation<IValueToken, IValueToken>, IAssignableValue, IVerifier {
     public ArrayAccess(IValueToken array, IValueToken index) : base(array, index) {}
     public ArrayAccess(IValueToken array, ValueList index) : base(array, null) {

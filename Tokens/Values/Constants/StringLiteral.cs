@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class StringLiteral(string str) : IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -12,9 +9,8 @@ public class StringLiteral(string str) : IValueToken {
     }
 
     public virtual int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this)
-                .AddData("string", new JSONString(str))
-        );
+        return new SerializableInstruction(context, this) {
+            ["string"] = str
+        }.Register();
     }
 }

@@ -1,7 +1,3 @@
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-
 public class FunctionRuleMatcher(PatternExtractor<List<IToken>> extractor) : IMatcher {
     readonly PatternExtractor<List<IToken>> extractor = extractor;
 

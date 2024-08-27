@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class ExternalFunction : FunctionDeclaration {
     readonly PatternExtractor<List<IToken>> pattern;
     readonly List<FunctionArgument> arguments;
@@ -42,7 +38,7 @@ public class ExternalFunction : FunctionDeclaration {
         this.arguments = arguments;
         this.id = id;
         doesReturnVoid = true;
-        this.returnType_ = (tokens) => null;
+        returnType_ = (tokens) => null;
         this.source = source;
     }
 

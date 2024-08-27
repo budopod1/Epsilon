@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class Assignment(Variable variable, IValueToken o) : UnaryOperation<IValueToken>(o), IVerifier, ICompleteLine, ISerializableToken {
     readonly int id = variable.GetID();
 
@@ -16,11 +13,9 @@ public class Assignment(Variable variable, IValueToken o) : UnaryOperation<IValu
     }
 
     public override int Serialize(SerializationContext context) {
-        ScopeVar svar = Scope.GetVarByID(this, id);
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
-                .AddData("variable", new JSONInt(id))
-                .AddData("var_type_", svar.GetType_().GetJSON())
-        );
+        return new SerializableInstruction(context, this) {
+            ["variable"] = id,
+            ["var_type_"] = Scope.GetVarByID(this, id).GetType_()
+        }.SetOperands([o]).Register();
     }
 }

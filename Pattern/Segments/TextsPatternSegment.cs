@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class TextsPatternSegment(List<string> texts) : IPatternSegment {
     readonly List<string> texts = texts;
 

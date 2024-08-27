@@ -1,14 +1,7 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 public static class CmdUtils {
-    static readonly bool SUBPROCCESSOUTPUT = false;
+    static readonly bool SUBPROCCESSOUTPUT = true;
 
     #pragma warning disable CS0649
     struct _ProcessResult {
@@ -16,12 +9,12 @@ public static class CmdUtils {
         public byte status;
     }
 
-    [DllImport("/home/mstaab/EpsilonLang/_sub/Utils/runcommand.so")]
+    [DllImport("/home/mstaab/EpsilonLang/_sub/Utils/runcommand.so", CallingConvention = CallingConvention.Cdecl)]
     static extern _ProcessResult _RunCommand(string prog, string[] args, int argCount);
 
     static string RunCommand(string command, IEnumerable<string> arguments, out int exitCode) {
         string[] args = arguments.ToArray();
-        Log.Info(command, $"[{String.Join(", ", arguments)}]");
+        Log.Info(command, $"[{string.Join(", ", arguments)}]");
         _ProcessResult result = _RunCommand(command, args, args.Length);
         exitCode = result.status;
         return result.output;

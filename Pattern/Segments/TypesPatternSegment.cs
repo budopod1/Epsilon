@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class TypesPatternSegment(List<Type> types) : IPatternSegment {
     readonly List<Type> types = types;
 

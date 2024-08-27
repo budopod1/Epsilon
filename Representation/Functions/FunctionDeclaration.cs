@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public abstract class FunctionDeclaration {
     public abstract PatternExtractor<List<IToken>> GetPattern();
     public abstract List<FunctionArgument> GetArguments();

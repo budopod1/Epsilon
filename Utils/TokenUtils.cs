@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public static class TokenUtils {
     public static void UpdateParents(IParentToken token) {
         for (int i = 0; i < token.Count; i++) {
@@ -77,7 +73,7 @@ public static class TokenUtils {
     }
 
     public static CodeSpan MergeSpans(IToken a, IToken b) {
-        return MergeSpans(new List<IToken> {a, b});
+        return MergeSpans([a, b]);
     }
 
     public static bool FullMatch(List<IPatternSegment> segs,

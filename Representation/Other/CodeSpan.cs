@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class CodeSpan {
     readonly int start;
     readonly int end;
@@ -12,8 +8,8 @@ public class CodeSpan {
     }
 
     public CodeSpan(int i) {
-        this.start = i;
-        this.end = i;
+        start = i;
+        end = i;
     }
 
     public int GetStart() {
@@ -39,7 +35,7 @@ public class CodeSpan {
     }
 
     public static CodeSpan Merge(CodeSpan a, CodeSpan b) {
-        return Merge(new List<CodeSpan> {a, b});
+        return Merge([a, b]);
     }
 
     public override string ToString() {

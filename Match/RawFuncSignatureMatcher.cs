@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class RawFuncSignatureMatcher : IMatcher {
     public Match Match(IParentToken tokens) {
         bool wasNL = true;
@@ -13,8 +10,7 @@ public class RawFuncSignatureMatcher : IMatcher {
                 bool hasHashtag = false;
                 for (int j = i; j < tokens.Count; j++) {
                     IToken token = tokens[j];
-                    TextToken ttoken2 = token as TextToken;
-                    if (ttoken2 != null) {
+                    if (token is TextToken ttoken2) {
                         string txt = ttoken2.GetText();
                         if (txt == "#") {
                             hasHashtag = true;
@@ -32,7 +28,7 @@ public class RawFuncSignatureMatcher : IMatcher {
                                 RawFuncTemplate template = new(after);
                                 template.span = TokenUtils.MergeSpans(after);
                                 return new Match(
-                                    i, j-1, [
+                                    i, j - 1, [
                                         new RawFuncSignature(
                                             ret,
                                             template

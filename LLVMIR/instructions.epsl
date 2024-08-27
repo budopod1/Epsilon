@@ -1,0 +1,156 @@
+#import binjson;
+#import eewriter;
+#import entry;
+
+[Val]#cast <[Val]:vals> to <Type_:type_> {
+    [Val]:result = [Val] [];
+    for (Val:val in vals) {
+        [result].append[cast [val] to [type_]];
+    };
+    return result;
+}
+
+Val#build constant value <BinJSON:instruction_json> {
+    Type_:type_ = read type_ [[instruction_json].get["type_"]];
+    BinJSON:constant_json = [instruction_json].get["constant"];
+    BinJSON:val_json = [constant_json].get["value"];
+    Str:constant_type = [[constant_json].get["type"]].get_str;
+    if (([constant_type] equals ["int"]) || ([constant_type] equals ["uint"])) {
+        return c [[val_json].get_int] [type_];
+    } elif ([constant_type] equals ["bool"]) {
+        return c [(Z)[val_json].get_bool] [type_];
+    };
+    abort "Unknown constant type {}" % constant_type;
+}
+
+Val#build addition using <[Val]:operands> to <Type_:type_> {
+    operands = cast [operands] to [type_];
+    return [operands[0]] + [operands[1]];
+}
+
+Val#build subtraction using <[Val]:operands> to <Type_:type_> {
+    operands = cast [operands] to [type_];
+    return [operands[0]] - [operands[1]];
+}
+
+Val#build multiplication using <[Val]:operands> to <Type_:type_> {
+    operands = cast [operands] to [type_];
+    return [operands[0]] * [operands[1]];
+}
+
+Val#build division using <[Val]:operands> to <Type_:type_> {
+    operands = cast [operands] to [type_];
+    return [operands[0]] / [operands[1]];
+}
+
+Val#build modulo using <[Val]:operands> to <Type_:type_> {
+    operands = cast [operands] to [type_];
+    return [operands[0]] % [operands[1]];
+}
+
+Val#build negation using <[Val]:operands> to <Type_:type_> {
+    return negate [cast [operands[0]] to [type_]];
+}
+
+Val#do chain power of <Val:base> to the <Z:exponent> {
+    if (exponent == 0) {
+        return c [1] [base.type_];
+    } elif (exponent == 1) {
+        return base;
+    } elif (exponent < 0) {
+        return [c [1] [base.type_]] / [do chain power of [base] to the [-exponent]];
+    } elif (exponent % 2 == 0) {
+        Val:factor = do chain power of [base] to the [exponent ~/ 2];
+        return [factor] * [factor];
+    } else {
+        return [do chain power of [base] to the [exponent - 1]] * [base];
+    };
+}
+
+Val#build exponentiation <BinJSON:instruction_json> using <[Val]:operands> to <Type_:type_> {
+    Str:mode = [[instruction_json].get["mode"]].get_str;
+    if ([mode] equals ["chain"]) {
+        Val:base = cast [operands[0]] to [type_];
+        Z:exponent = [[instruction_json].get["exponent_value"]].get_int;
+        return do chain power of [base] to the [exponent];
+    } elif (([mode] equals ["sqrt"]) || ([mode] equals ["cbrt"])) {
+        Val:base = cast [operands[0]] to [type_];
+        extern fn [type_] ["llvm.{}.{}" % mode % type_.bits] [[Type_] [type_]] [[Val] [base]];
+        return func ret;
+    } elif ([mode] equals ["pow"]) {
+        if ([type_].is_float) {
+            Val:base = cast [operands[0]] to [type_];
+            Val:exponent = cast [operands[1]] to [type_];
+            extern fn [type_] ["llvm.pow.{}" % type_.bits] [[Type_] [type_, type_]] [[Val] [base, exponent]];
+            return cast [func ret] to [type_];
+        } else {
+            abort "Integer exponentiation is not supported"; // TODO: fix
+        };
+    };
+    abort "Unknown exponentiation mode {}" % mode;
+}
+
+Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
+    Str:type = [[instruction_json].get["type"]].get_str;
+    Type_:type_ = read type_ [[instruction_json].get["type_"]];
+    if ([type] equals ["constant_value"]) {
+        return build constant value [instruction_json];
+    } elif ([type] equals ["addition"]) {
+        return build addition using [operands] to [type_];
+    } elif ([type] equals ["subtraction"]) {
+        return build subtraction using [operands] to [type_];
+    } elif ([type] equals ["multiplication"]) {
+        return build multiplication using [operands] to [type_];
+    } elif (([type] equals ["division"]) || ([type] equals ["int_division"])) {
+        return build division using [operands] to [type_];
+    } elif ([type] equals ["modulo"]) {
+        return build modulo using [operands] to [type_];
+    } elif ([type] equals ["negation"]) {
+        return build negation using [operands] to [type_];
+    } elif ([type] equals ["exponentiation"]) {
+        return build exponentiation [instruction_json] using [operands] to [type_];
+    } else {
+        abort "Unknown valued instruction type {}" % type;
+    };
+}
+
+#build initial assignment <BinJSON:instruction_json> using <[Val]:operands> {
+    ScopeVar:var = get var [(W)[[instruction_json].get["variable"]].get_int];
+    Val:operand = cast [operands[0]] to [read type_ [[instruction_json].get["var_type_"]]];
+    [operand].incr_ref;
+    [*[var.addr]] = [operand];
+}
+
+#build assignment <BinJSON:instruction_json> using <[Val]:operands> {
+    ScopeVar:var = get var [(W)[[instruction_json].get["variable"]].get_int];
+    Val:operand = cast [operands[0]] to [read type_ [[instruction_json].get["var_type_"]]];
+    [operand].incr_ref;
+    [*[var.addr]].decr_ref;
+    [*[var.addr]] = [operand];
+}
+
+#build void instruction <BinJSON:instruction_json> using <[Val]:operands> {
+    Str:type = [[instruction_json].get["type"]].get_str;
+    if ([type] equals ["initial_assignment"]) {
+        build initial assignment [instruction_json] using [operands];
+    } elif ([type] equals ["assignment"]) {
+        build assignment [instruction_json] using [operands];
+    } else {
+        abort "Unknown void instruction type {}" % type;
+    };
+}
+
+Val?#build instruction <BinJSON:instruction_json> using <[Val]:operands> {
+    if ([instruction_json].contains_key["type_"]) {
+        Val:result = build valued instruction [instruction_json] using [operands];
+        Type_:expected_type_ = read type_ [[instruction_json].get["type_"]];
+        if (![result.type_] == [expected_type_]) {
+            abort "Expected type_ {} from instruction {}, got type_ {}" % [expected_type_].stringify
+                % [[instruction_json].get["type"]].get_str % [result.type_].stringify;
+        };
+        return result;
+    } else {
+        build void instruction [instruction_json] using [operands];
+        return null;
+    };
+}

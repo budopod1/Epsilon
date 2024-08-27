@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 public class RawFuncSignature(IToken returnType_, IToken template) : IParentToken, IBarMatchingInto {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

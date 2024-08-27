@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class ConfigurableAdvancedPatternExtractor<T> : AdvancedPatternExtractor<T> {
     public ConfigurableAdvancedPatternExtractor(
         List<IPatternSegment> start, List<IPatternSegment> repeated, int minRepeats,

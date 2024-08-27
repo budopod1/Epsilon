@@ -1,5 +1,3 @@
-using System;
-
 public class LocatedID(string path, string name) {
     public string Path = path;
     public string Name = name;

@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class Instantiation : IParentToken, IValueToken, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -30,7 +26,7 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
     }
 
     public Instantiation(Type_Token type_token, ValueList list) {
-        this.type_ = type_token.GetValue();
+        type_ = type_token.GetValue();
         values = [];
         foreach (ValueListItem listItem in list.GetValues()) {
             if (listItem.Count == 0) continue;
@@ -56,17 +52,11 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
                 type_.ToString(),
                 "<", ">"
             ),
-            String.Join(
+            string.Join(
                 ", ", values.ConvertAll<string>(
                     obj => obj.ToString()
                 )
             )
-        );
-    }
-
-    public int Serialize(SerializationContext context) {
-        return context.AddInstruction(
-            new SerializableInstruction(this, context)
         );
     }
 
@@ -88,5 +78,9 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
                 );
             }
         }
+    }
+
+    public int Serialize(SerializationContext context) {
+        return new SerializableInstruction(context, this).Register();
     }
 }

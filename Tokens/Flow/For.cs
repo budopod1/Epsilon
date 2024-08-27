@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
 public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
@@ -33,6 +29,10 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
     readonly int declarationID = source.GetDeclarationID();
     readonly Type_ type_ = source.GetType_();
     CodeBlock block = source.GetBlock();
+
+    public CodeBlock GetBlock() {
+        return block;
+    }
 
     public void Verify() {
         List<string> clauseNames = clauses.Select(
@@ -93,33 +93,17 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
 
     public int Serialize(SerializationContext context) {
         Type_ iterType_ = type_;
-        SerializationContext loop = context.AddSubContext();
-        loop.Serialize(block);
-        loop.AddDeclaration(declarationID);
-        List<int> clauseIdxs = [];
-        JSONList clauseNames = [];
-        foreach (ForClause clause in clauses) {
-            string clauseName = clause.GetName();
-            if (clauseName == "in") {
-                iterType_ = new Type_("W", 64);
-            }
-            clauseIdxs.Add(context.SerializeInstruction(clause.GetValue()));
-            clauseNames.Add(new JSONString(clauseName));
-        }
+        if (clauses.Any(clause => clause.GetName() == "in"))
+            iterType_ = new Type_("W", 64);
         Function func = TokenUtils.GetParentOfType<Function>(this);
         int iterVar = func.AddSpecialAlloc(iterType_);
-        return context.AddInstruction(
-            new SerializableInstruction("for", clauseIdxs)
-                .AddData("block", new JSONInt(loop.GetIndex()))
-                .AddData("variable", new JSONInt(declarationID))
-                .AddData("clause_names", clauseNames)
-                .AddData("type_", type_.GetJSON())
-                .AddData("iter_type_", iterType_.GetJSON())
-                .AddData("iter_var", new JSONInt(iterVar))
-        );
-    }
-
-    public CodeBlock GetBlock() {
-        return block;
+        return new SerializableInstruction(context, this) {
+            ["block"] = block,
+            ["variable"] = declarationID,
+            ["clause_names"] = clauses.Select(clause => clause.GetName()),
+            ["type_"] = type_,
+            ["iter_type_"] = iterType_,
+            ["iter_var"] = iterVar
+        }.SetOperands(clauses.Select(clause => clause.GetValue())).Register();
     }
 }
