@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -10,16 +11,33 @@ using System.Runtime.InteropServices;
 public static class CmdUtils {
     static readonly bool SUBPROCCESSOUTPUT = false;
 
+    static bool HasSetDllResolver = false;
+
     #pragma warning disable CS0649
     struct _ProcessResult {
         public string output;
         public byte status;
     }
 
-    [DllImport("/home/mstaab/EpsilonLang/_sub/Utils/runcommand.so")]
+    [DllImport("runcommand.so")]
     static extern _ProcessResult _RunCommand(string prog, string[] args, int argCount);
 
+    static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath) {
+        if (libraryName == "runcommand.so") {
+            string path = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "Utils", "runcommand.so");
+            return NativeLibrary.Load(path, assembly, searchPath);
+        }
+
+        return IntPtr.Zero;
+    }
+
     static string RunCommand(string command, IEnumerable<string> arguments, out int exitCode) {
+        if (!HasSetDllResolver) {
+            NativeLibrary.SetDllImportResolver(
+                Assembly.GetExecutingAssembly(), DllImportResolver);
+            HasSetDllResolver = true;
+        }
+
         string[] args = arguments.ToArray();
         Log.Info(command, $"[{String.Join(", ", arguments)}]");
         _ProcessResult result = _RunCommand(command, args, args.Length);
