@@ -1,0 +1,224 @@
+#import operations;
+#import eewriter;
+
+Val#make stringify of <Val:val> {
+    Type_:type_ = val.type_;
+    if ([type_] == [Str_]) {
+        return [val].clone;
+    };
+
+    Val:result = malloc pointee [Str_];
+    [result].init_ref;
+
+    make stringify of [val] to [result];
+
+    return result;
+}
+
+#make stringify of <Val:outer_val> to <Val:outer_result> {
+    Type_:type_ = outer_val.type_;
+    Str:func_name = "stringify_{}_{}" % [type_].stringify % get filename;
+if (fn [null] [func_name] [[Type_] [type_, Str_]] [[Val] [outer_val, outer_result]]) {
+
+    Val:val = func arg [0];
+    Val:result = func arg [1];
+
+    if ([type_] == [Bool_]) {
+        if_ [val];
+            [[result].length] = [c [4]];
+            [[result].capacity] = [c [4]];
+            [[result].content] = [mut str ["true"]];
+        else_;
+            [[result].length] = [c [5]];
+            [[result].capacity] = [c [5]];
+            [[result].content] = [mut str ["false"]];
+        end block;
+    } elif (([type_] == [Null_]) || ([type_] == [Internal_])) {
+        Str:str = "";
+        if ([type_] == [Null_]) {
+            str = "null";
+        };
+        if ([type_] == [Internal_]) {
+            str = "internal";
+        };
+        [[result].length] = [c [[str].len]];
+        [[result].capacity] = [c [[str].len]];
+        [[result].content] = [mut str [str]];
+    } elif ([type_] == [Byte_]) {
+        [[result].length] = [c [1]];
+        [[result].capacity] = [c [1]];
+        Val:content = malloc [Byte_];
+        [*[content]] = [val];
+        [[result].content] = [content];
+    } elif ([type_].is_numeric) {
+        Val?:specifier_optional = null;
+        Type_:new_type_ = type_;
+        W:bits = (W)type_.bits;
+
+        if ([type_].is_float) {
+            Str:specifier_txt = "";
+            if (bits <= 32) {
+                new_type_ = Q_ [32];
+                specifier_txt = "%f\0";
+            } else {
+                new_type_ = Q_ [64];
+                specifier_txt = "%lf\0";
+            };
+            specifier_optional = const str [specifier_txt];
+        } else {
+            W:new_bits;
+            if (bits > 32) {
+                new_bits = 64;
+            } elif (bits > 16) {
+                new_bits = 32;
+            } elif (bits > 8) {
+                new_bits = 16;
+            } else {
+                new_bits = 8;
+            };
+            Str:type__name = type_.name;
+            new_type_ = Type_ [type__name, new_bits, [Type_] []];
+            Str:specifier_func = "format{}{}" % type__name % new_bits;
+            extern fn [Pointer [Byte_]] [specifier_func] [[Type_] []] [[Val] []];
+            specifier_optional = func ret;
+        };
+
+        Val:casted = cast [val] to [new_type_];
+        Val:specifier = [specifier_optional].unwrap;
+
+        extern fn [Z_] ["snprintf"] [[Type_] [Pointer [Byte_], L_, Pointer [Byte_]]]
+            vargs [[Val] [c null_ [Pointer [Byte_]], c L_ [0], specifier, casted]];
+        Val:length = cast [func ret] to [L_];
+        Val:required_bytes = [length] + [c L_ [1]];
+
+        Val:content = malloc [required_bytes] [Byte_];
+        extern fn [Z_] ["sprintf"] [[Type_] [Pointer [Byte_], Pointer [Byte_]]]
+            vargs [[Val] [content, specifier, casted]];
+
+        [[result].length] = [length];
+        [[result].capacity] = [required_bytes];
+        [[result].content] = [content];
+    } elif ([type_.name] equals ["Array"]) {
+        Str:start_str = "{} [" % [type_].stringify;
+        Val:result_length = var [c L_ [[start_str].len]];
+        Val:result_capacity = var [c L_ [[start_str].len+1]];
+        Val:result_content = var [mut str [start_str] with [1] extra capacity];
+
+        Val:i = var [c L_ [0]];
+        Val:arr_len = load [[val].length];
+        Val:arr_content = load [[val].content];
+
+        Label:check_label = new label:;
+        while_ [[i] lt [arr_len]] from [check_label];
+            Val:elem = load [[arr_content].idx[i]];
+            Val:stringified = make stringify of [elem];
+            Val:stringified_content = load [[stringified].content];
+
+            Val:stringified_len = load [[stringified].length];
+            Val:old_result_len = load [result_length];
+            Val:new_result_len = [old_result_len] + [stringified_len];
+            [result_length] = [new_result_len];
+
+            Val:result_capacity_now = load [result_capacity];
+            if_ [[new_result_len] ge [result_capacity_now]];
+                Val:new_result_capacity = [[[result_capacity_now] * [c L_ [3]]]
+                    / [c L_ [2]]] + [c L_ [1]];
+                [result_capacity] = [new_result_capacity];
+                extern fn [Internal_] ["realloc"] [[Type_] [Internal_, L_]]
+                    [[Val] [cast [result_content] to [Internal_], new_result_capacity]];
+                [result_content] = [cast [func ret] to [result_content.type_]];
+            end block;
+
+            Val:stringified_dest = [result_content] shifted by [old_result_len];
+            memcpy [stringified_len] [stringified_content] to [stringified_dest];
+
+            free [stringified_content];
+            free [stringified];
+        end block;
+
+        Val:final_result_length = load [result_length];
+        [[result_content].idx[final_result_length]] = [c [']']];
+
+        [[result].length] = [[final_result_length] + [c L_ [1]]];
+        [[result].capacity] = [result_capacity];
+        [[result].content] = [result_content];
+    } elif ([type_.name] equals ["Optional"]) {
+        if_ [[val] == null_];
+            Str:str = "null";
+            [[result].length] = [c [[str].len]];
+            [[result].capacity] = [c [[str].len]];
+            [[result].content] = [mut str [str]];
+        else_;
+            Val:casted_val = bitcast [val] to [unwrap nullability [type_]];
+            make stringify of [casted_val] to [result];
+        end block;
+    } else {
+        Struct_?:maybe_struct = [type_].get_struct;
+        if ([maybe_struct].is_null) {
+            abort "Don't know how to stringify type_ {}" % [type_].stringify;
+        };
+        Struct_:struct_ = [maybe_struct].unwrap;
+
+        if ([struct_.fields].len == 0) {
+            Str:result_str = "{} []" % type_.name;
+            [[result].length] = [c L_ [[result_str].len]];
+            [[result].capacity] = [c L_ [[result_str].len]];
+            [[result].content] = [mut str [result_str]];
+        } else {
+            Str:start_str = "{} [" % type_.name;
+
+            [Val]:stringifieds = [Val] [];
+            [Val]:stringified_lens = [Val] [];
+            [Val]:stringified_contents = [Val] [];
+
+            for (L:i enumerating struct_.fields) {
+                Val:stringified = make stringify of [load [[val].[i]]];
+                [stringifieds].append[stringified];
+                [stringified_lens].append[load [[stringified].length]];
+                [stringified_contents].append[load [[stringified].content]];
+            };
+
+            Val:total_length = c L_ [[start_str].len];
+            [Val]:length_steps = [Val] [];
+
+            for (L:i enumerating stringifieds) {
+                [length_steps].append[total_length];
+                Val:stringified_len = stringified_lens[i];
+                total_length = [total_length] + [stringified_len];
+            };
+
+            Val:closing_pos = total_length;
+            total_length = [total_length] + [c L_ [2*[stringifieds].len - 1]];
+
+            Val:result_content = malloc [total_length] [Byte_];
+
+            memcpy [c L_ [[start_str].len]] [const str [start_str]]
+                to [result_content];
+
+            for (L:i enumerating stringifieds) {
+                Val:shift_amount = [length_steps[i]] + [c L_ [i * 2]];
+                Val:location = [result_content] shifted by [shift_amount];
+                if (i > 0) {
+                    [*[[location] shifted by [c [-2]]]] = [c [',']];
+                    [*[[location] shifted by [c [-1]]]] = [c [' ']];
+                };
+                memcpy [stringified_lens[i]] [stringified_contents[i]] to [location];
+            };
+
+            [*[[result_content] shifted by [closing_pos]]] = [c [']']];
+
+            for (L:i enumerating stringifieds) {
+                free [stringified_contents[i]];
+                free [stringifieds[i]];
+            };
+
+            [[result].length] = [total_length];
+            [[result].capacity] = [total_length];
+            [[result].content] = [result_content];
+        };
+    };
+
+    ret void;
+end fn;
+};
+}

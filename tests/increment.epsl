@@ -1,0 +1,6 @@
+Z#main {
+    [Z]:arr = [Z] [0, 0];
+    Z:i = 0;
+    Z:result = arr[i++]++;
+    return result + i * 2 + arr[0] * 4 + arr[1] * 8;
+}

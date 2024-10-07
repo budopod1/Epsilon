@@ -1,0 +1,118 @@
+#import eewriter;
+#import binjson;
+
+[Val]#cast <[Val]:vals> to <Type_:type_> {
+    [Val]:result = [Val] [];
+    for (Val:val in vals) {
+        [result].append[cast [val] to [type_]];
+    };
+    return result;
+}
+
+#div zero error {
+    extern fn [null] ["div0Fail"] [[Type_] []] [[Val] []];
+}
+
+Val#safe <Val:a> / <Val:b> {
+    assert type_ equality [a], [b];
+    if (![a.type_].is_float) {
+        if_ [[b] eq [c [0] [b.type_]]];
+            div zero error;
+        end block;
+    };
+    return [a] / [b];
+}
+
+Val#safe <Val:a> % <Val:b> {
+    assert type_ equality [a], [b];
+    if (![a.type_].is_float) {
+        if_ [[b] eq [c [0] [b.type_]]];
+            div zero error;
+        end block;
+    };
+    return [a] % [b];
+}
+
+Val#do chain power of <Val:base> to the <Z:exponent> {
+    if (exponent == 0) {
+        return c [1] [base.type_];
+    } elif (exponent == 1) {
+        return base;
+    } elif (exponent < 0) {
+        return safe [c [1] [base.type_]] / [do chain power of [base] to the [-exponent]];
+    } elif (exponent % 2 == 0) {
+        Val:factor = do chain power of [base] to the [exponent ~/ 2];
+        return [factor] * [factor];
+    } else {
+        return [do chain power of [base] to the [exponent - 1]] * [base];
+    };
+}
+
+Val#integer <Val:base_in> to the <Val:exponent_in> {
+    Type_:base_type_ = base_in.type_;
+    Type_:exponent_type_ = exponent_in.type_;
+    Str:func_name = "integer_{}_to_the_{}_{}" % [base_type_].stringify % [exponent_type_].stringify % get filename;
+
+if (fn [base_type_] [func_name] [[Type_] [base_type_, exponent_type_]] [[Val] [base_in, exponent_in]]) {
+    Val:base = var [base_type_] [func arg [0]];
+    Val:exponent = var [exponent_type_] [func arg [1]];
+    Val:result = var [base_type_] [c [1] [base_type_]];
+
+    Label:loop = new label:;
+        Val:exponent_here = load [exponent];
+        Val:exponent_1 = c [1] [exponent_type_];
+        Val:base_here = load [base];
+        if_ [[[exponent_here] AND [exponent_1]].truth_value];
+            [result] = [[result] * [base_here]];
+        end block;
+        Val:exponent_new = [exponent_here] shift right [exponent_1];
+        [exponent] = [exponent_new];
+        if_ [[exponent_new].untruth_value];
+            ret [result];
+        end block;
+        [base] = [[base_here] * [base_here]];
+    goto_ [loop];
+end fn;
+};
+    return func ret;
+}
+
+Val#consume truth <Val:val> {
+    Val:truth = [val].truth_value;
+    [truth].check_ref;
+    return truth;
+}
+
+#verify idx <Val:idx> in array <Val:arr> {
+    if_ [expect [[cast [idx] to [L_]] ge [[arr].length]] to be [false]];
+        extern fn [null] ["arrayIdxFail"] [[Type_] []] [[Val] []];
+        mark as unreachable;
+    end block;
+}
+
+Val#make elem int <Type_:type_> {
+    Val:result = [sizeof [type_]] * [c L_ [4]];
+    if (![type_].is_ref) {
+        result = [result] + [c L_ [2]];
+    };
+    if ([type_].is_nullable) {
+        result = [result] + [c L_ [1]];
+    };
+    return result;
+}
+
+Val#make constant <BinJSON:constant_json> of type_ <Type_:type_> {
+    BinJSON:val_json = [constant_json].get["value"];
+    Str:constant_type = [[constant_json].get["type"]].get_str;
+    if (([constant_type] equals ["int"]) || ([constant_type] equals ["uint"])) {
+        return c [[val_json].get_int] [type_];
+    } elif ([constant_type] equals ["bool"]) {
+        return c [(Z)[val_json].get_bool] [type_];
+    };
+    abort "Unknown constant type {}" % constant_type;
+}
+
+Val#<Val:outer_val>.clone {
+    Type_:type_ = outer_val.type_;
+    abort "Clone operation not yet implemented on type_ {}" % type_;
+}
