@@ -29,7 +29,7 @@ public abstract class TrinaryAction<T1, T2, T3>(T1 o1, T2 o2, T3 o3) : IParentTo
 
     public override string ToString() {
         return Utils.WrapName(
-            GetType().Name, $"{o1.ToString()}, {o2.ToString()}, {o3.ToString()}"
+            GetType().Name, $"{o1}, {o2}, {o3}"
         );
     }
 }

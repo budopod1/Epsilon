@@ -34,7 +34,7 @@ public class FunctionCall(FunctionDeclaration function, List<IValueToken> argume
         ));
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["function"] = function.GetID()
         }.Register();

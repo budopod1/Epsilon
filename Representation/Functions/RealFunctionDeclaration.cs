@@ -52,8 +52,7 @@ public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<
 
     public bool IsPrivate() {
         IPatternSegment firstSeg = GetPattern().GetSegments().GetOr(0);
-        UnitPatternSegment<string> unitSeg = firstSeg as UnitPatternSegment<string>;
-        if (unitSeg == null) return false;
+        if (firstSeg is not UnitPatternSegment<string> unitSeg) return false;
         return unitSeg.GetValue().StartsWith('_');
     }
 }

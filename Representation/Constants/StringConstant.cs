@@ -1,13 +1,6 @@
 public class StringConstant(string value) : IConstant {
     readonly string value = value;
 
-    public static readonly Dictionary<char, string> BackslashReplacements = new() {
-        {'n', "\n"},
-        {'t', "\t"},
-        {'r', "\r"},
-        {'\\', "\\"},
-    };
-
     public static StringConstant FromString(string value) {
         return new StringConstant(JSONTools.FromLiteral(value));
     }

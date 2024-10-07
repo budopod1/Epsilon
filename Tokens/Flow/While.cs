@@ -3,7 +3,7 @@ public class While(IValueToken o1, CodeBlock o2) : BinaryAction<IValueToken, Cod
         return o2;
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["condition"] = o1,
             ["block"] = o2

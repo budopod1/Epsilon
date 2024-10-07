@@ -32,7 +32,7 @@ public class Line(List<IToken> tokens) : TreeToken(tokens), IVerifier, ISerializ
         return (ICompleteLine)this[0];
     }
 
-    public int Serialize(SerializationContext context) {
-        return GetChild().Serialize(context);
+    public int UncachedSerialize(SerializationContext context) {
+        return context.Serialize(GetChild());
     }
 }

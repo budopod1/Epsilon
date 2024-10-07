@@ -15,12 +15,12 @@ public static class Extensions {
         return result;
     }
 
-    public static T GetOr<T>(this IList<T> list, int idx, T default_=default(T)) {
+    public static T GetOr<T>(this IList<T> list, int idx, T default_=default) {
         if (idx >= list.Count) return default_;
         return list[idx];
     }
 
-    public static TValue GetOr<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue default_=default(TValue)) {
+    public static TValue GetOr<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue default_=default) {
         if (dict.TryGetValue(key, out TValue val)) {
             return val;
         } else {
@@ -39,20 +39,20 @@ public static class Extensions {
     }
 
     public static TValue GetOr<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> default_) {
-        return dict.ContainsKey(key) ? dict[key] : default_();
+        return dict.TryGetValue(key, out TValue? value) ? value : default_();
     }
 
     public static IEnumerable<TItem> GetOrEmpty<TKey, TItem>(this Dictionary<TKey, IEnumerable<TItem>> dict, TKey key) {
-        return dict.ContainsKey(key) ? dict[key] : new TItem[0];
+        return dict.TryGetValue(key, out IEnumerable<TItem>? value) ? value : new TItem[0];
     }
 
     public static Dictionary<TKey, TSource> ToDictionary2<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
         var result = new Dictionary<TKey, TSource>();
         foreach (TSource item in source) {
             TKey key = keySelector(item);
-            if (result.ContainsKey(key)) {
+            if (result.TryGetValue(key, out TSource? value)) {
                 throw new DuplicateKeyException<TKey, TSource>(
-                    key, result[key], item
+                    key, value, item
                 );
             }
             result[key] = item;
@@ -65,9 +65,9 @@ public static class Extensions {
         var sourceItems = new Dictionary<TKey, TSource>();
         foreach (TSource item in source) {
             TKey key = keySelector(item);
-            if (sourceItems.ContainsKey(key)) {
+            if (sourceItems.TryGetValue(key, out TSource? value)) {
                 throw new DuplicateKeyException<TKey, TSource>(
-                    key, sourceItems[key], item
+                    key, value, item
                 );
             }
             result[key] = valueSelector(item);
@@ -114,8 +114,8 @@ public static class Extensions {
             if (subBuffer.Count == 0) {
                 while (vals.MoveNext()) {
                     T val = vals.Current;
-                    if (val is TSub) {
-                        return (TSub)val;
+                    if (val is TSub sub) {
+                        return sub;
                     } else {
                         otherBuffer.Enqueue(val);
                     }
@@ -130,8 +130,8 @@ public static class Extensions {
             if (otherBuffer.Count == 0) {
                 while (vals.MoveNext()) {
                     T val = vals.Current;
-                    if (val is TSub) {
-                        subBuffer.Enqueue((TSub)val);
+                    if (val is TSub sub) {
+                        subBuffer.Enqueue(sub);
                     } else {
                         return val;
                     }

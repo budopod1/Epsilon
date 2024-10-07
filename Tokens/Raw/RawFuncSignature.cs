@@ -41,7 +41,7 @@ public class RawFuncSignature(IToken returnType_, IToken template) : IParentToke
 
     public override string ToString() {
         return Utils.WrapName(
-            GetType().Name, $"{returnType_.ToString()}, {template.ToString()}"
+            GetType().Name, $"{returnType_}, {template}"
         );
     }
 }

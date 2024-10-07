@@ -5,8 +5,7 @@ public class AddMatchingFunctionMatcher(FunctionDeclaration func) : IMatcher {
     public Match Match(IParentToken tokens) {
         for (int i = 0; i < tokens.Count; i++) {
             IToken token = tokens[i];
-            RawFunctionCall call = token as RawFunctionCall;
-            if (call == null) continue;
+            if (token is not RawFunctionCall call) continue;
             List<IPatternSegment> csegments = call.GetSegments();
             if (csegments.SequenceEqual(segments)) {
                 call.AddMatchingFunction(func);

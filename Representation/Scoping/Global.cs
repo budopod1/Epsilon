@@ -13,8 +13,7 @@ public class Global {
                 "Invalid syntax in global", raw
             );
         }
-        VarDeclaration declaration = raw[0] as VarDeclaration;
-        if (declaration == null) {
+        if (raw[0] is not VarDeclaration declaration) {
             throw new SyntaxErrorException(
                 "Invalid syntax in global: expected variable declaration", raw
             );

@@ -11,10 +11,10 @@ public class ImportMatcher : IMatcher {
                     continue;
                 } else if (wasNL && stext == "#") {
                     wasNL = false;
-                    Name nntoken = tokens[i+1] as Name;
-                    if (nntoken == null || nntoken.GetValue() != "import") continue;
-                    TextToken wtoken = tokens[i+2] as TextToken;
-                    if (wtoken == null || !Utils.Whitespace.Contains(wtoken.GetText())) continue;
+                    if (tokens[i + 1] is not Name nntoken
+                        || nntoken.GetValue() != "import") continue;
+                    if (tokens[i + 2] is not TextToken wtoken
+                        || !Utils.Whitespace.Contains(wtoken.GetText())) continue;
                     List<IToken> matched = [stoken, nntoken, wtoken];
                     List<string> path = [""];
                     bool anyContent = false;
@@ -22,15 +22,14 @@ public class ImportMatcher : IMatcher {
                     for (int j = 3; j + i < tokens.Count; j++) {
                         IToken token = tokens[i+j];
                         TextToken ttoken = token as TextToken;
-                        Name ntoken = token as Name;
                         string text = ttoken?.GetText();
                         if (text == ".") {
                             matched.Add(token);
                             path.Add("");
                             wasName = false;
-                        } else if (ntoken != null) {
+                        } else if (token is Name ntoken) {
                             matched.Add(token);
-                            path[path.Count-1] = ntoken.GetValue();
+                            path[^1] = ntoken.GetValue();
                             anyContent = true;
                             wasName = true;
                         } else if (text == ";" && anyContent) {

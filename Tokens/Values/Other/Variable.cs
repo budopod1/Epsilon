@@ -36,13 +36,13 @@ public class Variable : IAssignableValue {
         return Utils.WrapName(GetType().Name, name);
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
-            ["variable"] = GetID()
+            ["variable"] = id
         }.Register();
     }
 
-    public ICompleteLine AssignTo(IValueToken value) {
+    public IAssignment AssignTo(IValueToken value) {
         return new Assignment(this, value);
     }
 }

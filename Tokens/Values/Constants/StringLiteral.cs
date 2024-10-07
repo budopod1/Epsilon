@@ -8,7 +8,7 @@ public class StringLiteral(string str) : IValueToken {
         return Type_.String();
     }
 
-    public virtual int Serialize(SerializationContext context) {
+    public virtual int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["string"] = str
         }.Register();

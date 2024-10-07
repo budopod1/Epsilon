@@ -3,7 +3,7 @@ public class ConstantValue(IConstant constant) : Unit<IConstant>(constant), IVal
         return GetValue().GetType_();
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["constant"] = GetValue()
         }.Register();

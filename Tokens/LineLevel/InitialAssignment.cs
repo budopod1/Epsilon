@@ -12,7 +12,7 @@ public class InitialAssignment(VarDeclaration declaration, IValueToken o) : Unar
         }
     }
 
-    public override int Serialize(SerializationContext context) {
+    public override int UncachedSerialize(SerializationContext context) {
         context.RegisterVarDecl(id);
         return new SerializableInstruction(context, this) {
             ["variable"] = id,

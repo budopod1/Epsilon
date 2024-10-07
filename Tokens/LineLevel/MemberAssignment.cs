@@ -1,4 +1,4 @@
-public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVerifier, ICompleteLine {
+public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IAssignment, IVerifier {
     readonly string member;
     readonly Type_ structType_;
 
@@ -34,14 +34,14 @@ public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IVeri
     public override string ToString() {
         return Utils.WrapName(
             GetType().Name,
-            $"{o1.ToString()}, {member}, {o2.ToString()}"
+            $"{o1}, {member}, {o2}"
         );
     }
 
-    public override int Serialize(SerializationContext context) {
+    public override int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["member"] = member,
             ["struct_type_"] = structType_
-        }.Register();
+        }.SetOperands([o1, o2]).Register();
     }
 }

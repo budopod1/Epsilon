@@ -29,7 +29,7 @@ public class Type_Matcher(Func<List<IToken>, Func<Type_>, List<IToken>> type_Wra
                 }
             }
 
-            replacement ??= type_Wrapper(replaced, () => baseType_.ToType_());
+            replacement ??= type_Wrapper(replaced, baseType_.ToType_);
 
             return new Match(i, j, replacement, replaced);
         }

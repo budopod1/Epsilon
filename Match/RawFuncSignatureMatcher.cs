@@ -50,8 +50,7 @@ public class RawFuncSignatureMatcher : IMatcher {
                     matched.Add(token);
                 }
             }
-            TextToken ttoken = stoken as TextToken;
-            if (ttoken != null && ttoken.GetText() == "\n") {
+            if (stoken is TextToken ttoken && ttoken.GetText() == "\n") {
                 wasNL = true;
             } else {
                 wasNL = false;

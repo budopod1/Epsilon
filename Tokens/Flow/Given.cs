@@ -57,7 +57,7 @@ public class Given : IFlowControl, IFunctionTerminator {
         return else_;
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["parts"] = parts.Select(part => new Dictionary<string, object> {
                 {"val", part.GetValue()}, {"to_type_", part.GetToType_()},

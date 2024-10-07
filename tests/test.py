@@ -36,7 +36,7 @@ TESTS = [
         "func": -1,
         "sig": (c_int,),
         "tests": [
-            {"arguments": [], "compare": "exact", "expect": 50}
+            {"arguments": [], "compare": "exact", "expect": 51}
         ]
     },
     {
@@ -201,6 +201,14 @@ TESTS = [
         "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 0}
+        ]
+    },
+    {
+        "file": "increment.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 6}
         ]
     },
     {

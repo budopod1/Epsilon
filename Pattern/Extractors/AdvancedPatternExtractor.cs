@@ -143,6 +143,6 @@ abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
             }
         }
         callback = null;
-        return default(T);
+        return default;
     }
 }

@@ -41,7 +41,7 @@ public class CFileCompiler : IFileCompiler {
         idPath = Utils.Stem(path);
         Log.Info("Compiling C file", idPath);
         this.fileText = fileText;
-        isCPP = cppExtensions.Contains(Path.GetExtension(path).Substring(1));
+        isCPP = cppExtensions.Contains(Path.GetExtension(path)[1..]);
     }
 
     public string GetText() {

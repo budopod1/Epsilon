@@ -3,7 +3,7 @@ public class ParameterGroup(IValueToken o) : UnaryOperation<IValueToken>(o), IVa
         return o.GetType_();
     }
 
-    public override int Serialize(SerializationContext context) {
-        return o.Serialize(context);
+    public override int UncachedSerialize(SerializationContext context) {
+        return context.Serialize(o);
     }
 }

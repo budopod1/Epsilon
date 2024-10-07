@@ -80,7 +80,7 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
         return Utils.WrapName("Switch", result);
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["arms"] = arms.Select(arm => new Dictionary<string, object> {
                 {"block", arm.GetBlock()}, {"target", arm.GetTarget().GetValue()}

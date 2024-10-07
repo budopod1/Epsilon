@@ -1010,6 +1010,26 @@ public static class BuiltinsList {
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
             ], "builtin82", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new UnitPatternSegment<string>(typeof(Name), "unsafe"),
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("%"),
+                    new FuncArgPatternSegment()
+                ], new SlotPatternProcessor([1, 3])
+            ), [
+                new("a", new Type_("Z")),
+                new("b", new Type_("Z")),
+            ], "builtin83", (List<Type_> types_) => {
+                Type_ common = Type_.CommonOrNull(types_[0], types_[1]);
+                if (common == null) {
+                    throw new FunctionCallTypes_Exception(
+                        "Incompatible types for modulo", 0
+                    );
+                }
+                return common;
+            }, FunctionSource.Builtin
         ),
     ];
 }

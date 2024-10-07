@@ -1,7 +1,10 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 public static class CmdUtils {
-    static readonly bool SUBPROCCESSOUTPUT = true;
+    static readonly bool SUBPROCCESSOUTPUT = false;
+
+    static bool HasSetDllResolver = false;
 
     #pragma warning disable CS0649
     struct _ProcessResult {
@@ -9,10 +12,25 @@ public static class CmdUtils {
         public byte status;
     }
 
-    [DllImport("/home/mstaab/EpsilonLang/_sub/Utils/runcommand.so", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("runcommand.so")]
     static extern _ProcessResult _RunCommand(string prog, string[] args, int argCount);
 
+    static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath) {
+        if (libraryName == "runcommand.so") {
+            string path = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "Utils", "runcommand.so");
+            return NativeLibrary.Load(path, assembly, searchPath);
+        }
+
+        return IntPtr.Zero;
+    }
+
     static string RunCommand(string command, IEnumerable<string> arguments, out int exitCode) {
+        if (!HasSetDllResolver) {
+            NativeLibrary.SetDllImportResolver(
+                Assembly.GetExecutingAssembly(), DllImportResolver);
+            HasSetDllResolver = true;
+        }
+
         string[] args = arguments.ToArray();
         Log.Info(command, $"[{string.Join(", ", arguments)}]");
         _ProcessResult result = _RunCommand(command, args, args.Length);
@@ -44,13 +62,13 @@ public static class CmdUtils {
     }
 
     public static void OptLLVM(string source, string output) {
-        RunCommand("opt", new string[] {
+        RunCommand("opt", [
             "-O3", source, "-o", output
-        });
+        ]);
     }
 
     public static void LLVMToObj(string source, string output, bool positionIndependent=false) {
-        List<string> args = [source, "-o", output, "-filetype=obj"];
+        List<string> args = [source, "-o", output, "-filetype=obj", "-O=0"];
         if (positionIndependent) {
             args.Add("--relocation-model=pic");
         }
@@ -118,14 +136,14 @@ public static class CmdUtils {
     }
 
     public static IEnumerable<string> ListIncludeDirs(bool isCPP) {
-        string raw = RunCommand("cpp", new string[] {"--verbose", "-x", isCPP ? "c++" : "c", "/dev/null"});
+        string raw = RunCommand("cpp", ["--verbose", "-x", isCPP ? "c++" : "c", "/dev/null"]);
         bool isSearchList = false;
         foreach (string line in raw.Split("\n")) {
             if (isSearchList) {
                 if (line == "End of search list.") {
                     isSearchList = false;
                 } else if (line.Length > 0 && line[0] == ' ') {
-                    yield return line.Substring(1);
+                    yield return line[1..];
                 }
             } else if (line == "#include <...> search starts here:") {
                 isSearchList = true;

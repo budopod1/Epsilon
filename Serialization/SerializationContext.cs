@@ -1,9 +1,11 @@
 using System.Collections;
+using System.Runtime.Serialization;
 
 public class SerializationContext {
     private readonly SerializationContext parent = null;
     private readonly List<int> varsHere = [];
     private readonly JSONList json = [];
+    private readonly Dictionary<ISerializableToken, int> cache = [];
 
     SerializationContext(SerializationContext parent) {
         this.parent = parent;
@@ -17,9 +19,15 @@ public class SerializationContext {
         varsHere.Add(var);
     }
 
+    public int Serialize(ISerializableToken token) {
+        if (cache.TryGetValue(token, out var value))
+            return value;
+        return cache[token] = token.UncachedSerialize(this);
+    }
+
     public static IJSONValue SerializeValue(SerializationContext parentCtx, IValueToken val) {
         SerializationContext ctx = new(parentCtx);
-        int result = val.Serialize(ctx);
+        int result = ctx.Serialize(val);
         return new JSONObject {
             ["ir"] = ctx.GetJSON(),
             ["val"] = new JSONInt(result)
@@ -29,7 +37,7 @@ public class SerializationContext {
     public static IJSONValue SerializeBlock(SerializationContext parentCtx, CodeBlock block) {
         SerializationContext ctx = new(parentCtx);
         foreach (IToken child in block) {
-            ((ISerializableToken)child).Serialize(ctx);
+            ctx.Serialize((ISerializableToken)child);
         }
         return new JSONObject {
             ["ir"] = ctx.GetJSON(),

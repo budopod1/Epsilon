@@ -33,7 +33,7 @@ public class ArrayAccess : BinaryOperation<IValueToken, IValueToken>, IAssignabl
         }
     }
 
-    public ICompleteLine AssignTo(IValueToken value) {
+    public IAssignment AssignTo(IValueToken value) {
         return new ArrayAssignment(this, value);
     }
 }

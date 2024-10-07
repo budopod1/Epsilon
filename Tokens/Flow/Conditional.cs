@@ -69,7 +69,7 @@ public class Conditional : IFlowControl, IFunctionTerminator {
         return Utils.WrapName(GetType().Name, result);
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["conditions"] = conditions.Select(condition => new Dictionary<string, object> {
                 {"block", condition.GetBlock()}, {"condition", condition.GetCondition()}

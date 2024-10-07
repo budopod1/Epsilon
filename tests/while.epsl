@@ -2,14 +2,14 @@ Z#triangle<Z:v> {
     Z:i = 1;
     Z:t = 0;
     while (i <= v) {
-        t = t + i;
-        i = i + 1;
+        t += i;
+        i++;
     };
     return t;
 }
 
 /*
-If you're not familiar with Epsilon syntax, here's what this program does in the much more commonly known Rockstar programming language.
+If you're not familiar with Epsilon syntax, here's what this program does in the much more well known Rockstar programming language.
 
 Epsilon takes your brain
 the tractorbeam is a

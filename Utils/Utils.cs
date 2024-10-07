@@ -1,13 +1,13 @@
 using System.Text;
 
 public static class Utils {
-    public static string Tab = "    ";
-    public static string Whitespace = "\r\n\t ";
-    public static string Numbers = "1234567890";
-    public static string Uppercase = "QWERTYUIOPASDFGHJKLZXCVBNM";
-    public static string Lowercase = "qwertyuiopasdfghjklzxcvbnm";
-    public static string NameStartChars = Uppercase + Lowercase + "_";
-    public static string NameChars = Uppercase + Lowercase + Numbers + "_";
+    public static readonly string Tab = "    ";
+    public static readonly string Whitespace = "\r\n\t ";
+    public static readonly string Numbers = "1234567890";
+    public static readonly string Uppercase = "QWERTYUIOPASDFGHJKLZXCVBNM";
+    public static readonly string Lowercase = "qwertyuiopasdfghjklzxcvbnm";
+    public static readonly string NameStartChars = Uppercase + Lowercase + "_";
+    public static readonly string NameChars = Uppercase + Lowercase + Numbers + "_";
 
     public static string WrapName(string name, string content,
                                   string wrapStart="(", string wrapEnd=")") {
@@ -37,7 +37,7 @@ public static class Utils {
     }
 
     public static string TitleCase(string text) {
-        return char.ToUpper(text[0]) + text.Substring(1).ToLower();
+        return char.ToUpper(text[0]) + text[1..].ToLower();
     }
 
     public static string CammelToSnake(string str) {
@@ -162,7 +162,7 @@ public static class Utils {
             throw new IOException(e.Message);
         }
         if (result == "") return "";
-        if (result[0] == '.') return result.Substring(1);
+        if (result[0] == '.') return result[1..];
         return result;
     }
 
@@ -212,7 +212,7 @@ public static class Utils {
     public static string Stem(string path) {
         string directory = GetDirectoryName(path);
         string name = GetFileNameWithoutExtension(path);
-        if (name[0] == '.') name = name.Substring(1);
+        if (name[0] == '.') name = name[1..];
         return JoinPaths(directory, name);
     }
 

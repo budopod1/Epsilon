@@ -17,7 +17,7 @@ public class Break : IVerifier, ICompleteLine, IBlockEndOnly {
         return GetType().Name + "()";
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this).Register();
     }
 }

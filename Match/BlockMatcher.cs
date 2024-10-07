@@ -27,7 +27,7 @@ public class BlockMatcher : IMatcher {
             List<IToken> replaced = [];
             for (int j = i; j < tokens.Count; j++) {
                 IToken token = tokens[j];
-                IToken priorToken = j>0 ? tokens[j-1] : null;
+                IToken priorToken = j > 0 ? tokens[j-1] : null;
                 replaced.Add(token);
 
                 if (start.Matches(token)

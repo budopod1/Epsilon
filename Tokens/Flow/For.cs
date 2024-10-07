@@ -91,7 +91,7 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
         }
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         Type_ iterType_ = type_;
         if (clauses.Any(clause => clause.GetName() == "in"))
             iterType_ = new Type_("W", 64);
@@ -101,9 +101,9 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
             ["block"] = block,
             ["variable"] = declarationID,
             ["clause_names"] = clauses.Select(clause => clause.GetName()),
-            ["type_"] = type_,
-            ["iter_type_"] = iterType_,
-            ["iter_var"] = iterVar
+            ["var_type_"] = type_,
+            ["idx_type_"] = iterType_,
+            ["iter_alloc"] = iterVar
         }.SetOperands(clauses.Select(clause => clause.GetValue())).Register();
     }
 }

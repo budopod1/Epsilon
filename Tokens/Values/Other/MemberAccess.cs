@@ -31,11 +31,11 @@ public class MemberAccess(IValueToken o, MemberAccessPostfix member) : UnaryOper
         GetType_();
     }
 
-    public ICompleteLine AssignTo(IValueToken value) {
+    public IAssignment AssignTo(IValueToken value) {
         return new MemberAssignment(this, value);
     }
 
-    public override int Serialize(SerializationContext context) {
+    public override int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["member"] = member,
             ["struct_type_"] = structType_

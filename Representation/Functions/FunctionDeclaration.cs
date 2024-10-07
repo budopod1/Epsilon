@@ -13,4 +13,8 @@ public abstract class FunctionDeclaration {
             return _GetReturnType_(tokens);
         }
     }
+
+    public void VerifyPassedTokens(List<IValueToken> tokens) {
+        _GetReturnType_(tokens);
+    }
 }

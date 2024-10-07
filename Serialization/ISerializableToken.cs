@@ -1,3 +1,3 @@
 public interface ISerializableToken : IToken {
-    int Serialize(SerializationContext context);
+    int UncachedSerialize(SerializationContext context);
 }

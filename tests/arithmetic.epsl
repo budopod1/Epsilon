@@ -6,5 +6,6 @@ Z#main {
     Z:e = 5 % 2;
     Z:f = 5 ** 2;
     Z:g = unsafe [5] ~/ [2];
+    Z:h = unsafe [5] % [2];
     return a + b + c + d + e + f + g; // 50
 }

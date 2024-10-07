@@ -36,7 +36,7 @@ abstract public class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<Patte
             }
         }
         callback = null;
-        return default(T);
+        return default;
     }
 
     public bool Equals(PatternExtractor<T> other) {

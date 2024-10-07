@@ -14,7 +14,7 @@ public class UninitVarDeclaration(VarDeclaration declaration) : ICompleteLine, I
         }
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         context.RegisterVarDecl(id);
         return new SerializableInstruction(context, this) {
             ["variable"] = id

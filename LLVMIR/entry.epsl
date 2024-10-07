@@ -23,6 +23,7 @@ FuncState {
     [ScopeVar]:arg_vars,
     [ScopeVar]:block_vars,
     [ScopeVar]:active_vars,
+    Block?:loop_block,
 }
 
 State {
@@ -143,7 +144,7 @@ BinJSON#read BinJSON_ {
         Str:name = [[global_json].get["name"]].get_str;
         Type_:type_ = read type_ [[global_json].get["type_"]];
         W:id = (W)[[global_json].get["id"]].get_int;
-        Val:addr = make global [type_] [null] [c null_ [type_]];
+        Val:addr = make ptr to global [type_] [null] [c null_ [type_]];
         [globals].append[ScopeVar [name, type_, id, addr]];
     };
     get state.globals = globals;
@@ -170,21 +171,6 @@ BinJSON#read BinJSON_ {
     FuncProto:proto = read func proto [func_json];
 if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     [ScopeVar]:vars = [ScopeVar] [];
-
-    [ScopeVar]:arg_vars = [ScopeVar] [];
-    [BinJSON]:arg_list = [[func_json].get["arguments"]].get_list;
-    for (L:i enumerating arg_list) {
-        BinJSON:arg_json = arg_list[i];
-        Type_:type_ = read type_ [[arg_json].get["type_"]];
-        Val:arg = func arg [i];
-        Val:addr = &[var [type_] [arg]];
-        [arg].incr_ref;
-        Str:name = [[arg_json].get["name"]].get_str;
-        W:id = (W)[[arg_json].get["variable"]].get_int;
-        [arg_vars].append[ScopeVar [name, type_, id, addr]];
-    };
-    [vars].extend[arg_vars];
-
     for (BinJSON:var_json in [[func_json].get["vars"]].get_list) {
         Type_:type_ = read type_ [[var_json].get["type_"]];
         Val:addr = &[var [type_]];
@@ -192,22 +178,53 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
         W:id = (W)[[var_json].get["id"]].get_int;
         [vars].append[ScopeVar [name, type_, id, addr]];
     };
+    [vars].extend[[get state.globals].unwrap];
+
+    [ScopeVar]:arg_vars = [ScopeVar] [];
+    [BinJSON]:arg_list = [[func_json].get["arguments"]].get_list;
+    for (L:i enumerating arg_list) {
+        BinJSON:arg_json = arg_list[i];
+        Str:name = [[arg_json].get["name"]].get_str;
+        W:id = (W)[[arg_json].get["variable"]].get_int;
+
+        ScopeVar?:maybe_var = null;
+        for (ScopeVar:var in vars) {
+            if (var.id == id) {
+                maybe_var = var;
+            };
+        };
+        if ([maybe_var].is_null) {
+            abort "Argument {}'s variable (id {}) does not exist" % name % id;
+        };
+        ScopeVar:var = [maybe_var].unwrap;
+
+        Val:arg = func arg [i];
+        [arg].incr_ref;
+        [*[var.addr]] = [arg];
+
+        [arg_vars].append[var];
+    };
 
     [Val]:special_allocs = [Val] [];
-
     for (BinJSON:alloc_json in [[func_json].get["special_allocs"]].get_list) {
         [special_allocs].append[&[var [read type_ [alloc_json]]]];
     };
 
     get state.func_state = FuncState [
-        proto, special_allocs, vars, arg_vars, [ScopeVar] [], [ScopeVar] []
+        proto, special_allocs, vars, arg_vars, [ScopeVar] [], [ScopeVar] [], null
     ];
 
-    build block [[func_json].get["block"]];
+    BinJSON:block_json = [func_json].get["block"];
+    build block [block_json];
+    default block termination [block_json];
 end fn;
 } else {
     abort "Duplicate function callee {}" % proto.callee;
 };
+}
+
+Val#get special alloc <W:i> {
+    return get func state.special_allocs[i];
 }
 
 ScopeVar#get var <W:id> {
@@ -235,6 +252,10 @@ ScopeVar#get var <W:id> {
 
 #perpare for_ block termination {
     cleanup var list [get func state.block_vars];
+}
+
+Type_?#current func ret type_ {
+    return get func state.proto.ret_type_;
 }
 
 #perpare for_ function termination returning <Val?:ret_val> {
@@ -269,12 +290,14 @@ ScopeVar#get var <W:id> {
 
 #build block <BinJSON:block_json> {
     [ScopeVar]:block_vars = get var list [[block_json].get["vars_here"]];
+    [block_vars].extend[get func state.arg_vars];
     get func state.block_vars = block_vars;
     [ScopeVar]:active_vars = get var list [[block_json].get["intialized_vars"]];
-    [active_vars].extend[block_vars];
-    [active_vars].extend[get func state.arg_vars];
     get func state.active_vars = active_vars;
     build ir [[block_json].get["ir"]];
+}
+
+#default block termination <BinJSON:block_json> {
     if (!is block terminated) {
         if ([[block_json].get["does_terminate_function"]].get_bool) {
             mark as unreachable;
@@ -285,7 +308,7 @@ ScopeVar#get var <W:id> {
     };
 }
 
-Val#build seperated values <BinJSON:val_json> {
+Val#build seperated value <BinJSON:val_json> {
     [Val?]:results = build ir [[val_json].get["ir"]];
     Val?:result = results[(W)[[val_json].get["val"]].get_int];
     if (result) {
@@ -293,6 +316,14 @@ Val#build seperated values <BinJSON:val_json> {
     } else {
         abort "Seperated value references non-value instruction";
     };
+}
+
+Block?#get loop block {
+    return get func state.loop_block;
+}
+
+#set loop block <Block?:block> {
+    get func state.loop_block = block;
 }
 
 #write result <Str:result> {

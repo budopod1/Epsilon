@@ -3,7 +3,7 @@ public class Group(IValueToken o) : UnaryOperation<IValueToken>(o), IValueToken 
         return o.GetType_();
     }
 
-    public override int Serialize(SerializationContext context) {
-        return o.Serialize(context);
+    public override int UncachedSerialize(SerializationContext context) {
+        return context.Serialize(o);
     }
 }

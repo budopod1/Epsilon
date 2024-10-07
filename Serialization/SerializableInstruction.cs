@@ -23,7 +23,9 @@ public class SerializableInstruction {
     }
 
     public SerializableInstruction SetOperands(IEnumerable<ISerializableToken> operands) {
-        obj["operands"] = new JSONList(operands.Select(operand => new JSONInt(operand.Serialize(ctx))));
+        obj["operands"] = new JSONList(operands.Select(
+            operand => new JSONInt(ctx.Serialize(operand))
+        ));
         return this;
     }
 

@@ -10,7 +10,7 @@ public class DisposePatternProcessor : IPatternProcessor<List<IToken>> {
     }
 
     public List<IToken> Process(List<IToken> tokens, int start, int end) {
-        if (action != null) action(tokens);
+        action?.Invoke(tokens);
         return [];
     }
 }

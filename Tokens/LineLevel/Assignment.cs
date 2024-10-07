@@ -1,4 +1,4 @@
-public class Assignment(Variable variable, IValueToken o) : UnaryOperation<IValueToken>(o), IVerifier, ICompleteLine, ISerializableToken {
+public class Assignment(Variable variable, IValueToken o) : UnaryOperation<IValueToken>(o), IAssignment, IVerifier {
     readonly int id = variable.GetID();
 
     public void Verify() {
@@ -12,7 +12,7 @@ public class Assignment(Variable variable, IValueToken o) : UnaryOperation<IValu
         }
     }
 
-    public override int Serialize(SerializationContext context) {
+    public override int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["variable"] = id,
             ["var_type_"] = Scope.GetVarByID(this, id).GetType_()

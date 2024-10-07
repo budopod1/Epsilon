@@ -101,12 +101,17 @@ void incrementArrayRefCounts(const struct Array *array, uint64_t elem) {
     uint64_t elemSize = elem >> 2;
     uint64_t length = array->length;
     char *content = array->content;
-    for (uint64_t i = 0; i < length; i++) {
-        uint64_t *item = *(uint64_t**)(content+i*elemSize);
-        if (elem&1) {
+    if (elem & 1) {
+        for (uint64_t i = 0; i < length; i++) {
+            uint64_t *item = *(uint64_t**)(content+i*elemSize);
             if (item == NULL) continue;
+            ++*item;
         }
-        (*item)++;
+    } else {
+        for (uint64_t i = 0; i < length; i++) {
+            uint64_t *item = *(uint64_t**)(content+i*elemSize);
+            ++*item;
+        }
     }
 }
 
@@ -247,6 +252,7 @@ void rightPad(struct Array *str, uint64_t length, char chr) {
         memset(content, chr, reqLen);
     }
 }
+
 const char *const SLICE_NEG_LEN_ERR = ERR_START "Slice end index must be after slice start index\n";
 const char *const SLICE_INDEX_ERR = ERR_START "Slice end index out of range\n";
 
@@ -256,11 +262,13 @@ struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uin
         fwrite(SLICE_NEG_LEN_ERR, strlen(SLICE_NEG_LEN_ERR), 1, stderr);
         exit(1);
     }
+
     if (__builtin_expect(end >= array->length, 0)) {
         fflush(stdout);
         fwrite(SLICE_INDEX_ERR, strlen(SLICE_INDEX_ERR), 1, stderr);
         exit(1);
     }
+
     struct Array *slice = malloc(sizeof(struct Array));
     slice->refCounter = 0;
     uint64_t len = end - start + 1;
@@ -350,8 +358,7 @@ struct Array *nest(const struct Array *arr, uint64_t elem) {
         sub->content = content;
         resultContent[i] = sub;
         if (elem&1) continue;
-        uint64_t valueRefCounter = *((uint64_t*)value);
-        valueRefCounter++;
+        ++*(uint64_t*)value;
     }
     return result;
 }

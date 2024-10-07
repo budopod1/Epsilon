@@ -8,7 +8,7 @@ public class Exponentiation(IValueToken o1, IValueToken o2) : BinaryOperation<IV
         return Type_.CommonSpecificNonNull(this, base_, expo, "Q");
     }
 
-    public override int Serialize(SerializationContext context) {
+    public override int UncachedSerialize(SerializationContext context) {
         IValueToken value = o2;
         bool negate = false;
 
@@ -44,7 +44,7 @@ public class Exponentiation(IValueToken o1, IValueToken o2) : BinaryOperation<IV
 
         return new SerializableInstruction(context, this) {
             ["mode"] = mode,
-            ["expontent_value"] = exponentValue
+            ["exponent_value"] = exponentValue
         }.Register();
     }
 }

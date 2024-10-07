@@ -3,8 +3,8 @@ public static class TokenUtils {
         for (int i = 0; i < token.Count; i++) {
             IToken sub = token[i];
             sub.parent = token;
-            if (sub is IParentToken)
-                UpdateParents((IParentToken)sub);
+            if (sub is IParentToken token1)
+                UpdateParents(token1);
         }
     }
 
@@ -26,9 +26,9 @@ public static class TokenUtils {
         do {
             current = current.parent;
             if (current == null || ++i >= 1000) {
-                return default(T);
+                return default;
             }
-        } while (!(current is T));
+        } while (current is not T);
         return (T)current;
     }
 
@@ -39,8 +39,8 @@ public static class TokenUtils {
             IToken sub = token[i];
             i += config.Invert ? -1 : 1;
             if (config.AvoidTokens(sub)) continue;
-            if (sub is IParentToken) {
-                foreach (IToken subsub in Traverse((IParentToken)sub, config)) {
+            if (sub is IParentToken parent) {
+                foreach (IToken subsub in Traverse(parent, config)) {
                     yield return subsub;
                 }
             } else {
@@ -58,7 +58,7 @@ public static class TokenUtils {
 
     public static IEnumerable<T> TraverseFind<T>(IParentToken token, TraverseConfig config) {
         foreach (IToken sub in Traverse(token, config)) {
-            if (sub is T) yield return (T)sub;
+            if (sub is T t) yield return t;
         }
     }
 

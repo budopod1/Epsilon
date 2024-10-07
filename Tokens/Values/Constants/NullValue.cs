@@ -6,7 +6,7 @@ public class NullValue : IValueToken {
         return new Type_("Null");
     }
 
-    public int Serialize(SerializationContext context) {
+    public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this).Register();
     }
 }

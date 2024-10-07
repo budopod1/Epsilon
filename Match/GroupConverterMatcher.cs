@@ -9,9 +9,9 @@ public class GroupConverterMatcher(Type source, Type dest) : IMatcher {
                 TreeToken tree = (TreeToken)token;
                 if (tree.Count == 1) {
                     IToken inner = tree[0];
-                    if (inner is IValueToken) {
+                    if (inner is IValueToken token1) {
                         IToken result = (IToken)Activator.CreateInstance(
-                            dest, [(IValueToken)inner]
+                            dest, [token1]
                         );
                         return new Match(
                             i, i, [result], [token]

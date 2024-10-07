@@ -940,7 +940,7 @@ public class EPSLFileCompiler : IFileCompiler {
             if (matches) matchingFunctions.Add(function);
         }
 
-        Func<IEnumerable<Type_>, string> stringifyTypes_ = types_ =>
+        static string stringifyTypes_(IEnumerable<Type_> types_) =>
             string.Join(", ", types_.Select(type_ => type_.ToString()));
         string plural = paramTypes_.Count == 1 ? "" : "s";
 
@@ -963,6 +963,7 @@ Expected type{plural}: {expectedTypes_Str}", rawCall
 
             if (functions.Count == 1) {
                 FunctionDeclaration function = functions[0];
+                function.VerifyPassedTokens(parameters); // verify that the passed parameters are of the correct types_
                 IFunctionCall call;
                 if (function.DoesReturnVoid()) {
                     call = new VoidFunctionCall(function, parameters);
@@ -979,6 +980,49 @@ Please clarify between the functions that take the types:
 {bestFuncTypes_Str}", rawCall);
             }
         }
+    }
+
+    readonly Dictionary<string, Type> FloatCompoundableOperators = new() {
+        {"+", typeof(Addition)}, {"-", typeof(Subtraction)},
+        {"*", typeof(Multiplication)}, {"/", typeof(Division)},
+        {"%", typeof(Modulo)}
+    };
+
+    List<IToken> TransformCompoundAssignments(List<IToken> tokens) {
+        IAssignableValue assignable = (IAssignableValue)tokens[0];
+        IValueToken value = (IValueToken)tokens[3];
+
+        IValueToken newValue = (IValueToken)Activator.CreateInstance(
+            FloatCompoundableOperators[
+                ((TextToken)tokens[1]).GetText()
+            ], assignable, value
+        );
+
+        IAssignment assignment = assignable.AssignTo(newValue);
+
+        return [assignment];
+    }
+
+    List<IToken> TransformInplaceOffset(IToken operand, bool increment, bool pre) {
+        IAssignableValue assignable = (IAssignableValue)operand;
+
+        IValueToken newValue;
+        if (increment) {
+            newValue = new AddOne(assignable);
+        } else {
+            newValue = new SubOne(assignable);
+        }
+
+        IAssignment assignment = assignable.AssignTo(newValue);
+
+        IValueToken result;
+        if (pre) {
+            result = newValue;
+        } else {
+            result = assignable;
+        }
+
+        return [new CommaOperation(assignment, result)];
     }
 
     Program ParseFunctionCode(Program program) {
@@ -1013,12 +1057,6 @@ Please clarify between the functions that take the types:
                 new AddMatchingFunctionMatcher(function)
             );
         }
-
-        Dictionary<string, Type> floatCompoundableOperators = new() {
-            {"+", typeof(Addition)}, {"-", typeof(Subtraction)},
-            {"*", typeof(Multiplication)}, {"/", typeof(Division)},
-            {"%", typeof(Modulo)}
-        };
 
         List<List<IMatcher>> rules = [
             functionRules,
@@ -1256,10 +1294,9 @@ Please clarify between the functions that take the types:
                             ),
                             new TextPatternSegment("+"),
                             new TextPatternSegment("+")
-                        ], new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor([0]),
-                            typeof(PostIncrement)
-                        )
+                        ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
+                            tokens[0], increment: true, pre: false
+                        ))
                     ),
                     new PatternMatcher(
                         [
@@ -1269,10 +1306,9 @@ Please clarify between the functions that take the types:
                             ),
                             new TextPatternSegment("-"),
                             new TextPatternSegment("-")
-                        ], new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor([0]),
-                            typeof(PostDecrement)
-                        )
+                        ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
+                            tokens[0], increment: false, pre: false
+                        ))
                     ),
                     new PatternMatcher(
                         [
@@ -1282,10 +1318,9 @@ Please clarify between the functions that take the types:
                                 new Type_PatternSegment(new Type_("Q")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             )
-                        ], new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor([2]),
-                            typeof(PreIncrement)
-                        )
+                        ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
+                            tokens[2], increment: true, pre: true
+                        ))
                     ),
                     new PatternMatcher(
                         [
@@ -1295,10 +1330,9 @@ Please clarify between the functions that take the types:
                                 new Type_PatternSegment(new Type_("Q")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             )
-                        ], new Wrapper2PatternProcessor(
-                            new SlotPatternProcessor([2]),
-                            typeof(PreDecrement)
-                        )
+                        ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
+                            tokens[2], increment: false, pre: true
+                        ))
                     )
                 ]),
                 new PatternMatcher(
@@ -1549,27 +1583,21 @@ Please clarify between the functions that take the types:
                     [
                         new TypePatternSegment(typeof(IAssignableValue)),
                         new TextsPatternSegment(
-                            floatCompoundableOperators.Keys.ToList()
+                            [..FloatCompoundableOperators.Keys]
                         ),
                         new TextPatternSegment("="),
                         new Type_PatternSegment(new Type_("Q"))
-                    ], new FuncPatternProcessor<List<IToken>>(tokens => [
-                        new CompoundAssignment(
-                            floatCompoundableOperators[
-                                ((TextToken)tokens[1]).GetText()
-                            ], (IAssignableValue)tokens[0], (IValueToken)tokens[3]
-                        )
-                    ])
+                    ], new FuncPatternProcessor<List<IToken>>(TransformCompoundAssignments)
                 )
             ],
             [
                 new PatternMatcher(
                     [
                         new FuncPatternSegment<Division>(division =>
-                            (division[0] is ConstantValue)
-                            && (division[1] is ConstantValue)
-                            && (((ConstantValue)division[0]).GetValue() is INumberConstant)
-                            && (((ConstantValue)division[1]).GetValue() is INumberConstant)
+                            (division[0] is ConstantValue v1)
+                            && (division[1] is ConstantValue v2)
+                            && (v1.GetValue() is INumberConstant)
+                            && (v2.GetValue() is INumberConstant)
                         )
                     ], new FuncPatternProcessor<List<IToken>>(tokens => [
                         new ConstantValue(
@@ -1650,8 +1678,7 @@ Please clarify between the functions that take the types:
 
     void DoBlockCodeRules(CodeBlock block, List<List<IMatcher>> rules) {
         for (int i = 0; i < block.Count; i++) {
-            Line line = block[i] as Line;
-            if (line == null) continue;
+            if (block[i] is not Line line) continue;
             foreach (List<IMatcher> ruleset in rules) {
                 line = (Line)DoTreeCodeRules(line, ruleset);
             }
@@ -1666,8 +1693,7 @@ Please clarify between the functions that take the types:
             changed = false;
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
-                if (sub is IParentToken && !(sub is IBarMatchingInto || sub is CodeBlock)) {
-                    IParentToken subparent = (IParentToken)sub;
+                if (sub is IParentToken subparent && !(sub is IBarMatchingInto || sub is CodeBlock)) {
                     parent[i] = DoTreeCodeRules(subparent, ruleset);
                 }
             }
@@ -1710,8 +1736,8 @@ Please clarify between the functions that take the types:
 
             for (int i = 0; i < parent.Count; i++) {
                 IToken sub = parent[i];
-                if (sub is IParentToken && sub is not IBarMatchingInto) {
-                    IParentToken subparent = (IParentToken)sub;
+                if (sub is IParentToken token && sub is not IBarMatchingInto) {
+                    IParentToken subparent = token;
                     bool tchanged;
                     (tchanged, parent[i]) = PerformTreeMatching_(subparent, matcher);
                     changed |= tchanged;
@@ -1778,17 +1804,12 @@ Please clarify between the functions that take the types:
         List<Struct> structDependencies = [];
 
         HashSet<Struct> structsHere = program.GetStructsHere();
-        HashSet<Function> functionsHere = [];
-        foreach (IToken token in program) {
-            Function function = token as Function;
-            if (function != null) functionsHere.Add(function);
-        }
+        HashSet<Function> functionsHere = program.OfType<Function>().ToHashSet();
 
         foreach (IValueToken token in TokenUtils.TraverseFind<IValueToken>(program)) {
-            IFunctionCall call = token as IFunctionCall;
-            if (call != null) {
-                RealFunctionDeclaration func = call.GetFunction() as RealFunctionDeclaration;
-                if (func != null && !functionsHere.Contains(func)) {
+            if (token is IFunctionCall call) {
+                if (call.GetFunction() is RealFunctionDeclaration func
+                    && !functionsHere.Contains(func)) {
                     declarationDependencies.Add(func);
                 }
             }
@@ -1806,22 +1827,10 @@ Please clarify between the functions that take the types:
     void AddUnusedValueWrappers(Program program) {
         foreach (CodeBlock block in TokenUtils.TraverseFind<CodeBlock>(program)) {
             for (int i = 0; i < block.Count; i++) {
-                Line line = block[i] as Line;
-                if (line == null) continue;
-                IValueToken sub = line[0] as IValueToken;
-                if (sub == null) continue;
+                if (block[i] is not Line line) continue;
+                if (line[0] is not IValueToken sub) continue;
                 line[0] = new UnusedValueWrapper(sub);
             }
-        }
-    }
-
-    string GetJSONString(Program program) {
-        return program.GetJSON().Stringify();
-    }
-
-    void SaveJSON(string json) {
-        using (StreamWriter file = new(Utils.JoinPaths(Utils.TempDir(), "code.json"))) {
-            file.Write(json);
         }
     }
 

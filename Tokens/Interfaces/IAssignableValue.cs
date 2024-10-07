@@ -1,3 +1,3 @@
 public interface IAssignableValue : IValueToken {
-    ICompleteLine AssignTo(IValueToken value);
+    IAssignment AssignTo(IValueToken value);
 }
