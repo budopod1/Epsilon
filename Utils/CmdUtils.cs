@@ -75,7 +75,7 @@ public static class CmdUtils {
     }
 
     public static void LLVMToObj(string source, string output, bool positionIndependent=false) {
-        List<string> args = [source, "-o", output, "-filetype=obj"];
+        List<string> args = [source, "-o", output, "-filetype=obj", "-O=0"];
         if (positionIndependent) {
             args.Add("--relocation-model=pic");
         }

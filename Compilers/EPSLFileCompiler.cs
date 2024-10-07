@@ -974,6 +974,7 @@ Expected type{plural}: {expectedTypes_Str}", rawCall
             if (functions.Count == 1) {
                 FunctionDeclaration function = functions[0];
                 IFunctionCall call;
+                function.VerifyPassedTokens(parameters); // verify that the passed parameters are of the correct types_
                 if (function.DoesReturnVoid()) {
                     call = new VoidFunctionCall(function, parameters);
                 } else {
