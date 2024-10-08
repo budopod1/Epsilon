@@ -3,4 +3,4 @@ set -e
 cd "${0%/*}/.."
 
 source venv/bin/activate
-python LLVMIR_OLD/create_ir.py
+python3 LLVMIR_OLD/create_ir.py
