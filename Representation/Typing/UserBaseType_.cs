@@ -23,7 +23,7 @@ public class UserBaseType_(string name, int? bits = null) {
             return new UserBaseType_(content);
         }
         System.Text.RegularExpressions.Match match = Regex.Match(
-            content, $@"({string.Join('|', BaseType_.BitTypes_)})(\d+)"
+            content, $@"^({string.Join('|', BaseType_.BitTypes_)})(\d+)$"
         );
         if (match.Success) {
             string name = match.Groups[1].Value;

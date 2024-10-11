@@ -1,4 +1,0 @@
-{
-    "command_options": ["-H", "always"],
-    "libraries": ["../EPSL-IR-Gen/irgen", "../EEWriter/eewriter", "../EPSL-BinJSON/binjson"]
-}

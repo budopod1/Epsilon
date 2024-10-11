@@ -12,6 +12,13 @@
 #define __builtin_expect(expr, val) expr
 #endif
 
+#define __FLOAT16_EXISTS__ 0
+#ifdef __is_identifier
+#if __is_identifier(_Float16)
+#define __FLOAT16_EXISTS__ 1
+#endif
+#endif
+
 #define ERR_START "FATAL ERROR IN packing: "
 
 struct ByteArray {
@@ -33,34 +40,81 @@ void _packing_memcpyReversed(void *dest, void *const src, size_t amount) {
     }
 }
 
-struct ByteArray *packing_packDouble(double d) {
+struct ByteArray *_packing_packFloating(void *floating, size_t floating_size) {
     struct ByteArray *arr = malloc(sizeof(struct ByteArray));
     arr->refCounter = 0;
-    arr->capacity = sizeof(double);
-    arr->length = sizeof(double);
-    arr->content = malloc(sizeof(double));
+    arr->capacity = floating_size;
+    arr->length = floating_size;
+    arr->content = malloc(floating_size);
     if (_packing_isNetworkByteOrder()) {
-        memcpy(arr->content, &d, sizeof(double));
+        memcpy(arr->content, floating, floating_size);
     } else {
-        _packing_memcpyReversed(arr->content, &d, sizeof(double));
+        _packing_memcpyReversed(arr->content, floating, floating_size);
     }
     return arr;
 }
 
-const char *const BAD_LEN_FOR_DOUBLE_ERR = ERR_START "Array is not long enough, given the starting point, to be converted to a double\n";
+#if __FLOAT16_EXISTS__
+struct ByteArray *packing_packHalf(_Float16 floating) {
+    return _packing_packFloating(&floating, sizeof(floating));
+}
+#endif
 
-double packing_unpackDouble(struct ByteArray *arr, uint64_t pos) {
-    if (__builtin_expect(pos + sizeof(double) >= arr->length, 0)) {
+struct ByteArray *packing_packFloat(float floating) {
+    return _packing_packFloating(&floating, sizeof(floating));
+}
+
+struct ByteArray *packing_packDouble(double floating) {
+    return _packing_packFloating(&floating, sizeof(floating));
+}
+
+#if __FLOAT128__
+struct ByteArray *packing_packQuadruple(__float128 floating) {
+    return _packing_packFloating(&floating, sizeof(floating));
+}
+#endif
+
+const char *const BAD_LEN_FOR_FLOATING_ERR = ERR_START "Not enough remaining space in the array to read a %d bit floating point number\n";
+
+void packing_unpackFloating(struct ByteArray *arr, uint64_t pos, void *floating, size_t floating_size) {
+    if (__builtin_expect(pos + floating_size >= arr->length, 0)) {
         fflush(stdout);
-        fwrite(BAD_LEN_FOR_DOUBLE_ERR, strlen(BAD_LEN_FOR_DOUBLE_ERR), 1, stderr);
+        fprintf(stderr, BAD_LEN_FOR_FLOATING_ERR, 8 * (int)floating_size);
         exit(1);
     }
+
     char *data = arr->content + pos;
-    double d;
     if (_packing_isNetworkByteOrder()) {
-        memcpy(&d, data, sizeof(double));
+        memcpy(floating, data, floating_size);
     } else {
-        _packing_memcpyReversed(&d, data, sizeof(double));
+        _packing_memcpyReversed(floating, data, floating_size);
     }
-    return d;
 }
+
+#if __FLOAT16_EXISTS__
+_Float16 packing_unpackHalf(struct ByteArray *arr, uint64_t pos) {
+    _Float16 result;
+    packing_unpackFloating(arr, pos, &result, sizeof(result));
+    return result;
+}
+#endif
+
+float packing_unpackFloat(struct ByteArray *arr, uint64_t pos) {
+    float result;
+    packing_unpackFloating(arr, pos, &result, sizeof(result));
+    return result;
+}
+
+double packing_unpackDouble(struct ByteArray *arr, uint64_t pos) {
+    double result;
+    packing_unpackFloating(arr, pos, &result, sizeof(result));
+    return result;
+}
+
+#if __FLOAT128__
+__float128 packing_unpackQuadruple(struct ByteArray *arr, uint64_t pos) {
+    __float128 result;
+    packing_unpackFloating(arr, pos, &result, sizeof(result));
+    return result;
+}
+#endif
