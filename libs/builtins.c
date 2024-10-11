@@ -283,16 +283,6 @@ struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uin
     return slice;
 }
 
-bool arrayEqual(const struct Array *array1, const struct Array *array2, uint64_t elemSize) {
-    uint64_t len1 = array1->length;
-    uint64_t len2 = array2->length;
-    if (len1 == len2) {
-        return memcmp(array1->content, array2->content, len1*elemSize) == 0;
-    } else {
-        return false;
-    }
-}
-
 // Only works on strings
 uint64_t countChr(const struct Array *str, char chr) {
     uint64_t counter = 0;
@@ -300,39 +290,6 @@ uint64_t countChr(const struct Array *str, char chr) {
     char *content = str->content;
     for (uint64_t i = 0; i < len; i++) {
         if (content[i] == chr) counter++;
-    }
-    return counter;
-}
-
-uint64_t count(const struct Array *arr, const struct Array *seg, uint64_t elemSize) {
-    uint64_t counter = 0;
-    uint64_t arrLen = arr->length;
-    uint64_t segLen = seg->length;
-    char *segContent = seg->content;
-    char *content = arr->content;
-    uint64_t segSize = segLen * elemSize;
-    for (uint64_t i = 0; segLen + i <= arrLen;) {
-        if (memcmp(content+(elemSize*i), segContent, segSize) == 0) {
-            counter++;
-            i += segLen;
-        } else {
-            i++;
-        }
-    }
-    return counter;
-}
-
-uint64_t overlapCount(const struct Array *arr, const struct Array *seg, uint64_t elemSize) {
-    uint64_t counter = 0;
-    uint64_t arrLen = arr->length;
-    uint64_t segLen = seg->length;
-    char *segContent = seg->content;
-    char *content = arr->content;
-    uint64_t segSize = segLen * elemSize;
-    for (uint64_t i = 0; segLen + i <= arrLen; i++) {
-        if (memcmp(content+(elemSize*i), segContent, segSize) == 0) {
-            counter++;
-        }
     }
     return counter;
 }
@@ -363,79 +320,6 @@ struct Array *nest(const struct Array *arr, uint64_t elem) {
     return result;
 }
 
-struct Array *split(const struct Array *arr, const struct Array *seg, uint64_t elem) {
-    uint64_t segLen = seg->length;
-    if (segLen == 0) return nest(arr, elem);
-    uint64_t ptrSize = sizeof(struct Array*);
-    struct Array *result = blankArray(ptrSize);
-    uint64_t elemSize = elem >> 2;
-    uint64_t arrLen = arr->length;
-    uint64_t sectionCount = 0;
-    uint64_t partStart = 0;
-    char *segContent = seg->content;
-    char *content = arr->content;
-    uint64_t segSize = segLen * elemSize;
-    for (uint64_t i = 0; segLen + i <= arrLen;) {
-        char *iPtr = content+(elemSize*i);
-        if (memcmp(iPtr, segContent, segSize) == 0) {
-            uint64_t sectionLen = i - partStart;
-            struct Array *section = malloc(sizeof(struct Array));
-            section->refCounter = 1;
-            uint64_t capacity = sectionLen;
-            if (capacity == 0) capacity = 1;
-            section->capacity = capacity;
-            section->length = sectionLen;
-            void *secContent = malloc(capacity*elemSize);
-            memcpy(
-                secContent, content+(elemSize*partStart),
-                sectionLen*elemSize
-            );
-            section->content = secContent;
-            incrementArrayRefCounts(section, elem);
-            incrementLength(result, ptrSize);
-            ((struct Array**)result->content)[sectionCount++] = section;
-            i += segLen;
-            partStart = i;
-        } else {
-            i++;
-        }
-    }
-    {
-        uint64_t sectionLen = arrLen - partStart;
-        struct Array *section = malloc(sizeof(struct Array));
-        section->refCounter = 1;
-        uint64_t capacity = sectionLen;
-        if (capacity == 0) capacity = 1;
-        section->capacity = capacity;
-        section->length = sectionLen;
-        void *secContent = malloc(capacity*elemSize);
-        memcpy(
-            secContent, content+(elemSize*partStart),
-            sectionLen*elemSize
-        );
-        section->content = secContent;
-        incrementArrayRefCounts(section, elem);
-        incrementLength(result, ptrSize);
-        ((struct Array**)result->content)[sectionCount] = section;
-    }
-    return result;
-}
-
-bool startsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
-    uint64_t subLen = sub->length;
-    if (subLen > arr->length) return 0;
-    return memcmp(arr->content, sub->content, subLen*elemSize) == 0;
-}
-
-bool endsWith(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
-    uint64_t subLen = sub->length;
-    uint64_t arrLen = arr->length;
-    if (subLen > arrLen) return 0;
-    uint64_t startIdx = arrLen - subLen;
-    char *startPtr = ((char*)arr->content)+startIdx*elemSize;
-    return memcmp(startPtr, sub->content, subLen*elemSize) == 0;
-}
-
 struct Array *join(const struct Array *arr, const struct Array *sep, uint64_t elem) {
     uint64_t elemSize = elem >> 2;
     struct Array *result = malloc(sizeof(struct Array));
@@ -450,22 +334,6 @@ struct Array *join(const struct Array *arr, const struct Array *sep, uint64_t el
         extend(result, arrContent[i], elem);
     }
     return result;
-}
-
-int64_t indexOfSubsection(const struct Array *arr, const struct Array *sub, uint64_t elemSize) {
-    uint64_t arrLen = arr->length;
-    uint64_t subLen = sub->length;
-    if (subLen > arrLen) return -1;
-    if (arrLen == 0) return -1;
-    if (subLen == 0) return 0;
-    char *arrContent = arr->content;
-    char *subContent = sub->content;
-    for (uint64_t i = 0; i <= arrLen-subLen; i++) {
-        if (memcmp(subContent, arrContent+(i*elemSize), subLen * elemSize) == 0) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 const int32_t MAGIC_INVALID_PARSED_INT = -2147483647 + 69927;

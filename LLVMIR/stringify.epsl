@@ -124,9 +124,7 @@ if (fn [null] [func_name] [[Type_] [type_, Str_]] [[Val] [outer_val, outer_resul
                 Val:new_result_capacity = [[[result_capacity_now] * [c L_ [3]]]
                     / [c L_ [2]]] + [c L_ [1]];
                 [result_capacity] = [new_result_capacity];
-                extern fn [Internal_] ["realloc"] [[Type_] [Internal_, L_]]
-                    [[Val] [cast [result_content] to [Internal_], new_result_capacity]];
-                [result_content] = [cast [func ret] to [result_content.type_]];
+                [result_content] = [realloc [result_content] to [new_result_capacity] elements];
             end block;
 
             Val:stringified_dest = [result_content] shifted by [old_result_len];
