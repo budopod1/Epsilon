@@ -61,7 +61,7 @@ public static class Utils {
     public static string ProjectAbsolutePath() {
         DirectoryInfo dir = new(AppDomain.CurrentDomain.BaseDirectory);
         do {
-            if (dir.Name == "_sub") {
+            if (dir.Name == "EpsilonLang") {
                 return dir.FullName;
             }
             dir = dir.Parent;
