@@ -395,7 +395,7 @@ public class EPSLFileCompiler : IFileCompiler {
         Dictionary<string, Func<IConstant>> constantValues = new() {
             {"true", () => new BoolConstant(true)},
             {"false", () => new BoolConstant(false)},
-            {"infinity", () => new FloatConstant(double.NegativeInfinity)},
+            {"infinity", () => new FloatConstant(double.PositiveInfinity)},
             {"NaN", () => new FloatConstant(double.NaN)},
             {"pi", () => new FloatConstant(MathF.PI)},
         };

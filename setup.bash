@@ -22,6 +22,7 @@ ln -fs ../../scripts/pre-commit.py .git/hooks/pre-commit
 
 mkdir -p temp
 
-sudo ln -fs "$PWD/scripts/epslc.bash" /usr/local/bin/epslc || echo "Failed to add Epsilon to /usr/local/bin"
+echo "sudo required to add epslc as a command"
+sudo ln -fs "$PWD/scripts/epslc.bash" /usr/bin/epslc || echo "Failed to add epslc as a command"
 
 echo "Setup complete"

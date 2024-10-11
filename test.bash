@@ -2,4 +2,4 @@
 set -e
 cd "${0%/*}"
 
-python tests/test.py
+python3 tests/test.py

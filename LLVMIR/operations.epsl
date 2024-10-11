@@ -108,6 +108,21 @@ Val#make constant <BinJSON:constant_json> of type_ <Type_:type_> {
         return c [[val_json].get_int] [type_];
     } elif ([constant_type] equals ["bool"]) {
         return c [(Z)[val_json].get_bool] [type_];
+    } elif ([constant_type] equals ["float-standard"]) {
+        return c [[val_json].get_double] [type_];
+    } elif ([constant_type] equals ["float-special"]) {
+        Q:val = NaN;
+        Str:val_str = [val_json].get_str;
+        if ([val_str] equals ["+Infinity"]) {
+            val = infinity;
+        } elif ([val_str] equals ["-Infinity"]) {
+            val = -infinity;
+        } elif ([val_str] equals ["NaN"]) {
+            val = NaN;
+        } else {
+            abort "Unknown special float type {}" % val_str;
+        };
+        return c [val] [type_];
     };
     abort "Unknown constant type {}" % constant_type;
 }

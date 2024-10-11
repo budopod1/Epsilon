@@ -101,8 +101,8 @@ public static class Utils {
     public static string JoinPaths(params string[] segments) {
         try {
             return Path.Combine(segments);
-        } catch (ArgumentNullException e) {
-            throw e;
+        } catch (ArgumentNullException) {
+            throw;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
@@ -111,8 +111,8 @@ public static class Utils {
     public static string GetDirectoryName(string path) {
         try {
             return Path.GetDirectoryName(path);
-        } catch (ArgumentNullException e) {
-            throw e;
+        } catch (ArgumentNullException) {
+            throw;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
@@ -121,8 +121,8 @@ public static class Utils {
     public static string GetFileName(string path) {
         try {
             return Path.GetFileName(path);
-        } catch (ArgumentNullException e) {
-            throw e;
+        } catch (ArgumentNullException) {
+            throw;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
@@ -131,8 +131,8 @@ public static class Utils {
     public static string GetFileNameWithoutExtension(string path) {
         try {
             return Path.GetFileNameWithoutExtension(path);
-        } catch (ArgumentNullException e) {
-            throw e;
+        } catch (ArgumentNullException) {
+            throw;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
@@ -141,8 +141,8 @@ public static class Utils {
     public static string SetExtension(string path, string extension) {
         try {
             return Path.ChangeExtension(path, extension);
-        } catch (ArgumentNullException e) {
-            throw e;
+        } catch (ArgumentNullException) {
+            throw;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
@@ -156,8 +156,8 @@ public static class Utils {
         string result;
         try {
             result = Path.GetExtension(path);
-        } catch (ArgumentNullException e) {
-            throw e;
+        } catch (ArgumentNullException) {
+            throw;
         } catch (ArgumentException e) {
             throw new IOException(e.Message);
         }
@@ -170,8 +170,8 @@ public static class Utils {
         try {
             File.Delete(path);
             return true;
-        } catch (ArgumentNullException e) {
-            throw e;
+        } catch (ArgumentNullException) {
+            throw;
         } catch (ArgumentException) {
             return false;
         } catch (IOException) {
@@ -184,13 +184,7 @@ public static class Utils {
     }
 
     public static void CreateFileUnlessExists(string path) {
-        try {
-            File.Open(path, FileMode.OpenOrCreate, FileAccess.Read).Close();
-        } catch (UnauthorizedAccessException e) {
-            throw e;
-        } catch (NotSupportedException e) {
-            throw e;
-        }
+        File.Open(path, FileMode.OpenOrCreate, FileAccess.Read).Close();
     }
 
     public static string[] GetFilesInDir(string dir) {

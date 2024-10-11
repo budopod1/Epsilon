@@ -43,7 +43,7 @@ public static class Extensions {
     }
 
     public static IEnumerable<TItem> GetOrEmpty<TKey, TItem>(this Dictionary<TKey, IEnumerable<TItem>> dict, TKey key) {
-        return dict.TryGetValue(key, out IEnumerable<TItem>? value) ? value : new TItem[0];
+        return dict.TryGetValue(key, out IEnumerable<TItem>? value) ? value : [];
     }
 
     public static Dictionary<TKey, TSource> ToDictionary2<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {

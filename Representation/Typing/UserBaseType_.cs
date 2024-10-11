@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 public class UserBaseType_(string name, int? bits = null) {
     readonly string name = name;
     readonly int? bits = bits;
@@ -15,20 +13,24 @@ public class UserBaseType_(string name, int? bits = null) {
         foreach (LocatedID structId in structIds) {
             if (content == structId.Name) return new UserBaseType_(structId.GetID());
         }
+
         if ((BaseType_.BuiltInTypes_.Contains(content)
             || SpecialFullBaseType_Names.Contains(content)
             ) && !NonUserType_Names.Contains(content)) {
             return new UserBaseType_(content);
         }
-        System.Text.RegularExpressions.Match match = Regex.Match(
-            content, $@"({string.Join('|', BaseType_.BitTypes_)})(\d+)"
-        );
-        if (match.Success) {
-            string name = match.Groups[1].Value;
-            if (NonUserType_Names.Contains(name)) return null;
-            int bits = int.Parse(match.Groups[2].Value);
-            return new UserBaseType_(name, bits);
+
+        foreach (string name in BaseType_.BitTypes_.Keys) {
+            if (!content.StartsWith(name)) continue;
+            string rest = content[name.Length..];
+            try {
+                int bits = int.Parse(rest);
+                return new UserBaseType_(name, bits);
+            } catch (FormatException) {
+                continue;
+            }
         }
+
         return null;
     }
 

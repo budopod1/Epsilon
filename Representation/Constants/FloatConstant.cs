@@ -22,22 +22,24 @@ public class FloatConstant(double value) : INumberConstant {
     }
 
     public IJSONValue GetJSON() {
-        throw new InvalidOperationException("Float constants are currently not implemented");
-        /*
+        string type;
         IJSONValue valJSON;
         if (double.IsNaN(value)) {
+            type = "float-special";
             valJSON = new JSONString("NaN");
         } else if (double.IsPositiveInfinity(value)) {
+            type = "float-special";
             valJSON = new JSONString("+Infinity");
         } else if (double.IsNegativeInfinity(value)) {
+            type = "float-special";
             valJSON = new JSONString("-Infinity");
         } else {
+            type = "float-standard";
             valJSON = new JSONDouble(value);
         }
         return new JSONObject() {
-            ["type"] = new JSONString("float"),
+            ["type"] = new JSONString(type),
             ["value"] = valJSON
         };
-        */
     }
 }
