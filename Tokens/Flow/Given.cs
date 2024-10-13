@@ -33,10 +33,7 @@ public class Given : IFlowControl, IFunctionTerminator {
                 "Cannot add part to given already terminated with else", part
             );
         }
-        parts = new List<GivenPart>(given.GetParts())
-        {
-            new GivenPart(part)
-        };
+        parts = [..given.GetParts(), new GivenPart(part)];
     }
 
     public Given(Given given, CodeBlock else_) {
@@ -61,6 +58,7 @@ public class Given : IFlowControl, IFunctionTerminator {
         return new SerializableInstruction(context, this) {
             ["parts"] = parts.Select(part => new Dictionary<string, object> {
                 {"val", part.GetValue()}, {"to_type_", part.GetToType_()},
+                {"optional_type_", part.GetToType_().OptionalOf()},
                 {"var_id", part.GetVarID()}, {"block", part.GetBlock()}
             }),
             ["else"] = else_

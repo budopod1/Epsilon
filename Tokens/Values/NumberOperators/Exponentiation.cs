@@ -45,6 +45,6 @@ public class Exponentiation(IValueToken o1, IValueToken o2) : BinaryOperation<IV
         return new SerializableInstruction(context, this) {
             ["mode"] = mode,
             ["exponent_value"] = exponentValue
-        }.Register();
+        }.SetOperands([o1, o2]).Register();
     }
 }

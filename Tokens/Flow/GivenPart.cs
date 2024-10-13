@@ -10,8 +10,7 @@ public class GivenPart : BinaryAction<IValueToken, CodeBlock>, IVerifier {
                 "Expected a single value", rawValue
             );
         }
-        IValueToken value = rawValue[0] as IValueToken;
-        if (value == null) {
+        if (rawValue[0] is not IValueToken value) {
             throw new SyntaxErrorException(
                 "Expected a value", rawValue
             );
@@ -43,11 +42,11 @@ public class GivenPart : BinaryAction<IValueToken, CodeBlock>, IVerifier {
                 $"Given part will always be triggered as specified type is {toType_}", this
             );
         }
-        Type_ fromType_ = toType_.OptionalOf();
+        Type_ optionalType_ = toType_.OptionalOf();
         Type_ valType_ = o1.GetType_();
-        if (!valType_.IsCastableTo(fromType_)) {
+        if (!valType_.IsCastableTo(optionalType_)) {
             throw new SyntaxErrorException(
-                $"Cannot cast value of type {valType_} to type {fromType_}", o1
+                $"Cannot cast value of type {valType_} to type {optionalType_}", o1
             );
         }
     }

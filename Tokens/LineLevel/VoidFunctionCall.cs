@@ -33,6 +33,6 @@ public class VoidFunctionCall(FunctionDeclaration function, List<IValueToken> ar
     public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["function"] = function.GetID()
-        }.Register();
+        }.SetOperands(arguments).Register();
     }
 }

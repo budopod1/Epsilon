@@ -212,6 +212,45 @@ Val#build format chain using <[Val]:operands> {
     return result;
 }
 
+Val#build boolean operation <BinJSON:instruction_json> using <[Val]:operands> {
+    PHINode:result_phi = new PHI [Bool_];
+
+    Val:o1 = operands[0];
+    Val:o1_truth = [o1].truth_value;
+    [o1].check_ref;
+
+    [result_phi].add_incoming[o1_truth];
+
+    Label:compute_o2 = new label;
+    Label:end = new label;
+
+    Val?:o2_is_result = null;
+    Str:instruction_type = [[instruction_json].get["type"]].get_str;
+    if ([instruction_type] equals ["and"]) {
+        o2_is_result = o1_truth;
+    } elif ([instruction_type] equals ["or"]) {
+        o2_is_result = NOT [o1_truth];
+    } else {
+        abort "Invalid boolean operation type {}" % instruction_type;
+    };
+
+    goto_ [[o2_is_result].unwrap] ? [compute_o2] : [end];
+
+[compute_o2]:;
+    Val:o2 = build seperated value [[instruction_json].get["o2"]];
+    Val:o2_truth = [o2].truth_value;
+    [o2].check_ref;
+
+    [result_phi].add_incoming[o2_truth];
+
+[end]:;
+    return [result_phi].place_here;
+}
+
+Val#build null_ value {
+    return c null_ [Null_];
+}
+
 Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
     Str:type = [[instruction_json].get["type"]].get_str;
     Type_:type_ = read type_ [[instruction_json].get["type_"]];
@@ -263,6 +302,12 @@ Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
         return build zeroed array creation using [operands] to [type_];
     } elif ([type] equals ["format_chain"]) {
         return build format chain using [operands];
+    } elif ([type] equals ["and"]) {
+        return build boolean operation [instruction_json] using [operands];
+    } elif ([type] equals ["or"]) {
+        return build boolean operation [instruction_json] using [operands];
+    } elif ([type] equals ["null_value"]) {
+        return build null_ value;
     } else {
         abort "Unknown valued instruction type {}" % type;
     };
@@ -327,11 +372,14 @@ Label:cond_label = new label:;
             next_label = otherwise;
         };
         Label:block_label = new label;
+
         Val:cond = build seperated value [[condition_json].get["condition"]];
         goto_ [consume truth [cond]] ? [block_label] : [otherwise];
+
     [block_label]:;
         build block [[condition_json].get["block"]];
         goto_ [end_label];
+
         if (next_label) {
         [[next_label].unwrap]:;
         };
@@ -532,6 +580,56 @@ Label:cond_label = new label:;
     };
 }
 
+#build given_ <BinJSON:instruction_json> {
+    Label:end_label = new label;
+    Label:else_label = end_label;
+    BinJSON:else_json = [instruction_json].get["else"];
+    if (![else_json].is_null) {
+        else_label = new label;
+    };
+
+    [BinJSON]:parts_json = [[instruction_json].get["parts"]].get_list;
+    for (L:i enumerating parts_json) {
+        BinJSON:part_json = parts_json[i];
+        Label:otherwise = else_label;
+        Label?:next_label = null;
+        if (i != [parts_json].len-1) {
+            otherwise = new label;
+            next_label = otherwise;
+        };
+        Label:block_label = new label;
+
+        Val:val = build seperated value [[part_json].get["val"]];
+        Type_:optional_type_ = read type_ [[part_json].get["optional_type_"]];
+        Val:optional = cast [val] to [optional_type_];
+        goto_ [[optional] != null_] ? [block_label] : [otherwise];
+
+    [block_label]:;
+        Type_:to_type_ = read type_ [[part_json].get["to_type_"]];
+        Val:to = cast [optional] to [to_type_];
+
+        W:var_id = (W)[[instruction_json].get["var_id"]].get_int;
+        [to].incr_ref;
+        [*[get var [var_id].addr]] = [to];
+        [val].check_ref;
+
+        build block [[part_json].get["block"]];
+        goto_ [end_label];
+
+        if (next_label) {
+        [[next_label].unwrap]:;
+        };
+    };
+
+    if (![else_json].is_null) {
+    [else_label]:;
+        build block [else_json];
+        goto_ [end_label];
+    };
+
+[end_label]:;
+}
+
 #build void instruction <BinJSON:instruction_json> using <[Val]:operands> {
     Str:type = [[instruction_json].get["type"]].get_str;
     if ([type] equals ["initial_assignment"]) {
@@ -558,6 +656,8 @@ Label:cond_label = new label:;
         build switch_ [instruction_json] using [operands];
     } elif ([type] equals ["for"]) {
         build for_ [instruction_json] using [operands];
+    } elif ([type] equals ["given"]) {
+        build given_ [instruction_json];
     } else {
         abort "Unknown void instruction type {}" % type;
     };

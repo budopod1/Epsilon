@@ -1,0 +1,6 @@
+Z#main {
+    Z:a = 1;
+    Z:b = 1;
+    Bool:c = a++ || b++;
+    return a + b * 4 + c * 16;
+}

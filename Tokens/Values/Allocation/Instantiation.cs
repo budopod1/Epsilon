@@ -81,6 +81,6 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
     }
 
     public int UncachedSerialize(SerializationContext context) {
-        return new SerializableInstruction(context, this).Register();
+        return new SerializableInstruction(context, this).SetOperands(values).Register();
     }
 }

@@ -39,6 +39,6 @@ public class MemberAccess(IValueToken o, MemberAccessPostfix member) : UnaryOper
         return new SerializableInstruction(context, this) {
             ["member"] = member,
             ["struct_type_"] = structType_
-        }.Register();
+        }.SetOperands([o]).Register();
     }
 }

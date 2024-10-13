@@ -6,10 +6,10 @@ Str?#maybe_get_string<Bool:should_null> {
     };
 }
 
-Z#test {
-    given (maybe_get_string[false] as Str:s1) {
+Z#main {
+    given (maybe_get_string[true] as Str:s1) {
         return s1[0];
-    } given (maybe_get_string[true] as Str:s2) {
+    } given (maybe_get_string[false] as Str:s2) {
         return s2[0] * 2;
     } else {
         return 255;

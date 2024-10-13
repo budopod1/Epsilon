@@ -160,14 +160,14 @@ TESTS = [
             {"arguments": [], "compare": "exact", "expect": 49},
         ]
     },
-    # {
-    #     "file": "given.epsl",
-    #     "func": -1,
-    #     "sig": (c_int,),
-    #     "tests": [
-    #         {"arguments": [], "compare": "exact", "expect": 230}
-    #     ]
-    # },
+    {
+        "file": "given.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 230}
+        ]
+    },
     {
         "file": "global.epsl",
         "func": -1,
@@ -266,6 +266,14 @@ TESTS = [
         "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 5}
+        ]
+    },
+    {
+        "file": "shortcircuit.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 22}
         ]
     },
     {

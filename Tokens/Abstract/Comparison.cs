@@ -14,6 +14,6 @@ public abstract class Comparison(IValueToken o1, IValueToken o2) : BinaryOperati
     public override int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["common_type_"] = Type_.CommonNonNull(this, o1.GetType_(), o2.GetType_())
-        }.Register();
+        }.SetOperands([o1, o2]).Register();
     }
 }

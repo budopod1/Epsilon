@@ -12,13 +12,6 @@ public class SerializableInstruction {
         SetOperands([]);
         if (token is IValueToken valueToken) {
             obj["type_"] = valueToken.GetType_().GetJSON();
-            if (token is IParentToken parentToken) {
-                List<ISerializableToken> operands = [];
-                for (int i = 0; i < parentToken.Count; i++) {
-                    operands.Add((ISerializableToken)parentToken[i]);
-                }
-                SetOperands(operands);
-            }
         }
     }
 
