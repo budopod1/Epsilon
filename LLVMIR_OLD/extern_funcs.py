@@ -161,7 +161,7 @@ EXTERN_FUNCS = {
         "arguments": [ArrayW8, ArrayW8, W64]
     },
     "startsWith": {
-        "name": "startWith", "return_type_": Bool,
+        "name": "startsWith", "return_type_": Bool,
         "arguments": [ArrayW8, ArrayW8, W64]
     },
     "endsWith": {
