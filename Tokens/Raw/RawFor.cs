@@ -55,9 +55,10 @@ public class RawFor : IParentToken {
             );
         }
         RawForClause clause = new(startingClauseName);
+        clause.span = startingClauseToken.span;
         clauses = [clause];
         foreach (IToken token in condition.Skip(2)) {
-            if (token is Name name){
+            if (token is Name name) {
                 string clauseName = name.GetValue();
                 if (ClauseNames.Contains(clauseName)) {
                     clause = new RawForClause(clauseName);
@@ -66,6 +67,7 @@ public class RawFor : IParentToken {
                 }
             }
             clause.Add(token);
+            clause.span = TokenUtils.MergeSpans([clause, token]);
         }
         this.block = block;
     }

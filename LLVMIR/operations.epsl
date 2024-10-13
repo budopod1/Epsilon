@@ -1,3 +1,4 @@
+#import entry;
 #import eewriter;
 #import binjson;
 
@@ -129,5 +130,50 @@ Val#make constant <BinJSON:constant_json> of type_ <Type_:type_> {
 
 Val#<Val:outer_val>.clone {
     Type_:type_ = outer_val.type_;
-    abort "Clone operation not yet implemented on type_ {}" % type_;
+    abort "Clone operation not yet implemented on type_ {}" % [type_].stringify;
+}
+
+Bool#is builtin func id <Str:func_id> {
+    return [func_id].starts_with["builtin"];
+}
+
+Val?#call nonbuiltin function <Str:func_id> with args <[Val]:args> {
+    FuncProto:proto = get func proto [func_id];
+
+    [Val]:casted_args = [Val] [];
+    for (L:i enumerating args) {
+        [casted_args].append[cast [args[i]] to [proto.arg_types_[i]]];
+    };
+
+    Type_?:ret_type_ = proto.ret_type_;
+    extern fn [ret_type_] [proto.callee] [proto.arg_types_] [casted_args];
+
+    Val?:return_val = null;
+    if (ret_type_) {
+        return_val = func ret;
+    };
+
+    if (proto.takes_ownership) {
+        if (proto.result_in_params && ![return_val].is_null) {
+            [[return_val].unwrap].incr_ref;
+        };
+
+        for (Val:arg in args) {
+            [arg].check_ref;
+        };
+
+        if (proto.result_in_params && ![return_val].is_null) {
+            [[return_val].unwrap].checkless_decr_ref;
+        };
+    };
+
+    return return_val;
+}
+
+Val?#call function <Str:func_id> with args <[Val]:args> {
+    if (is builtin func id [func_id]) {
+        abort "builtin function calling has not been implemented";
+    } else {
+        return call nonbuiltin function [func_id] with args [args];
+    };
 }

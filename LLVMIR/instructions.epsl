@@ -251,6 +251,11 @@ Val#build null_ value {
     return c null_ [Null_];
 }
 
+Val#build function call <BinJSON:instruction_json> using <[Val]:operands> {
+    Str:function_id = [[instruction_json].get["function"]].get_str;
+    return [call function [function_id] with args [operands]].unwrap;
+}
+
 Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
     Str:type = [[instruction_json].get["type"]].get_str;
     Type_:type_ = read type_ [[instruction_json].get["type_"]];
@@ -308,6 +313,8 @@ Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
         return build boolean operation [instruction_json] using [operands];
     } elif ([type] equals ["null_value"]) {
         return build null_ value;
+    } elif ([type] equals ["function_call"]) {
+        return build function call [instruction_json] using [operands];
     } else {
         abort "Unknown valued instruction type {}" % type;
     };
@@ -608,7 +615,7 @@ Label:cond_label = new label:;
         Type_:to_type_ = read type_ [[part_json].get["to_type_"]];
         Val:to = cast [optional] to [to_type_];
 
-        W:var_id = (W)[[instruction_json].get["var_id"]].get_int;
+        W:var_id = (W)[[part_json].get["var_id"]].get_int;
         [to].incr_ref;
         [*[get var [var_id].addr]] = [to];
         [val].check_ref;
@@ -628,6 +635,11 @@ Label:cond_label = new label:;
     };
 
 [end_label]:;
+}
+
+#build void function call <BinJSON:instruction_json> using <[Val]:operands> {
+    Str:function_id = [[instruction_json].get["function"]].get_str;
+    call function [function_id] with args [operands];
 }
 
 #build void instruction <BinJSON:instruction_json> using <[Val]:operands> {
@@ -658,6 +670,8 @@ Label:cond_label = new label:;
         build for_ [instruction_json] using [operands];
     } elif ([type] equals ["given"]) {
         build given_ [instruction_json];
+    } elif ([type] equals ["void_function_call"]) {
+        build void function call [instruction_json] using [operands];
     } else {
         abort "Unknown void instruction type {}" % type;
     };

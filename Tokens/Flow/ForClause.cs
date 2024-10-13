@@ -2,6 +2,7 @@ public class ForClause : UnaryOperation<IValueToken> {
     readonly string name;
 
     public ForClause(RawForClause source) : base(null) {
+        span = source.span;
         name = source.GetName();
         List<IToken> tokens = source.GetTokens();
         if (tokens.Count == 0) {
@@ -14,8 +15,7 @@ public class ForClause : UnaryOperation<IValueToken> {
                 "Malformed for clause", tokens[1]
             );
         }
-        IValueToken value = tokens[0] as IValueToken;
-        if (value == null) {
+        if (tokens[0] is not IValueToken value) {
             throw new SyntaxErrorException(
                 "Malformed for clause", tokens[0]
             );

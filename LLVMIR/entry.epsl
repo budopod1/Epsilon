@@ -14,6 +14,8 @@ FuncProto {
     Type_?:ret_type_,
     Str:callee,
     [Type_]:arg_types_,
+    Bool:takes_ownership,
+    Bool:result_in_params
 }
 
 FuncState {
@@ -82,7 +84,9 @@ FuncProto#read func proto <BinJSON:binjson> {
         [[binjson].get["id"]].get_str,
         read voidable type_ [[binjson].get["return_type_"]],
         [[binjson].get["callee"]].get_str,
-        arg_types_
+        arg_types_,
+        [[binjson].get["takes_ownership"]].get_bool,
+        [[binjson].get["result_in_params"]].get_bool,
     ];
 }
 
@@ -159,6 +163,16 @@ BinJSON#read BinJSON_ {
         [protos].append[proto];
     };
     get state.protos = protos;
+}
+
+FuncProto#get func proto <Str:id> {
+    for (FuncProto:proto in [get state.protos].unwrap) {
+        if ([proto.id] equals [id]) {
+            return proto;
+        };
+    };
+
+    abort "Cannot find function prototype with id {}" % id;
 }
 
 #build funcs {
