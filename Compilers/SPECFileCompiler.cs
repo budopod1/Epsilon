@@ -60,7 +60,7 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
                 generics.Add(MakeSPECType_(generic_Name));
             }
             string type_Name = type_Data["name"].GetString();
-            if (structIds.TryGetValue(type_Name, out string? value)) type_Name = value;
+            if (structIds.TryGetValue(type_Name, out string value)) type_Name = value;
             int? type_Bits = type_Data["bits"].GetIntOrNull();
             Type_ type_ = new(type_Name, type_Bits, generics);
             types_[type_Data["given_name"].GetString()] = type_;
@@ -71,7 +71,7 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
 
     Type_ MakeSPECType_(ShapedJSON str) {
         string text = str.GetString();
-        if (!types_.TryGetValue(text, out Type_? value)) {
+        if (!types_.TryGetValue(text, out Type_ value)) {
             throw new InvalidJSONException(
                 $"Invalid JSON type_ '{text}'", str.GetJSON()
             );

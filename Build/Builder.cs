@@ -438,7 +438,7 @@ public class Builder {
                 List<string> folders = [
                     projDirectory, Utils.EPSLLIBS()
                 ];
-                if (libraries.TryGetValue(partialPath, out string? value)) {
+                if (libraries.TryGetValue(partialPath, out string value)) {
                     folders.Add(value);
                 }
                 foreach (string folder in folders) {

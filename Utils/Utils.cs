@@ -54,7 +54,7 @@ public static class Utils {
         return result.ToString();
     }
 
-    static string? projectAbsolutePath = null;
+    static string projectAbsolutePath = null;
 
     public static string ProjectAbsolutePath() {
         if (projectAbsolutePath != null) return projectAbsolutePath;

@@ -60,7 +60,7 @@ public class CFileCompiler : IFileCompiler {
 
     Type_ ReadType_(LineReader reader) {
         string baseType_Name = reader.Line();
-        if (structIDs.TryGetValue(baseType_Name, out LocatedID? value))
+        if (structIDs.TryGetValue(baseType_Name, out LocatedID value))
             baseType_Name = value.GetID();
         if (baseType_Name == "") return null;
         int? baseType_Bits = reader.Int();

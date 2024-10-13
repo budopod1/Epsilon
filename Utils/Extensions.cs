@@ -39,18 +39,18 @@ public static class Extensions {
     }
 
     public static TValue GetOr<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> default_) {
-        return dict.TryGetValue(key, out TValue? value) ? value : default_();
+        return dict.TryGetValue(key, out TValue value) ? value : default_();
     }
 
     public static IEnumerable<TItem> GetOrEmpty<TKey, TItem>(this Dictionary<TKey, IEnumerable<TItem>> dict, TKey key) {
-        return dict.TryGetValue(key, out IEnumerable<TItem>? value) ? value : [];
+        return dict.TryGetValue(key, out IEnumerable<TItem> value) ? value : [];
     }
 
     public static Dictionary<TKey, TSource> ToDictionary2<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
         var result = new Dictionary<TKey, TSource>();
         foreach (TSource item in source) {
             TKey key = keySelector(item);
-            if (result.TryGetValue(key, out TSource? value)) {
+            if (result.TryGetValue(key, out TSource value)) {
                 throw new DuplicateKeyException<TKey, TSource>(
                     key, value, item
                 );
@@ -65,7 +65,7 @@ public static class Extensions {
         var sourceItems = new Dictionary<TKey, TSource>();
         foreach (TSource item in source) {
             TKey key = keySelector(item);
-            if (sourceItems.TryGetValue(key, out TSource? value)) {
+            if (sourceItems.TryGetValue(key, out TSource value)) {
                 throw new DuplicateKeyException<TKey, TSource>(
                     key, value, item
                 );

@@ -3,7 +3,7 @@ public static class StructsCtx {
     static bool structsLoaded = false;
 
     public static Struct GetStructFromID(string id) {
-        if (structs.TryGetValue(id, out Struct? value)) {
+        if (structs.TryGetValue(id, out Struct value)) {
             return value;
         } else {
             return null;
@@ -12,7 +12,7 @@ public static class StructsCtx {
 
     public static Struct GetStructFromType_(Type_ type_) {
         string id = type_.GetBaseType_().GetName();
-        if (structs.TryGetValue(id, out Struct? value)) {
+        if (structs.TryGetValue(id, out Struct value)) {
             return value;
         } else {
             return null;
@@ -24,7 +24,7 @@ public static class StructsCtx {
             type_ = type_.GetGeneric(0);
         }
         string name = type_.GetBaseType_().GetName();
-        if (structs.TryGetValue(name, out Struct? value)) {
+        if (structs.TryGetValue(name, out Struct value)) {
             return value;
         } else {
             return null;
@@ -33,7 +33,7 @@ public static class StructsCtx {
 
     public static void Add(Struct struct_) {
         string id = struct_.GetID();
-        if (structs.TryGetValue(id, out Struct? other)) {
+        if (structs.TryGetValue(id, out Struct other)) {
             if (!other.Equals(struct_)) {
                 throw new ArgumentException(
                     $"Duplicate struct ID '{id}' for different structs"
