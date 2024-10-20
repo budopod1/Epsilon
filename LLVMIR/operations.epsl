@@ -1,6 +1,7 @@
 #import entry;
 #import eewriter;
 #import binjson;
+#import builtins_;
 
 [Val]#cast <[Val]:vals> to <Type_:type_> {
     [Val]:result = [Val] [];
@@ -172,7 +173,7 @@ Val?#call nonbuiltin function <Str:func_id> with args <[Val]:args> {
 
 Val?#call function <Str:func_id> with args <[Val]:args> {
     if (is builtin func id [func_id]) {
-        abort "builtin function calling has not been implemented";
+        return call builtin [func_id] with args [args];
     } else {
         return call nonbuiltin function [func_id] with args [args];
     };

@@ -972,7 +972,7 @@ Expected type{plural}: {expectedTypes_Str}", rawCall
                 }
                 return [call];
             } else {
-                string bestFuncTypes_Str = string.Join(" or ", functions.Select(
+                string bestFuncTypes_Str = string.Join(" or\n", functions.Select(
                     func => stringifyTypes_(func.GetArguments().Select(arg => arg.GetType_()))));
                 throw new SyntaxErrorException($@"Function call is ambiguous:
 Got type{plural}: {stringifyTypes_(paramTypes_)}

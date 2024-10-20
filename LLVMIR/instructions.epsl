@@ -170,7 +170,7 @@ Val#build member access <BinJSON:instruction_json> using <[Val]:operands> {
 
 Val#build zeroed array creation using <[Val]:operands> to <Type_:type_> {
     Val:size = cast [operands[0]] to [L_];
-    Val:elem_size = sizeof [type_.generics[0]];
+    Val:elem_size = sizeof elem [type_];
     extern fn [Internal_] ["makeBlankArray"] [[Type_] [L_, L_]] [[Val] [size, elem_size]];
     return cast [func ret] to [type_];
 }

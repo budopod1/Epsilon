@@ -1,0 +1,114 @@
+#import operations;
+#import eewriter;
+
+
+BuiltinResult {
+    Val?:result,
+    Bool:result_in_params,
+    Bool:result_is_params
+}
+
+
+BuiltinResult#make builtin result <Val:result> {
+    return BuiltinResult [result, false, false];
+}
+
+
+BuiltinResult#make builtin result <Val:result> in params {
+    return BuiltinResult [result, true, false];
+}
+
+
+BuiltinResult#make empty builtin result {
+    return BuiltinResult [null, false, false];
+}
+
+
+BuiltinResult#builtin length with <[Val]:args> {
+    return make builtin result [load [[args[0]].length]];
+}
+
+
+BuiltinResult#builtin capacity with <[Val]:args> {
+    return make builtin result [load [[args[0]].capacity]];
+}
+
+
+BuiltinResult#builtin append with <[Val]:args> {
+    Val:arr = args[0];
+    Type_:generic = arr.type_.generics[0];
+    Val:appendee = cast [args[1]] to [generic];
+    Val:len = load [[arr].length];
+    extern fn [null] ["incrementLength"] [[Type_] [Internal_, L_]]
+        [[Val] [cast [arr] to [Internal_], make elem int [generic]]];
+    [[load [[arr].content]].idx[len]] = [appendee];
+    [appendee].incr_ref;
+    return make empty builtin result;
+}
+
+
+BuiltinResult#builtin require capacity with <[Val]:args> {
+    Val:arr = args[0];
+    Val:required_cap = cast [args[1]] to [L_];
+    extern fn [null] ["requireCapacity"] [[Type_] [Internal_, L_, L_]]
+        [[Val] [cast [arr] to [Internal_], required_cap, sizeof elem [arr.type_]]];
+    return make empty builtin result;
+}
+
+
+BuiltinResult#builtin shrink mem with <[Val]:args> {
+    Val:arr = args[0];
+    extern fn [null] ["shrinkMem"] [[Type_] [Internal_, L_]]
+        [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_]]];
+    return make empty builtin result;
+}
+
+
+BuiltinResult#builtin pop with <[Val]:args> {
+    Val:arr = args[0];
+    Val:idx = cast [args[1]] to [L_];
+    verify idx [idx] in array [arr];
+    Val:elem = load [[arr].idx[idx]];
+    [elem].checkless_decr_ref;
+    extern fn [null] ["removeAt"] [[Type_] [Internal_, L_, L_]]
+        [[Val] [cast [arr] to [Internal_], idx, sizeof [elem.type_]]];
+    return make builtin result [elem] in params;
+}
+
+
+BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> {
+    if ([func_id] equals ["builtin1"]) {
+        return builtin length with [args];
+    } elif ([func_id] equals ["builtin2"]) {
+        return builtin capacity with [args];
+    } elif ([func_id] equals ["builtin3"]) {
+        return builtin append with [args];
+    } elif ([func_id] equals ["builtin4"]) {
+        return builtin require capacity with [args];
+    } elif ([func_id] equals ["builtin5"]) {
+        return builtin shrink mem with [args];
+    } elif ([func_id] equals ["builtin6"]) {
+        return builtin pop with [args];
+    } else {
+        abort "Builtin {} does not exist or is not implemented" % func_id;
+    };
+}
+
+
+Val?#call builtin <Str:func_id> with args <[Val]:args> {
+    BuiltinResult:result = dispatch builtin [func_id] with args [args];
+
+    if (!result.result_is_params) {
+        if (result.result_in_params) {
+            [[result.result].unwrap].incr_ref;
+        };
+        for (Val:arg in args) {
+            [arg].check_ref;
+        };
+        if (result.result_in_params) {
+            [[result.result].unwrap].checkless_decr_ref;
+        };
+    };
+
+    return result.result;
+}
