@@ -23,42 +23,42 @@
 // lowest bit is whether the value is nullable
 
 struct Array {
-    uint64_t refCounter;
+    uint64_t ref_counter;
     uint64_t capacity;
     uint64_t length;
     void *content;
 };
 
-extern inline uint64_t calcNewCapacity(uint64_t cap) {
+extern inline uint64_t calc_new_capacity(uint64_t cap) {
     return 1+(cap*3)/2;
 }
 
-void incrementLength(struct Array *array, uint64_t elemSize) {
+void increment_length(struct Array *array, uint64_t elem_size) {
     uint64_t length = array->length;
     uint64_t capacity = array->capacity;
     array->length = length+1;
     if (capacity == length) {
         // Current growth factor: 1.5
-        uint64_t newCapacity = calcNewCapacity(capacity);
-        array->capacity = newCapacity;
-        array->content = realloc(array->content, elemSize*newCapacity);
+        uint64_t new_capacity = calc_new_capacity(capacity);
+        array->capacity = new_capacity;
+        array->content = realloc(array->content, elem_size*new_capacity);
     }
 }
 
 // Will grow capacity only to required amount
-void requireCapacity(struct Array *array, uint64_t required, uint64_t elemSize) {
+void require_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
     if (array->capacity < required) {
         array->capacity = required;
-        array->content = realloc(array->content, elemSize*required);
+        array->content = realloc(array->content, elem_size*required);
     }
 }
 
 // Will grow capacity and then apply growth factor
-void increaceCapacity(struct Array *array, uint64_t required, uint64_t elemSize) {
+void increace_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
     if (array->capacity < required) {
-        uint64_t newCapacity = calcNewCapacity(required);
-        array->capacity = newCapacity;
-        array->content = realloc(array->content, elemSize*newCapacity);
+        uint64_t new_capacity = calc_new_capacity(required);
+        array->capacity = new_capacity;
+        array->content = realloc(array->content, elem_size*new_capacity);
     }
 }
 
@@ -66,116 +66,116 @@ extern inline uint64_t min1(uint64_t val) {
     return val == 0 ? 1 : val;
 }
 
-void shrinkMem(struct Array *array, uint64_t elemSize) {
-    uint64_t newCapacity = min1(array->length);
-    array->content = realloc(array->content, elemSize*newCapacity);
-    array->capacity = newCapacity;
+void shrink_mem(struct Array *array, uint64_t elem_size) {
+    uint64_t new_capacity = min1(array->length);
+    array->content = realloc(array->content, elem_size*new_capacity);
+    array->capacity = new_capacity;
 }
 
-void removeAt(struct Array *array, uint64_t idx, uint64_t elemSize) {
+void remove_at(struct Array *array, uint64_t idx, uint64_t elem_size) {
     uint64_t length = array->length--;
     char* content = array->content;
-    char* deststart = content+idx*elemSize;
-    char* srcstart = deststart+elemSize;
-    memmove((void*)deststart, (void*)srcstart, elemSize*(length-idx-1));
+    char* deststart = content+idx*elem_size;
+    char* srcstart = deststart+elem_size;
+    memmove((void*)deststart, (void*)srcstart, elem_size*(length-idx-1));
 }
 
 const char *const INSERTSPACE_IDX_ERR = ERR_START "Cannot insert space outside bounds of array\n";
 
-void insertSpace(struct Array *array, uint64_t idx, uint64_t elemSize) {
+void insert_space(struct Array *array, uint64_t idx, uint64_t elem_size) {
     uint64_t length = array->length;
     if (__builtin_expect(idx > length, 0)) {
         fflush(stdout);
         fwrite(INSERTSPACE_IDX_ERR, strlen(INSERTSPACE_IDX_ERR), 1, stderr);
         exit(1);
     }
-    incrementLength(array, elemSize);
+    increment_length(array, elem_size);
     char* content = array->content;
-    char* srcstart = content+idx*elemSize;
-    char* deststart = srcstart+elemSize;
-    memmove((void*)deststart, (void*)srcstart, elemSize*(length-idx));
+    char* srcstart = content+idx*elem_size;
+    char* deststart = srcstart+elem_size;
+    memmove((void*)deststart, (void*)srcstart, elem_size*(length-idx));
 }
 
-void incrementArrayRefCounts(const struct Array *array, uint64_t elem) {
+void increment_array_ref_counts(const struct Array *array, uint64_t elem) {
     if (elem & 2) return;
-    uint64_t elemSize = elem >> 2;
+    uint64_t elem_size = elem >> 2;
     uint64_t length = array->length;
     char *content = array->content;
     if (elem & 1) {
         for (uint64_t i = 0; i < length; i++) {
-            uint64_t *item = *(uint64_t**)(content+i*elemSize);
+            uint64_t *item = *(uint64_t**)(content+i*elem_size);
             if (item == NULL) continue;
             ++*item;
         }
     } else {
         for (uint64_t i = 0; i < length; i++) {
-            uint64_t *item = *(uint64_t**)(content+i*elemSize);
+            uint64_t *item = *(uint64_t**)(content+i*elem_size);
             ++*item;
         }
     }
 }
 
 struct Array *clone(const struct Array *array, uint64_t elem) {
-    struct Array *newArray = malloc(sizeof(struct Array));
-    newArray->refCounter = 0;
+    struct Array *new_array = malloc(sizeof(struct Array));
+    new_array->ref_counter = 0;
     uint64_t capacity = array->capacity;
-    newArray->capacity = capacity;
-    newArray->length = array->length;
-    uint64_t elemSize = elem >> 2;
-    uint64_t size = capacity * elemSize;
+    new_array->capacity = capacity;
+    new_array->length = array->length;
+    uint64_t elem_size = elem >> 2;
+    uint64_t size = capacity * elem_size;
     void *content = malloc(size);
     memcpy(content, array->content, size);
-    newArray->content = content;
-    incrementArrayRefCounts(array, elem);
-    return newArray;
+    new_array->content = content;
+    increment_array_ref_counts(array, elem);
+    return new_array;
 }
 
 void extend(struct Array *array1, const struct Array *array2, uint64_t elem) {
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
-    uint64_t newLen = len1 + len2;
-    uint64_t elemSize = elem >> 2;
-    increaceCapacity(array1, newLen, elemSize);
-    array1->length = newLen;
-    incrementArrayRefCounts(array2, elem);
-    memcpy(array1->content+len1*elemSize, array2->content, len2*elemSize);
+    uint64_t new_len = len1 + len2;
+    uint64_t elem_size = elem >> 2;
+    increace_capacity(array1, new_len, elem_size);
+    array1->length = new_len;
+    increment_array_ref_counts(array2, elem);
+    memcpy(array1->content+len1*elem_size, array2->content, len2*elem_size);
 }
 
 struct Array *concat(const struct Array *array1, const struct Array *array2, uint64_t elem) {
-    struct Array *newArray = malloc(sizeof(struct Array));
-    newArray->refCounter = 0;
+    struct Array *new_array = malloc(sizeof(struct Array));
+    new_array->ref_counter = 0;
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
-    uint64_t newLen = len1 + len2;
-    newArray->length = newLen;
-    uint64_t newCap = calcNewCapacity(newLen);
-    newArray->capacity = newCap;
-    uint64_t elemSize = elem >> 2;
-    void *content = malloc(elemSize*newCap);
-    uint64_t size1 = len1*elemSize;
-    uint64_t size2 = len2*elemSize;
+    uint64_t new_len = len1 + len2;
+    new_array->length = new_len;
+    uint64_t new_cap = calc_new_capacity(new_len);
+    new_array->capacity = new_cap;
+    uint64_t elem_size = elem >> 2;
+    void *content = malloc(elem_size*new_cap);
+    uint64_t size1 = len1*elem_size;
+    uint64_t size2 = len2*elem_size;
     memcpy(content, array1->content, size1);
     memcpy(content+size1, array2->content, size2);
-    newArray->content = content;
-    incrementArrayRefCounts(newArray, elem);
-    return newArray;
+    new_array->content = content;
+    increment_array_ref_counts(new_array, elem);
+    return new_array;
 }
 
-struct Array *emptyArray(uint64_t elemSize) {
+struct Array *empty_array(uint64_t elem_size) {
     struct Array *array = malloc(sizeof(struct Array));
-    array->refCounter = 0;
+    array->ref_counter = 0;
     array->length = 0;
     array->capacity = 1;
-    array->content = malloc(elemSize);
+    array->content = malloc(elem_size);
     return array;
 }
 
-struct Array *blankArray(uint64_t elemSize) {
+struct Array *blank_array(uint64_t elem_size) {
     struct Array *array = malloc(sizeof(struct Array));
-    array->refCounter = 0;
+    array->ref_counter = 0;
     array->length = 0;
     array->capacity = 10;
-    array->content = malloc(10*elemSize);
+    array->content = malloc(10*elem_size);
     return array;
 }
 
@@ -230,26 +230,26 @@ extern inline char *formatZ64() {
 }
 
 // only works on strings
-void leftPad(struct Array *str, uint64_t length, char chr) {
-    uint64_t curLen = str->length;
-    if (curLen < length) {
-        requireCapacity(str, length, 1);
+void left_pad(struct Array *str, uint64_t length, char chr) {
+    uint64_t cur_len = str->length;
+    if (cur_len < length) {
+        require_capacity(str, length, 1);
         char *content = str->content;
         str->length = length;
-        memset(content+curLen, chr, length-curLen);
+        memset(content+cur_len, chr, length-cur_len);
     }
 }
 
 // only works on strings
-void rightPad(struct Array *str, uint64_t length, char chr) {
-    uint64_t curLen = str->length;
-    if (curLen < length) {
-        requireCapacity(str, length, 1);
+void right_pad(struct Array *str, uint64_t length, char chr) {
+    uint64_t cur_len = str->length;
+    if (cur_len < length) {
+        require_capacity(str, length, 1);
         char *content = str->content;
         str->length = length;
-        uint64_t reqLen = length - curLen;
-        memmove(content+reqLen, content, curLen);
-        memset(content, chr, reqLen);
+        uint64_t req_len = length - cur_len;
+        memmove(content+req_len, content, cur_len);
+        memset(content, chr, req_len);
     }
 }
 
@@ -270,21 +270,21 @@ struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uin
     }
 
     struct Array *slice = malloc(sizeof(struct Array));
-    slice->refCounter = 0;
+    slice->ref_counter = 0;
     uint64_t len = end - start + 1;
     slice->capacity = len;
     slice->length = len;
-    uint64_t elemSize = elem >> 2;
-    uint64_t size = elemSize * len;
+    uint64_t elem_size = elem >> 2;
+    uint64_t size = elem_size * len;
     void *content = malloc(size);
     slice->content = content;
-    memcpy(content, ((char*)array->content)+(start*elemSize), size);
-    incrementArrayRefCounts(slice, elem);
+    memcpy(content, ((char*)array->content)+(start*elem_size), size);
+    increment_array_ref_counts(slice, elem);
     return slice;
 }
 
 // Only works on strings
-uint64_t countChr(const struct Array *str, char chr) {
+uint64_t count_chr(const struct Array *str, char chr) {
     uint64_t counter = 0;
     uint64_t len = str->length;
     char *content = str->content;
@@ -295,25 +295,25 @@ uint64_t countChr(const struct Array *str, char chr) {
 }
 
 struct Array *nest(const struct Array *arr, uint64_t elem) {
-    char *arrContent = (char*)arr->content;
+    char *arr_content = (char*)arr->content;
     uint64_t len = arr->length;
     struct Array *result = malloc(sizeof(struct Array));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     result->capacity = len;
     result->length = len;
-    struct Array **resultContent = malloc(sizeof(struct Array*)*len);
-    result->content = resultContent;
-    uint64_t elemSize = elem >> 2;
+    struct Array **result_content = malloc(sizeof(struct Array*)*len);
+    result->content = result_content;
+    uint64_t elem_size = elem >> 2;
     for (uint64_t i = 0; i < len; i++) {
         struct Array *sub = malloc(sizeof(struct Array));
-        sub->refCounter = 1;
+        sub->ref_counter = 1;
         sub->capacity = 1;
         sub->length = 1;
-        void *value = arrContent+(i*elemSize);
-        void *content = malloc(elemSize);
-        memcpy(content, value, elemSize);
+        void *value = arr_content+(i*elem_size);
+        void *content = malloc(elem_size);
+        memcpy(content, value, elem_size);
         sub->content = content;
-        resultContent[i] = sub;
+        result_content[i] = sub;
         if (elem&1) continue;
         ++*(uint64_t*)value;
     }
@@ -321,24 +321,24 @@ struct Array *nest(const struct Array *arr, uint64_t elem) {
 }
 
 struct Array *join(const struct Array *arr, const struct Array *sep, uint64_t elem) {
-    uint64_t elemSize = elem >> 2;
+    uint64_t elem_size = elem >> 2;
     struct Array *result = malloc(sizeof(struct Array));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     result->length = 0;
     result->capacity = 1;
-    result->content = malloc(elemSize);
-    uint64_t arrLen = arr->length;
-    struct Array **arrContent = arr->content;
-    for (uint64_t i = 0; i < arrLen; i++) {
+    result->content = malloc(elem_size);
+    uint64_t arr_len = arr->length;
+    struct Array **arr_content = arr->content;
+    for (uint64_t i = 0; i < arr_len; i++) {
         if (i > 0) extend(result, sep, elem);
-        extend(result, arrContent[i], elem);
+        extend(result, arr_content[i], elem);
     }
     return result;
 }
 
 const int32_t MAGIC_INVALID_PARSED_INT = -2147483647 + 69927;
 
-int32_t parseInt(const struct Array *str) {
+int32_t parse_int(const struct Array *str) {
     int32_t result = 0;
     int32_t multiplier = 1;
     int32_t sign = 1;
@@ -365,26 +365,24 @@ int32_t parseInt(const struct Array *str) {
     return MAGIC_INVALID_PARSED_INT;
 }
 
-extern inline int32_t getMagicInvalidParsedInt() {
+extern inline int32_t get_magic_invalid_parsed_int() {
     return MAGIC_INVALID_PARSED_INT;
 }
 
-double parseFloat(const struct Array *str) {
+double parse_float(const struct Array *str) {
     char *content = str->content;
     uint64_t length = str->length;
     int64_t dot = 0;
-    int noDot = 1;
     for (; dot < length; dot++) {
-        if (content[dot] == '.') {
-            noDot = 0;
-            break;
-        }
+        if (content[dot] == '.') goto has_dot;
     }
-    if (noDot) {
-        int32_t ival = parseInt(str);
-        if (ival == MAGIC_INVALID_PARSED_INT) return NAN;
-        return ival;
-    }
+    
+    // no dot
+    int32_t ival = parse_int(str);
+    if (ival == MAGIC_INVALID_PARSED_INT) return NAN;
+    return ival;
+
+has_dot:
     if (length == 1) return NAN;
     int valid = 0;
     double result = 0;
@@ -424,28 +422,28 @@ double parseFloat(const struct Array *str) {
     return NAN;
 }
 
-extern inline bool isNaN32(float val) {
+extern inline bool is_NaN_32(float val) {
     return isnan(val) != 0;
 }
 
-extern inline bool isNaN64(double val) {
+extern inline bool is_NaN_64(double val) {
     return isnan(val) != 0;
 }
 
-struct Array *readInputLine() {
+struct Array *read_input_line() {
     // Maybe replace with a real readline solution like GNU readline?
-    struct Array *result = blankArray(sizeof(char));
+    struct Array *result = blank_array(sizeof(char));
     while (1) {
         int chr = getchar();
         if (chr == EOF || chr == '\n' || chr == '\r') return result;
         uint64_t length = result->length;
-        incrementLength(result, sizeof(char));
+        increment_length(result, sizeof(char));
         ((char*)result->content)[length] = (char)chr;
     }
 }
 
 struct File {
-    uint64_t refCounter;
+    uint64_t ref_counter;
     FILE *file;
     int32_t mode;
     int32_t open;
@@ -457,44 +455,44 @@ struct File {
 #define _FILE_BINARY_MODE 8
 
 // returns File?
-struct File *openFile(struct Array *string, int32_t mode) {
-    char modeStr[4];
+struct File *open_file(struct Array *string, int32_t mode) {
+    char mode_str[4];
     int i = 0;
 
     if (mode&_FILE_WRITE_MODE) {
         if (mode&_FILE_APPEND_MODE)
             return NULL;
-        modeStr[i++] = 'w';
+        mode_str[i++] = 'w';
         if (mode&_FILE_READ_MODE)
-            modeStr[i++] = '+';
+            mode_str[i++] = '+';
     } else if (mode&_FILE_READ_MODE) {
-        modeStr[i++] = 'r';
+        mode_str[i++] = 'r';
         if (mode&_FILE_APPEND_MODE)
-            modeStr[i++] = '+';
+            mode_str[i++] = '+';
     } else if (mode&_FILE_APPEND_MODE) {
-        modeStr[i++] = 'a';
+        mode_str[i++] = 'a';
     } else {
         return NULL;
     }
 
     if (mode&_FILE_BINARY_MODE) {
-        modeStr[i++] = 'b';
+        mode_str[i++] = 'b';
     }
 
-    modeStr[i] = '\0';
+    mode_str[i] = '\0';
 
     uint64_t len = string->length;
-    incrementLength(string, 1);
+    increment_length(string, 1);
     char* content = string->content;
     content[len] = '\0';
     string->length = len;
 
-    FILE *cFile = fopen(content, modeStr);
-    if (cFile == NULL) return NULL;
+    FILE *C_file = fopen(content, mode_str);
+    if (C_file == NULL) return NULL;
 
     struct File *file = malloc(sizeof(struct File));
-    file->refCounter = 0;
-    file->file = cFile;
+    file->ref_counter = 0;
+    file->file = C_file;
     file->mode = mode;
     file->open = 1;
 
@@ -517,15 +515,15 @@ extern inline int32_t FILE_BINARY_MODE() {
     return _FILE_BINARY_MODE;
 }
 
-extern inline bool fileOpen(const struct File *file) {
+extern inline bool file_open(const struct File *file) {
     return file->open;
 }
 
-extern inline int32_t fileMode(const struct File *file) {
+extern inline int32_t file_mode(const struct File *file) {
     return file->mode;
 }
 
-bool closeFile(struct File *file) {
+bool close_file(struct File *file) {
     if (file->open) {
         if (fclose(file->file) == 0) {
             file->open = 0;
@@ -537,20 +535,20 @@ bool closeFile(struct File *file) {
     }
 }
 
-int64_t fileLength(const struct File *file) {
+int64_t file_length(const struct File *file) {
     if (file->open) {
         FILE *fp = file->file;
-        long startPos = ftell(fp);
+        long start_pos = ftell(fp);
         fseek(fp, 0, SEEK_END);
         uint64_t length = (uint64_t)ftell(fp);
-        fseek(fp, startPos, SEEK_SET);
+        fseek(fp, start_pos, SEEK_SET);
         return length;
     } else {
         return -1;
     }
 }
 
-int64_t filePos(const struct File *file) {
+int64_t file_pos(const struct File *file) {
     if (file->open) {
         return (uint64_t)ftell(file->file);
     } else {
@@ -559,22 +557,22 @@ int64_t filePos(const struct File *file) {
 }
 
 // returns: Str?
-struct Array *readAllFile(const struct File *file) {
+struct Array *read_all_file(const struct File *file) {
     if (file->open) {
-        uint64_t fileLen = fileLength(file);
-        if (fileLen == -1) return emptyArray(sizeof(char));
-        uint64_t curPos = filePos(file);
-        if (curPos == -1) return emptyArray(sizeof(char));
-        uint64_t remainingText = (uint64_t)(fileLen - curPos);
-        uint64_t capacity = remainingText;
+        uint64_t file_len = file_length(file);
+        if (file_len == -1) return empty_array(sizeof(char));
+        uint64_t cur_pos = file_pos(file);
+        if (cur_pos == -1) return empty_array(sizeof(char));
+        uint64_t remaining_text = (uint64_t)(file_len - cur_pos);
+        uint64_t capacity = remaining_text;
         if (capacity == 0) capacity = 1;
         struct Array *result = malloc(sizeof(struct Array));
-        result->refCounter = 0;
+        result->ref_counter = 0;
         result->capacity = capacity;
-        result->length = remainingText;
+        result->length = remaining_text;
         char *content = malloc(capacity);
         result->content = content;
-        size_t read = fread(content, remainingText, 1, file->file);
+        size_t read = fread(content, remaining_text, 1, file->file);
         if (read != 1) {
             free(result);
             free(content);
@@ -587,12 +585,12 @@ struct Array *readAllFile(const struct File *file) {
 }
 
 // returns: Str?
-struct Array *readSomeFile(const struct File *file, uint64_t amount) {
+struct Array *read_some_file(const struct File *file, uint64_t amount) {
     if (file->open) {
         uint64_t capacity = amount;
         if (capacity == 0) capacity = 1;
         struct Array *result = malloc(sizeof(struct Array));
-        result->refCounter = 0;
+        result->ref_counter = 0;
         result->capacity = capacity;
         result->length = amount;
         char *content = malloc(capacity);
@@ -609,37 +607,37 @@ struct Array *readSomeFile(const struct File *file, uint64_t amount) {
     }
 }
 
-int32_t setFilePos(const struct File *file, uint64_t pos) {
+int32_t set_file_pos(const struct File *file, uint64_t pos) {
     if (file->open) {
         return fseek(file->file, (long)pos, SEEK_SET) == 0;
     }
     return false;
 }
 
-int32_t jumpFilePos(const struct File *file, uint64_t amount) {
+int32_t jump_file_pos(const struct File *file, uint64_t amount) {
     if (file->open) {
         return fseek(file->file, (long)amount, SEEK_CUR) == 0;
     }
     return false;
 }
 
-static bool readLineEOF = false;
+static bool read_line_EOF = false;
 
 // returns: Str?
-struct Array *readFileLine(const struct File *file) {
-    readLineEOF = false;
+struct Array *read_file_line(const struct File *file) {
+    read_line_EOF = false;
     if (file->open) {
         char *content = NULL;
         size_t capacity = 0;
         int64_t len = (int64_t)getline(&content, &capacity, file->file);
         if (len == -1) {
             free(content);
-            readLineEOF = true;
+            read_line_EOF = true;
             return NULL;
         }
         if (content[len-1] == '\n') len--;
         struct Array *result = malloc(sizeof(struct Array));
-        result->refCounter = 0;
+        result->ref_counter = 0;
         result->capacity = capacity;
         result->content = content;
         result->length = len;
@@ -648,16 +646,16 @@ struct Array *readFileLine(const struct File *file) {
     return NULL;
 }
 
-extern inline bool readLineReachedEOF() {
-    return readLineEOF;
+extern inline bool read_line_reached_EOF() {
+    return read_line_EOF;
 }
 
 // returns [Str]?
-struct Array *readFileLines(const struct File *file) {
-    struct Array *result = blankArray(sizeof(struct Array));
+struct Array *read_file_lines(const struct File *file) {
+    struct Array *result = blank_array(sizeof(struct Array));
     while (1) {
-        struct Array *line = readFileLine(file);
-        if (readLineEOF) {
+        struct Array *line = read_file_line(file);
+        if (read_line_EOF) {
             return result;
         }
         if (line == NULL) {
@@ -671,13 +669,13 @@ struct Array *readFileLines(const struct File *file) {
             return NULL;
         }
         uint64_t length = result->length;
-        incrementLength(result, sizeof(struct Array));
+        increment_length(result, sizeof(struct Array));
         ((struct Array**)result->content)[length] = line;
-        line->refCounter = 1;
+        line->ref_counter = 1;
     }
 }
 
-bool writeToFile(const struct File *file, const struct Array *text) {
+bool write_to_file(const struct File *file, const struct Array *text) {
     if (file->open) {
         uint64_t len = text->length;
         return fwrite(text->content, len, 1, file->file) == 1;
@@ -686,10 +684,10 @@ bool writeToFile(const struct File *file, const struct Array *text) {
     }
 }
 
-void freeFile(struct File *file) {
+void free_file(struct File *file) {
     // We don't need a check for if the file is already closed, becauuse
-    // closeFile contains one itself
-    closeFile(file);
+    // close_file contains one itself
+    close_file(file);
     free(file);
 }
 
@@ -700,42 +698,42 @@ void abort_(const struct Array *string) {
     exit(1);
 }
 
-struct Array *makeBlankArray(uint64_t len, uint64_t elemSize) {
+struct Array *make_blank_array(uint64_t len, uint64_t elem_size) {
     struct Array *result = malloc(sizeof(struct Array));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     uint64_t cap = min1(len);
     result->capacity = cap;
     result->length = len;
-    void *content = calloc(cap, elemSize);
+    void *content = calloc(cap, elem_size);
     result->content = content;
     return result;
 }
 
-extern inline void sortArray(struct Array *array, uint64_t elemSize, int (*compar)(const void*, const void*)) {
-    qsort(array->content, array->length, elemSize, compar);
+extern inline void sort_array(struct Array *array, uint64_t elem_size, int (*compar)(const void*, const void*)) {
+    qsort(array->content, array->length, elem_size, compar);
 }
 
-struct Array *repeatArray(const struct Array *array, uint64_t times, uint64_t elem) {
+struct Array *repeat_array(const struct Array *array, uint64_t times, uint64_t elem) {
     struct Array *result = malloc(sizeof(struct Array));
-    result->refCounter = 0;
-    uint64_t srcLen = array->length;
-    uint64_t newLen = srcLen * times;
-    result->capacity = newLen;
-    result->length = newLen;
-    uint64_t elemSize = elem >> 2;
-    uint64_t srcSize = srcLen*elemSize;
-    char *content = malloc(newLen*elemSize);
+    result->ref_counter = 0;
+    uint64_t src_len = array->length;
+    uint64_t new_len = src_len * times;
+    result->capacity = new_len;
+    result->length = new_len;
+    uint64_t elem_size = elem >> 2;
+    uint64_t src_size = src_len*elem_size;
+    char *content = malloc(new_len*elem_size);
     for (uint64_t i = 0; i < times; i++) {
-        memcpy(content+i*srcSize, array->content, srcSize);
+        memcpy(content+i*src_size, array->content, src_size);
     }
     result->content = content;
-    incrementArrayRefCounts(result, elem);
+    increment_array_ref_counts(result, elem);
     return result;
 }
 
 const char *const NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found null\n";
 
-void nullValueFail() {
+void null_value_fail() {
     fflush(stdout);
     fwrite(NULL_FAIL_MESSAGE, strlen(NULL_FAIL_MESSAGE), 1, stderr);
     exit(1);
@@ -745,62 +743,62 @@ const char *const TOO_FEW_PLACEHOLDERS_MESSAGE = ERR_START "Not enough placehold
 const char *const TOO_MANY_PLACEHOLDERS_MESSAGE = ERR_START "Too many placeholders for given number of values\n";
 const char *const FORMAT_STRING_PLACEHOLDER = "{}";
 
-struct Array *formatString(struct Array *template_, struct Array *values[], uint32_t valueCount) {
+struct Array *format_string(struct Array *template_, struct Array *values[], uint32_t value_count) {
     size_t placeholder_len = strlen(FORMAT_STRING_PLACEHOLDER);
     uint32_t template_Len = template_->length;
     char *template_Content = template_->content;
-    uint64_t resultLen = template_Len - valueCount * placeholder_len;
-    for (uint32_t i = 0; i < valueCount; i++) {
-        resultLen += values[i]->length;
+    uint64_t result_len = template_Len - value_count * placeholder_len;
+    for (uint32_t i = 0; i < value_count; i++) {
+        result_len += values[i]->length;
     }
 
-    uint64_t resultCap = resultLen + 1;
-    uint32_t valueIdx = 0;
-    char *result = malloc(resultCap);
-    uint64_t resultIdx = 0;
-    uint64_t segStart = 0;
-    uint64_t templateIterLen = template_Len - placeholder_len + 1;
-    for (uint64_t i = 0; i < templateIterLen; i++) {
+    uint64_t result_cap = result_len + 1;
+    uint32_t value_idx = 0;
+    char *result = malloc(result_cap);
+    uint64_t result_idx = 0;
+    uint64_t seg_start = 0;
+    uint64_t template_iter_len = template_Len - placeholder_len + 1;
+    for (uint64_t i = 0; i < template_iter_len; i++) {
         if (memcmp(template_Content + i, FORMAT_STRING_PLACEHOLDER, placeholder_len) == 0) {
-            if (__builtin_expect(valueIdx == valueCount, 0)) {
+            if (__builtin_expect(value_idx == value_count, 0)) {
                 fflush(stdout);
                 fwrite(TOO_MANY_PLACEHOLDERS_MESSAGE, strlen(TOO_MANY_PLACEHOLDERS_MESSAGE), 1, stderr);
                 exit(1);
             }
 
-            uint64_t segLen = i - segStart;
-            memcpy(result + resultIdx, template_Content + segStart, segLen);
-            resultIdx += segLen;
+            uint64_t seg_len = i - seg_start;
+            memcpy(result + result_idx, template_Content + seg_start, seg_len);
+            result_idx += seg_len;
 
-            struct Array *value = values[valueIdx++];
-            uint64_t valueLen = value->length;
-            memcpy(result + resultIdx, value->content, valueLen);
-            resultIdx += valueLen;
+            struct Array *value = values[value_idx++];
+            uint64_t value_len = value->length;
+            memcpy(result + result_idx, value->content, value_len);
+            result_idx += value_len;
 
-            segStart = i + placeholder_len;
-            i = segStart - 1;
+            seg_start = i + placeholder_len;
+            i = seg_start - 1;
         }
     }
 
-    if (__builtin_expect(valueIdx < valueCount, 0)) {
+    if (__builtin_expect(value_idx < value_count, 0)) {
         fflush(stdout);
         fwrite(TOO_FEW_PLACEHOLDERS_MESSAGE, strlen(TOO_FEW_PLACEHOLDERS_MESSAGE), 1, stderr);
         exit(1);
     }
 
-    memcpy(result + resultIdx, template_Content + segStart, template_Len - segStart);
+    memcpy(result + result_idx, template_Content + seg_start, template_Len - seg_start);
 
-    struct Array *resultArr = malloc(sizeof(struct Array));
-    resultArr->refCounter = 0;
-    resultArr->capacity = resultCap;
-    resultArr->length = resultLen;
-    resultArr->content = result;
-    return resultArr;
+    struct Array *result_arr = malloc(sizeof(struct Array));
+    result_arr->ref_counter = 0;
+    result_arr->capacity = result_cap;
+    result_arr->length = result_len;
+    result_arr->content = result;
+    return result_arr;
 }
 
 const char *const ARR_INDEX_ERR = ERR_START "Specified array index is greater or equal to array length\n";
 
-void arrayIdxFail() {
+void array_idx_fail() {
     fflush(stdout);
     fwrite(ARR_INDEX_ERR, strlen(ARR_INDEX_ERR), 1, stderr);
     exit(1);
@@ -808,7 +806,7 @@ void arrayIdxFail() {
 
 const char *const DIV_0_ERR = ERR_START "Cannot divide an integer by 0\n";
 
-void div0Fail() {
+void div_0_fail() {
     fflush(stdout);
     fwrite(DIV_0_ERR, strlen(DIV_0_ERR), 1, stderr);
     exit(1);

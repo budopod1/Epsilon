@@ -39,7 +39,7 @@ BuiltinResult#builtin append with <[Val]:args> {
     Type_:generic = arr.type_.generics[0];
     Val:appendee = cast [args[1]] to [generic];
     Val:len = load [[arr].length];
-    extern fn [null] ["incrementLength"] [[Type_] [Internal_, L_]]
+    extern fn [null] ["increment_length"] [[Type_] [Internal_, L_]]
         [[Val] [cast [arr] to [Internal_], make elem int [generic]]];
     [[load [[arr].content]].idx[len]] = [appendee];
     [appendee].incr_ref;
@@ -50,7 +50,7 @@ BuiltinResult#builtin append with <[Val]:args> {
 BuiltinResult#builtin require capacity with <[Val]:args> {
     Val:arr = args[0];
     Val:required_cap = cast [args[1]] to [L_];
-    extern fn [null] ["requireCapacity"] [[Type_] [Internal_, L_, L_]]
+    extern fn [null] ["require_capacity"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], required_cap, sizeof elem [arr.type_]]];
     return make empty builtin result;
 }
@@ -58,7 +58,7 @@ BuiltinResult#builtin require capacity with <[Val]:args> {
 
 BuiltinResult#builtin shrink mem with <[Val]:args> {
     Val:arr = args[0];
-    extern fn [null] ["shrinkMem"] [[Type_] [Internal_, L_]]
+    extern fn [null] ["shrink_mem"] [[Type_] [Internal_, L_]]
         [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_]]];
     return make empty builtin result;
 }
@@ -70,9 +70,21 @@ BuiltinResult#builtin pop with <[Val]:args> {
     verify idx [idx] in array [arr];
     Val:elem = load [[arr].idx[idx]];
     [elem].checkless_decr_ref;
-    extern fn [null] ["removeAt"] [[Type_] [Internal_, L_, L_]]
+    extern fn [null] ["remove_at"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], idx, sizeof [elem.type_]]];
     return make builtin result [elem] in params;
+}
+
+
+BuiltinResult#builtin insert with <[Val]:args> {
+    Val:arr = args[0];
+    Val:idx = cast [args[1]] to [L_];
+    Val:elem = cast [args[2]] to [arr.type_.generics[0]];
+    extern fn [null] ["insert_space"] [[Type_] [Internal_, L_, L_]]
+        [[Val] [cast [arr] to [Internal_], idx, sizeof elem [arr]]];
+    [elem].incr_ref;
+    [[arr].idx[idx]] = [elem];
+    return make empty builtin result;
 }
 
 

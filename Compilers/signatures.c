@@ -254,7 +254,7 @@ enum CXChildVisitResult array_struct_visitor(CXCursor field, CXCursor _, CXClien
 
     switch (visit_state->i) {
     case 0:
-        expected_name = "refCounter";
+        expected_name = "ref_counter";
         goto is_uint64_t_field;
     case 1:
         expected_name = "capacity";
@@ -316,10 +316,10 @@ enum CXChildVisitResult refCounter_check_visitor(CXCursor field, CXCursor _, CXC
 
     CXString field_name = clang_getCursorSpelling(field);
 
-    if (strcmp(clang_getCString(field_name), "refCounter") == 0) {
+    if (strcmp(clang_getCString(field_name), "ref_counter") == 0) {
         CXType field_type = clang_getCursorType(field);
         if (!is_uint_of_size(field_type, 8)) {
-            report_error(field, "refCounter field isn't the right type (expected type uint64_t)");
+            report_error(field, "ref_counter field isn't the right type (expected type uint64_t)");
         }
         *refCounter_start = true;
     }
@@ -543,7 +543,7 @@ enum CXChildVisitResult field_collector_visitor(CXCursor cursor, CXCursor _, CXC
 
     CXString field_name = clang_getCursorSpelling(cursor);
     const char *name = clang_getCString(field_name);
-    if (strcmp(name, "refCounter") == 0) {
+    if (strcmp(name, "ref_counter") == 0) {
         clang_disposeString(field_name);
         return CXChildVisit_Continue;
     }

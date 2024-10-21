@@ -12,7 +12,7 @@
 }
 
 #div zero error {
-    extern fn [null] ["div0Fail"] [[Type_] []] [[Val] []];
+    extern fn [null] ["div_0_fail"] [[Type_] []] [[Val] []];
 }
 
 Val#safe <Val:a> / <Val:b> {
@@ -87,7 +87,7 @@ Val#consume truth <Val:val> {
 
 #verify idx <Val:idx> in array <Val:arr> {
     if_ [expect [[cast [idx] to [L_]] ge [[arr].length]] to be [false]];
-        extern fn [null] ["arrayIdxFail"] [[Type_] []] [[Val] []];
+        extern fn [null] ["array_idx_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
 }

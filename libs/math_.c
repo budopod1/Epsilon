@@ -4,20 +4,20 @@
 #include <stdbool.h>
 
 struct C {
-    uint64_t refCounter;
+    uint64_t ref_counter;
     double real;
     double imag;
 };
 
 struct UIntArray {
-    uint64_t refCounter;
+    uint64_t ref_counter;
     uint64_t capacity;
     uint64_t length;
     uint32_t *content;
 };
 
 struct IntArray {
-    uint64_t refCounter;
+    uint64_t ref_counter;
     uint64_t capacity;
     uint64_t length;
     int32_t *content;
@@ -29,7 +29,7 @@ double math_varBaseLog(double argument, double base) {
 
 struct C *math_addC(struct C *a, struct C *b) {
     struct C *result = malloc(sizeof(struct C));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     result->real = a->real + b->real;
     result->imag = a->imag + b->imag;
     return result;
@@ -37,7 +37,7 @@ struct C *math_addC(struct C *a, struct C *b) {
 
 struct C *math_subC(struct C *a, struct C *b) {
     struct C *result = malloc(sizeof(struct C));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     result->real = a->real - b->real;
     result->imag = a->imag - b->imag;
     return result;
@@ -45,7 +45,7 @@ struct C *math_subC(struct C *a, struct C *b) {
 
 struct C *math_mulC(struct C *a, struct C *b) {
     struct C *result = malloc(sizeof(struct C));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     result->real = a->real * b->real - a->imag * b->imag;
     result->imag = a->real * b->imag + a->imag * b->real;
     return result;
@@ -53,7 +53,7 @@ struct C *math_mulC(struct C *a, struct C *b) {
 
 struct C *math_divC(struct C *a, struct C *b) {
     struct C *result = malloc(sizeof(struct C));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     double v = b->real * b->real + b->imag * b->imag;
     result->real = (a->real * b->real + a->imag * b->imag) / v;
     result->imag = (a->imag * b->real - a->real * b->imag) / v;
@@ -63,7 +63,7 @@ struct C *math_divC(struct C *a, struct C *b) {
 struct C *math_expC(struct C *val) {
     double m = exp(val->real);
     struct C *result = malloc(sizeof(struct C));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     result->real = cos(val->imag) * m;
     result->imag = sin(val->imag) * m;
     return result;
@@ -71,7 +71,7 @@ struct C *math_expC(struct C *val) {
 
 struct C *math_exponentToCmplx(double base, double exponent) {
     struct C *result = malloc(sizeof(struct C));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     if (base >= 0) {
         result->real = pow(base, exponent);
         result->imag = 0;
@@ -89,7 +89,7 @@ struct C *math_cmplxToExponent(struct C *base, double exponent) {
     double r = sqrt(base->real*base->real + base->imag*base->imag);
     double m = pow(r, exponent);
     struct C *result = malloc(sizeof(struct C));
-    result->refCounter = 0;
+    result->ref_counter = 0;
     result->real = cos(theta * exponent) * m;
     result->imag = sin(theta * exponent) * m;
     return result;

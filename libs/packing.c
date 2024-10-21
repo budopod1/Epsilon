@@ -22,7 +22,7 @@
 #define ERR_START "FATAL ERROR IN packing: "
 
 struct ByteArray {
-    uint64_t refCounter;
+    uint64_t ref_counter;
     uint64_t capacity;
     uint64_t length;
     char *content;
@@ -42,7 +42,7 @@ void _packing_memcpyReversed(void *dest, void *const src, size_t amount) {
 
 struct ByteArray *_packing_packFloating(void *floating, size_t floating_size) {
     struct ByteArray *arr = malloc(sizeof(struct ByteArray));
-    arr->refCounter = 0;
+    arr->ref_counter = 0;
     arr->capacity = floating_size;
     arr->length = floating_size;
     arr->content = malloc(floating_size);
