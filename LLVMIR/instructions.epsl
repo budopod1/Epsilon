@@ -251,9 +251,9 @@ Val#build null_ value {
     return c null_ [Null_];
 }
 
-Val#build function call <BinJSON:instruction_json> using <[Val]:operands> {
+Val#build function call <BinJSON:instruction_json> using <[Val]:operands> to <Type_:result_type_> {
     Str:function_id = [[instruction_json].get["function"]].get_str;
-    return [call function [function_id] with args [operands]].unwrap;
+    return [call function [function_id] with args [operands] to [result_type_]].unwrap;
 }
 
 Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
@@ -314,7 +314,7 @@ Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
     } elif ([type] equals ["null_value"]) {
         return build null_ value;
     } elif ([type] equals ["function_call"]) {
-        return build function call [instruction_json] using [operands];
+        return build function call [instruction_json] using [operands] to [type_];
     } else {
         abort "Unknown valued instruction type {}" % type;
     };
@@ -639,7 +639,7 @@ Label:cond_label = new label:;
 
 #build void function call <BinJSON:instruction_json> using <[Val]:operands> {
     Str:function_id = [[instruction_json].get["function"]].get_str;
-    call function [function_id] with args [operands];
+    call function [function_id] with args [operands] to [null];
 }
 
 #build void instruction <BinJSON:instruction_json> using <[Val]:operands> {

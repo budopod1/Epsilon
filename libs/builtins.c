@@ -115,7 +115,7 @@ void increment_array_ref_counts(const struct Array *array, uint64_t elem) {
     }
 }
 
-struct Array *clone(const struct Array *array, uint64_t elem) {
+struct Array *clone_array(const struct Array *array, uint64_t elem) {
     struct Array *new_array = malloc(sizeof(struct Array));
     new_array->ref_counter = 0;
     uint64_t capacity = array->capacity;
@@ -130,7 +130,7 @@ struct Array *clone(const struct Array *array, uint64_t elem) {
     return new_array;
 }
 
-void extend(struct Array *array1, const struct Array *array2, uint64_t elem) {
+void extend_array(struct Array *array1, const struct Array *array2, uint64_t elem) {
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
     uint64_t new_len = len1 + len2;
@@ -141,7 +141,7 @@ void extend(struct Array *array1, const struct Array *array2, uint64_t elem) {
     memcpy(array1->content+len1*elem_size, array2->content, len2*elem_size);
 }
 
-struct Array *concat(const struct Array *array1, const struct Array *array2, uint64_t elem) {
+struct Array *concat_arrays(const struct Array *array1, const struct Array *array2, uint64_t elem) {
     struct Array *new_array = malloc(sizeof(struct Array));
     new_array->ref_counter = 0;
     uint64_t len1 = array1->length;
@@ -330,8 +330,8 @@ struct Array *join(const struct Array *arr, const struct Array *sep, uint64_t el
     uint64_t arr_len = arr->length;
     struct Array **arr_content = arr->content;
     for (uint64_t i = 0; i < arr_len; i++) {
-        if (i > 0) extend(result, sep, elem);
-        extend(result, arr_content[i], elem);
+        if (i > 0) extend_array(result, sep, elem);
+        extend_array(result, arr_content[i], elem);
     }
     return result;
 }
@@ -376,7 +376,7 @@ double parse_float(const struct Array *str) {
     for (; dot < length; dot++) {
         if (content[dot] == '.') goto has_dot;
     }
-    
+
     // no dot
     int32_t ival = parse_int(str);
     if (ival == MAGIC_INVALID_PARSED_INT) return NAN;

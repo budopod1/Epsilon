@@ -8,31 +8,25 @@ BuiltinResult {
     Bool:result_is_params
 }
 
-
 BuiltinResult#make builtin result <Val:result> {
     return BuiltinResult [result, false, false];
 }
-
 
 BuiltinResult#make builtin result <Val:result> in params {
     return BuiltinResult [result, true, false];
 }
 
-
 BuiltinResult#make empty builtin result {
     return BuiltinResult [null, false, false];
 }
-
 
 BuiltinResult#builtin length with <[Val]:args> {
     return make builtin result [load [[args[0]].length]];
 }
 
-
 BuiltinResult#builtin capacity with <[Val]:args> {
     return make builtin result [load [[args[0]].capacity]];
 }
-
 
 BuiltinResult#builtin append with <[Val]:args> {
     Val:arr = args[0];
@@ -46,7 +40,6 @@ BuiltinResult#builtin append with <[Val]:args> {
     return make empty builtin result;
 }
 
-
 BuiltinResult#builtin require capacity with <[Val]:args> {
     Val:arr = args[0];
     Val:required_cap = cast [args[1]] to [L_];
@@ -55,14 +48,12 @@ BuiltinResult#builtin require capacity with <[Val]:args> {
     return make empty builtin result;
 }
 
-
 BuiltinResult#builtin shrink mem with <[Val]:args> {
     Val:arr = args[0];
     extern fn [null] ["shrink_mem"] [[Type_] [Internal_, L_]]
         [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_]]];
     return make empty builtin result;
 }
-
 
 BuiltinResult#builtin pop with <[Val]:args> {
     Val:arr = args[0];
@@ -72,9 +63,8 @@ BuiltinResult#builtin pop with <[Val]:args> {
     [elem].checkless_decr_ref;
     extern fn [null] ["remove_at"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], idx, sizeof [elem.type_]]];
-    return make builtin result [elem] in params;
+    return make builtin result [elem]; // result is not in params when builtin finishes
 }
-
 
 BuiltinResult#builtin insert with <[Val]:args> {
     Val:arr = args[0];
@@ -88,8 +78,47 @@ BuiltinResult#builtin insert with <[Val]:args> {
     return make empty builtin result;
 }
 
+BuiltinResult#builtin clone with <[Val]:args> {
+    return make builtin result [[args[0]].clone];
+}
 
-BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> {
+BuiltinResult#builtin extend with <[Val]:args> {
+    Val:arr1 = cast [args[0]] to [Internal_];
+    Val:arr2 = cast [args[1]] to [Internal_];
+    assert type_ equality [args[0]], [args[1]];
+    extern fn [null] ["extend_array"] [[Type_] [Internal_, Internal_, L_]]
+        [[Val] [arr1, arr2, make elem generic int [args[0].type_]]];
+    return make empty builtin result;
+}
+
+BuiltinResult#builtin concat with <[Val]:args> {
+    assert type_ equality [args[0]], [args[1]];
+    Val:elem = make elem generic int [args[0].type_];
+    extern fn [Internal_] ["concat_arrays"] [[Type_] [Internal_, Internal_, L_]]
+        [[Val] [cast [args[0]] to [Internal_], cast [args[1]] to [Internal_], elem]];
+    return make builtin result [cast [func ret] to [args[0].type_]];
+}
+
+BuiltinResult#builtin unsafe idx with <[Val]:args> {
+    return make builtin result [[args[0]].idx[cast [args[1]] to [L_]]];
+}
+
+BuiltinResult#builtin unsafe int div with <[Val]:args> to <Type_:result_type_> {
+    Val:a = cast [args[0]] to [result_type_];
+    Val:b = cast [args[1]] to [result_type_];
+    return make builtin result [[a] / [b]];
+}
+
+BuiltinResult#builtin unsafe idx assign with <[Val]:args> {
+    Val:arr = args[0];
+    Val:idx = cast [args[1]] to [L_];
+    Val:casted = cast [args[2]] to [arr.type_.generics[0]];
+    [casted].incr_ref;
+    [[arr].idx[idx]] = [casted];
+    return make empty builtin result;
+}
+
+BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
     } elif ([func_id] equals ["builtin2"]) {
@@ -102,14 +131,27 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> {
         return builtin shrink mem with [args];
     } elif ([func_id] equals ["builtin6"]) {
         return builtin pop with [args];
+    } elif ([func_id] equals ["builtin7"]) {
+        return builtin insert with [args];
+    } elif ([func_id] equals ["builtin8"]) {
+        return builtin clone with [args];
+    } elif ([func_id] equals ["builtin9"]) {
+        return builtin extend with [args];
+    } elif ([func_id] equals ["builtin10"]) {
+        return builtin concat with [args];
+    } elif ([func_id] equals ["builtin11"]) {
+        return builtin unsafe idx with [args];
+    } elif ([func_id] equals ["builtin12"]) {
+        return builtin unsafe int div with [args] to [[result_type_].unwrap];
+    } elif ([func_id] equals ["builtin13"]) {
+        return builtin unsafe idx assign with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
 }
 
-
-Val?#call builtin <Str:func_id> with args <[Val]:args> {
-    BuiltinResult:result = dispatch builtin [func_id] with args [args];
+Val?#call builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
+    BuiltinResult:result = dispatch builtin [func_id] with args [args] to [result_type_];
 
     if (!result.result_is_params) {
         if (result.result_in_params) {
