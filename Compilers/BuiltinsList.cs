@@ -195,23 +195,27 @@ public static class BuiltinsList {
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
+                    new TextPatternSegment("|"),
                     new TypePatternSegment(typeof(RawSquareGroup)),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "abs")
-                ], new SlotPatternProcessor([0])
+                    new TextPatternSegment("|")
+                ], new SlotPatternProcessor([1])
             ), [
                 new("value", new Type_("Z"))
-            ], "builtin14", new Type_("W"), FunctionSource.Builtin
+            ], "builtin14", (List<Type_> types_) => new Type_(
+                "W", types_[0].GetBaseType_().GetBits()
+            ), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
+                    new TextPatternSegment("|"),
                     new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "abs")
-                ], new SlotPatternProcessor([0])
+                    new TextPatternSegment("|")
+                ], new SlotPatternProcessor([1])
             ), [
                 new("value", new Type_("Q", 64))
-            ], "builtin15", new Type_("Q", 64), FunctionSource.Builtin
+            ], "builtin15", (List<Type_> types_) => new Type_(
+                "Q", types_[0].GetBaseType_().GetBits()
+            ), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [

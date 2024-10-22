@@ -118,6 +118,23 @@ BuiltinResult#builtin unsafe idx assign with <[Val]:args> {
     return make empty builtin result;
 }
 
+BuiltinResult#builtin int abs with <[Val]:args> {
+    W:bits = (W)args[0].type_.bits;
+    Type_:in_type_ = Z_ [bits];
+    Type_:result_type_ = W_ [bits];
+    extern fn [result_type_] ["llvm.abs.i{}" % bits] [[Type_] [in_type_]]
+        [[Val] [cast [args[0]] to [in_type_]]];
+    return make builtin result [func ret];
+}
+
+BuiltinResult#builtin float abs with <[Val]:args> {
+    W:bits = (W)args[0].type_.bits;
+    Type_:type_ = Q_ [bits];
+    extern fn [type_] ["llvm.fabs.f{}" % bits] [[Type_] [type_]]
+        [[Val] [cast [args[0]] to [type_]]];
+    return make builtin result [func ret];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -145,6 +162,10 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin unsafe int div with [args] to [[result_type_].unwrap];
     } elif ([func_id] equals ["builtin13"]) {
         return builtin unsafe idx assign with [args];
+    } elif ([func_id] equals ["builtin14"]) {
+        return builtin int abs with [args];
+    } elif ([func_id] equals ["builtin15"]) {
+        return builtin float abs with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
