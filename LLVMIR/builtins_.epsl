@@ -79,9 +79,10 @@ BuiltinResult#builtin pop with <[Val]:args> {
 BuiltinResult#builtin insert with <[Val]:args> {
     Val:arr = args[0];
     Val:idx = cast [args[1]] to [L_];
-    Val:elem = cast [args[2]] to [arr.type_.generics[0]];
+    Type_:generic = arr.type_.generics[0];
+    Val:elem = cast [args[2]] to [generic];
     extern fn [null] ["insert_space"] [[Type_] [Internal_, L_, L_]]
-        [[Val] [cast [arr] to [Internal_], idx, sizeof elem [arr]]];
+        [[Val] [cast [arr] to [Internal_], idx, sizeof [generic]]];
     [elem].incr_ref;
     [[arr].idx[idx]] = [elem];
     return make empty builtin result;
