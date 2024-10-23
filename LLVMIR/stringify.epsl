@@ -110,19 +110,28 @@ if (fn [null] [func_name] [[Type_] [type_, Str_]] [[Val] [outer_val, outer_resul
 
         Label:check_label = new label:;
         while_ [[i] lt [arr_len]] from [check_label];
+            if_ [[i] gt [c L_ [0]]];
+                Val:old_result_len = load [result_length];
+                [[result_content].idx[old_result_len]] = [c [',']];
+                old_result_len = [old_result_len] + [c L_ [1]];
+                [[result_content].idx[old_result_len]] = [c [' ']];
+                old_result_len = [old_result_len] + [c L_ [1]];
+                [result_length] = [old_result_len];
+            end block;
+
             Val:elem = load [[arr_content].idx[i]];
             Val:stringified = make stringify of [elem];
             Val:stringified_content = load [[stringified].content];
 
             Val:stringified_len = load [[stringified].length];
-            Val:old_result_len = load [result_length];
+            old_result_len = load [result_length];
             Val:new_result_len = [old_result_len] + [stringified_len];
             [result_length] = [new_result_len];
 
-            Val:result_capacity_now = load [result_capacity];
-            if_ [[new_result_len] ge [result_capacity_now]];
-                Val:new_result_capacity = [[[result_capacity_now] * [c L_ [3]]]
-                    / [c L_ [2]]] + [c L_ [1]];
+            Val:required_capacity = [new_result_len] + [c L_ [2]];
+            if_ [[required_capacity] gt [result_capacity]];
+                Val:new_result_capacity = [[required_capacity] * [c L_ [3]]]
+                    / [c L_ [2]];
                 [result_capacity] = [new_result_capacity];
                 [result_content] = [realloc [result_content] to [new_result_capacity] elements];
             end block;
@@ -132,6 +141,8 @@ if (fn [null] [func_name] [[Type_] [type_, Str_]] [[Val] [outer_val, outer_resul
 
             free [stringified_content];
             free [stringified];
+
+            [i] = [[i] + [c L_ [1]]];
         end block;
 
         Val:final_result_length = load [result_length];
@@ -158,12 +169,12 @@ if (fn [null] [func_name] [[Type_] [type_, Str_]] [[Val] [outer_val, outer_resul
         Struct_:struct_ = [maybe_struct].unwrap;
 
         if ([struct_.fields].len == 0) {
-            Str:result_str = "{} []" % type_.name;
+            Str:result_str = "{} []" % struct_.name;
             [[result].length] = [c L_ [[result_str].len]];
             [[result].capacity] = [c L_ [[result_str].len]];
             [[result].content] = [mut str [result_str]];
         } else {
-            Str:start_str = "{} [" % type_.name;
+            Str:start_str = "{} [" % struct_.name;
 
             [Val]:stringifieds = [Val] [];
             [Val]:stringified_lens = [Val] [];
@@ -185,7 +196,6 @@ if (fn [null] [func_name] [[Type_] [type_, Str_]] [[Val] [outer_val, outer_resul
                 total_length = [total_length] + [stringified_len];
             };
 
-            Val:closing_pos = total_length;
             total_length = [total_length] + [c L_ [2*[stringifieds].len - 1]];
 
             Val:result_content = malloc [total_length] [Byte_];
@@ -203,6 +213,7 @@ if (fn [null] [func_name] [[Type_] [type_, Str_]] [[Val] [outer_val, outer_resul
                 memcpy [stringified_lens[i]] [stringified_contents[i]] to [location];
             };
 
+            Val:closing_pos = [total_length] - [c L_ [1]];
             [*[[result_content] shifted by [closing_pos]]] = [c [']']];
 
             for (L:i enumerating stringifieds) {

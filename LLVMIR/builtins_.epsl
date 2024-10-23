@@ -1,4 +1,5 @@
 #import operations;
+#import stringify;
 #import eewriter;
 
 
@@ -100,7 +101,8 @@ BuiltinResult#builtin concat with <[Val]:args> {
 }
 
 BuiltinResult#builtin unsafe idx with <[Val]:args> {
-    return make builtin result [[args[0]].idx[cast [args[1]] to [L_]]];
+    Val:idx = cast [args[1]] to [L_];
+    return make builtin result [load [[args[0]].idx[idx]]];
 }
 
 BuiltinResult#builtin unsafe int div with <[Val]:args> to <Type_:result_type_> {
@@ -135,6 +137,10 @@ BuiltinResult#builtin float abs with <[Val]:args> {
     return make builtin result [func ret];
 }
 
+BuiltinResult#builtin stringify with <[Val]:args> {
+    return make builtin result [make stringify of [args[0]]];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -166,6 +172,10 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin int abs with [args];
     } elif ([func_id] equals ["builtin15"]) {
         return builtin float abs with [args];
+    } elif ([func_id] equals ["builtin16"]) {
+        return builtin concat with [args];
+    } elif ([func_id] equals ["builtin17"]) {
+        return builtin stringify with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
