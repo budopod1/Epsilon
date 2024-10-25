@@ -908,8 +908,7 @@ public class EPSLFileCompiler : IFileCompiler {
                     "Function parameters cannot be empty", rparameter
                 );
             }
-            IValueToken parameter = rparameter[0] as IValueToken;
-            if (parameter == null || rparameter.Count > 1) {
+            if (rparameter[0] is not IValueToken parameter || rparameter.Count > 1) {
                 throw new SyntaxErrorException(
                     "Illegal syntax in function parameter", rparameter
                 );
@@ -1031,11 +1030,7 @@ Please clarify between the functions that take the types:
 
         List<FunctionDeclaration> functions = [.. BuiltinsList.Builtins, .. program.GetExternalDeclarations()];
 
-        foreach (IToken token in program) {
-            if (token is Function) {
-                functions.Add((Function)token);
-            }
-        }
+        functions.AddRange(program.OfType<Function>());
 
         functions.Sort(FunctionShapeComparer.Singleton);
 

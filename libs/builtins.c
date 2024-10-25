@@ -229,34 +229,10 @@ extern inline char *formatZ64() {
     return result;
 }
 
-// only works on strings
-void left_pad(struct Array *str, uint64_t length, char chr) {
-    uint64_t cur_len = str->length;
-    if (cur_len < length) {
-        require_capacity(str, length, 1);
-        char *content = str->content;
-        str->length = length;
-        memset(content+cur_len, chr, length-cur_len);
-    }
-}
-
-// only works on strings
-void right_pad(struct Array *str, uint64_t length, char chr) {
-    uint64_t cur_len = str->length;
-    if (cur_len < length) {
-        require_capacity(str, length, 1);
-        char *content = str->content;
-        str->length = length;
-        uint64_t req_len = length - cur_len;
-        memmove(content+req_len, content, cur_len);
-        memset(content, chr, req_len);
-    }
-}
-
 const char *const SLICE_NEG_LEN_ERR = ERR_START "Slice end index must be after slice start index\n";
 const char *const SLICE_INDEX_ERR = ERR_START "Slice end index out of range\n";
 
-struct Array *slice(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
+struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
     if (__builtin_expect(start > end, 0)) {
         fflush(stdout);
         fwrite(SLICE_NEG_LEN_ERR, strlen(SLICE_NEG_LEN_ERR), 1, stderr);

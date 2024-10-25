@@ -269,10 +269,15 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment(),
                 ], new SlotPatternProcessor([0, 3, 4])
             ), [
-                new("str", Type_.String()),
+                new("arr", Type_.Any().ArrayOf()),
                 new("len", new Type_("W", 64)),
-                new("chr", new Type_("Byte")),
-            ], "builtin20", FunctionSource.Builtin
+                new("val", Type_.Any()),
+            ], "builtin20", (List<Type_> types_) => {
+                Type_ generic = types_[0].GetGeneric(0);
+                if (!types_[2].IsConvertibleTo(generic))
+                    throw new FunctionCallTypes_Exception($"Cannot pad array of type {types_[1]} with a value of type {types_[0]}", 2);
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -283,10 +288,15 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment(),
                 ], new SlotPatternProcessor([0, 3, 4])
             ), [
-                new("str", Type_.String()),
+                new("arr", Type_.Any().ArrayOf()),
                 new("len", new Type_("W", 64)),
-                new("chr", new Type_("Byte")),
-            ], "builtin21", FunctionSource.Builtin
+                new("val", Type_.Any()),
+            ], "builtin21", (List<Type_> types_) => {
+                Type_ generic = types_[0].GetGeneric(0);
+                if (!types_[2].IsConvertibleTo(generic))
+                    throw new FunctionCallTypes_Exception($"Cannot pad array of type {types_[1]} with a value of type {types_[0]}", 2);
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [

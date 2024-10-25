@@ -17,9 +17,7 @@ Val#make stringify of <Val:val> {
 
 #make stringify of <Val:outer_val> to <Val:outer_result> {
     Type_:type_ = outer_val.type_;
-    Str:func_name = "stringify_{}_{}" % [type_].stringify % get filename;
-if (fn [null] [func_name] [[Type_] [type_, Str_]] [[Val] [outer_val, outer_result]]) {
-
+if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
     Val:val = func arg [0];
     Val:result = func arg [1];
 

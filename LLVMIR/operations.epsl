@@ -53,9 +53,8 @@ Val#do chain power of <Val:base> to the <Z:exponent> {
 Val#integer <Val:base_in> to the <Val:exponent_in> {
     Type_:base_type_ = base_in.type_;
     Type_:exponent_type_ = exponent_in.type_;
-    Str:func_name = "integer_{}_to_the_{}_{}" % [base_type_].stringify % [exponent_type_].stringify % get filename;
 
-if (fn [base_type_] [func_name] [[Type_] [base_type_, exponent_type_]] [[Val] [base_in, exponent_in]]) {
+if (specialized fn [base_type_] ["integer_exponent"] [[Val] [base_in, exponent_in]]) {
     Val:base = var [base_type_] [func arg [0]];
     Val:exponent = var [exponent_type_] [func arg [1]];
     Val:result = var [base_type_] [c [1] [base_type_]];
@@ -189,4 +188,70 @@ Val?#call function <Str:func_id> with args <[Val]:args> to <Type_?:result_type_>
     } else {
         return call nonbuiltin function [func_id] with args [args];
     };
+}
+
+#pad array <Val:outer_arr> to length <Val:outer_len> with value <Val:outer_val> from left: <Bool:pad_left> {
+    Str:name = "pad_right";
+    if (pad_left) {
+        name = "pad_left";
+    };
+
+if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
+    Val:arr = func arg [0];
+    Type_:generic = arr.type_.generics[0];
+    Val:len = cast [func arg [1]] to [L_];
+    Val:val = cast [func arg [2]] to [generic];
+
+    Val:cur_len = load [[arr].length];
+
+    if_ [[len] lt [cur_len]];
+        extern fn [null] ["require_capacity"] [[Type_] [Internal_, L_, L_]]
+            [[Val] [cast [arr] to [Internal_], len, sizeof elem [arr.type_]]];
+
+        Val:content = load [[arr].content];
+
+        [[arr].length] = [len];
+
+        Val:fill_amount = [len] - [cur_len];
+
+        if (pad_left) {
+            Val:content_dest = [content] shifted by [fill_amount];
+            extern fn [null] ["memmove"] [[Type_] [Pointer [Byte_], Pointer [Byte_], L_]]
+                [[Val] [content_dest, content, cur_len]];
+        };
+
+        if ([generic] == [Byte_]) {
+            Val?:pad_dest = null;
+            if (pad_left) {
+                pad_dest = content;
+            } else {
+                pad_dest = [content] shifted by [cur_len];
+            };
+
+            extern fn [null] ["memset"] [[Type_] [Pointer [Byte_], Z_, L_]]
+                [[Val] [[pad_dest].unwrap, cast [val] to [Z_], fill_amount]];
+        } else {
+            Val?:from = null;
+            Val?:to = null;
+            if (pad_left) {
+                from = c L_ [0];
+                to = fill_amount;
+            } else {
+                from = cur_len;
+                to = len;
+            };
+
+            Val:i = var [[from].unwrap];
+        Label:check_label = new label:;
+            Val:i_now = load [i];
+            while_ [[i_now] lt [[to].unwrap]] from [check_label];
+                [[content].idx[i_now]] = [val];
+                [val].incr_ref;
+                [i] = [[i_now] + [c L_ [1]]];
+            end block;
+        };
+    end block;
+
+end fn;
+};
 }
