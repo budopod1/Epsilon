@@ -259,17 +259,6 @@ struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t en
     return slice;
 }
 
-// Only works on strings
-uint64_t count_chr(const struct Array *str, char chr) {
-    uint64_t counter = 0;
-    uint64_t len = str->length;
-    char *content = str->content;
-    for (uint64_t i = 0; i < len; i++) {
-        if (content[i] == chr) counter++;
-    }
-    return counter;
-}
-
 struct Array *nest(const struct Array *arr, uint64_t elem) {
     char *arr_content = (char*)arr->content;
     uint64_t len = arr->length;

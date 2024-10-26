@@ -186,7 +186,7 @@ public static class BuiltinsList {
             ), [
                 new("array", Type_.Any().ArrayOf()),
                 new("index", new Type_("W", 64)),
-                new("array", Type_.Any())
+                new("value", Type_.Any())
             ], "builtin13", (List<Type_> types_) => {
                 if (!types_[2].IsConvertibleTo(types_[0].GetGeneric(0)))
                     throw new FunctionCallTypes_Exception($"Cannot assign type {types_[2]} into an array of type {types_[0]}", 2);
@@ -316,19 +316,23 @@ public static class BuiltinsList {
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "count_chr"),
+                    new UnitPatternSegment<string>(typeof(Name), "count"),
                     new FuncArgPatternSegment(),
                 ], new SlotPatternProcessor([0, 3])
             ), [
-                new("str", Type_.String()),
-                new("chr", new Type_("Byte")),
-            ], "builtin23", new Type_("W", 64), FunctionSource.Builtin
+                new("array", Type_.Any().ArrayOf()),
+                new("elem", Type_.Any()),
+            ], "builtin23", (List<Type_> types_) => {
+                if (!types_[1].IsConvertibleTo(types_[0].GetGeneric(0)))
+                    throw new FunctionCallTypes_Exception($"Cannot count occurrences of element of type {types_[1]} in an array of type {types_[0]}", 1);
+                return new Type_("W", 64);
+            }, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "count"),
+                    new UnitPatternSegment<string>(typeof(Name), "count_subarray"),
                     new FuncArgPatternSegment(),
                 ], new SlotPatternProcessor([0, 3])
             ), [
@@ -344,7 +348,7 @@ public static class BuiltinsList {
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "overlap_count"),
+                    new UnitPatternSegment<string>(typeof(Name), "overlap_count_subarray"),
                     new FuncArgPatternSegment(),
                 ], new SlotPatternProcessor([0, 3])
             ), [
