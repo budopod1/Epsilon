@@ -17,7 +17,7 @@ public class ForClause : UnaryOperation<IValueToken> {
         }
         if (tokens[0] is not IValueToken value) {
             throw new SyntaxErrorException(
-                "Malformed for clause", tokens[0]
+                "For clause must contain a value", tokens[0]
             );
         }
         SetSub(value);

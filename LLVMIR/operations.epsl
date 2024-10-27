@@ -139,7 +139,7 @@ Val#<Val:val>.clone {
     Type_:type_ = val.type_;
     if ([type_.name] equals ["Array"]) {
         extern fn [Internal_] ["clone_array"] [[Type_] [Internal_, L_]]
-            [[Val] [cast [val] to [Internal_], sizeof elem [type_]]];
+            [[Val] [cast [val] to [Internal_], make elem generic int [type_]]];
         return cast [func ret] to [type_];
     };
     abort "Clone operation not yet implemented on type_ {}" % [type_].stringify;
@@ -204,7 +204,7 @@ if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
 
     Val:cur_len = load [[arr].length];
 
-    if_ [[len] lt [cur_len]];
+    if_ [[cur_len] lt [len]];
         extern fn [null] ["require_capacity"] [[Type_] [Internal_, L_, L_]]
             [[Val] [cast [arr] to [Internal_], len, sizeof elem [arr.type_]]];
 
@@ -252,6 +252,82 @@ if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
         };
     end block;
 
+    ret void;
 end fn;
 };
+}
+
+#add split segment of type_ <Type_:arr_type_> from <Val:part_start> to <Val:cur_i> sourced from <Val:arr_content> to <Val:result> {
+    Type_:generic = arr_type_.generics[0];
+
+    part_start = load [part_start];
+
+    Val:part_len = [cur_i] - [part_start];
+    Val:part = malloc pointee [arr_type_];
+    [[part].ref] = [c L_ [1]];
+    Val:part_cap = [[part_len] eq [c L_ [0]]] ? [c L_ [1]] : [part_len];
+    [[part].capacity] = [part_cap];
+    [[part].length] = [part_len];
+
+    Val:part_content = malloc [part_cap] [generic];
+    memcpy [part_len] [[arr_content] shifted by [part_start]] to [part_content];
+    [[part].content] = [part_content];
+
+    extern fn [null] ["increment_array_ref_counts"] [[Type_] [Internal_, L_]]
+        [[Val] [cast [part] to [Internal_], make elem int [generic]]];
+
+    Val:part_idx = load [[result].length];
+    extern fn [null] ["increment_length"] [[Type_] [Internal_, L_]]
+        [[Val] [cast [result] to [Internal_], make elem int [arr_type_]]];
+    [[result].idx[part_idx]] = [part];
+}
+
+Val#split <Val:outer_arr> on <Val:outer_sep> {
+    Type_:arr_type_ = outer_arr.type_;
+    Type_:generic = arr_type_.generics[0];
+    Type_:result_type_ = Array_ [arr_type_];
+if (specialized fn [result_type_] ["split"] [[Val] [outer_arr, outer_sep]]) {
+    Val:arr = func arg [0];
+    Val:arr_len = load [[arr].length];
+    Val:arr_content = load [[arr].content];
+    Val:sep = func arg [1];
+    Val:sep_len = load [[sep].length];
+    Val:result = new array [result_type_] [[Val] []] with capacity [3];
+    Val:part_start = var [c L_ [0]];
+    Val:j = var [L_];
+    Val:i_to = [arr_len] - [sep_len];
+
+    Val:i = var [c L_ [0]];
+Label:check_label_1 = new label:;
+    Val:cur_i = load [i];
+    while_ [[cur_i] le [i_to]] from [check_label_1];
+        Block:loop_1 = current block;
+
+        [j] = [c L_ [0]];
+    Label:check_label_2 = new label:;
+        Val:cur_j = load [j];
+        while_ [[cur_j] lt [sep_len]] from [check_label_2];
+            if_ [[[arr].idx[[cur_i] + [cur_j]]] ne [[sep].idx[cur_j]]];
+                [i] = [[cur_i] + [c L_ [1]]];
+                continue_ [loop_1];
+            end block;
+            [j] = [[cur_j] + [c L_ [1]]];
+        end block;
+
+        add split segment of type_ [arr_type_] from [part_start] to [cur_i]
+            sourced from [arr_content] to [result];
+
+        Val:new_i = [cur_i] + [sep_len];
+        [i] = [new_i];
+        [part_start] = [new_i];
+    end block;
+
+    add split segment of type_ [arr_type_] from [part_start] to [arr_len]
+        sourced from [arr_content] to [result];
+
+    ret [result];
+end fn;
+};
+
+    return func ret;
 }

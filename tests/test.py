@@ -269,6 +269,14 @@ TESTS = [
         ]
     },
     {
+        "file": "pad.epsl",
+        "func": 0,
+        "sig": (c_ulong,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 10391070184567263232}
+        ]
+    },
+    {
         "file": "pop.epsl",
         "func": -1,
         "sig": (c_int,),
@@ -282,6 +290,14 @@ TESTS = [
         "sig": (c_int,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 22}
+        ]
+    },
+    {
+        "file": "split.epsl",
+        "func": 0,
+        "sig": (c_ulong,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 4359359347200}
         ]
     },
     {

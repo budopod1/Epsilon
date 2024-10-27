@@ -908,10 +908,16 @@ public class EPSLFileCompiler : IFileCompiler {
                     "Function parameters cannot be empty", rparameter
                 );
             }
-            if (rparameter[0] is not IValueToken parameter || rparameter.Count > 1) {
+            if (rparameter.Count > 1) {
                 throw new SyntaxErrorException(
                     "Illegal syntax in function parameter", rparameter
                 );
+            }
+            if (rparameter[0] is not IValueToken parameter) {
+                string message = "Function parameter must contain a value";
+                if (rparameter[0] is VoidFunctionCall)
+                    message += " (the function called in this parameter has no return value)";
+                throw new SyntaxErrorException(message, rparameter);
             }
             paramTypes_.Add(parameter.GetType_());
             parameters.Add(parameter);

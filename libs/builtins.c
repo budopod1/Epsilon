@@ -19,8 +19,8 @@
 
 // elem types are 64 bit unsigned
 // upper 62 bits are the size
-// second to lowest bit is whether it's a pointer
-// lowest bit is whether the value is nullable
+// second to lowest bit is 1 when the value is not a pointer
+// lowest bit is 1 when the value is nullable
 
 struct Array {
     uint64_t ref_counter;
@@ -259,7 +259,7 @@ struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t en
     return slice;
 }
 
-struct Array *nest(const struct Array *arr, uint64_t elem) {
+struct Array *nest_array(const struct Array *arr, uint64_t elem) {
     char *arr_content = (char*)arr->content;
     uint64_t len = arr->length;
     struct Array *result = malloc(sizeof(struct Array));
@@ -285,7 +285,7 @@ struct Array *nest(const struct Array *arr, uint64_t elem) {
     return result;
 }
 
-struct Array *join(const struct Array *arr, const struct Array *sep, uint64_t elem) {
+struct Array *join_array(const struct Array *arr, const struct Array *sep, uint64_t elem) {
     uint64_t elem_size = elem >> 2;
     struct Array *result = malloc(sizeof(struct Array));
     result->ref_counter = 0;

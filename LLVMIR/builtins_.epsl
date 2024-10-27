@@ -167,7 +167,7 @@ BuiltinResult#builtin slice with <[Val]:args> {
     Val:arr = args[0];
     Val:start = cast [args[1]] to [L_];
     Val:end = cast [args[2]] to [L_];
-    Val:elem = make elem int [arr.type_.generics[0]];
+    Val:elem = make elem generic int [arr.type_];
     extern fn [Internal_] ["slice_array"] [[Type_] [Internal_, L_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], start, elem]];
     return make builtin result [cast [func ret] to [arr.type_]];
@@ -260,6 +260,16 @@ end fn;
     return make builtin result [func ret];
 }
 
+BuiltinResult#builtin nest with <[Val]:args> {
+    extern fn [Internal_] ["nest_array"] [[Type_] [Internal_, L_]]
+        [[Val] [cast [args[0]] to [Internal_], make elem generic int [args[0].type_]]];
+    return make builtin result [cast [func ret] to [Array_ [args[0].type_]]];
+}
+
+BuiltinResult#builtin split with <[Val]:args> {
+    return make builtin result [split [args[0]] on [args[1]]];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -311,6 +321,10 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin count subarray with [args];
     } elif ([func_id] equals ["builtin25"]) {
         return builtin overlap count subarray with [args];
+    } elif ([func_id] equals ["builtin26"]) {
+        return builtin nest with [args];
+    } elif ([func_id] equals ["builtin27"]) {
+        return builtin split with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };

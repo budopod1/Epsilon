@@ -1,0 +1,9 @@
+L#func {
+    Str:data = "Level, Part Number, Part Name, External Component, Milestone, Description, Item Number, State, Revision, Lifecycle, Quantity, Material Name, Change Order";
+    [Str]:parts = [data].split[", "];
+    L:product = 1;
+    for (Str:part in parts) {
+        product *= [part].len;
+    };
+    return product;
+}

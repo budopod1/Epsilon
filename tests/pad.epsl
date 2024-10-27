@@ -1,0 +1,24 @@
+L#func {
+    L:i = 1;
+    W:j = 0;
+
+    Str:str1 = "mc";
+    [str1].left_pad[4]['_'];
+    for (Byte:byte in str1) {
+        i *= byte + j++;
+    };
+
+    Str:str2 = "mc";
+    [str2].right_pad[4]['_'];
+    for (Byte:byte in str2) {
+        i *= byte + j++;
+    };
+
+    Str:str3 = "mc";
+    [str3].left_pad[1]['_'];
+    for (Byte:byte in str3) {
+        i *= byte + j++;
+    };
+
+    return i;
+}
