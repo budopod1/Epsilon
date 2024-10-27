@@ -1591,36 +1591,23 @@ Please clarify between the functions that take the types:
                     ], new FuncPatternProcessor<List<IToken>>(TransformCompoundAssignments)
                 )
             ],
-            [
-                new PatternMatcher(
-                    [
-                        new FuncPatternSegment<Division>(division =>
-                            (division[0] is ConstantValue v1)
-                            && (division[1] is ConstantValue v2)
-                            && (v1.GetValue() is INumberConstant)
-                            && (v2.GetValue() is INumberConstant)
-                        )
-                    ], new FuncPatternProcessor<List<IToken>>(tokens => [
-                        new ConstantValue(
-                            new FloatConstant(
-
-                                    ((INumberConstant)
-                                        ((ConstantValue)
-                                            ((Division)tokens[0])[0]
-                                        ).GetValue()
-                                    ).GetDoubleValue()
-                                 /
-                                    ((INumberConstant)
-                                        ((ConstantValue)
-                                            ((Division)tokens[0])[1]
-                                        ).GetValue()
-                                    ).GetDoubleValue()
-
-                            )
-                        )
-                    ])
-                )
-            ],
+            [new PatternMatcher(
+                [
+                    new FuncPatternSegment<Division>(division =>
+                        (division[0] is ConstantValue v1)
+                        && (division[1] is ConstantValue v2)
+                        && (v1.GetValue() is INumberConstant)
+                        && (v2.GetValue() is INumberConstant)
+                    )
+                ], new FuncPatternProcessor<List<IToken>>(tokens => {
+                    Division division = (Division)tokens[0];
+                    INumberConstant lhs = (INumberConstant)((ConstantValue)division[0]).GetValue();
+                    INumberConstant rhs = (INumberConstant)((ConstantValue)division[2]).GetValue();
+                    return [new ConstantValue(new FloatConstant(
+                        lhs.GetDoubleValue() / rhs.GetDoubleValue()
+                    ))];
+                })
+            )],
             [
                 new PatternMatcher(
                     [

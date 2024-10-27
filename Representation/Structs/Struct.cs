@@ -144,7 +144,7 @@ public class Struct : IEquatable<Struct> {
             result += "\n" + field.ToString();
         }
         return Utils.WrapName(
-            "Struct", Utils.WrapNewline(Utils.Indent(result))
+            "Struct", Utils.WrapWithNewlines(Utils.Indent(result))
         );
     }
 

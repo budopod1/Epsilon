@@ -4,16 +4,13 @@ public class BlockMatcher : IMatcher {
     readonly IPatternSegment end;
     readonly Type holder;
 
-    public BlockMatcher(IPatternSegment start, IPatternSegment end,
-                        Type holder) {
+    public BlockMatcher(IPatternSegment start, IPatternSegment end, Type holder) {
         this.start = start;
         this.end = end;
         this.holder = holder;
     }
 
-    public BlockMatcher(IPatternSegment prior,
-                        IPatternSegment start, IPatternSegment end,
-                        Type holder) {
+    public BlockMatcher(IPatternSegment prior, IPatternSegment start, IPatternSegment end, Type holder) {
         this.prior = prior;
         this.start = start;
         this.end = end;
@@ -30,9 +27,9 @@ public class BlockMatcher : IMatcher {
                 IToken priorToken = j > 0 ? tokens[j-1] : null;
                 replaced.Add(token);
 
-                if (start.Matches(token)
-                    && (prior == null || (priorToken != null
-                                          && prior.Matches(priorToken)))) {
+                bool priorMatches = prior == null || (
+                    priorToken != null && prior.Matches(priorToken));
+                if (start.Matches(token) && priorMatches) {
                     indent++;
                 } else if (end.Matches(token)) {
                     if (!any) {

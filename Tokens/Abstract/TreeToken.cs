@@ -73,7 +73,7 @@ public abstract class TreeToken(List<IToken> tokens) : IParentToken, IEnumerable
         result = result.Trim();
         if (whitespace) {
             result = Utils.Indent(result);
-            result = Utils.WrapNewline(result);
+            result = Utils.WrapWithNewlines(result);
         }
         return Utils.WrapName(GetType().Name, result);
     }

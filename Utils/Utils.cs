@@ -9,12 +9,11 @@ public static class Utils {
     public static readonly string NameStartChars = Uppercase + Lowercase + "_";
     public static readonly string NameChars = Uppercase + Lowercase + Numbers + "_";
 
-    public static string WrapName(string name, string content,
-                                  string wrapStart="(", string wrapEnd=")") {
-        return name + wrapStart + content + wrapEnd;
+    public static string WrapName(string name, string content, string start="(", string end=")") {
+        return name + start + content + end;
     }
 
-    public static string WrapNewline(string text) {
+    public static string WrapWithNewlines(string text) {
         return "\n" + text + "\n";
     }
 

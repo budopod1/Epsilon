@@ -19,8 +19,8 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
 
     public SubconfigCollection GetSubconfigs() {
         return new SubconfigCollection(
-             obj["clang_parse_subconfigs"].IterList().Select(ParseSubconfigFromJSON),
-             obj["linking_configs"].IterList().Select(ParseSubconfigFromJSON)
+            obj["clang_parse_subconfigs"].IterList().Select(ParseSubconfigFromJSON),
+            obj["linking_configs"].IterList().Select(ParseSubconfigFromJSON)
         );
     }
 

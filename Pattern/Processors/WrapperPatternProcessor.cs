@@ -2,8 +2,7 @@ public class WrapperPatternProcessor : IPatternProcessor<List<IToken>> {
     readonly Type wrapper;
     readonly IPatternProcessor<List<IToken>> subprocessor;
 
-    public WrapperPatternProcessor(IPatternProcessor<List<IToken>> subprocessor,
-                                   Type wrapper) {
+    public WrapperPatternProcessor(IPatternProcessor<List<IToken>> subprocessor, Type wrapper) {
         this.wrapper = wrapper;
         this.subprocessor = subprocessor;
     }
