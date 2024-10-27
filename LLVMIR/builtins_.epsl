@@ -64,7 +64,8 @@ BuiltinResult#builtin pop with <[Val]:args> {
     [elem].checkless_decr_ref;
     extern fn [null] ["remove_at"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], idx, sizeof [elem.type_]]];
-    return make builtin result [elem]; // result is not in params when builtin finishes
+    // result is not in params when builtin finishes
+    return make builtin result [elem];
 }
 
 BuiltinResult#builtin insert with <[Val]:args> {
@@ -174,90 +175,26 @@ BuiltinResult#builtin slice with <[Val]:args> {
 }
 
 BuiltinResult#builtin count with <[Val]:args> {
-    Type_:generic = args[0].type_.generics[0];
-if (specialized fn [L_] ["count"] [[Val] [args[0], cast [args[1]] to [generic]]]) {
-    Val:arr = func arg [0];
-    Val:target = func arg [1];
-    Val:arr_len = load [[arr].length];
-    Val:count = var [c L_ [0]];
-    Val:i = var [c L_ [0]];
-Label:check_label = new label:;
-    Val:cur_i = load [i];
-    while_ [[cur_i] lt [arr_len]] from [check_label];
-        if_ [[[arr].idx[cur_i]] eq [target]];
-            [count] = [[count] + [c L_ [1]]];
-        end block;
-        [i] = [[cur_i] + [c L_ [1]]];
-    end block;
-    ret [count];
-end fn;
-};
-    return make builtin result [func ret];
+    if ([args[0].type_] == [args[1].type_]) {
+        return make builtin result [count subarray [args[1]] in [args[0]]];
+    } else {
+        return make builtin result [count element [args[1]] in [args[0]]];
+    };
 }
 
-BuiltinResult#builtin count subarray with <[Val]:args> {
-if (specialized fn [L_] ["count_subarray"] [args]) {
-    Val:arr = func arg [0];
-    Val:target = func arg [1];
-    Val:arr_len = load [[arr].length];
-    Val:target_len = load [[target].length];
-    Val:i_to = [arr_len] - [target_len];
-    Val:count = var [c L_ [0]];
-    Val:i = var [c L_ [0]];
-    Val:j = var [L_];
-Label:check_label_1 = new label:;
-    Val:cur_i = load [i];
-    while_ [[cur_i] le [i_to]] from [check_label_1];
-        Block:loop_1 = current block;
-        [j] = [c L_ [0]];
-    Label:check_label_2 = new label:;
-        Val:cur_j = load [j];
-        while_ [[cur_j] lt [target_len]] from [check_label_2];
-            if_ [[[arr].idx[[cur_i] + [cur_j]]] ne [[target].idx[cur_j]]];
-                [i] = [[cur_i] + [c L_ [1]]];
-                continue_ [loop_1];
-            end block;
-            [j] = [[cur_j] + [c L_ [1]]];
-        end block;
-        [count] = [[count] + [c L_ [1]]];
-        [i] = [[cur_i] + [target_len]];
-    end block;
-    ret [count];
-end fn;
-};
-    return make builtin result [func ret];
+BuiltinResult#builtin overlap count with <[Val]:args> {
+    return make builtin result [overlap count subarray [args[1]] in [args[0]]];
 }
 
-BuiltinResult#builtin overlap count subarray with <[Val]:args> {
-if (specialized fn [L_] ["overlap_count_subarray"] [args]) {
-    Val:arr = func arg [0];
-    Val:target = func arg [1];
-    Val:arr_len = load [[arr].length];
-    Val:target_len = load [[target].length];
-    Val:i_to = [arr_len] - [target_len];
-    Val:count = var [c L_ [0]];
-    Val:i = var [c L_ [0]];
-    Val:j = var [L_];
-Label:check_label_1 = new label:;
-    Val:cur_i = load [i];
-    while_ [[cur_i] le [i_to]] from [check_label_1];
-        Block:loop_1 = current block;
-        [i] = [[cur_i] + [c L_ [1]]];
-        [j] = [c L_ [0]];
-    Label:check_label_2 = new label:;
-        Val:cur_j = load [j];
-        while_ [[cur_j] lt [target_len]] from [check_label_2];
-            if_ [[[arr].idx[[cur_i] + [cur_j]]] ne [[target].idx[cur_j]]];
-                continue_ [loop_1];
-            end block;
-            [j] = [[cur_j] + [c L_ [1]]];
-        end block;
-        [count] = [[count] + [c L_ [1]]];
-    end block;
-    ret [count];
-end fn;
-};
-    return make builtin result [func ret];
+BuiltinResult#builtin pop end with <[Val]:args> {
+    Val:arr = args[0];
+    verify array [arr] non empty;
+    Val:idx = [load [[arr].length]] - [c L_ [1]];
+    Val:elem = load [[arr].idx[idx]];
+    [elem].checkless_decr_ref;
+    [[arr].length] = [idx];
+     // result is not in params when builtin finishes
+    return make builtin result [elem];
 }
 
 BuiltinResult#builtin nest with <[Val]:args> {
@@ -268,6 +205,41 @@ BuiltinResult#builtin nest with <[Val]:args> {
 
 BuiltinResult#builtin split with <[Val]:args> {
     return make builtin result [split [args[0]] on [args[1]]];
+}
+
+BuiltinResult#builtin starts with with <[Val]:args> {
+if (specialized fn [Bool_] ["starts_with"] [args]) {
+    Val:arr = func arg [0];
+    Val:sub = func arg [1];
+    Val:arr_len = load [[arr].length];
+    Val:sub_len = load [[sub].length];
+
+    if_ [[arr_len] lt [sub_len]];
+        ret [c [false]];
+    end block;
+
+    ret [buffer eq [[arr].content] to [[sub].content] of len [sub_len]];
+end fn;
+};
+    return make builtin result [func ret];
+}
+
+BuiltinResult#builtin ends with with <[Val]:args> {
+if (specialized fn [Bool_] ["ends_with"] [args]) {
+    Val:arr = func arg [0];
+    Val:sub = func arg [1];
+    Val:arr_len = load [[arr].length];
+    Val:sub_len = load [[sub].length];
+
+    if_ [[arr_len] lt [sub_len]];
+        ret [c [false]];
+    end block;
+
+    Val:arr_buffer = [[arr].content] shifted by [[arr_len] - [sub_len]];
+    ret [buffer eq [arr_buffer] to [[sub].content] of len [sub_len]];
+end fn;
+};
+    return make builtin result [func ret];
 }
 
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
@@ -318,13 +290,17 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
     } elif ([func_id] equals ["builtin23"]) {
         return builtin count with [args];
     } elif ([func_id] equals ["builtin24"]) {
-        return builtin count subarray with [args];
+        return builtin overlap count with [args];
     } elif ([func_id] equals ["builtin25"]) {
-        return builtin overlap count subarray with [args];
+        return builtin pop end with [args];
     } elif ([func_id] equals ["builtin26"]) {
         return builtin nest with [args];
     } elif ([func_id] equals ["builtin27"]) {
         return builtin split with [args];
+    } elif ([func_id] equals ["builtin28"]) {
+        return builtin starts with with [args];
+    } elif ([func_id] equals ["builtin29"]) {
+        return builtin ends with with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };

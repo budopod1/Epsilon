@@ -1,6 +1,6 @@
 Z#main {
     Z:a = ["all your base are belong to us"].count[' ']; // 6
-    Z:b = ["HA HA HA HA ..."].count_subarray["HA HA"]; // 2
-    Z:c = ["HA HA HA HA ..."].overlap_count_subarray["HA HA"]; // 3
+    Z:b = ["HA HA HA HA ..."].count["HA HA"]; // 2
+    Z:c = ["HA HA HA HA ..."].overlap_count["HA HA"]; // 3
     return a * b * c;
 }

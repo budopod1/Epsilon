@@ -1,0 +1,5 @@
+Z#main {
+    return ["air"].starts_with["air2"] + 2 * ["stone"].starts_with["ston"]
+        + 4 * ["grass"].ends_with["rass"] + 8 * ["dirt"].ends_with["dirt\0"]
+        + 16 * ["cobblestone"].ends_with["\0cobblestone"];
+}

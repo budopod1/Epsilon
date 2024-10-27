@@ -776,3 +776,11 @@ void div_0_fail() {
     fwrite(DIV_0_ERR, strlen(DIV_0_ERR), 1, stderr);
     exit(1);
 }
+
+const char *const ARR_EMPTY_ERR = ERR_START "Expected an array with a nonzero length\n";
+
+void array_empty_fail() {
+    fflush(stdout);
+    fwrite(ARR_EMPTY_ERR, strlen(ARR_EMPTY_ERR), 1, stderr);
+    exit(1);
+}

@@ -281,7 +281,7 @@ TESTS = [
         "func": -1,
         "sig": (c_int,),
         "tests": [
-            {"arguments": [], "compare": "exact", "expect": 5}
+            {"arguments": [], "compare": "exact", "expect": 7}
         ]
     },
     {
@@ -298,6 +298,14 @@ TESTS = [
         "sig": (c_ulong,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 4359359347200}
+        ]
+    },
+    {
+        "file": "startsends.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 6}
         ]
     },
     {

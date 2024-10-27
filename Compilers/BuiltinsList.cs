@@ -323,8 +323,8 @@ public static class BuiltinsList {
                 new("array", Type_.Any().ArrayOf()),
                 new("elem", Type_.Any()),
             ], "builtin23", (List<Type_> types_) => {
-                if (!types_[1].IsConvertibleTo(types_[0].GetGeneric(0)))
-                    throw new FunctionCallTypes_Exception($"Cannot count occurrences of element of type {types_[1]} in an array of type {types_[0]}", 1);
+                if (!types_[1].IsConvertibleTo(types_[0].GetGeneric(0)) && !types_[0].Equals(types_[1]))
+                    throw new FunctionCallTypes_Exception($"Cannot count occurrences of element or subarray of type {types_[1]} in an array of type {types_[0]}", 1);
                 return new Type_("W", 64);
             }, FunctionSource.Builtin
         ), new ExternalFunction(
@@ -332,7 +332,7 @@ public static class BuiltinsList {
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "count_subarray"),
+                    new UnitPatternSegment<string>(typeof(Name), "overlap_count"),
                     new FuncArgPatternSegment(),
                 ], new SlotPatternProcessor([0, 3])
             ), [
@@ -348,16 +348,12 @@ public static class BuiltinsList {
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "overlap_count_subarray"),
-                    new FuncArgPatternSegment(),
-                ], new SlotPatternProcessor([0, 3])
+                    new UnitPatternSegment<string>(typeof(Name), "pop_end")
+                ], new SlotPatternProcessor([0])
             ), [
-                new("arr", Type_.Any().ArrayOf()),
-                new("sub", Type_.Any().ArrayOf()),
+                new("array", Type_.Any().ArrayOf())
             ], "builtin25", (List<Type_> types_) => {
-                if (!types_[0].Equals(types_[1]))
-                    throw new FunctionCallTypes_Exception($"Cannot count occurrences of array of type {types_[1]} in an array of type {types_[0]}", 1);
-                return new Type_("W", 64);
+                return types_[0].GetGeneric(0);
             }, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -1047,6 +1043,37 @@ public static class BuiltinsList {
                     );
                 }
                 return common;
+            }, FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "at"),
+                    new FuncArgPatternSegment()
+                ], new SlotPatternProcessor([0, 3])
+            ), [
+                new("arr", Type_.Any().ArrayOf()),
+                new("idx", new Type_("W", 64)),
+            ], "builtin84", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+        ),  new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "at"),
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("="),
+                    new FuncArgPatternSegment()
+                ], new SlotPatternProcessor([0, 3, 5])
+            ), [
+                new("arr", Type_.Any().ArrayOf()),
+                new("idx", new Type_("W", 64)),
+                new("val", Type_.Any())
+            ], "builtin85", (List<Type_> types_) => {
+                if (!types_[2].IsConvertibleTo(types_[0].GetGeneric(0)))
+                    throw new FunctionCallTypes_Exception($"Cannot add value of type {types_[2]} to array of type {types_[0]}", 2);
+                return types_[0];
             }, FunctionSource.Builtin
         ),
     ];

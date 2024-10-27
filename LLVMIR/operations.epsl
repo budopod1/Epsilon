@@ -190,6 +190,13 @@ Val?#call function <Str:func_id> with args <[Val]:args> to <Type_?:result_type_>
     };
 }
 
+#verify array <Val:arr> non empty {
+    if_ [expect [[c L_ [0]] eq [[arr].length]] to be [false]];
+        extern fn [null] ["array_empty_fail"] [[Type_] []] [[Val] []];
+        mark as unreachable;
+    end block;
+}
+
 #pad array <Val:outer_arr> to length <Val:outer_len> with value <Val:outer_val> from left: <Bool:pad_left> {
     Str:name = "pad_right";
     if (pad_left) {
@@ -257,6 +264,127 @@ end fn;
 };
 }
 
+Val#buffer eq <Val:outer_a> to <Val:outer_b> of len <Val:outer_len> {
+    assert type_ equality [outer_a], [outer_b];
+    Type_:generic = outer_a.type_.generics[0];
+    outer_len = cast [outer_len] to [L_];
+
+    if ([generic] == [Byte_]) {
+        extern fn [Z_] ["memcmp"] [[Type_] [Pointer [Byte_], Pointer [Byte_], L_]]
+            [[Val] [outer_a, outer_b, outer_len]];
+        return [func ret] eq [c [(Z)0]];
+    };
+
+if (specialized fn [Bool_] ["buffer_cmp"] [[Val] [outer_a, outer_b, outer_len]]) {
+    Val:a = func arg [0];
+    Val:b = func arg [1];
+    Val:len = func arg [2];
+
+    Val:i = var [c L_ [0]];
+Label:check_label = new label:;
+    Val:cur_i = load [i];
+    while_ [[cur_i] lt [len]] from [check_label];
+        if_ [[[a].idx[cur_i]] ne [[b].idx[cur_i]]];
+            ret [c [false]];
+        end block;
+        [i] = [[cur_i] + [c L_ [1]]];
+    end block;
+
+    ret [c [true]];
+end fn;
+};
+
+    return func ret;
+}
+
+Val#count element <Val:outer_elem> in <Val:outer_arr> {
+    Type_:generic = outer_arr.type_.generics[0];
+    Val:casted_elem = cast [outer_elem] to [generic];
+if (specialized fn [L_] ["count"] [[Val] [outer_arr, casted_elem]]) {
+    Val:arr = func arg [0];
+    Val:target = func arg [1];
+    Val:arr_len = load [[arr].length];
+    Val:count = var [c L_ [0]];
+    Val:i = var [c L_ [0]];
+Label:check_label = new label:;
+    Val:cur_i = load [i];
+    while_ [[cur_i] lt [arr_len]] from [check_label];
+        if_ [[[arr].idx[cur_i]] eq [target]];
+            [count] = [[count] + [c L_ [1]]];
+        end block;
+        [i] = [[cur_i] + [c L_ [1]]];
+    end block;
+    ret [count];
+end fn;
+};
+    return func ret;
+}
+
+Val#count subarray <Val:outer_subarray> in <Val:outer_arr> {
+    assert type_ equality [outer_arr], [outer_subarray];
+if (specialized fn [L_] ["count_subarray"] [[Val] [outer_arr, outer_subarray]]) {
+    Val:arr = func arg [0];
+    Val:target = func arg [1];
+    Val:arr_len = load [[arr].length];
+    Val:target_len = load [[target].length];
+    if_ [[target_len] gt [arr_len]];
+        ret [c L_ [0]];
+    end block;
+
+    Val:i_to = [arr_len] - [target_len];
+    Val:count = var [c L_ [0]];
+    Val:i = var [c L_ [0]];
+
+Label:check_label = new label:;
+    Val:cur_i = load [i];
+    while_ [[cur_i] le [i_to]] from [check_label];
+        Block:loop = current block;
+
+        Val:arr_buffer = [[arr].content] shifted by [cur_i];
+        if_ [buffer eq [arr_buffer] to [[target].content] of len [target_len]];
+            [count] = [[count] + [c L_ [1]]];
+            [i] = [[cur_i] + [target_len]];
+            continue_ [loop];
+        end block;
+
+        [i] = [[cur_i] + [c L_ [1]]];
+    end block;
+    ret [count];
+end fn;
+};
+    return func ret;
+}
+
+Val#overlap count subarray <Val:outer_subarray> in <Val:outer_arr> {
+if (specialized fn [L_] ["overlap_count_subarray"] [[Val] [outer_arr, outer_subarray]]) {
+    Val:arr = func arg [0];
+    Val:target = func arg [1];
+    Val:arr_len = load [[arr].length];
+    Val:target_len = load [[target].length];
+    if_ [[target_len] gt [arr_len]];
+        ret [c L_ [0]];
+    end block;
+
+    Val:i_to = [arr_len] - [target_len];
+    Val:count = var [c L_ [0]];
+    Val:i = var [c L_ [0]];
+
+Label:check_label = new label:;
+    Val:cur_i = load [i];
+    while_ [[cur_i] le [i_to]] from [check_label];
+        Val:arr_buffer = [[arr].content] shifted by [cur_i];
+        if_ [buffer eq [arr_buffer] to [[target].content] of len [target_len]];
+            [count] = [[count] + [c L_ [1]]];
+        end block;
+
+        [i] = [[cur_i] + [c L_ [1]]];
+    end block;
+    ret [count];
+end fn;
+};
+    return func ret;
+}
+
 #add split segment of type_ <Type_:arr_type_> from <Val:part_start> to <Val:cur_i> sourced from <Val:arr_content> to <Val:result> {
     Type_:generic = arr_type_.generics[0];
 
@@ -294,32 +422,26 @@ if (specialized fn [result_type_] ["split"] [[Val] [outer_arr, outer_sep]]) {
     Val:sep_len = load [[sep].length];
     Val:result = new array [result_type_] [[Val] []] with capacity [3];
     Val:part_start = var [c L_ [0]];
-    Val:j = var [L_];
     Val:i_to = [arr_len] - [sep_len];
 
     Val:i = var [c L_ [0]];
-Label:check_label_1 = new label:;
+Label:check_label = new label:;
     Val:cur_i = load [i];
-    while_ [[cur_i] le [i_to]] from [check_label_1];
-        Block:loop_1 = current block;
+    while_ [[cur_i] le [i_to]] from [check_label];
+        Block:loop = current block;
 
-        [j] = [c L_ [0]];
-    Label:check_label_2 = new label:;
-        Val:cur_j = load [j];
-        while_ [[cur_j] lt [sep_len]] from [check_label_2];
-            if_ [[[arr].idx[[cur_i] + [cur_j]]] ne [[sep].idx[cur_j]]];
-                [i] = [[cur_i] + [c L_ [1]]];
-                continue_ [loop_1];
-            end block;
-            [j] = [[cur_j] + [c L_ [1]]];
-        end block;
-
-        add split segment of type_ [arr_type_] from [part_start] to [cur_i]
+        Val:arr_buffer = [[arr].content] shifted by [cur_i];
+        if_ [buffer eq [arr_buffer] to [[sep].content] of len [sep_len]];
+            add split segment of type_ [arr_type_] from [part_start] to [cur_i]
             sourced from [arr_content] to [result];
 
-        Val:new_i = [cur_i] + [sep_len];
-        [i] = [new_i];
-        [part_start] = [new_i];
+            Val:new_i = [cur_i] + [sep_len];
+            [i] = [new_i];
+            [part_start] = [new_i];
+            continue_ [loop];
+        end block;
+
+        [i] = [[cur_i] + [c L_ [1]]];
     end block;
 
     add split segment of type_ [arr_type_] from [part_start] to [arr_len]
