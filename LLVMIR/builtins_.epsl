@@ -1,6 +1,7 @@
 #import operations;
 #import stringify;
 #import eewriter;
+#import equality;
 
 
 BuiltinResult {
@@ -242,6 +243,20 @@ end fn;
     return make builtin result [func ret];
 }
 
+BuiltinResult#builtin equals with <[Val]:args> deep: <Bool:deep> invert: <Bool:invert> {
+    return make builtin result [
+        do [args[0]] equals [args[1]] deep: [deep] invert: [invert]
+    ];
+}
+
+BuiltinResult#builtin join with <[Val]:args> {
+    Val:arr = cast [args[0]] to [Internal_];
+    Val:sep = cast [args[1]] to [Internal_];
+    extern fn [Internal_] ["join_array"] [[Type_] [Internal_, Internal_, L_]]
+        [[Val] [arr, sep, make elem generic int [arr.type_]]];
+    return make builtin result [cast [func ret] to [arr.type_]];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -301,6 +316,16 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin starts with with [args];
     } elif ([func_id] equals ["builtin29"]) {
         return builtin ends with with [args];
+    } elif ([func_id] equals ["builtin30"]) {
+        return builtin equals with [args] deep: [false] invert: [false];
+    } elif ([func_id] equals ["builtin31"]) {
+        return builtin equals with [args] deep: [false] invert: [true];
+    } elif ([func_id] equals ["builtin32"]) {
+        return builtin equals with [args] deep: [true] invert: [false];
+    } elif ([func_id] equals ["builtin33"]) {
+        return builtin equals with [args] deep: [true] invert: [true];
+    } elif ([func_id] equals ["builtin34"]) {
+        return builtin join with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };

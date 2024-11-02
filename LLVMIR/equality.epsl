@@ -1,0 +1,104 @@
+#import eewriter;
+
+Val#do <Val:outer_a> equals <Val:outer_b> deep: <Bool:deep> invert: <Bool:invert> {
+    assert type_ equality [outer_a], [outer_b];
+    Type_:type_ = outer_a.type_;
+
+    if ([type_].is_numeric) {
+        if (invert) {
+            return [outer_a] ne [outer_b];
+        } else {
+            return [outer_a] eq [outer_b];
+        };
+    } elif ([type_.name] equals ["Null"]) {
+        ret [c [!invert]];
+    } elif ([type_.name] equals ["Internal"]) {
+        ret [c [invert]];
+    };
+
+    Str:name = "equals";
+    if (deep) {
+        name = "deep_equals";
+    };
+if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
+    Val:a = func arg [0];
+    Val:b = func arg [0];
+
+    if ([type_.name] equals ["Array"]) {
+        Val:a_len = load [[a].length];
+        Val:b_len = load [[b].length];
+        if_ [[a_len] ne [b_len]];
+            ret [c [invert]];
+        end block;
+
+        Val:a_content = load [[a].content];
+        Val:b_content = load [[b].content];
+        Val:i = var [c L_ [0]];
+    Label:check_label = new label:;
+        Val:cur_i = load [i];
+        while_ [[cur_i] lt [b_len]] from [check_label];
+            Val:a_elem = [a_content].idx[cur_i];
+            Val:b_elem = [b_content].idx[cur_i];
+
+            Val?:exit = null;
+            if (deep) {
+                exit = do [a_elem] equals [b_elem] deep: [true] invert: [true];
+            } else {
+                exit = [a_elem] ne [b_elem];
+            };
+            if_ [[exit].unwrap];
+                ret [c [invert]];
+            end block;
+
+            [i] = [[cur_i] + [c L_ [1]]];
+        end block;
+
+        ret [c [!invert]];
+    } elif ([type_.name] equals ["Optional"]) {
+        Val:a_is_null = [a] == null_;
+        Val:b_is_null = [b] == null_;
+        if_ [a_is_null];
+            if (invert) {
+                ret [NOT [b_is_null]];
+            } else {
+                ret [b_is_null];
+            };
+        else_;
+            if_ [b_is_null];
+                ret [c [invert]];
+            else_;
+                Type_:nonnull_type_ = unwrap nullability [type_];
+                Val:nonnull_a = bitcast [a] to [nonnull_type_];
+                Val:nonnull_b = bitcast [b] to [nonnull_type_];
+                ret [do [nonnull_a] equals [nonnull_b] deep: [deep] invert: [invert]];
+            end block;
+        end block;
+    } else {
+        Struct_?:maybe_struct = [type_].get_struct;
+
+        if (!maybe_struct) {
+            abort "Don't know how to check equality of type_ {}" % [type_].stringify;
+        };
+
+        Struct_:struct_ = [maybe_struct].unwrap;
+
+        for (L:i enumerating struct_.fields) {
+            Val:a_elem = load [[a].[i]];
+            Val:b_elem = load [[b].[i]];
+            Val?:exit = null;
+            if (deep) {
+                exit = do [a_elem] equals [b_elem] deep: [true] invert: [true];
+            } else {
+                exit = [a_elem] ne [b_elem];
+            };
+            if_ [[exit].unwrap];
+                ret [c [invert]];
+            end block;
+        };
+
+        ret [c [!invert]];
+    };
+end fn;
+};
+    return func ret;
+}
