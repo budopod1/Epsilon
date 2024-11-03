@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 public class Field : IEquatable<Field> {
     readonly string name;
     readonly Type_ type_;

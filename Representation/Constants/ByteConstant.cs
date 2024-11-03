@@ -1,3 +1,4 @@
+using CsJSONTools;
 using System.Globalization;
 
 public class ByteConstant(byte value) : IIntConstant {

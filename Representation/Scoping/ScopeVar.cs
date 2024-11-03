@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 public class ScopeVar(string name, Type_ type_) {
     readonly string name = name;
     readonly Type_ type_ = type_;

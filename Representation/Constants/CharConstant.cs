@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 public class CharConstant : IIntConstant {
     readonly byte value;
 

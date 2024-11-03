@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 public class Exponentiation(IValueToken o1, IValueToken o2) : BinaryOperation<IValueToken, IValueToken>(o1, o2), IValueToken {
     public Type_ GetType_() {
         Type_ base_ = o1.GetType_();

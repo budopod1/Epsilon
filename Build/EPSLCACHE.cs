@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 public class EPSLCACHE {
     public bool IsFromFile = false;
     public string Path;

@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 public class SPECType_Creator {
     readonly List<Type_> types_ = [];
 

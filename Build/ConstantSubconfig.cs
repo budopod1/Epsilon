@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 public class ConstantSubconfig : ISubconfig {
     readonly IEnumerable<string> parts;
 

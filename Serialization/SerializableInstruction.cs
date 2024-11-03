@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 public class SerializableInstruction {
     readonly SerializationContext ctx;
     readonly JSONObject obj = [];
