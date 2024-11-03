@@ -1,5 +1,12 @@
+G {
+    Z:a
+}
+
 Z#main {
-    Array<Z>:a = Array<Z> [1];
-    Array<Z>:b = Array<Z> [1];
-    return (a == b) + 2*([a] equals [b]);
+    [Z]:a = [Z] [1];
+    [Z]:b = [Z] [1];
+    [G]:c = [G] [G [1], G [2]];
+    [G]:d = [G] [G [1], G [4]];
+    [G]:e = [G] [G [1], G [2]];
+    return (a == b) + 2*([a] equals [b]) + 4*([c] deep equals [d]) + 8*([c] deep equals [e]);
 }

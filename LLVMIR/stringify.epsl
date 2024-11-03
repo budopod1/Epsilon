@@ -23,12 +23,12 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
 
     if ([type_] == [Bool_]) {
         if_ [val];
-            [[result].length] = [c [4]];
-            [[result].capacity] = [c [4]];
+            [[result].length] = [c L_ [4]];
+            [[result].capacity] = [c L_ [4]];
             [[result].content] = [mut str ["true"]];
         else_;
-            [[result].length] = [c [5]];
-            [[result].capacity] = [c [5]];
+            [[result].length] = [c L_ [5]];
+            [[result].capacity] = [c L_ [5]];
             [[result].content] = [mut str ["false"]];
         end block;
     } elif (([type_] == [Null_]) || ([type_] == [Internal_])) {

@@ -141,7 +141,7 @@ TESTS = [
         "func": -1,
         "sig": (c_int,),
         "tests": [
-            {"arguments": [], "compare": "exact", "expect": 2}
+            {"arguments": [], "compare": "exact", "expect": 10}
         ]
     },
     {

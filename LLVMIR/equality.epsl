@@ -22,7 +22,7 @@ Val#do <Val:outer_a> equals <Val:outer_b> deep: <Bool:deep> invert: <Bool:invert
     };
 if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
     Val:a = func arg [0];
-    Val:b = func arg [0];
+    Val:b = func arg [1];
 
     if ([type_.name] equals ["Array"]) {
         Val:a_len = load [[a].length];
@@ -100,5 +100,6 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
     };
 end fn;
 };
+
     return func ret;
 }
