@@ -250,11 +250,12 @@ BuiltinResult#builtin equals with <[Val]:args> deep: <Bool:deep> invert: <Bool:i
 }
 
 BuiltinResult#builtin join with <[Val]:args> {
+    Type_:result_type_ = args[1].type_;
     Val:arr = cast [args[0]] to [Internal_];
     Val:sep = cast [args[1]] to [Internal_];
     extern fn [Internal_] ["join_array"] [[Type_] [Internal_, Internal_, L_]]
-        [[Val] [arr, sep, make elem generic int [arr.type_]]];
-    return make builtin result [cast [func ret] to [arr.type_]];
+        [[Val] [arr, sep, make elem generic int [result_type_]]];
+    return make builtin result [cast [func ret] to [result_type_]];
 }
 
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {

@@ -1,0 +1,8 @@
+Z#main {
+    [Str]:strs = [Str] ["Powerplay", "Centerstage", "Into the Deep"];
+    Z:sum = 0;
+    for (Byte:byte in [strs].join[" then "]) {
+        sum += byte;
+    };
+    return sum;
+}
