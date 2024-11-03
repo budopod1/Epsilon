@@ -756,20 +756,22 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program TokenizeForLoops(Program program) {
         return (Program)PerformTreeMatching(
-            program, new PatternMatcher(
-                [
-                    new TypePatternSegment(typeof(ForKeyword)),
-                    new TypePatternSegment(typeof(RawGroup)),
-                    new TypePatternSegment(typeof(CodeBlock))
-                ], new FuncPatternProcessor<List<IToken>>(tokens => {
-                    RawGroup condition = (RawGroup)tokens[1];
+            program, new SurroundedPatternMatcher(
+                new TypePatternSegment(typeof(ForKeyword)),
+                new TypePatternSegment(typeof(CodeBlock)),
+                new FuncPatternProcessor<List<IToken>>(tokens => {
+                    Log.Tmp(tokens);
+                    List<IToken> condition = tokens.Skip(1).SkipLast(1).ToList();
+                    if (condition.Count == 1 && condition[0] is RawGroup group) {
+                        condition = [..group];
+                    }
                     if (condition.Count <= 1) {
                         throw new SyntaxErrorException(
                             "For loop condition cannot be empty and must have at least one clause", tokens[1]
                         );
                     }
                     return [new RawFor(
-                        condition.GetTokens(), (CodeBlock)tokens[2]
+                        condition, (CodeBlock)tokens[^1]
                     )];
                 })
             )
@@ -778,46 +780,45 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program TokenizeGivenBlocks(Program program) {
         return (Program)PerformTreeMatching(
-            program, new PatternMatcher(
-                [
-                    new TypePatternSegment(typeof(GivenKeyword)),
-                    new TypePatternSegment(typeof(RawGroup)),
-                    new TypePatternSegment(typeof(CodeBlock))
-                ], new FuncPatternProcessor<List<IToken>>(tokens => {
-                    RawGroup group = (RawGroup)tokens[1];
+            program, new SurroundedPatternMatcher(
+                new TypePatternSegment(typeof(GivenKeyword)),
+                new TypePatternSegment(typeof(CodeBlock)),
+                new FuncPatternProcessor<List<IToken>>(tokens => {
+                    List<IToken> middle = tokens.Skip(1).SkipLast(1).ToList();
+                    if (middle.Count == 1 && middle[0] is RawGroup group) {
+                        middle = [..group];
+                    }
                     int asIdx = -1;
-                    for (int i = 0; i < group.Count; i++) {
-                        IToken token = group[i];
-                        Name name = token as Name;
-                        if (name != null && name.GetValue() == "as") {
+                    for (int i = 0; i < middle.Count; i++) {
+                        IToken token = middle[i];
+                        if (token is Name name && name.GetValue() == "as") {
                             asIdx = i;
                             break;
                         }
                     }
                     if (asIdx == -1) {
                         throw new SyntaxErrorException(
-                            "Expected 'as' keyword", group
+                            "Expected 'as' keyword", TokenUtils.MergeSpans(middle)
                         );
                     }
-                    if (asIdx == group.Count - 1) {
+                    if (asIdx > middle.Count - 2) {
                         throw new SyntaxErrorException(
-                            "Expected variable declaration after 'as' keyword", group[asIdx]
+                            "Expected variable declaration after 'as' keyword", middle[asIdx]
                         );
                     }
-                    if (asIdx < group.Count - 2) {
+                    if (asIdx < middle.Count - 2) {
                         throw new SyntaxErrorException(
-                            "Expected only a variable declaration after 'as' keyword", group[group.Count - 1]
+                            "Expected only a variable declaration after 'as' keyword", middle[^1]
                         );
                     }
-                    IToken endingToken = group[group.Count - 1];
-                    VarDeclaration var_ = endingToken as VarDeclaration;
-                    if (var_ == null) {
+                    IToken endingToken = middle[^1];
+                    if (endingToken is not VarDeclaration var_) {
                         throw new SyntaxErrorException(
                             "Expected variable declaration", endingToken
                         );
                     }
-                    RawGivenValue givenValue = new(group.GetTokens().Slice(asIdx));
-                    CodeBlock block = (CodeBlock)tokens[2];
+                    RawGivenValue givenValue = new(middle.Slice(asIdx));
+                    CodeBlock block = (CodeBlock)tokens[^1];
                     return [new RawGivenPart(
                         givenValue, var_, block
                     )];
@@ -1037,7 +1038,7 @@ Please clarify between the functions that take the types:
         List<IMatcher> functionRules = [];
         List<IMatcher> addMatchingFunctionRules = [];
 
-        List<FunctionDeclaration> functions = [.. BuiltinsList.Builtins, .. program.GetExternalDeclarations()];
+        List<FunctionDeclaration> functions = [..BuiltinsList.Builtins, ..program.GetExternalDeclarations()];
 
         functions.AddRange(program.OfType<Function>());
 
@@ -1189,7 +1190,7 @@ Please clarify between the functions that take the types:
                 new PatternMatcher(
                     [
                         new TypePatternSegment(typeof(IfKeyword)),
-                        new TypePatternSegment(typeof(Group)),
+                        new TypePatternSegment(typeof(IValueToken)),
                         new TypePatternSegment(typeof(CodeBlock))
                     ], new Wrapper2PatternProcessor(
                         new SlotPatternProcessor([1, 2]),
@@ -1200,7 +1201,7 @@ Please clarify between the functions that take the types:
                     [
                         new TypePatternSegment(typeof(Conditional)),
                         new TypePatternSegment(typeof(ElseIfKeyword)),
-                        new TypePatternSegment(typeof(Group)),
+                        new TypePatternSegment(typeof(IValueToken)),
                         new TypePatternSegment(typeof(CodeBlock))
                     ], new Wrapper2PatternProcessor(
                         new SlotPatternProcessor([0, 2, 3]),
@@ -1227,7 +1228,7 @@ Please clarify between the functions that take the types:
                 new PatternMatcher(
                     [
                         new TypePatternSegment(typeof(WhileKeyword)),
-                        new TypePatternSegment(typeof(Group)),
+                        new TypePatternSegment(typeof(IValueToken)),
                         new TypePatternSegment(typeof(CodeBlock))
                     ], new Wrapper2PatternProcessor(
                         new SlotPatternProcessor([1, 2]),
@@ -1237,7 +1238,7 @@ Please clarify between the functions that take the types:
                 new AdvancedPatternMatcher(
                     [
                         new TypePatternSegment(typeof(SwitchKeyword)),
-                        new TypePatternSegment(typeof(Group))
+                        new TypePatternSegment(typeof(IValueToken))
                     ], [
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
@@ -1253,10 +1254,10 @@ Please clarify between the functions that take the types:
                 new AdvancedPatternMatcher(
                     [
                         new TypePatternSegment(typeof(SwitchKeyword)),
-                        new TypePatternSegment(typeof(Group))
+                        new TypePatternSegment(typeof(IValueToken))
                     ], [
                         new TypePatternSegment(typeof(Group)),
-                        new TypePatternSegment(typeof(CodeBlock))
+                        new TypePatternSegment(typeof(IValueToken))
                     ], 1, -1, [],
                     new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
                         return [

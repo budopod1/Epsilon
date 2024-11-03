@@ -10,7 +10,6 @@ TODO:
 * add `Struct` type that's treated as a superclass of all structs
 * add `ObjectGenSubflags` (passed to both `clang` (when producing an object file, or going through an object file) and `llc`)
 * allow `switch` blocks with non-constant operands by converting them to Conditionals using the `equals` builtin (or equivalent)
-* remove unnecessary parenthesis around if, for, elif, given, while, etc...
 * add new `at` method akin to JavaScript's, new `pop` method that always pops the last item (to eliminate `ack "len(gth)? ?- ?1"`)
 * warn when the truth value is taken resulting in an always true truth value
 * add `<Optional<Any>:optional>.expect<Str:fail_msg>` builtin akin to Rust's

@@ -877,7 +877,7 @@ public class Builder {
                 totalLines++;
                 lines.Add("");
             } else {
-                lines[lines.Count-1] += chr;
+                lines[^1] += chr;
                 if (stage == 0) startIndex++;
             }
         }

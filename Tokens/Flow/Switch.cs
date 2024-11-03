@@ -44,8 +44,7 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
         }
         for (int i = 0; i < max; i+=2) {
             Group group = (Group)rest[i];
-            ConstantValue constant = group.Sub() as ConstantValue;
-            if (constant == null) {
+            if (group.Sub() is not ConstantValue constant) {
                 throw new SyntaxErrorException(
                     "Switch arm values can only be constants", group
                 );

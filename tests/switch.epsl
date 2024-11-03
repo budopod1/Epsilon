@@ -1,5 +1,5 @@
 Z#switch<Z:i> {
-    switch (i)
+    switch i
     (1) {
         return 2;
     }
