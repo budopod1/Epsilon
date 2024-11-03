@@ -453,3 +453,60 @@ end fn;
 
     return func ret;
 }
+
+Val#index of elem <Val:outer_elem> in <Val:outer_arr> {
+    Type_:elem_type_ = outer_arr.type_.generics[0];
+    outer_elem = cast [outer_elem] to [elem_type_];
+
+if (specialized fn [Z_ [64]] ["index_of_elem"] [[Val] [outer_arr, outer_elem]]) {
+    Val:arr = func arg [0];
+    Val:target = func arg [1];
+
+    Val:arr_len = load [[arr].length];
+    Val:i = var [c [0] [Z_ [64]]];
+
+Label:check_label = new label:;
+    Val:cur_i = load [i];
+    while_ [[cur_i] lt [cast [arr_len] to [Z_ [64]]]] from [check_label];
+        Val:elem = [arr].idx[cur_i];
+        if_ [[elem] eq [target]];
+            ret [cur_i];
+        end block;
+        [i] = [[cur_i] + [c [1] [Z_ [64]]]];
+    end block;
+
+    ret [c [-1] [Z_ [64]]];
+end fn;
+};
+
+    return func ret;
+}
+
+Val#index of subarray <Val:outer_subarray> in <Val:outer_arr> {
+if (specialized fn [Z_ [64]] ["index_of_subarray"] [[Val] [outer_arr, outer_subarray]]) {
+    Val:arr = func arg [0];
+    Val:subarray = func arg [1];
+
+    Val:arr_len = load [[arr].length];
+    Val:arr_content = load [[arr].content];
+    Val:subarray_len = load [[subarray].length];
+    Val:subarray_content = load [[subarray].content];
+    Val:i = var [c [0] [Z_ [64]]];
+    Val:i_to = cast [[arr_len] - [subarray_len]] to [Z_ [64]];
+
+Label:check_label = new label:;
+    Val:cur_i = load [i];
+    while_ [[cur_i] le [i_to]] from [check_label];
+        Val:arr_buffer = [arr_content] shifted by [cur_i];
+        if_ [buffer eq [arr_buffer] to [subarray_content] of len [subarray_len]];
+            ret [cur_i];
+        end block;
+        [i] = [[cur_i] + [c [1] [Z_ [64]]]];
+    end block;
+
+    ret [c [-1] [Z_ [64]]];
+end fn;
+};
+
+    return func ret;
+}

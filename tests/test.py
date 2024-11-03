@@ -220,6 +220,14 @@ TESTS = [
         ]
     },
     {
+        "file": "indexof.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 5}
+        ]
+    },
+    {
         "file": "join.epsl",
         "func": -1,
         "sig": (c_int,),
