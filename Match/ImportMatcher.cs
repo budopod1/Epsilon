@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ImportMatcher : IMatcher {
     public Match Match(IParentToken tokens) {
         bool wasNL = true;

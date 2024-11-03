@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class BlockMatcher : IMatcher {
     readonly IPatternSegment prior;
     readonly IPatternSegment start;

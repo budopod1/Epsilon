@@ -1,5 +1,6 @@
 using System.Collections;
 
+namespace Epsilon;
 public abstract class TreeToken(List<IToken> tokens) : IParentToken, IEnumerable<IToken> {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

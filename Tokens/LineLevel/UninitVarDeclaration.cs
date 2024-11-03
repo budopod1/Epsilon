@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class UninitVarDeclaration(VarDeclaration declaration) : ICompleteLine, ISerializableToken, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public static class BuiltinsList {
     public static List<ExternalFunction> Builtins = [
         new ExternalFunction(

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class RawAnnotation(string type, List<IToken> tokens) : TreeToken(tokens) {
     readonly string type = type;
 

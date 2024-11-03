@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Global {
     readonly string name;
     readonly Type_ type_;

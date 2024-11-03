@@ -1,3 +1,4 @@
+namespace Epsilon;
 public enum CacheMode {
     DONTUSE,
     DONTLOAD,

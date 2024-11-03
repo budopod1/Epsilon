@@ -1,5 +1,6 @@
 using CsCommandLine;
 
+namespace Epsilon;
 public class Epsilon {
     public static void Main(string[] args) {
         ArgumentParser parser = new(

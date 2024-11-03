@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class RawFor : IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

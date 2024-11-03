@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class TextsPatternSegment(List<string> texts) : IPatternSegment {
     readonly List<string> texts = texts;
 

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ConfigurablePatternExtractor<T> : PatternExtractor<T> {
     public ConfigurablePatternExtractor(List<IPatternSegment> segments,
                                         IPatternProcessor<T> processor) {

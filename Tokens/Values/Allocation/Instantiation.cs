@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Instantiation : IParentToken, IValueToken, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

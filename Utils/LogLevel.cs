@@ -1,3 +1,4 @@
+namespace Epsilon;
 public enum LogLevel {
     TEMP, // for statements that should be removed before commit
     INFO, // for standard info

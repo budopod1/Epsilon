@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class InvalidSPECResourceException(ShapedJSON obj, string epslspec, string source) : Exception {
     readonly ShapedJSON obj = obj;
     readonly string epslspec = epslspec;

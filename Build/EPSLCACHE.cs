@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class EPSLCACHE {
     public bool IsFromFile = false;
     public string Path;

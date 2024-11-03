@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ConfigurableAdvancedPatternExtractor<T> : AdvancedPatternExtractor<T> {
     public ConfigurableAdvancedPatternExtractor(
         List<IPatternSegment> start, List<IPatternSegment> repeated, int minRepeats,

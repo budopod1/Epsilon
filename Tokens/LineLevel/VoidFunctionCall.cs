@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class VoidFunctionCall(FunctionDeclaration function, List<IValueToken> arguments) : IFunctionCall, ICompleteLine, IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

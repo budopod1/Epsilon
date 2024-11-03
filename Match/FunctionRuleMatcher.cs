@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class FunctionRuleMatcher(PatternExtractor<List<IToken>> extractor) : IMatcher {
     readonly PatternExtractor<List<IToken>> extractor = extractor;
 

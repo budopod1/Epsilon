@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerifier {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

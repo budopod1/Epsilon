@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class TypePatternSegment : IPatternSegment {
     readonly Type type;
     readonly bool exact = false;

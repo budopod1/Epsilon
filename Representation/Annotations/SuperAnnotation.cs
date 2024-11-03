@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class SuperAnnotation(CodeSpan span) : IAnnotation {
     readonly CodeSpan span = span;
 

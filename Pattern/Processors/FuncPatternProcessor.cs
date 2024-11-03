@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class FuncPatternProcessor<T> : IPatternProcessor<T> {
     readonly Func<List<IToken>, int, int, T> func;
 

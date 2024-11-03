@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class DispatchedFile(IFileCompiler compiler, string path, string oldCompilerPath = null, SPECFileCompiler oldCompiler = null, string generatedSPEC = null) {
     public IFileCompiler Compiler = compiler;
     public string OldCompilerPath = oldCompilerPath;

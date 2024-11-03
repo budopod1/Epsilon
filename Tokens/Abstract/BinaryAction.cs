@@ -1,3 +1,4 @@
+namespace Epsilon;
 public abstract class BinaryAction<T1, T2>(T1 o1, T2 o2) : IParentToken where T1 : IToken where T2 : IToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

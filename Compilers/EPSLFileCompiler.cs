@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class EPSLFileCompiler : IFileCompiler {
     Program program;
     readonly string fileText;

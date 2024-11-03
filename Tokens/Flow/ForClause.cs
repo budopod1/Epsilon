@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ForClause : UnaryOperation<IValueToken> {
     readonly string name;
 

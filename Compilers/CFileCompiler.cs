@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class CFileCompiler : IFileCompiler {
     readonly string path;
     readonly string idPath;

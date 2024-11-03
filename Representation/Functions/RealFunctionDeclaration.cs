@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<RealFunctionDeclaration> {
     protected abstract Type_ _GetReturnType_();
     public abstract string GetCallee();

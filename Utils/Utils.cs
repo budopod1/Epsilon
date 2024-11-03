@@ -1,5 +1,6 @@
 using System.Text;
 
+namespace Epsilon;
 public static class Utils {
     public static readonly string Tab = "    ";
     public static readonly string Whitespace = "\r\n\t ";
@@ -59,7 +60,7 @@ public static class Utils {
         if (projectAbsolutePath != null) return projectAbsolutePath;
         DirectoryInfo dir = new(AppDomain.CurrentDomain.BaseDirectory);
         do {
-            if (dir.Name == "EpsilonLang") {
+            if (dir.Name == "Epsilon") {
                 return projectAbsolutePath = dir.FullName;
             }
             dir = dir.Parent;

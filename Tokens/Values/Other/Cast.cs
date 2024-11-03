@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Cast : UnaryOperation<IValueToken>, IValueToken, IVerifier {
     readonly Type_ type_;
 

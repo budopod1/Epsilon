@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ZeroedArrayCreation(Type_Token type_, IValueToken size) : UnaryOperation<IValueToken>(size), IValueToken, IVerifier {
     readonly Type_ type_ = type_.GetValue();
 

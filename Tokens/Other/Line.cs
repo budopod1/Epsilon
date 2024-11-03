@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Line(List<IToken> tokens) : TreeToken(tokens), IVerifier, ISerializableToken {
     protected override TreeToken _Copy(List<IToken> tokens) {
         return new Line(tokens);

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class AdvancedPatternMatcher : AdvancedPatternExtractor<Match>, IMatcher {
     public AdvancedPatternMatcher(
         List<IPatternSegment> start, List<IPatternSegment> repeated, int minRepeats,

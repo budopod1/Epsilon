@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class SlotCastPatternProcessor<T>(List<int> indices) : IPatternProcessor<List<T>> {
     readonly List<int> indices = indices;
 

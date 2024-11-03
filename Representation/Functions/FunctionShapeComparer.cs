@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class FunctionShapeComparer : IComparer<FunctionDeclaration> {
     FunctionShapeComparer() {}
 

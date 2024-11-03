@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ExtendsAnnotation(CodeSpan span, string extendee) : IAnnotation {
     readonly CodeSpan span = span;
     readonly string extendee = extendee;

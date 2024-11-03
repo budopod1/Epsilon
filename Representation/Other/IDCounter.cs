@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class IDCounter {
     int counter = 0;
 

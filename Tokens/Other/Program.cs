@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class Program : TreeToken, IVerifier, IHasScope {
     readonly string path;
     readonly HashSet<LocatedID> structIds = [];

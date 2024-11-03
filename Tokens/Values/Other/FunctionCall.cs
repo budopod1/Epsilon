@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class FunctionCall(FunctionDeclaration function, List<IValueToken> arguments) : IFunctionCall, IParentToken, IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

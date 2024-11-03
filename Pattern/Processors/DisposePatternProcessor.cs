@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class DisposePatternProcessor : IPatternProcessor<List<IToken>> {
     readonly Action<List<IToken>> action;
 

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class FuncTemplate(PatternExtractor<List<IToken>> pattern,
                     List<FunctionArgumentToken> arguments) : Unit<PatternExtractor<List<IToken>>>(pattern),
                             IMultiLineToken, IBarMatchingInto {

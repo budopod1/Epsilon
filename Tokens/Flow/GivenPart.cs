@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class GivenPart : BinaryAction<IValueToken, CodeBlock>, IVerifier {
     readonly Type_ toType_;
     readonly int varID;

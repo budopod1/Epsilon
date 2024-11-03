@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class SubconfigCollection(IEnumerable<ISubconfig> clangParseConfigs, IEnumerable<ISubconfig> linkingConfigs) {
     public IEnumerable<ISubconfig> ClangParseConfigs = clangParseConfigs;
     public IEnumerable<ISubconfig> LinkingConfigs = linkingConfigs;

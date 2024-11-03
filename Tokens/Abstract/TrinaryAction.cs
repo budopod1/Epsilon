@@ -1,3 +1,4 @@
+namespace Epsilon;
 public abstract class TrinaryAction<T1, T2, T3>(T1 o1, T2 o2, T3 o3) : IParentToken where T1 : IToken where T2 : IToken where T3 : IToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class UnitSwitcherMatcher<TOld, TNew>(Type matchType, Func<TOld, TNew> replacer, Type replaceType) : IMatcher {
     readonly Type matchType = matchType;
     readonly Func<TOld, TNew> replacer = replacer;

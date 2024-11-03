@@ -3,6 +3,7 @@ using CsJSONTools;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
+namespace Epsilon;
 public class Builder {
     static readonly Dictionary<string, Func<BuildSettings, string, IFileCompiler>> dispatchers = [];
 

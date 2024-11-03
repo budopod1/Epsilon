@@ -1,3 +1,4 @@
+namespace Epsilon;
 public abstract class Comparison(IValueToken o1, IValueToken o2) : BinaryOperation<IValueToken, IValueToken>(o1, o2), IValueToken, IVerifier {
     public Type_ GetType_() {
         return new Type_("Bool");

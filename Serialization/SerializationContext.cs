@@ -2,6 +2,7 @@ using CsJSONTools;
 using System.Collections;
 using System.Runtime.Serialization;
 
+namespace Epsilon;
 public class SerializationContext {
     private readonly SerializationContext parent = null;
     private readonly List<int> varsHere = [];

@@ -1,4 +1,5 @@
-abstract public class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
+namespace Epsilon;
+public abstract class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
     enum Part {
         START,
         REPEATED,

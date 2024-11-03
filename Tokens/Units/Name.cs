@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Name(string name) : Unit<string>(name), IVerifier {
     public void Verify() {
         throw new SyntaxErrorException(

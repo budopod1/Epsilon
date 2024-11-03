@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class FileTree {
     public string PartialPath;
     public SPECFileCompiler OldCompiler;

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

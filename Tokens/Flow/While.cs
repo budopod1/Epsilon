@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class While(IValueToken o1, CodeBlock o2) : BinaryAction<IValueToken, CodeBlock>(o1, o2), ILoop, IFunctionTerminator {
     public CodeBlock GetBlock() {
         return o2;

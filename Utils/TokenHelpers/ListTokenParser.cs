@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ListTokenParser<T>(IPatternSegment seperator, Type item, Func<IToken, T> parser) {
     enum ParseState {
         EXPECTITEM,

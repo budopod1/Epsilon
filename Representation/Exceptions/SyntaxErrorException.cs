@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class SyntaxErrorException : Exception {
     public CodeSpan span;
 

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public abstract class UnaryAction<T>(T o) : IParentToken where T : IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

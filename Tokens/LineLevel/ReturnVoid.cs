@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ReturnVoid : IVerifier, IFunctionTerminator, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

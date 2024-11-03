@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class ConstantSubconfig : ISubconfig {
     readonly IEnumerable<string> parts;
 

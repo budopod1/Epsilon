@@ -1,6 +1,7 @@
 using CsJSONTools;
 using System.Globalization;
 
+namespace Epsilon;
 public class ByteConstant(byte value) : IIntConstant {
     readonly byte value = value;
 

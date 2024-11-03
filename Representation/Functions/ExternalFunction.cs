@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ExternalFunction : FunctionDeclaration {
     readonly PatternExtractor<List<IToken>> pattern;
     readonly List<FunctionArgument> arguments;

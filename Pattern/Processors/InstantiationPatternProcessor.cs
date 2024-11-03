@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class InstantiationPatternProcessor(Type type) : IPatternProcessor<List<IToken>> {
     readonly Type type = type;
 

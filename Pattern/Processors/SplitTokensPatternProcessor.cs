@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class SplitTokensPatternProcessor : IPatternProcessor<List<IToken>> {
     readonly Type wrapper;
     readonly IPatternSegment seperator;

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class BaseType_ : IEquatable<BaseType_> {
     // https://en.wikipedia.org/wiki/Set_(mathematics)#Special_sets_of_numbers_in_mathematics
     public static readonly List<string> BuiltInTypes_ = [

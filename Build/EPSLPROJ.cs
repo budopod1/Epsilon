@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class EPSLPROJ {
     public string Path;
     public List<string> CommandOptions = [];

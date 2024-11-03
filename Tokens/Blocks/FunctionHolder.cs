@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class FunctionHolder : Holder, IAnnotatable {
     readonly List<IAnnotation> annotations;
 

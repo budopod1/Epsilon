@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class NumberMatcher(Program program) : IMatcher {
     readonly Program program = program;
 

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class MemberAssignment : BinaryOperation<IValueToken, IValueToken>, IAssignment, IVerifier {
     readonly string member;
     readonly Type_ structType_;

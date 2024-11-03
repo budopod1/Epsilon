@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class InitialAssignment(VarDeclaration declaration, IValueToken o) : UnaryOperation<IValueToken>(o), IVerifier, ICompleteLine, ISerializableToken {
     readonly int id = declaration.GetID();
 

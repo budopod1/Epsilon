@@ -1,3 +1,4 @@
+namespace Epsilon;
 public static class StructsCtx {
     static readonly Dictionary<string, Struct> structs = [];
     static bool structsLoaded = false;

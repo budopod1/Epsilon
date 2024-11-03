@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class IDAnnotation(CodeSpan span, string id) : IAnnotation {
     readonly CodeSpan span = span;
     readonly string id = id;

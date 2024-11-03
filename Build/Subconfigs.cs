@@ -1,3 +1,4 @@
+namespace Epsilon;
 public static class Subconfigs {
     static readonly List<ISubconfig> ClangParseConfigs = [];
     static readonly List<ISubconfig> LinkingConfigs = [];

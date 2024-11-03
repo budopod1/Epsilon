@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

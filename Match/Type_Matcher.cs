@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Type_Matcher(Func<List<IToken>, Func<Type_>, List<IToken>> type_Wrapper) : IMatcher {
     readonly Func<List<IToken>, Func<Type_>, List<IToken>> type_Wrapper = type_Wrapper;
     readonly ListTokenParser<Type_> listParser = new(

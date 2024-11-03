@@ -9,6 +9,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <NoWarn>IDE0130</NoWarn>
   </PropertyGroup>
 
 </Project>

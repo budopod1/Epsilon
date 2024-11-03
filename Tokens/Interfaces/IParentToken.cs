@@ -1,3 +1,4 @@
+namespace Epsilon;
 public interface IParentToken : IMultiLineToken {
     IToken this[int i] {
         get;

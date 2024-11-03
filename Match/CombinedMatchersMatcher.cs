@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class CombinedMatchersMatcher(List<IMatcher> matchers) : IMatcher {
     readonly List<IMatcher> matchers = matchers;
 

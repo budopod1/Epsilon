@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class OptionalArrayAccess : BinaryOperation<IValueToken, IValueToken>, IValueToken, IVerifier {
     public OptionalArrayAccess(IValueToken array, IValueToken index) : base(array, index) {}
     public OptionalArrayAccess(IValueToken array, ValueList index) : base(array, null) {

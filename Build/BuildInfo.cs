@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class BuildInfo(string output, string outputName, IEnumerable<string> sources, FileTree entryFile, IEnumerable<FileTree> unlinkedFiles, string fileWithMain) {
     public string Output = output;
     public string OutputName = outputName;

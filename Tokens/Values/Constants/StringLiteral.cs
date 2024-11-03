@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class StringLiteral(string str) : IValueToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

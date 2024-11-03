@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class UnitsPatternSegment<T>(Type unit, List<T> values) : IPatternSegment where T : IEquatable<T> {
     readonly List<T> values = values;
     readonly Type unit = unit;

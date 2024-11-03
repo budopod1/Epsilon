@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Type_PatternSegment(Type_ type_) : IPatternSegment {
     readonly Type_ type_ = type_;
 

@@ -1,6 +1,7 @@
 using CsJSONTools;
 using System.Globalization;
 
+namespace Epsilon;
 public class IntConstant(int value) : IIntConstant {
     readonly int value = value;
 

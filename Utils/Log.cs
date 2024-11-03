@@ -1,3 +1,4 @@
+namespace Epsilon;
 public static class Log {
     public static LogLevel Verbosity = LogLevel.NONE;
 

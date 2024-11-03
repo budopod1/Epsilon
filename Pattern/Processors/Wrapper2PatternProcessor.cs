@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Wrapper2PatternProcessor : IPatternProcessor<List<IToken>> {
     readonly Type wrapper;
     readonly IPatternProcessor<List<IToken>> subprocessor;

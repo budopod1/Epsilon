@@ -1,3 +1,4 @@
+namespace Epsilon;
 public static class InitialTokenizer {
     enum ParseState {
         NORMAL,

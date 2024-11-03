@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class UserBaseType_(string name, int? bits = null) {
     readonly string name = name;
     readonly int? bits = bits;

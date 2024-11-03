@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class MemberAccess(IValueToken o, MemberAccessPostfix member) : UnaryOperation<IValueToken>(o), IAssignableValue, IVerifier {
     readonly string member = member.GetValue();
     readonly Type_ structType_ = o.GetType_().UnwrapPoly();

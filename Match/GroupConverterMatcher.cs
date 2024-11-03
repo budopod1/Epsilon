@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class GroupConverterMatcher(Type source, Type dest) : IMatcher {
     readonly Type source = source;
     readonly Type dest = dest;

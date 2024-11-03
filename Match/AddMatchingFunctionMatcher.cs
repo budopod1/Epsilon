@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class AddMatchingFunctionMatcher(FunctionDeclaration func) : IMatcher {
     readonly FunctionDeclaration func = func;
     readonly List<IPatternSegment> segments = func.GetPattern().GetSegments();

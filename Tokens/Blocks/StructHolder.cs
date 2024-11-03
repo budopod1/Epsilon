@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class StructHolder : Holder, IAnnotatable {
     readonly List<IAnnotation> annotations;
 

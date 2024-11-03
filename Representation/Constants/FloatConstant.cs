@@ -1,6 +1,7 @@
 using CsJSONTools;
 using System.Globalization;
 
+namespace Epsilon;
 public class FloatConstant(double value) : INumberConstant {
     readonly double value = value;
 

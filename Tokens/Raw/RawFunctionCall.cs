@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class RawFunctionCall(List<IPatternSegment> segments, List<IToken> arguments) : IParentToken {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

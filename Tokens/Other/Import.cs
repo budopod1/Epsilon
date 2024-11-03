@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Import(List<string> path) : ITopLevel {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

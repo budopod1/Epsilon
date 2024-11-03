@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class RawForClause : TreeToken {
     readonly string name;
 

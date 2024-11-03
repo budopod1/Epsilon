@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class Assignment(Variable variable, IValueToken o) : UnaryOperation<IValueToken>(o), IAssignment, IVerifier {
     readonly int id = variable.GetID();
 

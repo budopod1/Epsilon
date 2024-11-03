@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class SegmentsPatternSegment(List<IPatternSegment> segments) : IPatternSegment {
     readonly List<IPatternSegment> segments = segments;
 

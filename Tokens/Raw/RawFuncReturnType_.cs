@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class RawFuncReturnType_(List<IToken> tokens) : TreeToken(tokens) {
     protected override TreeToken _Copy(List<IToken> tokens) {
         return new RawFuncReturnType_(tokens);

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public static class TokenUtils {
     public static void UpdateParents(IParentToken token) {
         for (int i = 0; i < token.Count; i++) {

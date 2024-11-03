@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class AbortVoid : IFunctionTerminator, IBlockEndOnly {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }

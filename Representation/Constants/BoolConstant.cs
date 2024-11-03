@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class BoolConstant(bool value) : INumberConstant, IIntConstant {
     readonly bool value = value;
 

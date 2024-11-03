@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class TraverseConfig {
     public TraverseMode Mode;
     public bool Invert;

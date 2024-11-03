@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class CodeSpan {
     readonly int start;
     readonly int end;

@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class Struct : IEquatable<Struct> {
     readonly LocatedID id;
     readonly List<Field> selfFields = null;

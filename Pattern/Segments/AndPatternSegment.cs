@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class AndPatternSegment : IPatternSegment {
     readonly List<IPatternSegment> segments;
 

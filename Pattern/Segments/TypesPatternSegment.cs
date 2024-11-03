@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class TypesPatternSegment(List<Type> types) : IPatternSegment {
     readonly List<Type> types = types;
 

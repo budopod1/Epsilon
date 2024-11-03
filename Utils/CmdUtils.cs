@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
+namespace Epsilon;
 public static class CmdUtils {
     static readonly bool SUBPROCCESSOUTPUT = false;
 

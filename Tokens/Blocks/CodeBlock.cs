@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class CodeBlock : Block, IHasScope {
     readonly Scope scope;
 

@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class SplitTokensParser(IPatternSegment seperator, bool allowUnterminated) {
     readonly IPatternSegment seperator = seperator;
     readonly bool allowUnterminated = allowUnterminated;

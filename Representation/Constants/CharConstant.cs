@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class CharConstant : IIntConstant {
     readonly byte value;
 

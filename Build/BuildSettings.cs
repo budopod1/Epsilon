@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class BuildSettings(string inputPath, string providedOutput, EPSLPROJ proj, EPSLCACHE cache, CacheMode cacheMode, OptimizationLevel optLevel, OutputType outputType, bool linkBuiltins, bool linkLibraries) {
     public string InputPath = inputPath;
     public string ProvidedOutput = providedOutput;

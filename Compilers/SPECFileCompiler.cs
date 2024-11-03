@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IFileCompiler {
     readonly string curPath = path;
     readonly string idPath = obj["id_path"].GetString();

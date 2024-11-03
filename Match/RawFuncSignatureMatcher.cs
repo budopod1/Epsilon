@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class RawFuncSignatureMatcher : IMatcher {
     public Match Match(IParentToken tokens) {
         bool wasNL = true;

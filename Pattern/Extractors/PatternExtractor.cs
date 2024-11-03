@@ -1,4 +1,5 @@
-abstract public class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<PatternExtractor<T>> {
+namespace Epsilon;
+public abstract class PatternExtractor<T> : ITokenExtractor<T>, IEquatable<PatternExtractor<T>> {
     protected List<IPatternSegment> segments;
     protected IPatternProcessor<T> processor;
 

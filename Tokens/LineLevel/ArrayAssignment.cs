@@ -1,3 +1,4 @@
+namespace Epsilon;
 public class ArrayAssignment : TrinaryAction<IValueToken, IValueToken, IValueToken>, IAssignment, IVerifier {
     public ArrayAssignment(IValueToken array, IValueToken index, IValueToken value) : base(array, index, value) {}
     public ArrayAssignment(ArrayAccess access, IValueToken value) : base(access.GetArray(), access.GetIndex(), value) {}

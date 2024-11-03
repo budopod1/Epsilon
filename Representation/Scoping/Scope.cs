@@ -1,5 +1,6 @@
 using CsJSONTools;
 
+namespace Epsilon;
 public class Scope(IDCounter scopeVarIDCounter) : IScope {
     readonly IDCounter scopeVarIDCounter = scopeVarIDCounter;
     readonly Dictionary<int, ScopeVar> variables = [];

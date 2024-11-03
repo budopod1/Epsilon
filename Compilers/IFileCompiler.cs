@@ -1,3 +1,4 @@
+namespace Epsilon;
 public interface IFileCompiler {
     string GetText();
     string GetIDPath();

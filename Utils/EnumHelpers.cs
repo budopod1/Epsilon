@@ -1,3 +1,4 @@
+namespace Epsilon;
 public static class EnumHelpers {
     public static CacheMode ParseCacheMode(string txt) {
         return txt.ToLower() switch {
