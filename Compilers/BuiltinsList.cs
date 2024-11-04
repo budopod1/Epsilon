@@ -520,13 +520,13 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([1])
             ), [
                 new("str", Type_.String()),
-            ], "builtin37", new Type_("Z", 32), FunctionSource.Builtin
+            ], "builtin36", new Type_("Z", 32), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
                     new UnitPatternSegment<string>(typeof(Name), "invalid_parsed_int"),
                 ], new EmptyPatternProcessor()
-            ), [], "builtin38", new Type_("Z", 32), FunctionSource.Builtin
+            ), [], "builtin37", new Type_("Z", 32), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -535,7 +535,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([1])
             ), [
                 new("str", Type_.String()),
-            ], "builtin39", new Type_("Q", 64), FunctionSource.Builtin
+            ], "builtin38", new Type_("Q", 64), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -544,13 +544,13 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([1])
             ), [
                 new("val", new Type_("Q", 64)),
-            ], "builtin40", new Type_("Bool"), FunctionSource.Builtin
+            ], "builtin39", new Type_("Bool"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
                     new UnitPatternSegment<string>(typeof(Name), "read_input_line"),
                 ], new EmptyPatternProcessor()
-            ), [], "builtin41", Type_.String(), FunctionSource.Builtin
+            ), [], "builtin40", Type_.String(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -561,7 +561,7 @@ public static class BuiltinsList {
             ), [
                 new("str", Type_.String()),
                 new("mode", new Type_("Z", 32)),
-            ], "builtin42", new Type_("File").OptionalOf(), FunctionSource.Builtin
+            ], "builtin41", new Type_("File").OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [

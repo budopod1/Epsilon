@@ -301,7 +301,7 @@ struct Array *join_array(const struct Array *arr, const struct Array *sep, uint6
     return result;
 }
 
-const int32_t MAGIC_INVALID_PARSED_INT = -2147483647 + 69927;
+const int32_t MAGIC_INVALID_PARSED_INT = -2147483647;
 
 int32_t parse_int(const struct Array *str) {
     int32_t result = 0;
@@ -330,7 +330,7 @@ int32_t parse_int(const struct Array *str) {
     return MAGIC_INVALID_PARSED_INT;
 }
 
-extern inline int32_t get_magic_invalid_parsed_int() {
+int32_t get_magic_invalid_parsed_int() {
     return MAGIC_INVALID_PARSED_INT;
 }
 
@@ -385,14 +385,6 @@ has_dot:
     }
     if (valid) return result * sign;
     return NAN;
-}
-
-extern inline bool is_NaN_32(float val) {
-    return isnan(val) != 0;
-}
-
-extern inline bool is_NaN_64(double val) {
-    return isnan(val) != 0;
 }
 
 struct Array *read_input_line() {

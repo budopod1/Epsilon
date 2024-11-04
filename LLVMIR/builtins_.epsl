@@ -266,6 +266,25 @@ BuiltinResult#builtin index of with <[Val]:args> {
     };
 }
 
+BuiltinResult#builtin parse int with <[Val]:args> {
+    extern fn [Z_] ["parse_int"] [[Type_] [Str_]] [args];
+    return make builtin result [func ret];
+}
+
+BuiltinResult#builtin invalid parsed int {
+    extern fn [Z_] ["get_magic_invalid_parsed_int"] [[Type_] []] [[Val] []];
+    return make builtin result [func ret];
+}
+
+BuiltinResult#builtin parse float with <[Val]:args> {
+    extern fn [Q_] ["parse_float"] [[Type_] [Str_]] [args];
+    return make builtin result [func ret];
+}
+
+BuiltinResult#builtin is_NaN with <[Val]:args> {
+    return make builtin result [is_NaN[args[0]]];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -337,6 +356,14 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin join with [args];
     } elif ([func_id] equals ["builtin35"]) {
         return builtin index of with [args];
+    } elif ([func_id] equals ["builtin36"]) {
+        return builtin parse int with [args];
+    } elif ([func_id] equals ["builtin37"]) {
+        return builtin invalid parsed int;
+    } elif ([func_id] equals ["builtin38"]) {
+        return builtin parse float with [args];
+    } elif ([func_id] equals ["builtin39"]) {
+        return builtin is_NaN with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };

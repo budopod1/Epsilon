@@ -293,6 +293,14 @@ TESTS = [
         ]
     },
     {
+        "file": "parsenum.epsl",
+        "func": 0,
+        "sig": (c_double,),
+        "tests": [
+            {"arguments": [], "compare": "float", "expect": 581.789}
+        ]
+    },
+    {
         "file": "pop.epsl",
         "func": -1,
         "sig": (c_int,),

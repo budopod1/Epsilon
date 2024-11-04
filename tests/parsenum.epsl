@@ -1,0 +1,7 @@
+Q#test {
+    Z:a = parse_int["123"];
+    Q:b = parse_float["456.789"];
+    Bool:c = parse_int["1b3"] == invalid_parsed_int;
+    Bool:d = is_NaN[parse_float["4e6.7h9"]];
+    return a + b + c + d;
+}
