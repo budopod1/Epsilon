@@ -8,7 +8,6 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Z", // integers (signed ints)
         "Q", // floats
         "Array",
-        "File",
         "Optional",
         "Null",
         "Internal",
@@ -68,7 +67,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static readonly List<string> Optionable = [
-        "Array", "Poly", "File"
+        "Array", "Poly"
     ];
 
     public static readonly List<string> ValueTypes_ = [

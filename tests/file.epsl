@@ -1,3 +1,5 @@
+#import fs;
+
 Z#main {
     File?:maybe_file = open_file["tests/test.txt"][FILE_READ_MODE];
     if ([maybe_file].is_null) {
@@ -5,6 +7,7 @@ Z#main {
     };
     File:file = [maybe_file].unwrap;
     Str?:text = [file].read_all;
+    [file].close; // FIXME: once close is automatically called in File destructor, remove this line
     if ([text].is_null) {
         abort "Cannot read file";
     };

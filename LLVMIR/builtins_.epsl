@@ -18,6 +18,10 @@ BuiltinResult#make builtin result <Val:result> in params {
     return BuiltinResult [result, true, false];
 }
 
+BuiltinResult#make builtin result <Val:result> is params {
+    return BuiltinResult [result, true, true];
+}
+
 BuiltinResult#make empty builtin result {
     return BuiltinResult [null, false, false];
 }
@@ -290,6 +294,16 @@ BuiltinResult#builtin read input line {
     return make builtin result [func ret];
 }
 
+BuiltinResult#builtin is null_ with <[Val]:args> {
+    return make builtin result [[args[0]] == null_];
+}
+
+BuiltinResult#builtin unwrap with <[Val]:args> {
+    verify [args[0]] is not null_;
+    Val:result = bitcast [args[0]] to [unwrap nullability [args[0]]];
+    return make builtin result [result] is params;
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -371,6 +385,12 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin is_NaN with [args];
     } elif ([func_id] equals ["builtin40"]) {
         return builtin read input line;
+    } elif ([func_id] equals ["builtin41"]) {
+        return builtin is null_ with [args];
+    } elif ([func_id] equals ["builtin41"]) {
+        return builtin is null_ with [args];
+    } elif ([func_id] equals ["builtin42"]) {
+        return builtin unwrap with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };

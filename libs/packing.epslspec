@@ -1,27 +1,27 @@
 {"functions": [
-    {"id": "packing_packHalf", "callee": "packing_packHalf", "return_type_": "Str", "template": [
+    {"id": "packing_pack_half", "callee": "packing_pack_half", "return_type_": "Str", "template": [
         {"type": "argument", "name": "argument", "type_": "Q16"}, {"type": "text", "text": "."}, {"type": "name", "name": "pack"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
-    {"id": "packing_packFloat", "callee": "packing_packFloat", "return_type_": "Str", "template": [
+    {"id": "packing_pack_float", "callee": "packing_pack_float", "return_type_": "Str", "template": [
         {"type": "argument", "name": "argument", "type_": "Q32"}, {"type": "text", "text": "."}, {"type": "name", "name": "pack"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
-    {"id": "packing_packDouble", "callee": "packing_packDouble", "return_type_": "Str", "template": [
+    {"id": "packing_pack_double", "callee": "packing_pack_double", "return_type_": "Str", "template": [
         {"type": "argument", "name": "argument", "type_": "Q64"}, {"type": "text", "text": "."}, {"type": "name", "name": "pack"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
-    {"id": "packing_packQuadruple", "callee": "packing_packQuadruple", "return_type_": "Str", "template": [
+    {"id": "packing_pack_quadruple", "callee": "packing_pack_quadruple", "return_type_": "Str", "template": [
         {"type": "argument", "name": "argument", "type_": "Q128"}, {"type": "text", "text": "."}, {"type": "name", "name": "pack"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "packing_unpackHalf", "callee": "packing_unpackHalf", "return_type_": "Q16", "template": [
+    {"id": "packing_unpack_half", "callee": "packing_unpack_half", "return_type_": "Q16", "template": [
         {"type": "name", "name": "unpack_Q16"}, {"type": "argument", "name": "array", "type_": "Str"}, {"type": "argument", "name": "startingPos", "type_": "W64"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
-    {"id": "packing_unpackFloat", "callee": "packing_unpackFloat", "return_type_": "Q32", "template": [
+    {"id": "packing_unpack_float", "callee": "packing_unpack_float", "return_type_": "Q32", "template": [
         {"type": "name", "name": "unpack_Q32"}, {"type": "argument", "name": "array", "type_": "Str"}, {"type": "argument", "name": "startingPos", "type_": "W64"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
-    {"id": "packing_unpackDouble", "callee": "packing_unpackDouble", "return_type_": "Q64", "template": [
+    {"id": "packing_unpack_double", "callee": "packing_unpack_double", "return_type_": "Q64", "template": [
         {"type": "name", "name": "unpack_Q64"}, {"type": "argument", "name": "array", "type_": "Str"}, {"type": "argument", "name": "startingPos", "type_": "W64"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
-    {"id": "packing_unpackQuadruple", "callee": "packing_unpackQuadruple", "return_type_": "Q128", "template": [
+    {"id": "packing_unpack_quadruple", "callee": "packing_unpack_quadruple", "return_type_": "Q128", "template": [
         {"type": "name", "name": "unpack_Q128"}, {"type": "argument", "name": "array", "type_": "Str"}, {"type": "argument", "name": "startingPos", "type_": "W64"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"}
 ], "types_": [

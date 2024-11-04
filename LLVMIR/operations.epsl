@@ -510,3 +510,10 @@ end fn;
 
     return func ret;
 }
+
+#verify <Val:val> is not null_ {
+    if_ [expect [[val] == null_] to be [false]];
+        extern fn [null] ["null_value_fail"] [[Type_] []] [[Val] []];
+        mark as unreachable;
+    end block;
+}

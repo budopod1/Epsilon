@@ -3,6 +3,14 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef M_E
+#define M_E 2.71828182845904523536
+#endif
+
 struct C {
     uint64_t ref_counter;
     double real;
@@ -23,11 +31,11 @@ struct IntArray {
     int32_t *content;
 };
 
-double math_varBaseLog(double argument, double base) {
+double math_var_base_log(double argument, double base) {
     return log(argument) / log(base);
 }
 
-struct C *math_addC(struct C *a, struct C *b) {
+struct C *math_add_C(struct C *a, struct C *b) {
     struct C *result = malloc(sizeof(struct C));
     result->ref_counter = 0;
     result->real = a->real + b->real;
@@ -35,7 +43,7 @@ struct C *math_addC(struct C *a, struct C *b) {
     return result;
 }
 
-struct C *math_subC(struct C *a, struct C *b) {
+struct C *math_sub_C(struct C *a, struct C *b) {
     struct C *result = malloc(sizeof(struct C));
     result->ref_counter = 0;
     result->real = a->real - b->real;
@@ -43,7 +51,7 @@ struct C *math_subC(struct C *a, struct C *b) {
     return result;
 }
 
-struct C *math_mulC(struct C *a, struct C *b) {
+struct C *math_mul_C(struct C *a, struct C *b) {
     struct C *result = malloc(sizeof(struct C));
     result->ref_counter = 0;
     result->real = a->real * b->real - a->imag * b->imag;
@@ -51,7 +59,7 @@ struct C *math_mulC(struct C *a, struct C *b) {
     return result;
 }
 
-struct C *math_divC(struct C *a, struct C *b) {
+struct C *math_div_C(struct C *a, struct C *b) {
     struct C *result = malloc(sizeof(struct C));
     result->ref_counter = 0;
     double v = b->real * b->real + b->imag * b->imag;
@@ -60,7 +68,7 @@ struct C *math_divC(struct C *a, struct C *b) {
     return result;
 }
 
-struct C *math_expC(struct C *val) {
+struct C *math_exp_C(struct C *val) {
     double m = exp(val->real);
     struct C *result = malloc(sizeof(struct C));
     result->ref_counter = 0;
@@ -69,7 +77,7 @@ struct C *math_expC(struct C *val) {
     return result;
 }
 
-struct C *math_exponentToCmplx(double base, double exponent) {
+struct C *math_exponent_to_cmplx(double base, double exponent) {
     struct C *result = malloc(sizeof(struct C));
     result->ref_counter = 0;
     if (base >= 0) {
@@ -84,7 +92,7 @@ struct C *math_exponentToCmplx(double base, double exponent) {
     }
 }
 
-struct C *math_cmplxToExponent(struct C *base, double exponent) {
+struct C *math_cmplx_to_exponent(struct C *base, double exponent) {
     double theta = atan2(base->imag, base->real);
     double r = sqrt(base->real*base->real + base->imag*base->imag);
     double m = pow(r, exponent);
@@ -135,7 +143,7 @@ uint32_t math_GCD(uint32_t n, uint32_t m) {
     }
 }
 
-uint32_t math_arrayGCD(struct UIntArray *nums) {
+uint32_t math_array_GCD(struct UIntArray *nums) {
     uint32_t len = nums->length;
     if (len == 0) return 0;
     uint32_t gcd = nums->content[0];
@@ -149,31 +157,31 @@ uint32_t math_LCM(uint32_t n, uint32_t m) {
     return n * m / math_GCD(n, m);
 }
 
-uint32_t math_arrayLCM(struct UIntArray *nums) {
-    return math_uprod(nums) / math_arrayGCD(nums);
+uint32_t math_array_LCM(struct UIntArray *nums) {
+    return math_uprod(nums) / math_array_GCD(nums);
 }
 
-double math_getE() {
+double math_get_e() {
     return M_E;
 }
 
-bool math_isFinite32(float val) {
+bool math_is_finite_32(float val) {
     return isfinite(val) != 0;
 }
 
-bool math_isInfinite32(float val) {
+bool math_is_infinite_32(float val) {
     return isinf(val) != 0;
 }
 
-bool math_isFinite64(double val) {
+bool math_is_finite_64(double val) {
     return isfinite(val) != 0;
 }
 
-bool math_isInfinite64(double val) {
+bool math_is_infinite_64(double val) {
     return isinf(val) != 0;
 }
 
-int math_sign(double val) {
+int math_fsign(double val) {
     if (val == 0) {
         return 0;
     } else if (val < 0) {

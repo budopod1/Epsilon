@@ -6,14 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
-
-#ifndef __has_builtin
-#define __has_builtin(x) 0
-#endif
-
-#if !__has_builtin(__builtin_expect)
-#define __builtin_expect(expr, val) expr
-#endif
+#include "builtins.h"
 
 #define ERR_START "FATAL ERROR: "
 
@@ -22,12 +15,6 @@
 // second to lowest bit is 1 when the value is not a pointer
 // lowest bit is 1 when the value is nullable
 
-struct Array {
-    uint64_t ref_counter;
-    uint64_t capacity;
-    uint64_t length;
-    void *content;
-};
 
 extern inline uint64_t calc_new_capacity(uint64_t cap) {
     return 1+(cap*3)/2;
@@ -161,20 +148,11 @@ struct Array *concat_arrays(const struct Array *array1, const struct Array *arra
     return new_array;
 }
 
-struct Array *empty_array(uint64_t elem_size) {
-    struct Array *array = malloc(sizeof(struct Array));
-    array->ref_counter = 0;
-    array->length = 0;
-    array->capacity = 1;
-    array->content = malloc(elem_size);
-    return array;
-}
-
 struct Array *blank_array(uint64_t elem_size) {
     struct Array *array = malloc(sizeof(struct Array));
     array->ref_counter = 0;
     array->length = 0;
-    array->capacity = 10;
+    array->capacity = 5;
     array->content = malloc(10*elem_size);
     return array;
 }
@@ -397,255 +375,6 @@ struct Array *read_input_line() {
         increment_length(result, sizeof(char));
         ((char*)result->content)[length] = (char)chr;
     }
-}
-
-struct File {
-    uint64_t ref_counter;
-    FILE *file;
-    int32_t mode;
-    int32_t open;
-};
-
-#define _FILE_READ_MODE 1
-#define _FILE_WRITE_MODE 2
-#define _FILE_APPEND_MODE 4
-#define _FILE_BINARY_MODE 8
-
-// returns File?
-struct File *open_file(struct Array *string, int32_t mode) {
-    char mode_str[4];
-    int i = 0;
-
-    if (mode&_FILE_WRITE_MODE) {
-        if (mode&_FILE_APPEND_MODE)
-            return NULL;
-        mode_str[i++] = 'w';
-        if (mode&_FILE_READ_MODE)
-            mode_str[i++] = '+';
-    } else if (mode&_FILE_READ_MODE) {
-        mode_str[i++] = 'r';
-        if (mode&_FILE_APPEND_MODE)
-            mode_str[i++] = '+';
-    } else if (mode&_FILE_APPEND_MODE) {
-        mode_str[i++] = 'a';
-    } else {
-        return NULL;
-    }
-
-    if (mode&_FILE_BINARY_MODE) {
-        mode_str[i++] = 'b';
-    }
-
-    mode_str[i] = '\0';
-
-    uint64_t len = string->length;
-    increment_length(string, 1);
-    char* content = string->content;
-    content[len] = '\0';
-    string->length = len;
-
-    FILE *C_file = fopen(content, mode_str);
-    if (C_file == NULL) return NULL;
-
-    struct File *file = malloc(sizeof(struct File));
-    file->ref_counter = 0;
-    file->file = C_file;
-    file->mode = mode;
-    file->open = 1;
-
-    return file;
-}
-
-extern inline int32_t FILE_READ_MODE() {
-    return _FILE_READ_MODE;
-}
-
-extern inline int32_t FILE_WRITE_MODE() {
-    return _FILE_WRITE_MODE;
-}
-
-extern inline int32_t FILE_APPEND_MODE() {
-    return _FILE_APPEND_MODE;
-}
-
-extern inline int32_t FILE_BINARY_MODE() {
-    return _FILE_BINARY_MODE;
-}
-
-extern inline bool file_open(const struct File *file) {
-    return file->open;
-}
-
-extern inline int32_t file_mode(const struct File *file) {
-    return file->mode;
-}
-
-bool close_file(struct File *file) {
-    if (file->open) {
-        if (fclose(file->file) == 0) {
-            file->open = 0;
-            return true;
-        }
-        return false;
-    } else {
-        return false;
-    }
-}
-
-int64_t file_length(const struct File *file) {
-    if (file->open) {
-        FILE *fp = file->file;
-        long start_pos = ftell(fp);
-        fseek(fp, 0, SEEK_END);
-        uint64_t length = (uint64_t)ftell(fp);
-        fseek(fp, start_pos, SEEK_SET);
-        return length;
-    } else {
-        return -1;
-    }
-}
-
-int64_t file_pos(const struct File *file) {
-    if (file->open) {
-        return (uint64_t)ftell(file->file);
-    } else {
-        return -1;
-    }
-}
-
-// returns: Str?
-struct Array *read_all_file(const struct File *file) {
-    if (file->open) {
-        uint64_t file_len = file_length(file);
-        if (file_len == -1) return empty_array(sizeof(char));
-        uint64_t cur_pos = file_pos(file);
-        if (cur_pos == -1) return empty_array(sizeof(char));
-        uint64_t remaining_text = (uint64_t)(file_len - cur_pos);
-        uint64_t capacity = remaining_text;
-        if (capacity == 0) capacity = 1;
-        struct Array *result = malloc(sizeof(struct Array));
-        result->ref_counter = 0;
-        result->capacity = capacity;
-        result->length = remaining_text;
-        char *content = malloc(capacity);
-        result->content = content;
-        size_t read = fread(content, remaining_text, 1, file->file);
-        if (read != 1) {
-            free(result);
-            free(content);
-            return NULL;
-        }
-        return result;
-    } else {
-        return NULL;
-    }
-}
-
-// returns: Str?
-struct Array *read_some_file(const struct File *file, uint64_t amount) {
-    if (file->open) {
-        uint64_t capacity = amount;
-        if (capacity == 0) capacity = 1;
-        struct Array *result = malloc(sizeof(struct Array));
-        result->ref_counter = 0;
-        result->capacity = capacity;
-        result->length = amount;
-        char *content = malloc(capacity);
-        result->content = content;
-        size_t read = fread(content, amount, 1, file->file);
-        if (read != 1) {
-            free(result);
-            free(content);
-            return NULL;
-        }
-        return result;
-    } else {
-        return NULL;
-    }
-}
-
-int32_t set_file_pos(const struct File *file, uint64_t pos) {
-    if (file->open) {
-        return fseek(file->file, (long)pos, SEEK_SET) == 0;
-    }
-    return false;
-}
-
-int32_t jump_file_pos(const struct File *file, uint64_t amount) {
-    if (file->open) {
-        return fseek(file->file, (long)amount, SEEK_CUR) == 0;
-    }
-    return false;
-}
-
-static bool read_line_EOF = false;
-
-// returns: Str?
-struct Array *read_file_line(const struct File *file) {
-    read_line_EOF = false;
-    if (file->open) {
-        char *content = NULL;
-        size_t capacity = 0;
-        int64_t len = (int64_t)getline(&content, &capacity, file->file);
-        if (len == -1) {
-            free(content);
-            read_line_EOF = true;
-            return NULL;
-        }
-        if (content[len-1] == '\n') len--;
-        struct Array *result = malloc(sizeof(struct Array));
-        result->ref_counter = 0;
-        result->capacity = capacity;
-        result->content = content;
-        result->length = len;
-        return result;
-    }
-    return NULL;
-}
-
-extern inline bool read_line_reached_EOF() {
-    return read_line_EOF;
-}
-
-// returns [Str]?
-struct Array *read_file_lines(const struct File *file) {
-    struct Array *result = blank_array(sizeof(struct Array));
-    while (1) {
-        struct Array *line = read_file_line(file);
-        if (read_line_EOF) {
-            return result;
-        }
-        if (line == NULL) {
-            for (uint64_t i = 0; i < result->length; i++) {
-                struct Array *str = ((struct Array**)result->content)[i];
-                free(str->content);
-                free(str);
-            }
-            free(result->content);
-            free(result);
-            return NULL;
-        }
-        uint64_t length = result->length;
-        increment_length(result, sizeof(struct Array));
-        ((struct Array**)result->content)[length] = line;
-        line->ref_counter = 1;
-    }
-}
-
-bool write_to_file(const struct File *file, const struct Array *text) {
-    if (file->open) {
-        uint64_t len = text->length;
-        return fwrite(text->content, len, 1, file->file) == 1;
-    } else {
-        return false;
-    }
-}
-
-void free_file(struct File *file) {
-    // We don't need a check for if the file is already closed, becauuse
-    // close_file contains one itself
-    close_file(file);
-    free(file);
 }
 
 void abort_(const struct Array *string) {

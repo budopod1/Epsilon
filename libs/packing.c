@@ -3,14 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <arpa/inet.h>
-
-#ifndef __has_builtin
-#define __has_builtin(x) 0
-#endif
-
-#if !__has_builtin(__builtin_expect)
-#define __builtin_expect(expr, val) expr
-#endif
+#include "builtins.h"
 
 #define __FLOAT16_EXISTS__ 0
 #ifdef __is_identifier
@@ -28,55 +21,55 @@ struct ByteArray {
     char *content;
 };
 
-extern inline bool _packing_isNetworkByteOrder() {
+static bool is_network_byte_order() {
     return htons(1) == 1;
 }
 
-void _packing_memcpyReversed(void *dest, void *const src, size_t amount) {
+static void memcpy_reversed(void *dest, void *const src, size_t amount) {
     char *dest_a = (char*)dest + amount;
     char *src_a = (char*)src;
     for (size_t i = 0; i < amount; i++) {
-        *(--dest_a) = *(src_a++);
+        *--dest_a = *(src_a++);
     }
 }
 
-struct ByteArray *_packing_packFloating(void *floating, size_t floating_size) {
+static struct ByteArray *pack_floating(void *floating, size_t floating_size) {
     struct ByteArray *arr = malloc(sizeof(struct ByteArray));
     arr->ref_counter = 0;
     arr->capacity = floating_size;
     arr->length = floating_size;
     arr->content = malloc(floating_size);
-    if (_packing_isNetworkByteOrder()) {
+    if (is_network_byte_order()) {
         memcpy(arr->content, floating, floating_size);
     } else {
-        _packing_memcpyReversed(arr->content, floating, floating_size);
+        memcpy_reversed(arr->content, floating, floating_size);
     }
     return arr;
 }
 
 #if __FLOAT16_EXISTS__
-struct ByteArray *packing_packHalf(_Float16 floating) {
-    return _packing_packFloating(&floating, sizeof(floating));
+struct ByteArray *packing_pack_half(_Float16 floating) {
+    return pack_floating(&floating, sizeof(floating));
 }
 #endif
 
-struct ByteArray *packing_packFloat(float floating) {
-    return _packing_packFloating(&floating, sizeof(floating));
+struct ByteArray *packing_pack_float(float floating) {
+    return pack_floating(&floating, sizeof(floating));
 }
 
-struct ByteArray *packing_packDouble(double floating) {
-    return _packing_packFloating(&floating, sizeof(floating));
+struct ByteArray *packing_pack_double(double floating) {
+    return pack_floating(&floating, sizeof(floating));
 }
 
 #if __FLOAT128__
-struct ByteArray *packing_packQuadruple(__float128 floating) {
-    return _packing_packFloating(&floating, sizeof(floating));
+struct ByteArray *packing_pack_quadruple(__float128 floating) {
+    return pack_floating(&floating, sizeof(floating));
 }
 #endif
 
 const char *const BAD_LEN_FOR_FLOATING_ERR = ERR_START "Not enough remaining space in the array to read a %d bit floating point number\n";
 
-void packing_unpackFloating(struct ByteArray *arr, uint64_t pos, void *floating, size_t floating_size) {
+void packing_unpack_floating(struct ByteArray *arr, uint64_t pos, void *floating, size_t floating_size) {
     if (__builtin_expect(pos + floating_size >= arr->length, 0)) {
         fflush(stdout);
         fprintf(stderr, BAD_LEN_FOR_FLOATING_ERR, 8 * (int)floating_size);
@@ -84,37 +77,37 @@ void packing_unpackFloating(struct ByteArray *arr, uint64_t pos, void *floating,
     }
 
     char *data = arr->content + pos;
-    if (_packing_isNetworkByteOrder()) {
+    if (is_network_byte_order()) {
         memcpy(floating, data, floating_size);
     } else {
-        _packing_memcpyReversed(floating, data, floating_size);
+        memcpy_reversed(floating, data, floating_size);
     }
 }
 
 #if __FLOAT16_EXISTS__
-_Float16 packing_unpackHalf(struct ByteArray *arr, uint64_t pos) {
+_Float16 packing_unpack_half(struct ByteArray *arr, uint64_t pos) {
     _Float16 result;
-    packing_unpackFloating(arr, pos, &result, sizeof(result));
+    packing_unpack_floating(arr, pos, &result, sizeof(result));
     return result;
 }
 #endif
 
-float packing_unpackFloat(struct ByteArray *arr, uint64_t pos) {
+float packing_unpack_float(struct ByteArray *arr, uint64_t pos) {
     float result;
-    packing_unpackFloating(arr, pos, &result, sizeof(result));
+    packing_unpack_floating(arr, pos, &result, sizeof(result));
     return result;
 }
 
-double packing_unpackDouble(struct ByteArray *arr, uint64_t pos) {
+double packing_unpack_double(struct ByteArray *arr, uint64_t pos) {
     double result;
-    packing_unpackFloating(arr, pos, &result, sizeof(result));
+    packing_unpack_floating(arr, pos, &result, sizeof(result));
     return result;
 }
 
 #if __FLOAT128__
-__float128 packing_unpackQuadruple(struct ByteArray *arr, uint64_t pos) {
+__float128 packing_unpack_quadruple(struct ByteArray *arr, uint64_t pos) {
     __float128 result;
-    packing_unpackFloating(arr, pos, &result, sizeof(result));
+    packing_unpack_floating(arr, pos, &result, sizeof(result));
     return result;
 }
 #endif

@@ -554,182 +554,13 @@ public static class BuiltinsList {
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
-                    new UnitPatternSegment<string>(typeof(Name), "open_file"),
-                    new FuncArgPatternSegment(),
-                    new FuncArgPatternSegment()
-                ], new SlotPatternProcessor([1, 2])
-            ), [
-                new("str", Type_.String()),
-                new("mode", new Type_("Z", 32)),
-            ], "builtin41", new Type_("File").OptionalOf(), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new UnitPatternSegment<string>(typeof(Name), "FILE_READ_MODE"),
-                ], new EmptyPatternProcessor()
-            ), [], "builtin43", new Type_("Z", 32), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new UnitPatternSegment<string>(typeof(Name), "FILE_WRITE_MODE"),
-                ], new EmptyPatternProcessor()
-            ), [], "builtin44", new Type_("Z", 32), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new UnitPatternSegment<string>(typeof(Name), "FILE_APPEND_MODE"),
-                ], new EmptyPatternProcessor()
-            ), [], "builtin45", new Type_("Z", 32), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new UnitPatternSegment<string>(typeof(Name), "FILE_BINARY_MODE"),
-                ], new EmptyPatternProcessor()
-            ), [], "builtin46", new Type_("Z", 32), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "is_open"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("file", new Type_("File")),
-            ], "builtin47", new Type_("Bool"), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "mode"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("file", new Type_("File")),
-            ], "builtin48", new Type_("Z", 32), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "close"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("file", new Type_("File")),
-            ], "builtin49", FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "len"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("file", new Type_("File")),
-            ], "builtin50", new Type_("Z", 64), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "pos"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("file", new Type_("File")),
-            ], "builtin51", new Type_("Z", 64), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "read_all"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("file", new Type_("File")),
-            ], "builtin52", Type_.String().OptionalOf(), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "read_some"),
-                    new FuncArgPatternSegment(),
-                ], new SlotPatternProcessor([0, 3])
-            ), [
-                new("file", new Type_("File")),
-                new("bytes", new Type_("W", 64))
-            ], "builtin53", Type_.String().OptionalOf(), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "set_pos"),
-                    new FuncArgPatternSegment(),
-                ], new SlotPatternProcessor([0, 3])
-            ), [
-                new("file", new Type_("File")),
-                new("pos", new Type_("W", 64))
-            ], "builtin54", new Type_("Bool"), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "jump_pos"),
-                    new FuncArgPatternSegment(),
-                ], new SlotPatternProcessor([0, 3])
-            ), [
-                new("file", new Type_("File")),
-                new("amount", new Type_("W", 64))
-            ], "builtin55", new Type_("Bool"), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "read_line"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("file", new Type_("File"))
-            ], "builtin56", Type_.String().OptionalOf(), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new UnitPatternSegment<string>(typeof(Name), "read_line_reached_EOF"),
-                ], new EmptyPatternProcessor()
-            ), [], "builtin57", new Type_("Bool"), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "read_lines"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("file", new Type_("File"))
-            ], "builtin58", Type_.String().ArrayOf().OptionalOf(), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "write"),
-                    new FuncArgPatternSegment()
-                ], new SlotPatternProcessor([0, 3])
-            ), [
-                new("file", new Type_("File")),
-                new("content", Type_.String())
-            ], "builtin59", new Type_("Bool"), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "is_null")
                 ], new SlotPatternProcessor([0])
             ), [
                 new("nullable", Type_.Any()),
-            ], "builtin60", (List<Type_> types_) => {
+            ], "builtin41", (List<Type_> types_) => {
                 BaseType_ bt = types_[0].GetBaseType_();
                 if (bt.IsNull()) {
                     throw new FunctionCallTypes_Exception(
@@ -752,7 +583,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("optional", Type_.Any().OptionalOf(), exactType_Match: true),
-            ], "builtin61", (List<Type_> types_) => types_[0].GetGeneric(0),
+            ], "builtin42", (List<Type_> types_) => types_[0].GetGeneric(0),
             FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -763,7 +594,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("array", Type_.Any().ArrayOf()),
-            ], "builtin63", FunctionSource.Builtin
+            ], "builtin43", FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -773,7 +604,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("array", Type_.Any().OptionalOf()),
-            ], "builtin64", (List<Type_> types_) => {
+            ], "builtin44", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
@@ -790,7 +621,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("array", Type_.Any().ArrayOf()),
-            ], "builtin65", (List<Type_> types_) => {
+            ], "builtin45", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
@@ -807,7 +638,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("array", Type_.Any().ArrayOf()),
-            ], "builtin66", FunctionSource.Builtin
+            ], "builtin46", FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -819,7 +650,7 @@ public static class BuiltinsList {
             ), [
                 new("array", Type_.Any().ArrayOf()),
                 new("times", new Type_("W", 64))
-            ], "builtin67", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin47", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -829,7 +660,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("value", Type_.Any())
-            ], "builtin68", new Type_("Bool"), FunctionSource.Builtin
+            ], "builtin48", new Type_("Bool"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -839,7 +670,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("value", new Type_("Q"))
-            ], "builtin69", new Type_("Z"), FunctionSource.Builtin
+            ], "builtin49", new Type_("Z"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -849,7 +680,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("value", new Type_("Q"))
-            ], "builtin70", new Type_("Z"), FunctionSource.Builtin
+            ], "builtin50", new Type_("Z"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -859,7 +690,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("value", new Type_("Q"))
-            ], "builtin71", new Type_("Z"), FunctionSource.Builtin
+            ], "builtin51", new Type_("Z"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -869,7 +700,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("optional", Type_.Any().OptionalOf(), exactType_Match: true),
-            ], "builtin72", (List<Type_> types_) => types_[0].GetGeneric(0),
+            ], "builtin52", (List<Type_> types_) => types_[0].GetGeneric(0),
             FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -882,7 +713,7 @@ public static class BuiltinsList {
             ), [
                 new("a", Type_.Any().OptionalOf(), exactType_Match: true),
                 new("b", Type_.Any()),
-            ], "builtin73", (List<Type_> types_) => {
+            ], "builtin53", (List<Type_> types_) => {
                 if (types_[1].GetBaseType_().GetName() == "Optional") {
                     if (!types_[1].IsConvertibleTo(types_[0])) {
                         throw new FunctionCallTypes_Exception(
@@ -910,7 +741,7 @@ public static class BuiltinsList {
             ), [
                 new("a", Type_.Any().OptionalOf(), exactType_Match: true),
                 new("b", Type_.Any()),
-            ], "builtin74", (List<Type_> types_) => {
+            ], "builtin54", (List<Type_> types_) => {
                 if (types_[1].GetBaseType_().GetName() == "Optional") {
                     return types_[1];
                 } else {
@@ -925,7 +756,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([1])
             ), [
                 new("a", new Type_("Z"))
-            ], "builtin75", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin55", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -936,7 +767,7 @@ public static class BuiltinsList {
             ), [
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
-            ], "builtin76", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin56", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -947,7 +778,7 @@ public static class BuiltinsList {
             ), [
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
-            ], "builtin77", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin57", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -958,7 +789,7 @@ public static class BuiltinsList {
             ), [
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
-            ], "builtin78", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin58", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -970,7 +801,7 @@ public static class BuiltinsList {
             ), [
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
-            ], "builtin79", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin59", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -982,7 +813,7 @@ public static class BuiltinsList {
             ), [
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
-            ], "builtin80", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin60", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -995,7 +826,7 @@ public static class BuiltinsList {
             ), [
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
-            ], "builtin81", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin61", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -1008,7 +839,7 @@ public static class BuiltinsList {
             ), [
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
-            ], "builtin82", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin62", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -1020,7 +851,7 @@ public static class BuiltinsList {
             ), [
                 new("a", new Type_("Z")),
                 new("b", new Type_("Z")),
-            ], "builtin83", (List<Type_> types_) => {
+            ], "builtin63", (List<Type_> types_) => {
                 Type_ common = Type_.CommonOrNull(types_[0], types_[1]);
                 if (common == null) {
                     throw new FunctionCallTypes_Exception(
@@ -1040,7 +871,7 @@ public static class BuiltinsList {
             ), [
                 new("arr", Type_.Any().ArrayOf()),
                 new("idx", new Type_("W", 64)),
-            ], "builtin84", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+            ], "builtin64", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ),  new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -1055,7 +886,7 @@ public static class BuiltinsList {
                 new("arr", Type_.Any().ArrayOf()),
                 new("idx", new Type_("W", 64)),
                 new("val", Type_.Any())
-            ], "builtin85", (List<Type_> types_) => {
+            ], "builtin65", (List<Type_> types_) => {
                 if (!types_[2].IsConvertibleTo(types_[0].GetGeneric(0)))
                     throw new FunctionCallTypes_Exception($"Cannot add value of type {types_[2]} to array of type {types_[0]}", 2);
                 return types_[0];
