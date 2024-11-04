@@ -891,6 +891,19 @@ public static class BuiltinsList {
                     throw new FunctionCallTypes_Exception($"Cannot add value of type {types_[2]} to array of type {types_[0]}", 2);
                 return types_[0];
             }, FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "expect"),
+                    new FuncArgPatternSegment()
+                ], new SlotPatternProcessor([0, 2])
+            ), [
+                new("optional", Type_.Any().OptionalOf(), exactType_Match: true),
+                new("fail_msg", Type_.String())
+            ], "builtin66", (List<Type_> types_) => types_[0].GetGeneric(0),
+            FunctionSource.Builtin
         ),
     ];
 }
