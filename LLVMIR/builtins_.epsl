@@ -285,6 +285,11 @@ BuiltinResult#builtin is_NaN with <[Val]:args> {
     return make builtin result [is_NaN[args[0]]];
 }
 
+BuiltinResult#builtin read input line {
+    extern fn [Str_] ["read_input_line"] [[Type_] []] [[Val] []];
+    return make builtin result [func ret];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -364,6 +369,8 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin parse float with [args];
     } elif ([func_id] equals ["builtin39"]) {
         return builtin is_NaN with [args];
+    } elif ([func_id] equals ["builtin40"]) {
+        return builtin read input line;
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
