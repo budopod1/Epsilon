@@ -87,8 +87,12 @@ Modes:
 
         PossibilitiesExpectation verbosity = parser.AddOption(
             new PossibilitiesExpectation((int)LogLevel.NONE, typeof(LogLevel)),
-            "Logging verbosity (each option implies the next)", "v", "verbosity"
+            "Logging verbosity (each option implies the next)", "V", "verbosity"
         );
+
+        bool verbose = false;
+        parser.AddOption(() => verbose = true, "Use maximally verbose output", null,
+            "v", "verbose");
 
         parser.AddUsageOption(mode.Usage("compile"), sourceFile);
         parser.AddUsageOption(mode.Usage("teardown"), sourceFile);
@@ -97,6 +101,7 @@ Modes:
         parser.Parse(args);
 
         Log.Verbosity = verbosity.ToEnum<LogLevel>();
+        if (verbose) Log.Verbosity = LogLevel.TEMP;
 
         Builder builder = new();
 
@@ -108,7 +113,6 @@ Modes:
         if (mode.Value() == "compile") {
             TestResult(builder.LoadEPSLPROJ(input, out EPSLPROJ proj));
             TestResult(builder.ParseAdditionalOptions(parser, proj));
-            Log.Verbosity = verbosity.ToEnum<LogLevel>();
 
             Subconfigs.AddClangParseConfigs(clangParseOptions.MatchedSegments);
             Subconfigs.AddLinkingConfigs(linkingOptions.MatchedSegments);
@@ -139,8 +143,6 @@ Modes:
 
             TestResult(builder.Build(settings));
         } else if (mode.Value() == "teardown") {
-            Log.Verbosity = verbosity.ToEnum<LogLevel>();
-
             TestResult(builder.LoadEPSLCACHE(input, CacheMode.AUTO, out EPSLCACHE cache));
 
             TestResult(builder.Teardown(cache));
