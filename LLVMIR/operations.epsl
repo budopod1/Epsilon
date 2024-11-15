@@ -517,3 +517,28 @@ end fn;
         mark as unreachable;
     end block;
 }
+
+Val#make compare func of <Type_:type_> invert: <Bool:invert> {
+    Type_:ptr_type_ = Pointer [type_];
+    Str:name = "compare_ptrs";
+    if (invert) {
+        name = "invert_compare_ptrs";
+    };
+if (specialized fn [Z_] [name] [[Type_] [ptr_type_, ptr_type_]]) {
+    Val:a = load [*[func arg [invert]]];
+    Val:b = load [*[func arg [1-invert]]];
+    ret [[cast [[a] gt [b]] to [Z_]] - [cast [[b] gt [a]] to [Z_]]];
+end fn;
+};
+
+    return func ptr;
+}
+
+Val#sort array <Val:arr> invert: <Bool:invert> {
+    Type_:compar_type_ = FuncPtr [Z_] [[Type_] [Internal_, Internal_]];
+    Val:compar = make compare func of [arr.type_.generics[0]] invert: [invert];
+    compar = cast [compar] to [compar_type_];
+    extern fn [null] ["qsort"] [[Type_] [Internal_, L_, L_, compar_type_]]
+        [[Val] [cast [[arr].content] to [Internal_], [arr].length, sizeof elem [arr.type_], compar]];
+    return func ret;
+}

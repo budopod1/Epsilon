@@ -1,0 +1,13 @@
+Z#main {
+    Z:result = 0;
+    [Z]:nums = [Z] [6, 2, 8, 3, 1, 8, 5, 3, 0, 7, 1];
+    [nums].sort;
+    for (L:i enumerating nums) {
+        result += i * nums[i];
+    };
+    [nums].sort_inverted;
+    for (L:i enumerating nums) {
+        result += i * nums[i] * 2;
+    };
+    return result;
+}

@@ -304,6 +304,16 @@ BuiltinResult#builtin unwrap with <[Val]:args> {
     return make builtin result [result] is params;
 }
 
+BuiltinResult#builtin sort with <[Val]:args> {
+    sort array [args[0]] invert: [false];
+    return make empty builtin result;
+}
+
+BuiltinResult#builtin sort inverted with <[Val]:args> {
+    sort array [args[0]] invert: [true];
+    return make empty builtin result;
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -391,6 +401,10 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin is null_ with [args];
     } elif ([func_id] equals ["builtin42"]) {
         return builtin unwrap with [args];
+    } elif ([func_id] equals ["builtin43"]) {
+        return builtin sort with [args];
+    } elif ([func_id] equals ["builtin44"]) {
+        return builtin sort inverted with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };

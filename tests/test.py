@@ -325,6 +325,14 @@ TESTS = [
         ]
     },
     {
+        "file": "sort.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 564}
+        ]
+    },
+    {
         "file": "startsends.epsl",
         "func": -1,
         "sig": (c_int,),

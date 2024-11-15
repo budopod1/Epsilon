@@ -590,21 +590,11 @@ public static class BuiltinsList {
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "unique")
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("array", Type_.Any().ArrayOf()),
-            ], "builtin43", FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "sort")
                 ], new SlotPatternProcessor([0])
             ), [
                 new("array", Type_.Any().OptionalOf()),
-            ], "builtin44", (List<Type_> types_) => {
+            ], "builtin43", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
@@ -621,7 +611,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("array", Type_.Any().ArrayOf()),
-            ], "builtin45", (List<Type_> types_) => {
+            ], "builtin44", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
@@ -635,6 +625,16 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "dedup")
+                ], new SlotPatternProcessor([0])
+            ), [
+                new("array", Type_.Any().ArrayOf()),
+            ], "builtin45", FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "unique")
                 ], new SlotPatternProcessor([0])
             ), [
                 new("array", Type_.Any().ArrayOf()),
