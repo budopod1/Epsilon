@@ -1,0 +1,11 @@
+Z#main {
+    [Z]:nums = [Z] [4, 7, 2, 2, 4];
+    [nums].at[-1] = [2];
+    [nums].at[-3] = [1];
+    [nums].at[-4] = [1];
+    Z:result = 0;
+    for (L:i from 1 to [nums].len+1) {
+        result += i * [nums].at[-i];
+    };
+    return result;
+}

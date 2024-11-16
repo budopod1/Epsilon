@@ -760,7 +760,6 @@ public class EPSLFileCompiler : IFileCompiler {
                 new TypePatternSegment(typeof(ForKeyword)),
                 new TypePatternSegment(typeof(CodeBlock)),
                 new FuncPatternProcessor<List<IToken>>(tokens => {
-                    Log.Tmp(tokens);
                     List<IToken> condition = tokens.Skip(1).SkipLast(1).ToList();
                     if (condition.Count == 1 && condition[0] is RawGroup group) {
                         condition = [..group];

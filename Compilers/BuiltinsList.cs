@@ -870,8 +870,8 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0, 3])
             ), [
                 new("arr", Type_.Any().ArrayOf()),
-                new("idx", new Type_("W", 64)),
-            ], "builtin64", (List<Type_> types_) => types_[0], FunctionSource.Builtin
+                new("idx", new Type_("Z", 64)),
+            ], "builtin64", (List<Type_> types_) => types_[0].GetGeneric(0), FunctionSource.Builtin
         ),  new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -884,13 +884,13 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0, 3, 5])
             ), [
                 new("arr", Type_.Any().ArrayOf()),
-                new("idx", new Type_("W", 64)),
+                new("idx", new Type_("Z", 64)),
                 new("val", Type_.Any())
             ], "builtin65", (List<Type_> types_) => {
                 if (!types_[2].IsConvertibleTo(types_[0].GetGeneric(0)))
                     throw new FunctionCallTypes_Exception($"Cannot add value of type {types_[2]} to array of type {types_[0]}", 2);
-                return types_[0];
-            }, FunctionSource.Builtin
+                return null;
+            }, FunctionSource.Builtin, doesReturnVoid: true
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [

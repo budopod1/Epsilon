@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Epsilon;
 public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableToken {
     public IParentToken parent { get; set; }
@@ -106,5 +108,13 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
             ["idx_type_"] = iterType_,
             ["iter_alloc"] = iterVar
         }.SetOperands(clauses.Select(clause => clause.GetValue())).Register();
+    }
+
+    public override string ToString() {
+        List<string> sub = [];
+        for (int i = 0; i < Count; i++) {
+            sub.Add(this[i].ToString());
+        }
+        return Utils.WrapName("For", string.Join(", ", sub));
     }
 }

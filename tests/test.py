@@ -65,6 +65,14 @@ TESTS = [
         ]
     },
     {
+        "file": "at.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 34}
+        ]
+    },
+    {
         "file": "basic.epsl",
         "func": 0,
         "sig": (c_int,),
