@@ -389,6 +389,25 @@ BuiltinResult#builtin nullable and with <[Val]:args> {
         : [cast [b] to [result_type_]]] in params;
 }
 
+BuiltinResult#builtin bitwise invert with <[Val]:args> {
+    return make builtin result [NOT [args[0]]];
+}
+
+BuiltinResult#builtin bitwise and with <[Val]:args> {
+    Val:arg2 = cast [args[1]] to [args[0].type_];
+    return make builtin result [[args[0]] AND [arg2]];
+}
+
+BuiltinResult#builtin bitwise or with <[Val]:args> {
+    Val:arg2 = cast [args[1]] to [args[0].type_];
+    return make builtin result [[args[0]] OR [arg2]];
+}
+
+BuiltinResult#builtin bitwise xor with <[Val]:args> {
+    Val:arg2 = cast [args[1]] to [args[0].type_];
+    return make builtin result [[args[0]] XOR [arg2]];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -500,6 +519,14 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin nullable or with [args];
     } elif ([func_id] equals ["builtin54"]) {
         return builtin nullable and with [args];
+    } elif ([func_id] equals ["builtin55"]) {
+        return builtin bitwise invert with [args];
+    } elif ([func_id] equals ["builtin56"]) {
+        return builtin bitwise and with [args];
+    } elif ([func_id] equals ["builtin57"]) {
+        return builtin bitwise or with [args];
+    } elif ([func_id] equals ["builtin58"]) {
+        return builtin bitwise xor with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
