@@ -1,0 +1,9 @@
+Z#main {
+    [Z]:nums = [Z] [5, 3, 3, 5, 4, 4, 9, 9, 2, 9, 5, 3, 4];
+    [nums].unique;
+    Z:product = 1;
+    for (Z:num in nums) {
+        product *= num;
+    };
+    return product;
+}

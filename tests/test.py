@@ -393,6 +393,14 @@ TESTS = [
         ]
     },
     {
+        "file": "unique.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 1080}
+        ]
+    },
+    {
         "file": "while.epsl",
         "func": 0,
         "sig": (c_int, c_int),
