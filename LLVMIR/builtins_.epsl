@@ -325,6 +325,13 @@ BuiltinResult#builtin unique with <[Val]:args> {
     return make empty builtin result;
 }
 
+BuiltinResult#builtin repeat with <[Val]:args> {
+    Type_:type_ = args[0].type_;
+    extern fn [type_] ["repeat_array"] [[Type_] [type_, L_, L_]]
+        [[Val] [args[0], cast [args[1]] to [L_], make elem generic int [type_]]];
+    return make builtin result [func ret];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -420,6 +427,8 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin dedup with [args];
     } elif ([func_id] equals ["builtin46"]) {
         return builtin unique with [args];
+    } elif ([func_id] equals ["builtin47"]) {
+        return builtin repeat with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };

@@ -317,6 +317,14 @@ TESTS = [
         ]
     },
     {
+        "file": "repeat.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 78}
+        ]
+    },
+    {
         "file": "shortcircuit.epsl",
         "func": -1,
         "sig": (c_int,),
