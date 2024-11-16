@@ -148,13 +148,13 @@ BuiltinResult#builtin stringify with <[Val]:args> {
 }
 
 BuiltinResult#builtin print with <[Val]:args> {
-    Val:stringified = make stringify of [args[0]];
+    Val:stringified = ensure stringify of [args[0]];
     extern fn [null] ["print"] [[Type_] [Str_]] [[Val] [stringified]];
     return make empty builtin result;
 }
 
 BuiltinResult#builtin println with <[Val]:args> {
-    Val:stringified = make stringify of [args[0]];
+    Val:stringified = ensure stringify of [args[0]];
     extern fn [null] ["println"] [[Type_] [Str_]] [[Val] [stringified]];
     return make empty builtin result;
 }
@@ -351,6 +351,12 @@ BuiltinResult#builtin round with <[Val]:args> {
     return make builtin result [cast [func ret] to [Z_]];
 }
 
+BuiltinResult#builtin inner with <[Val]:args> {
+    assume [[args[0]] ne [c null_ [args[0].type_]]];
+    Val:result = bitcast [args[0]] to [unwrap nullability [args[0]]];
+    return make builtin result [result] is params;
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -456,7 +462,9 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin ceil with [args];
     } elif ([func_id] equals ["builtin51"]) {
         return builtin round with [args];
-    } else {
+    } elif ([func_id] equals ["builtin52"]) {
+        return builtin inner with [args];
+    }  else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
 }

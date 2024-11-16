@@ -229,3 +229,11 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
 end fn;
 };
 }
+
+Val#ensure stringify of <Val:val> {
+    if ([val.type_] == [Str_]) {
+        return val;
+    } else {
+        return make stringify of [val];
+    };
+}
