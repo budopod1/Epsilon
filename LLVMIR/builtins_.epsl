@@ -357,6 +357,38 @@ BuiltinResult#builtin inner with <[Val]:args> {
     return make builtin result [result] is params;
 }
 
+BuiltinResult#builtin nullable or with <[Val]:args> {
+    Val:a = args[0];
+    Val:b = args[1];
+    Type_?:maybe_result_type_ = null;
+    if ([b.type_].is_nullable) {
+        maybe_result_type_ = a.type_;
+    } else {
+        maybe_result_type_ = a.type_.generics[0];
+    };
+    Type_:result_type_ = [maybe_result_type_].unwrap;
+    Val:a_is_null = [a] eq [c null_ [a.type_]];
+    return make builtin result [[a_is_null]
+        ? [cast [b] to [result_type_]]
+        : [cast [a] to [result_type_]]] in params;
+}
+
+BuiltinResult#builtin nullable and with <[Val]:args> {
+    Val:a = args[0];
+    Val:b = args[1];
+    Type_?:maybe_result_type_ = null;
+    if ([b.type_].is_nullable) {
+        maybe_result_type_ = b.type_;
+    } else {
+        maybe_result_type_ = Optional_ [b.type_];
+    };
+    Type_:result_type_ = [maybe_result_type_].unwrap;
+    Val:a_is_null = [a] eq [c null_ [a.type_]];
+    return make builtin result [[a_is_null]
+        ? [c null_ [result_type_]]
+        : [cast [b] to [result_type_]]] in params;
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -464,7 +496,11 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin round with [args];
     } elif ([func_id] equals ["builtin52"]) {
         return builtin inner with [args];
-    }  else {
+    } elif ([func_id] equals ["builtin53"]) {
+        return builtin nullable or with [args];
+    } elif ([func_id] equals ["builtin54"]) {
+        return builtin nullable and with [args];
+    } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
 }

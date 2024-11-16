@@ -39,12 +39,12 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
         if ([type_] == [Internal_]) {
             str = "internal";
         };
-        [[result].length] = [c [[str].len]];
-        [[result].capacity] = [c [[str].len]];
+        [[result].length] = [c L_ [[str].len]];
+        [[result].capacity] = [c L_ [[str].len]];
         [[result].content] = [mut str [str]];
     } elif ([type_] == [Byte_]) {
-        [[result].length] = [c [1]];
-        [[result].capacity] = [c [1]];
+        [[result].length] = [c L_ [1]];
+        [[result].capacity] = [c L_ [1]];
         Val:content = malloc [Byte_];
         [*[content]] = [val];
         [[result].content] = [content];
@@ -152,8 +152,8 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
     } elif ([type_.name] equals ["Optional"]) {
         if_ [[val] == null_];
             Str:str = "null";
-            [[result].length] = [c [[str].len]];
-            [[result].capacity] = [c [[str].len]];
+            [[result].length] = [c L_ [[str].len]];
+            [[result].capacity] = [c L_ [[str].len]];
             [[result].content] = [mut str [str]];
         else_;
             Val:casted_val = bitcast [val] to [unwrap nullability [type_]];

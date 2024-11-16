@@ -268,7 +268,7 @@ Val#build optional array access using <[Val]:operands> to <Type_:result_type_> {
         [result].incr_ref;
         [arr].check_ref;
         [result].checkless_decr_ref;
-        [phi].add_incoming[result];
+        [phi].add_incoming[load [result]];
     else_;
         [arr].check_ref;
         [phi].add_incoming[load [c null_ [result_type_]]];
