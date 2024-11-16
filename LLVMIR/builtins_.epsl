@@ -337,17 +337,17 @@ BuiltinResult#builtin truthy with <[Val]:args> {
 }
 
 BuiltinResult#builtin floor with <[Val]:args> {
-    extern fn [Q_] ["llvm.floor.f64"] [[Type_] [Q_]] [args];
+    extern fn [Q_] ["llvm.floor.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 
 BuiltinResult#builtin ceil with <[Val]:args> {
-    extern fn [Q_] ["llvm.ceil.f64"] [[Type_] [Q_]] [args];
+    extern fn [Q_] ["llvm.ceil.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 
 BuiltinResult#builtin round with <[Val]:args> {
-    extern fn [Q_] ["llvm.round.f64"] [[Type_] [Q_]] [args];
+    extern fn [Q_] ["llvm.round.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 
