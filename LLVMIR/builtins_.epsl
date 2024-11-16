@@ -332,6 +332,25 @@ BuiltinResult#builtin repeat with <[Val]:args> {
     return make builtin result [func ret];
 }
 
+BuiltinResult#builtin truthy with <[Val]:args> {
+    return make builtin result [[args[0]].truth_value];
+}
+
+BuiltinResult#builtin floor with <[Val]:args> {
+    extern fn [Q_] ["llvm.floor.f64"] [[Type_] [Q_]] [args];
+    return make builtin result [cast [func ret] to [Z_]];
+}
+
+BuiltinResult#builtin ceil with <[Val]:args> {
+    extern fn [Q_] ["llvm.ceil.f64"] [[Type_] [Q_]] [args];
+    return make builtin result [cast [func ret] to [Z_]];
+}
+
+BuiltinResult#builtin round with <[Val]:args> {
+    extern fn [Q_] ["llvm.round.f64"] [[Type_] [Q_]] [args];
+    return make builtin result [cast [func ret] to [Z_]];
+}
+
 BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -429,6 +448,14 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin unique with [args];
     } elif ([func_id] equals ["builtin47"]) {
         return builtin repeat with [args];
+    } elif ([func_id] equals ["builtin48"]) {
+        return builtin truthy with [args];
+    } elif ([func_id] equals ["builtin49"]) {
+        return builtin floor with [args];
+    } elif ([func_id] equals ["builtin50"]) {
+        return builtin ceil with [args];
+    } elif ([func_id] equals ["builtin51"]) {
+        return builtin round with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
