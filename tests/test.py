@@ -137,6 +137,14 @@ TESTS = [
         ]
     },
     {
+        "file": "dedup.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 8709120}
+        ]
+    },
+    {
         "file": "equals.epsl",
         "func": -1,
         "sig": (c_int,),

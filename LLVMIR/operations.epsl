@@ -542,3 +542,38 @@ Val#sort array <Val:arr> invert: <Bool:invert> {
         [[Val] [cast [[arr].content] to [Internal_], [arr].length, sizeof elem [arr.type_], compar]];
     return func ret;
 }
+
+#deduplicate adjacent values in <Val:outer_arr> {
+if (specialized fn [null] ["dedup"] [[Val] [outer_arr]]) {
+    Val:arr = func arg [0];
+
+    Val:arr_len = load [[arr].length];
+
+    if_ [[arr_len] eq [c L_ [0]]];
+        ret void;
+    end block;
+
+    Val:i = var [c L_ [1]];
+    Val:j = var [c L_ [1]];
+
+    Val:last = var [[arr].idx[c L_ [0]]];
+
+Label:check_label = new label:;
+    Val:cur_i = load [i];
+    while_ [[cur_i] lt [arr_len]] from [check_label];
+        Val:elem = load [[arr].idx[cur_i]];
+        [i] = [[cur_i] + [c L_ [1]]];
+        if_ [[elem] ne [last]];
+            Val:cur_j = load [j];
+            [[arr].idx[j]] = [elem];
+            [j] = [[j] + [c L_ [1]]];
+            [last] = [elem];
+        end block;
+    end block;
+
+    [[arr].length] = [j];
+
+    ret void;
+end fn;
+};
+}
