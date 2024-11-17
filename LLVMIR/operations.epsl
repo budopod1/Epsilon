@@ -577,3 +577,53 @@ Label:check_label = new label:;
 end fn;
 };
 }
+
+Val#unsafe bitshift <Val:a> by <Val:b> right: <Bool:right> {
+    b = cast [b] to [a.type_];
+    if (right) {
+        return [a] shift right [b];
+    } else {
+        return [a] shift left [b];
+    };
+}
+
+Val#bitshift <Val:outer_a> by <Val:outer_b> right: <Bool:right> {
+    Type_:type_ = outer_a.type_;
+    Str:name = "bitshift_left";
+    if (right) {
+        name = "bitshift_right";
+    };
+if (specialized fn [type_] [name] [[Val] [outer_a, outer_b]]) {
+    Val:a = func arg [0];
+    Val:b = func arg [1];
+
+    if ([b.type_].is_signed_int) {
+        if_ [[b] lt [c [0] [b.type_]]];
+            Val:negated_b = cast [negate [b]] to [W_ [(W)b.type_.bits]];
+            if_ [[negated_b] gt [c [type_.bits] [negated_b.type_]]];
+                ret [c [0] [type_]];
+            else_;
+                ret [unsafe bitshift [a] by [negated_b] right: [!right]];
+            end block;
+        else_;
+            Val:positive_b = cast [b] to [W_ [(W)b.type_.bits]];
+            if_ [[positive_b] gt [c [type_.bits] [positive_b.type_]]];
+                ret [c [0] [type_]];
+            else_;
+                ret [unsafe bitshift [a] by [positive_b] right: [right]];
+            end block;
+        end block;
+    } else {
+        if_ [[b] gt [c [type_.bits] [b.type_]]];
+            ret [c [0] [type_]];
+        else_;
+            ret [unsafe bitshift [a] by [b] right: [right]];
+        end block;
+    };
+
+    mark as unreachable;
+end fn;
+};
+
+    return func ret;
+}
