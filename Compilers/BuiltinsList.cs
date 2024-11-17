@@ -898,7 +898,7 @@ public static class BuiltinsList {
                     new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "expect"),
                     new FuncArgPatternSegment()
-                ], new SlotPatternProcessor([0, 2])
+                ], new SlotPatternProcessor([0, 3])
             ), [
                 new("optional", Type_.Any().OptionalOf(), exactType_Match: true),
                 new("fail_msg", Type_.String())
