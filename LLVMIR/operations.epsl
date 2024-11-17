@@ -627,3 +627,20 @@ end fn;
 
     return func ret;
 }
+
+Val#wrap idx <Val:idx> on <Val:arr> {
+    idx = cast [idx] to [Z_ [64]];
+
+    PHINode:result_phi = new PHI [L_];
+    Val:idx_L_ = bitcast [idx] to [L_];
+    [result_phi].add_incoming[idx_L_];
+
+    Val:arr_len = load [[arr].length];
+    if_ [[idx] lt [c [0] [Z_ [64]]]];
+        [result_phi].add_incoming[[arr_len] + [idx_L_]];
+    end block;
+
+    Val:result = [result_phi].place_here;
+    verify idx [result] in array [arr];
+    return result;
+}

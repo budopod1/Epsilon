@@ -430,6 +430,19 @@ BuiltinResult#builtin unsafe modulo with <[Val]:args> to <Type_:result_type_> {
     return make builtin result [[a] % [b]];
 }
 
+BuiltinResult#builtin at with <[Val]:args> {
+    Val:idx = wrap idx [args[1]] on [args[0]];
+    Val:result = load [[args[0]].idx[idx]];
+    return make builtin result [result] in params;
+}
+
+BuiltinResult#builtin at assign with <[Val]:args> {
+    Val:idx = wrap idx [args[1]] on [args[0]];
+    Type_:generic = args[0].type_.generics[0];
+    [[args[0]].idx[idx]] = [cast [args[2]] to [generic]];
+    return make empty builtin result;
+}
+
 BuiltinResult#builtin expect with <[Val]:args> {
     if_ [expect [[args[0]] == null_] to be [false]];
         extern fn [null] ["abort_"] [[Type_] [Str_]] [[Val] [args[1]]];
@@ -568,6 +581,10 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
         return builtin unsafe bitshift right with [args];
     } elif ([func_id] equals ["builtin63"]) {
         return builtin unsafe modulo with [args] to [[result_type_].unwrap];
+    } elif ([func_id] equals ["builtin64"]) {
+        return builtin at with [args];
+    } elif ([func_id] equals ["builtin65"]) {
+        return builtin at assign with [args];
     } elif ([func_id] equals ["builtin66"]) {
         return builtin expect with [args];
     } else {
