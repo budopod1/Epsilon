@@ -10,4 +10,4 @@ if [ ./Compilers/signatures.c -nt ./Compilers/signatures ]; then
     clang ./Compilers/signatures.c -o ./Compilers/signatures -lclang -Wall -Wextra -Wno-unused-parameter
 fi
 
-dotnet build
+dotnet build --property:OutputPath=bin

@@ -1,0 +1,1 @@
+{"functions": [], "types_": [], "structs": [], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "imports": [], "ir": "fs.bc", "obj": "fs.o", "source": null, "source_type": "Library", "id_path": "libs/fs"}
