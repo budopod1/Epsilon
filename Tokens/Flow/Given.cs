@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 namespace Epsilon;
 public class Given : IFlowControl, IFunctionTerminator {
     public IParentToken parent { get; set; }
@@ -57,10 +59,14 @@ public class Given : IFlowControl, IFunctionTerminator {
 
     public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
-            ["parts"] = parts.Select(part => new Dictionary<string, object> {
-                {"val", part.GetValue()}, {"to_type_", part.GetToType_()},
-                {"optional_type_", part.GetToType_().OptionalOf()},
-                {"var_id", part.GetVarID()}, {"block", part.GetBlock()}
+            ["parts"] = parts.Select(part => {
+                IJSONValue serializedBlock = SerializationContext.SerializeBlock(
+                    context, part.GetBlock(), [part.GetVarID()]);
+                return new Dictionary<string, object> {
+                    {"val", part.GetValue()}, {"to_type_", part.GetToType_()},
+                    {"optional_type_", part.GetToType_().OptionalOf()},
+                    {"var_id", part.GetVarID()}, {"block", serializedBlock}
+                };
             }),
             ["else"] = else_
         }.Register();

@@ -15,3 +15,4 @@ TODO:
 * File should have custom destructor that calls `close`
 * remove `_sub` from .gitignore once possible
 * create C wrappers for functions that Epsilon calls if they take arguments that are ints of indeterminate size (eg. long, int, size_t)
+* change function parameters in templates to use [] not <>

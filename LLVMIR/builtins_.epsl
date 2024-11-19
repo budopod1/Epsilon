@@ -175,7 +175,7 @@ BuiltinResult#builtin slice with <[Val]:args> {
     Val:end = cast [args[2]] to [L_];
     Val:elem = make elem generic int [arr.type_];
     extern fn [Internal_] ["slice_array"] [[Type_] [Internal_, L_, L_, L_]]
-        [[Val] [cast [arr] to [Internal_], start, elem]];
+        [[Val] [cast [arr] to [Internal_], start, end, elem]];
     return make builtin result [cast [func ret] to [arr.type_]];
 }
 

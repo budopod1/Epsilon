@@ -36,8 +36,13 @@ public class SerializationContext {
         };
     }
 
-    public static IJSONValue SerializeBlock(SerializationContext parentCtx, CodeBlock block) {
+    public static IJSONValue SerializeBlock(SerializationContext parentCtx, CodeBlock block, IEnumerable<int> injectedVars=null) {
         SerializationContext ctx = new(parentCtx);
+        if (injectedVars != null) {
+            foreach (int var in injectedVars) {
+                ctx.RegisterVarDecl(var);
+            }
+        }
         foreach (IToken child in block) {
             ctx.Serialize((ISerializableToken)child);
         }

@@ -268,10 +268,10 @@ Val#build optional array access using <[Val]:operands> to <Type_:result_type_> {
         [result].incr_ref;
         [arr].check_ref;
         [result].checkless_decr_ref;
-        [phi].add_incoming[load [result]];
+        [phi].add_incoming[result];
     else_;
         [arr].check_ref;
-        [phi].add_incoming[load [c null_ [result_type_]]];
+        [phi].add_incoming[c null_ [result_type_]];
     end block;
 
     return [phi].place_here;
@@ -687,6 +687,16 @@ Label:cond_label = new label:;
     mark as unreachable;
 }
 
+#build break_ {
+    perpare for_ block termination;
+    break_ [[get loop block].unwrap];
+}
+
+#build continue_ {
+    perpare for_ block termination;
+    continue_ [[get loop block].unwrap];
+}
+
 #build void instruction <BinJSON:instruction_json> using <[Val]:operands> {
     Str:type = [[instruction_json].get["type"]].get_str;
     if ([type] equals ["initial_assignment"]) {
@@ -721,6 +731,10 @@ Label:cond_label = new label:;
         build abort_ void;
     } elif ([type] equals ["abort"]) {
         build abort_ using [operands];
+    } elif ([type] equals ["break"]) {
+        build break_;
+    } elif ([type] equals ["continue"]) {
+        build continue_;
     } else {
         abort "Unknown void instruction type {}" % type;
     };

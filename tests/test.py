@@ -349,6 +349,14 @@ TESTS = [
         ]
     },
     {
+        "file": "slice.epsl",
+        "func": -1,
+        "sig": (c_int,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 498}
+        ]
+    },
+    {
         "file": "split.epsl",
         "func": 0,
         "sig": (c_ulong,),

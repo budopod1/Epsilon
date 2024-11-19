@@ -18,7 +18,10 @@ Val#do <Val:outer_a> equals <Val:outer_b> deep: <Bool:deep> invert: <Bool:invert
 
     Str:name = "equals";
     if (deep) {
-        name = "deep_equals";
+        [name].extend["_deep"];
+    };
+    if (invert) {
+        [name].extend["_invert"];
     };
 if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
     Val:a = func arg [0];

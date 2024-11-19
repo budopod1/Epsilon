@@ -1,4 +1,5 @@
 using System.Text;
+using CsJSONTools;
 
 namespace Epsilon;
 public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableToken {
@@ -100,8 +101,10 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
             iterType_ = new Type_("W", 64);
         Function func = TokenUtils.GetParentOfType<Function>(this);
         int iterVar = func.AddSpecialAlloc(iterType_);
+        IJSONValue serializedBlock = SerializationContext.SerializeBlock(
+            context, block, [declarationID]);
         return new SerializableInstruction(context, this) {
-            ["block"] = block,
+            ["block"] = serializedBlock,
             ["variable"] = declarationID,
             ["clause_names"] = clauses.Select(clause => clause.GetName()),
             ["var_type_"] = type_,

@@ -207,7 +207,7 @@ extern inline char *formatZ64() {
     return result;
 }
 
-const char *const SLICE_NEG_LEN_ERR = ERR_START "Slice end index must be after slice start index\n";
+const char *const SLICE_NEG_LEN_ERR = ERR_START "Slice start index can't be after slice end index\n";
 const char *const SLICE_INDEX_ERR = ERR_START "Slice end index out of range\n";
 
 struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
@@ -217,7 +217,7 @@ struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t en
         exit(1);
     }
 
-    if (__builtin_expect(end >= array->length, 0)) {
+    if (__builtin_expect(end > array->length, 0)) {
         fflush(stdout);
         fwrite(SLICE_INDEX_ERR, strlen(SLICE_INDEX_ERR), 1, stderr);
         exit(1);
@@ -225,7 +225,7 @@ struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t en
 
     struct Array *slice = malloc(sizeof(struct Array));
     slice->ref_counter = 0;
-    uint64_t len = end - start + 1;
+    uint64_t len = end - start;
     slice->capacity = len;
     slice->length = len;
     uint64_t elem_size = elem >> 2;

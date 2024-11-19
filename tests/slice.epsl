@@ -1,0 +1,8 @@
+Z#main {
+    Z:result = 0;
+    Str:s = "e^(i*pi)=-1";
+    for (Byte:b in [s].slice[1][7]) {
+        result += b;
+    };
+    return result;
+}

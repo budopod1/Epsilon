@@ -165,7 +165,7 @@ Val?#call nonbuiltin function <Str:func_id> with args <[Val]:args> {
         return_val = func ret;
     };
 
-    if (proto.takes_ownership) {
+    if (!proto.takes_ownership) {
         if (proto.result_in_params && ![return_val].is_null) {
             [[return_val].unwrap].incr_ref;
         };
@@ -553,6 +553,8 @@ if (specialized fn [null] ["dedup"] [[Val] [outer_arr]]) {
         ret void;
     end block;
 
+    [arr].incr_ref;
+
     Val:i = var [c L_ [1]];
     Val:j = var [c L_ [1]];
 
@@ -563,7 +565,9 @@ Label:check_label = new label:;
     while_ [[cur_i] lt [arr_len]] from [check_label];
         Val:elem = load [[arr].idx[cur_i]];
         [i] = [[cur_i] + [c L_ [1]]];
-        if_ [[elem] ne [last]];
+        if_ [[elem] eq [last]];
+            [elem].decr_ref;
+        else_;
             Val:cur_j = load [j];
             [[arr].idx[j]] = [elem];
             [j] = [[j] + [c L_ [1]]];
@@ -572,6 +576,8 @@ Label:check_label = new label:;
     end block;
 
     [[arr].length] = [j];
+
+    [arr].checkless_decr_ref;
 
     ret void;
 end fn;

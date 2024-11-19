@@ -1,6 +1,7 @@
 #import binjson;
 #import eewriter;
 #import instructions;
+#import fs;
 
 ScopeVar {
     Str:name,
@@ -118,6 +119,7 @@ BinJSON#read BinJSON_ {
     if ([bytes].is_null) {
         abort "Failed to read code.binjson";
     };
+    [file].close;
     return parse_BinJSON[[bytes].unwrap];
 }
 
@@ -229,8 +231,7 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     ];
 
     BinJSON:block_json = [func_json].get["block"];
-    build block [block_json];
-    default block termination [block_json];
+    build block [block_json] toplevel: [true];
 end fn;
 } else {
     abort "Duplicate function callee {}" % proto.callee;
@@ -277,6 +278,7 @@ Type_?#current func ret type_ {
         [[ret_val].unwrap].incr_ref;
     };
     cleanup var list [get func state.active_vars];
+    cleanup var list [get func state.arg_vars];
     if (ret_val) {
         [[ret_val].unwrap].checkless_decr_ref;
     };
@@ -302,23 +304,33 @@ Type_?#current func ret type_ {
     return results;
 }
 
-#build block <BinJSON:block_json> {
-    [ScopeVar]:block_vars = get var list [[block_json].get["vars_here"]];
-    [block_vars].extend[get func state.arg_vars];
-    get func state.block_vars = block_vars;
-    [ScopeVar]:active_vars = get var list [[block_json].get["intialized_vars"]];
-    get func state.active_vars = active_vars;
+#build block <BinJSON:block_json> toplevel: <Bool:toplevel> {
+    [ScopeVar]:old_block_vars = get func state.block_vars;
+    [ScopeVar]:old_active_vars = get func state.active_vars;
+    get func state.block_vars = get var list [[block_json].get["vars_here"]];
+    get func state.active_vars = get var list [[block_json].get["intialized_vars"]];
     build ir [[block_json].get["ir"]];
+    if (!is block terminated) {
+        if (toplevel) {
+            toplevel block termination [block_json];
+        } else {
+            perpare for_ block termination;
+        };
+    };
+    get func state.block_vars = old_block_vars;
+    get func state.active_vars = old_active_vars;
 }
 
-#default block termination <BinJSON:block_json> {
-    if (!is block terminated) {
-        if ([[block_json].get["does_terminate_function"]].get_bool) {
-            mark as unreachable;
-        } else {
-            perpare for_ function termination;
-            ret void;
-        };
+#build block <BinJSON:block_json> {
+    build block [block_json] toplevel: [false];
+}
+
+#toplevel block termination <BinJSON:block_json> {
+    if ([[block_json].get["does_terminate_function"]].get_bool) {
+        mark as unreachable;
+    } else {
+        perpare for_ function termination;
+        ret void;
     };
 }
 
@@ -349,4 +361,5 @@ Block?#get loop block {
     if (![file].write[result]) {
         abort "Failed to write to code.ll";
     };
+    [file].close;
 }

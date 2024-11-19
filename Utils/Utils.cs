@@ -54,18 +54,12 @@ public static class Utils {
         return result.ToString();
     }
 
-    static string projectAbsolutePath = null;
-
     public static string ProjectAbsolutePath() {
-        if (projectAbsolutePath != null) return projectAbsolutePath;
         DirectoryInfo dir = new(AppDomain.CurrentDomain.BaseDirectory);
-        do {
-            if (dir.Name == "Epsilon") {
-                return projectAbsolutePath = dir.FullName;
-            }
-            dir = dir.Parent;
-        } while (dir != null);
-        throw new IOException("The Epsilon executable isn't a descendant of a folder named 'EpsilonLang'");
+        if (dir.Name != "bin") {
+            throw new IOException("The Epsilon executable must be in a directory named 'bin'");
+        }
+        return dir.Parent.FullName;
     }
 
     public static bool ApproxEquals(double a, double b) {
