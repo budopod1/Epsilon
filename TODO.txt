@@ -11,7 +11,6 @@ TODO:
 * add `ObjectGenSubflags` (passed to both `clang` (when producing an object file, or going through an object file) and `llc`)
 * allow `switch` blocks with non-constant operands by converting them to Conditionals using the `equals` builtin (or equivalent)
 * add new `at` method akin to JavaScript's, new `pop` method that always pops the last item (to eliminate `ack "len(gth)? ?- ?1"`)
-* warn when the truth value is taken resulting in an always true truth value
 * File should have custom destructor that calls `close`
 * remove `_sub` from .gitignore once possible
 * create C wrappers for functions that Epsilon calls if they take arguments that are ints of indeterminate size (eg. long, int, size_t)

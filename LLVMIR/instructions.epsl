@@ -551,7 +551,7 @@ Label:cond_label = new label:;
         };
         if (is_in_clause || is_enumerating_clause) {
             Val:array = operands[i];
-            [array].incr_ref;
+            push special ref [array];
             maybe_array = array;
             Val:array_len_ptr = [array].length;
             maybe_array_len_ptr = array_len_ptr;
@@ -618,7 +618,7 @@ Label:cond_label = new label:;
 
 [finish_label]:;
     if (maybe_array) {
-        [[maybe_array].unwrap].decr_ref;
+        pop special ref [[maybe_array].unwrap];
     };
 }
 

@@ -20,13 +20,14 @@ FuncProto {
 }
 
 FuncState {
-    FuncProto:proto,
-    [Val]:special_allocs,
-    [ScopeVar]:vars,
-    [ScopeVar]:arg_vars,
-    [ScopeVar]:block_vars,
-    [ScopeVar]:active_vars,
-    Block?:loop_block,
+    FuncProto:proto, // the function's prototype
+    [Val]:special_allocs, // stack allocs in this function not associated with a variable
+    [Val]:special_refs, // values that have a hidden reference that must be cleaned up on an early return
+    [ScopeVar]:vars, // all variables in this function
+    [ScopeVar]:arg_vars, // variables from arguments
+    [ScopeVar]:block_vars, // variables that exit scope at the end of this block
+    [ScopeVar]:active_vars, // all variables in scope (with values)
+    Block?:loop_block, // the current block to continue in or break from
 }
 
 State {
@@ -227,7 +228,7 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     };
 
     get state.func_state = FuncState [
-        proto, special_allocs, vars, arg_vars, [ScopeVar] [], [ScopeVar] [], null
+        proto, special_allocs, [Val] [], vars, arg_vars, [ScopeVar] [], [ScopeVar] [], null
     ];
 
     BinJSON:block_json = [func_json].get["block"];
@@ -259,6 +260,21 @@ ScopeVar#get var <W:id> {
     return result;
 }
 
+#push special ref <Val:val> {
+    [val].incr_ref;
+    [get func state.special_refs].append[val];
+}
+
+#pop special ref <Val:val> {
+    [Val]:refs = get func state.special_refs;
+    Z64:ref_idx = [refs].index_of[val];
+    if (ref_idx == -1) {
+        abort "{} is not listed as a special ref, thus it cannot be popped from the list of special refs";
+    };
+    [refs].pop[(L)ref_idx];
+    [val].decr_ref;
+}
+
 #cleanup var list <[ScopeVar]:var_list> {
     for (ScopeVar:var in var_list) {
         [*[var.addr]].decr_ref;
@@ -279,6 +295,9 @@ Type_?#current func ret type_ {
     };
     cleanup var list [get func state.active_vars];
     cleanup var list [get func state.arg_vars];
+    for (Val:val in get func state.special_refs) {
+        [val].decr_ref;
+    };
     if (ret_val) {
         [[ret_val].unwrap].checkless_decr_ref;
     };
