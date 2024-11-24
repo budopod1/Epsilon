@@ -189,6 +189,18 @@ public static class Utils {
         }
     }
 
+    public static bool IsFileInDirectory(string file, string dir) {
+        DirectoryInfo targetDirectory = new(dir);
+        DirectoryInfo fileDirectory = new(GetDirectoryName(file));
+        while (fileDirectory != null) {
+            if (fileDirectory.FullName == targetDirectory.FullName) {
+                return true;
+            }
+            fileDirectory = fileDirectory.Parent;
+        }
+        return false;
+    }
+
     public static string TempDir() {
         return JoinPaths(ProjectAbsolutePath(), "temp");
     }

@@ -39,7 +39,8 @@ public static class EnumHelpers {
 
     public static string GetExtension(this OutputType outputType) {
         return outputType switch {
-            OutputType.EXECUTABLE or OutputType.PACKAGEBOTH or OutputType.PACKAGEOBJ => null,
+            OutputType.EXECUTABLE or OutputType.PACKAGEBOTH
+            or OutputType.PACKAGEOBJ => null,
             OutputType.LLVMLL => "ll",
             OutputType.LLVMBC => "bc",
             OutputType.OBJECT => "o",
@@ -51,14 +52,16 @@ public static class EnumHelpers {
     public static bool DoesRequireLLVM(this OutputType outputType) {
         return outputType switch {
             OutputType.EXECUTABLE or OutputType.PACKAGEOBJ or OutputType.OBJECT => false,
-            OutputType.LLVMLL or OutputType.LLVMBC or OutputType.PACKAGEBOTH or OutputType.SHAREDOBJECT => true,
+            OutputType.LLVMLL or OutputType.LLVMBC or OutputType.PACKAGEBOTH
+            or OutputType.SHAREDOBJECT => true,
             _ => throw new InvalidOperationException(),
         };
     }
 
     public static bool MustntLinkBuiltins(this OutputType outputType) {
         return outputType switch {
-            OutputType.EXECUTABLE or OutputType.LLVMLL or OutputType.LLVMBC or OutputType.OBJECT or OutputType.SHAREDOBJECT => false,
+            OutputType.EXECUTABLE or OutputType.LLVMLL or OutputType.LLVMBC
+            or OutputType.OBJECT or OutputType.SHAREDOBJECT => false,
             OutputType.PACKAGEBOTH or OutputType.PACKAGEOBJ => true,
             _ => throw new InvalidOperationException(),
         };
@@ -66,8 +69,18 @@ public static class EnumHelpers {
 
     public static bool MustntLinkLibraries(this OutputType outputType) {
         return outputType switch {
-            OutputType.EXECUTABLE or OutputType.LLVMLL or OutputType.LLVMBC or OutputType.OBJECT or OutputType.SHAREDOBJECT => false,
+            OutputType.EXECUTABLE or OutputType.LLVMLL or OutputType.LLVMBC
+            or OutputType.OBJECT or OutputType.SHAREDOBJECT => false,
             OutputType.PACKAGEBOTH or OutputType.PACKAGEOBJ => true,
+            _ => throw new InvalidOperationException(),
+        };
+    }
+
+    public static bool MustntLinkBuiltinModules(this OutputType outputType) {
+        return outputType switch {
+            OutputType.EXECUTABLE or OutputType.LLVMLL or OutputType.LLVMBC
+            or OutputType.OBJECT or OutputType.SHAREDOBJECT
+            or OutputType.PACKAGEBOTH or OutputType.PACKAGEOBJ => false,
             _ => throw new InvalidOperationException(),
         };
     }

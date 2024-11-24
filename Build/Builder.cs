@@ -643,7 +643,8 @@ public class Builder {
     void FinishCompilations(BuildSettings settings, out List<FileTree> unlinkedFiles) {
         unlinkedFiles = [];
         foreach (FileTree file in files.Values) {
-            if (!settings.LinkLibraries && file.SourceType == FileSourceType.Library) {
+            if ((!settings.LinkLibraries && file.SourceType == FileSourceType.Library)
+                || (!settings.LinkBuiltinModules && file.IsBuiltinModule)) {
                 file.IsUnlinked = true;
                 unlinkedFiles.Add(file);
             } else {
@@ -807,9 +808,7 @@ public class Builder {
                 );
             }
 
-            intermediates = intermediates.Concat(new IntermediateFile[] {
-                builtinsIntermediate
-            });
+            intermediates = intermediates.Concat([builtinsIntermediate]);
         }
 
         var grouped = intermediates

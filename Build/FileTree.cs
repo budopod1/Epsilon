@@ -79,6 +79,10 @@ public class FileTree {
         get => Obj != null && SuggestedIntermediatePath == Utils.RemoveExtension(Obj);
     }
 
+    public bool IsBuiltinModule {
+        get => Utils.IsFileInDirectory(Path_, Utils.EPSLLIBS());
+    }
+
     public IntermediateFile Intermediate;
 
     public FileTree(string partialPath, string path, IFileCompiler compiler, string oldCompilerPath, SPECFileCompiler oldCompiler, string generatedEPSLSPEC) {

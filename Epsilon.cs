@@ -33,6 +33,10 @@ Modes:
         parser.AddOption(() => linkLibraries = false, "Don't link to Epsilon libraries", null,
             "no-libraries");
 
+        bool linkBuiltinModules = true;
+        parser.AddOption(() => linkBuiltinModules = false, "Don't link to Epsilon builtin modules", null,
+            "no-builtin-modules");
+
         DelimitedInputExpectation clangParseOptions = parser.AddOption(
             new DelimitedInputExpectation(parser, "clang-parse-options", "END", needsOne: true),
             "Options for clang to use while parsing C/C++", "C", "clang-parse-options"
@@ -123,6 +127,7 @@ Modes:
 
             if (outputType.MustntLinkBuiltins()) linkBuiltins = false;
             if (outputType.MustntLinkLibraries()) linkLibraries = false;
+            if (outputType.MustntLinkBuiltinModules()) linkBuiltinModules = false;
 
             libraries.AddRange(proj.Libraries);
 
@@ -138,7 +143,7 @@ Modes:
 
             BuildSettings settings = new(
                 input, providedOutput, proj, cache, cacheMode, optimizationLevel, outputType,
-                linkBuiltins, linkLibraries
+                linkBuiltins, linkLibraries, linkBuiltinModules
             );
 
             TestResult(builder.Build(settings));

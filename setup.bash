@@ -15,6 +15,9 @@ echo "Executable built"
 echo "Setting up libraries..."
 ./scripts/buildlibs.bash
 
+echo "Bootstrapping backend..."
+./scripts/bootstrap.bash
+
 echo "Setting up tests..."
 ./tests/setup.bash
 

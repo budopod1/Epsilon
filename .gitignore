@@ -10,12 +10,6 @@ c_cpp_properties.json
 launch.json
 settings.json
 
-# Replit stuff
-.cache
-.local
-.replit
-replit.nix
-
 # Misc tools
 .ackrc
 vgcore.*
@@ -24,7 +18,6 @@ vgcore.*
 # C# stuff
 obj
 bin
-*.pdb
 
 # Intermediate files
 *.pyc
@@ -32,6 +25,7 @@ bin
 *.ll
 /temp/*
 *.o
+!LLVMIR/bootstrap.bc
 
 # Epsilon specific
 *.epslcache
