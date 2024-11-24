@@ -1,8 +1,8 @@
 # Executable output
-Compilers/signatures
-LLVMIR/result
-LLVMIR/code
-Epsilon.exe
+/Compilers/signatures
+/LLVMIR/result
+/LLVMIR/code
+/Epsilon.exe
 *.so
 
 # VSCode stuff
@@ -16,8 +16,8 @@ vgcore.*
 .vscode
 
 # C# stuff
-obj
-bin
+/obj
+/bin
 
 # Intermediate files
 *.pyc
@@ -25,10 +25,8 @@ bin
 *.ll
 /temp/*
 *.o
-!LLVMIR/bootstrap.bc
+!/LLVMIR/bootstrap.bc
 
 # Epsilon specific
 *.epslcache
 .*.epslspec
-
-_sub
