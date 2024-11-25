@@ -1,4 +1,4 @@
-Z#foo<Z:v> {
+Z#foo[Z:v] {
     if v == 1 {
         return 1;
     };

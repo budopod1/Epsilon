@@ -10,15 +10,15 @@ BuiltinResult {
     Bool:result_is_params
 }
 
-BuiltinResult#make builtin result <Val:result> {
+BuiltinResult#make builtin result [Val:result] {
     return BuiltinResult [result, false, false];
 }
 
-BuiltinResult#make builtin result <Val:result> in params {
+BuiltinResult#make builtin result [Val:result] in params {
     return BuiltinResult [result, true, false];
 }
 
-BuiltinResult#make builtin result <Val:result> is params {
+BuiltinResult#make builtin result [Val:result] is params {
     return BuiltinResult [result, true, true];
 }
 
@@ -26,15 +26,15 @@ BuiltinResult#make empty builtin result {
     return BuiltinResult [null, false, false];
 }
 
-BuiltinResult#builtin length with <[Val]:args> {
+BuiltinResult#builtin length with [[Val]:args] {
     return make builtin result [load [[args[0]].length]];
 }
 
-BuiltinResult#builtin capacity with <[Val]:args> {
+BuiltinResult#builtin capacity with [[Val]:args] {
     return make builtin result [load [[args[0]].capacity]];
 }
 
-BuiltinResult#builtin append with <[Val]:args> {
+BuiltinResult#builtin append with [[Val]:args] {
     Val:arr = args[0];
     Type_:generic = arr.type_.generics[0];
     Val:appendee = cast [args[1]] to [generic];
@@ -46,7 +46,7 @@ BuiltinResult#builtin append with <[Val]:args> {
     return make empty builtin result;
 }
 
-BuiltinResult#builtin require capacity with <[Val]:args> {
+BuiltinResult#builtin require capacity with [[Val]:args] {
     Val:arr = args[0];
     Val:required_cap = cast [args[1]] to [L_];
     extern fn [null] ["require_capacity"] [[Type_] [Internal_, L_, L_]]
@@ -54,14 +54,14 @@ BuiltinResult#builtin require capacity with <[Val]:args> {
     return make empty builtin result;
 }
 
-BuiltinResult#builtin shrink mem with <[Val]:args> {
+BuiltinResult#builtin shrink mem with [[Val]:args] {
     Val:arr = args[0];
     extern fn [null] ["shrink_mem"] [[Type_] [Internal_, L_]]
         [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_]]];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin pop with <[Val]:args> {
+BuiltinResult#builtin pop with [[Val]:args] {
     Val:arr = args[0];
     Val:idx = cast [args[1]] to [L_];
     verify idx [idx] in array [arr];
@@ -73,7 +73,7 @@ BuiltinResult#builtin pop with <[Val]:args> {
     return make builtin result [elem];
 }
 
-BuiltinResult#builtin insert with <[Val]:args> {
+BuiltinResult#builtin insert with [[Val]:args] {
     Val:arr = args[0];
     Val:idx = cast [args[1]] to [L_];
     Type_:generic = arr.type_.generics[0];
@@ -85,11 +85,11 @@ BuiltinResult#builtin insert with <[Val]:args> {
     return make empty builtin result;
 }
 
-BuiltinResult#builtin clone with <[Val]:args> {
+BuiltinResult#builtin clone with [[Val]:args] {
     return make builtin result [[args[0]].clone];
 }
 
-BuiltinResult#builtin extend with <[Val]:args> {
+BuiltinResult#builtin extend with [[Val]:args] {
     Val:arr1 = cast [args[0]] to [Internal_];
     Val:arr2 = cast [args[1]] to [Internal_];
     assert type_ equality [args[0]], [args[1]];
@@ -98,7 +98,7 @@ BuiltinResult#builtin extend with <[Val]:args> {
     return make empty builtin result;
 }
 
-BuiltinResult#builtin concat with <[Val]:args> {
+BuiltinResult#builtin concat with [[Val]:args] {
     assert type_ equality [args[0]], [args[1]];
     Val:elem = make elem generic int [args[0].type_];
     extern fn [Internal_] ["concat_arrays"] [[Type_] [Internal_, Internal_, L_]]
@@ -106,18 +106,18 @@ BuiltinResult#builtin concat with <[Val]:args> {
     return make builtin result [cast [func ret] to [args[0].type_]];
 }
 
-BuiltinResult#builtin unsafe idx with <[Val]:args> {
+BuiltinResult#builtin unsafe idx with [[Val]:args] {
     Val:idx = cast [args[1]] to [L_];
     return make builtin result [load [[args[0]].idx[idx]]];
 }
 
-BuiltinResult#builtin unsafe int div with <[Val]:args> to <Type_:result_type_> {
+BuiltinResult#builtin unsafe int div with [[Val]:args] to [Type_:result_type_] {
     Val:a = cast [args[0]] to [result_type_];
     Val:b = cast [args[1]] to [result_type_];
     return make builtin result [[a] / [b]];
 }
 
-BuiltinResult#builtin unsafe idx assign with <[Val]:args> {
+BuiltinResult#builtin unsafe idx assign with [[Val]:args] {
     Val:arr = args[0];
     Val:idx = cast [args[1]] to [L_];
     Val:casted = cast [args[2]] to [arr.type_.generics[0]];
@@ -126,7 +126,7 @@ BuiltinResult#builtin unsafe idx assign with <[Val]:args> {
     return make empty builtin result;
 }
 
-BuiltinResult#builtin int abs with <[Val]:args> {
+BuiltinResult#builtin int abs with [[Val]:args] {
     W:bits = (W)args[0].type_.bits;
     Type_:in_type_ = Z_ [bits];
     Type_:result_type_ = W_ [bits];
@@ -135,7 +135,7 @@ BuiltinResult#builtin int abs with <[Val]:args> {
     return make builtin result [func ret];
 }
 
-BuiltinResult#builtin float abs with <[Val]:args> {
+BuiltinResult#builtin float abs with [[Val]:args] {
     W:bits = (W)args[0].type_.bits;
     Type_:type_ = Q_ [bits];
     extern fn [type_] ["llvm.fabs.f{}" % bits] [[Type_] [type_]]
@@ -143,33 +143,33 @@ BuiltinResult#builtin float abs with <[Val]:args> {
     return make builtin result [func ret];
 }
 
-BuiltinResult#builtin stringify with <[Val]:args> {
+BuiltinResult#builtin stringify with [[Val]:args] {
     return make builtin result [make stringify of [args[0]]];
 }
 
-BuiltinResult#builtin print with <[Val]:args> {
+BuiltinResult#builtin print with [[Val]:args] {
     Val:stringified = ensure stringify of [args[0]];
     extern fn [null] ["print"] [[Type_] [Str_]] [[Val] [stringified]];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin println with <[Val]:args> {
+BuiltinResult#builtin println with [[Val]:args] {
     Val:stringified = ensure stringify of [args[0]];
     extern fn [null] ["println"] [[Type_] [Str_]] [[Val] [stringified]];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin pad left with <[Val]:args> {
+BuiltinResult#builtin pad left with [[Val]:args] {
     pad array [args[0]] to length [args[1]] with value [args[2]] from left: [true];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin pad right with <[Val]:args> {
+BuiltinResult#builtin pad right with [[Val]:args] {
     pad array [args[0]] to length [args[1]] with value [args[2]] from left: [false];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin slice with <[Val]:args> {
+BuiltinResult#builtin slice with [[Val]:args] {
     Val:arr = args[0];
     Val:start = cast [args[1]] to [L_];
     Val:end = cast [args[2]] to [L_];
@@ -179,7 +179,7 @@ BuiltinResult#builtin slice with <[Val]:args> {
     return make builtin result [cast [func ret] to [arr.type_]];
 }
 
-BuiltinResult#builtin count with <[Val]:args> {
+BuiltinResult#builtin count with [[Val]:args] {
     if ([args[0].type_] == [args[1].type_]) {
         return make builtin result [count subarray [args[1]] in [args[0]]];
     } else {
@@ -187,11 +187,11 @@ BuiltinResult#builtin count with <[Val]:args> {
     };
 }
 
-BuiltinResult#builtin overlap count with <[Val]:args> {
+BuiltinResult#builtin overlap count with [[Val]:args] {
     return make builtin result [overlap count subarray [args[1]] in [args[0]]];
 }
 
-BuiltinResult#builtin pop end with <[Val]:args> {
+BuiltinResult#builtin pop end with [[Val]:args] {
     Val:arr = args[0];
     verify array [arr] non empty;
     Val:idx = [load [[arr].length]] - [c L_ [1]];
@@ -202,17 +202,17 @@ BuiltinResult#builtin pop end with <[Val]:args> {
     return make builtin result [elem];
 }
 
-BuiltinResult#builtin nest with <[Val]:args> {
+BuiltinResult#builtin nest with [[Val]:args] {
     extern fn [Internal_] ["nest_array"] [[Type_] [Internal_, L_]]
         [[Val] [cast [args[0]] to [Internal_], make elem generic int [args[0].type_]]];
     return make builtin result [cast [func ret] to [Array_ [args[0].type_]]];
 }
 
-BuiltinResult#builtin split with <[Val]:args> {
+BuiltinResult#builtin split with [[Val]:args] {
     return make builtin result [split [args[0]] on [args[1]]];
 }
 
-BuiltinResult#builtin starts with with <[Val]:args> {
+BuiltinResult#builtin starts with with [[Val]:args] {
 if (specialized fn [Bool_] ["starts_with"] [args]) {
     Val:arr = func arg [0];
     Val:sub = func arg [1];
@@ -229,7 +229,7 @@ end fn;
     return make builtin result [func ret];
 }
 
-BuiltinResult#builtin ends with with <[Val]:args> {
+BuiltinResult#builtin ends with with [[Val]:args] {
 if (specialized fn [Bool_] ["ends_with"] [args]) {
     Val:arr = func arg [0];
     Val:sub = func arg [1];
@@ -247,13 +247,13 @@ end fn;
     return make builtin result [func ret];
 }
 
-BuiltinResult#builtin equals with <[Val]:args> deep: <Bool:deep> invert: <Bool:invert> {
+BuiltinResult#builtin equals with [[Val]:args] deep: [Bool:deep] invert: [Bool:invert] {
     return make builtin result [
         do [args[0]] equals [args[1]] deep: [deep] invert: [invert]
     ];
 }
 
-BuiltinResult#builtin join with <[Val]:args> {
+BuiltinResult#builtin join with [[Val]:args] {
     Type_:result_type_ = args[1].type_;
     Val:arr = cast [args[0]] to [Internal_];
     Val:sep = cast [args[1]] to [Internal_];
@@ -262,7 +262,7 @@ BuiltinResult#builtin join with <[Val]:args> {
     return make builtin result [cast [func ret] to [result_type_]];
 }
 
-BuiltinResult#builtin index of with <[Val]:args> {
+BuiltinResult#builtin index of with [[Val]:args] {
     if ([args[0].type_] == [args[1].type_]) {
         return make builtin result [index of subarray [args[1]] in [args[0]]];
     } else {
@@ -270,7 +270,7 @@ BuiltinResult#builtin index of with <[Val]:args> {
     };
 }
 
-BuiltinResult#builtin parse int with <[Val]:args> {
+BuiltinResult#builtin parse int with [[Val]:args] {
     extern fn [Z_] ["parse_int"] [[Type_] [Str_]] [args];
     return make builtin result [func ret];
 }
@@ -280,12 +280,12 @@ BuiltinResult#builtin invalid parsed int {
     return make builtin result [func ret];
 }
 
-BuiltinResult#builtin parse float with <[Val]:args> {
+BuiltinResult#builtin parse float with [[Val]:args] {
     extern fn [Q_] ["parse_float"] [[Type_] [Str_]] [args];
     return make builtin result [func ret];
 }
 
-BuiltinResult#builtin is_NaN with <[Val]:args> {
+BuiltinResult#builtin is_NaN with [[Val]:args] {
     return make builtin result [is_NaN[args[0]]];
 }
 
@@ -294,70 +294,70 @@ BuiltinResult#builtin read input line {
     return make builtin result [func ret];
 }
 
-BuiltinResult#builtin is null_ with <[Val]:args> {
+BuiltinResult#builtin is null_ with [[Val]:args] {
     return make builtin result [[args[0]] == null_];
 }
 
-BuiltinResult#builtin unwrap with <[Val]:args> {
+BuiltinResult#builtin unwrap with [[Val]:args] {
     verify [args[0]] is not null_;
     Val:result = bitcast [args[0]] to [unwrap nullability [args[0]]];
     return make builtin result [result] is params;
 }
 
-BuiltinResult#builtin sort with <[Val]:args> {
+BuiltinResult#builtin sort with [[Val]:args] {
     sort array [args[0]] invert: [false];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin sort inverted with <[Val]:args> {
+BuiltinResult#builtin sort inverted with [[Val]:args] {
     sort array [args[0]] invert: [true];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin dedup with <[Val]:args> {
+BuiltinResult#builtin dedup with [[Val]:args] {
     deduplicate adjacent values in [args[0]];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin unique with <[Val]:args> {
+BuiltinResult#builtin unique with [[Val]:args] {
     sort array [args[0]] invert: [false];
     deduplicate adjacent values in [args[0]];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin repeat with <[Val]:args> {
+BuiltinResult#builtin repeat with [[Val]:args] {
     Type_:type_ = args[0].type_;
     extern fn [type_] ["repeat_array"] [[Type_] [type_, L_, L_]]
         [[Val] [args[0], cast [args[1]] to [L_], make elem generic int [type_]]];
     return make builtin result [func ret];
 }
 
-BuiltinResult#builtin truthy with <[Val]:args> {
+BuiltinResult#builtin truthy with [[Val]:args] {
     return make builtin result [[args[0]].truth_value];
 }
 
-BuiltinResult#builtin floor with <[Val]:args> {
+BuiltinResult#builtin floor with [[Val]:args] {
     extern fn [Q_] ["llvm.floor.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 
-BuiltinResult#builtin ceil with <[Val]:args> {
+BuiltinResult#builtin ceil with [[Val]:args] {
     extern fn [Q_] ["llvm.ceil.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 
-BuiltinResult#builtin round with <[Val]:args> {
+BuiltinResult#builtin round with [[Val]:args] {
     extern fn [Q_] ["llvm.round.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 
-BuiltinResult#builtin inner with <[Val]:args> {
+BuiltinResult#builtin inner with [[Val]:args] {
     assume [[args[0]] ne [c null_ [args[0].type_]]];
     Val:result = bitcast [args[0]] to [unwrap nullability [args[0]]];
     return make builtin result [result] is params;
 }
 
-BuiltinResult#builtin nullable or with <[Val]:args> {
+BuiltinResult#builtin nullable or with [[Val]:args] {
     Val:a = args[0];
     Val:b = args[1];
     Type_?:maybe_result_type_ = null;
@@ -373,7 +373,7 @@ BuiltinResult#builtin nullable or with <[Val]:args> {
         : [cast [a] to [result_type_]]] in params;
 }
 
-BuiltinResult#builtin nullable and with <[Val]:args> {
+BuiltinResult#builtin nullable and with [[Val]:args] {
     Val:a = args[0];
     Val:b = args[1];
     Type_?:maybe_result_type_ = null;
@@ -389,61 +389,61 @@ BuiltinResult#builtin nullable and with <[Val]:args> {
         : [cast [b] to [result_type_]]] in params;
 }
 
-BuiltinResult#builtin bitwise invert with <[Val]:args> {
+BuiltinResult#builtin bitwise invert with [[Val]:args] {
     return make builtin result [NOT [args[0]]];
 }
 
-BuiltinResult#builtin bitwise and with <[Val]:args> {
+BuiltinResult#builtin bitwise and with [[Val]:args] {
     Val:arg2 = cast [args[1]] to [args[0].type_];
     return make builtin result [[args[0]] AND [arg2]];
 }
 
-BuiltinResult#builtin bitwise or with <[Val]:args> {
+BuiltinResult#builtin bitwise or with [[Val]:args] {
     Val:arg2 = cast [args[1]] to [args[0].type_];
     return make builtin result [[args[0]] OR [arg2]];
 }
 
-BuiltinResult#builtin bitwise xor with <[Val]:args> {
+BuiltinResult#builtin bitwise xor with [[Val]:args] {
     Val:arg2 = cast [args[1]] to [args[0].type_];
     return make builtin result [[args[0]] XOR [arg2]];
 }
 
-BuiltinResult#builtin bitshift left with <[Val]:args> {
+BuiltinResult#builtin bitshift left with [[Val]:args] {
     return make builtin result [bitshift [args[0]] by [args[1]] right: [false]];
 }
 
-BuiltinResult#builtin bitshift right with <[Val]:args> {
+BuiltinResult#builtin bitshift right with [[Val]:args] {
     return make builtin result [bitshift [args[0]] by [args[1]] right: [true]];
 }
 
-BuiltinResult#builtin unsafe bitshift left with <[Val]:args> {
+BuiltinResult#builtin unsafe bitshift left with [[Val]:args] {
     return make builtin result [unsafe bitshift [args[0]] by [args[1]] right: [false]];
 }
 
-BuiltinResult#builtin unsafe bitshift right with <[Val]:args> {
+BuiltinResult#builtin unsafe bitshift right with [[Val]:args] {
     return make builtin result [unsafe bitshift [args[0]] by [args[1]] right: [true]];
 }
 
-BuiltinResult#builtin unsafe modulo with <[Val]:args> to <Type_:result_type_> {
+BuiltinResult#builtin unsafe modulo with [[Val]:args] to [Type_:result_type_] {
     Val:a = cast [args[0]] to [result_type_];
     Val:b = cast [args[1]] to [result_type_];
     return make builtin result [[a] % [b]];
 }
 
-BuiltinResult#builtin at with <[Val]:args> {
+BuiltinResult#builtin at with [[Val]:args] {
     Val:idx = wrap idx [args[1]] on [args[0]];
     Val:result = load [[args[0]].idx[idx]];
     return make builtin result [result] in params;
 }
 
-BuiltinResult#builtin at assign with <[Val]:args> {
+BuiltinResult#builtin at assign with [[Val]:args] {
     Val:idx = wrap idx [args[1]] on [args[0]];
     Type_:generic = args[0].type_.generics[0];
     [[args[0]].idx[idx]] = [cast [args[2]] to [generic]];
     return make empty builtin result;
 }
 
-BuiltinResult#builtin expect with <[Val]:args> {
+BuiltinResult#builtin expect with [[Val]:args] {
     if_ [expect [[args[0]] == null_] to be [false]];
         extern fn [null] ["abort_"] [[Type_] [Str_]] [[Val] [args[1]]];
         mark as unreachable;
@@ -452,7 +452,7 @@ BuiltinResult#builtin expect with <[Val]:args> {
     return make builtin result [result] is params;
 }
 
-BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
+BuiltinResult#dispatch builtin [Str:func_id] with args [[Val]:args] to [Type_?:result_type_] {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
     } elif ([func_id] equals ["builtin2"]) {
@@ -592,7 +592,7 @@ BuiltinResult#dispatch builtin <Str:func_id> with args <[Val]:args> to <Type_?:r
     };
 }
 
-Val?#call builtin <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
+Val?#call builtin [Str:func_id] with args [[Val]:args] to [Type_?:result_type_] {
     BuiltinResult:result = dispatch builtin [func_id] with args [args] to [result_type_];
 
     if (!result.result_is_params) {

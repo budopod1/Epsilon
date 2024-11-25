@@ -1,4 +1,4 @@
-Z#triangle<Z:v> {
+Z#triangle[Z:v] {
     Z:i = 1;
     Z:t = 0;
     while (i <= v) {

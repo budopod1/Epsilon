@@ -1,4 +1,4 @@
-Z#switch<Z:i> {
+Z#switch[Z:i] {
     switch i
     (1) {
         return 2;

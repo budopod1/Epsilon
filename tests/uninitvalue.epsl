@@ -1,4 +1,4 @@
-Z#test<Z:i> {
+Z#test[Z:i] {
     Z:num;
     if (i) {
         num = 42;

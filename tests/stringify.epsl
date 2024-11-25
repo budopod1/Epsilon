@@ -3,7 +3,7 @@ G {
     Array<Z>:arr2
 }
 
-Z#stringify<Z:num> {
+Z#stringify[Z:num] {
     G:g = G [Array<Z> [num], Array<Z> [num, num+1]];
     Str:s = [g].stringify;
     W:total = 0;

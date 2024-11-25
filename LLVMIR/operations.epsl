@@ -3,7 +3,7 @@
 #import binjson;
 #import builtins_;
 
-[Val]#cast <[Val]:vals> to <Type_:type_> {
+[Val]#cast [[Val]:vals] to [Type_:type_] {
     [Val]:result = [Val] [];
     for (Val:val in vals) {
         [result].append[cast [val] to [type_]];
@@ -15,7 +15,7 @@
     extern fn [null] ["div_0_fail"] [[Type_] []] [[Val] []];
 }
 
-Val#safe <Val:a> / <Val:b> {
+Val#safe [Val:a] / [Val:b] {
     assert type_ equality [a], [b];
     if (![a.type_].is_float) {
         if_ [[b] eq [c [0] [b.type_]]];
@@ -25,7 +25,7 @@ Val#safe <Val:a> / <Val:b> {
     return [a] / [b];
 }
 
-Val#safe <Val:a> % <Val:b> {
+Val#safe [Val:a] % [Val:b] {
     assert type_ equality [a], [b];
     if (![a.type_].is_float) {
         if_ [[b] eq [c [0] [b.type_]]];
@@ -35,7 +35,7 @@ Val#safe <Val:a> % <Val:b> {
     return [a] % [b];
 }
 
-Val#do chain power of <Val:base> to the <Z:exponent> {
+Val#do chain power of [Val:base] to the [Z:exponent] {
     if (exponent == 0) {
         return c [1] [base.type_];
     } elif (exponent == 1) {
@@ -50,7 +50,7 @@ Val#do chain power of <Val:base> to the <Z:exponent> {
     };
 }
 
-Val#integer <Val:base_in> to the <Val:exponent_in> {
+Val#integer [Val:base_in] to the [Val:exponent_in] {
     Type_:base_type_ = base_in.type_;
     Type_:exponent_type_ = exponent_in.type_;
 
@@ -78,20 +78,20 @@ end fn;
     return func ret;
 }
 
-Val#consume truth <Val:val> {
+Val#consume truth [Val:val] {
     Val:truth = [val].truth_value;
     [truth].check_ref;
     return truth;
 }
 
-#verify idx <Val:idx> in array <Val:arr> {
+#verify idx [Val:idx] in array [Val:arr] {
     if_ [expect [[cast [idx] to [L_]] ge [[arr].length]] to be [false]];
         extern fn [null] ["array_idx_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
 }
 
-Val#make elem int <Type_:type_> {
+Val#make elem int [Type_:type_] {
     Val:result = [sizeof [type_]] * [c L_ [4]];
     if (![type_].is_ref) {
         result = [result] + [c L_ [2]];
@@ -102,14 +102,14 @@ Val#make elem int <Type_:type_> {
     return result;
 }
 
-Val#make elem generic int <Type_:type_> {
+Val#make elem generic int [Type_:type_] {
     if ([type_.generics].len == 0) {
         abort "Cannot make elem generic int of type_ {}, as it has no generics" % [type_].stringify;
     };
     return make elem int [type_.generics[0]];
 }
 
-Val#make constant <BinJSON:constant_json> of type_ <Type_:type_> {
+Val#make constant [BinJSON:constant_json] of type_ [Type_:type_] {
     BinJSON:val_json = [constant_json].get["value"];
     Str:constant_type = [[constant_json].get["type"]].get_str;
     if (([constant_type] equals ["int"]) || ([constant_type] equals ["uint"])) {
@@ -135,7 +135,7 @@ Val#make constant <BinJSON:constant_json> of type_ <Type_:type_> {
     abort "Unknown constant type {}" % constant_type;
 }
 
-Val#<Val:val>.clone {
+Val#[Val:val].clone {
     Type_:type_ = val.type_;
     if ([type_.name] equals ["Array"]) {
         extern fn [Internal_] ["clone_array"] [[Type_] [Internal_, L_]]
@@ -145,11 +145,11 @@ Val#<Val:val>.clone {
     abort "Clone operation not yet implemented on type_ {}" % [type_].stringify;
 }
 
-Bool#is builtin func id <Str:func_id> {
+Bool#is builtin func id [Str:func_id] {
     return [func_id].starts_with["builtin"];
 }
 
-Val?#call nonbuiltin function <Str:func_id> with args <[Val]:args> {
+Val?#call nonbuiltin function [Str:func_id] with args [[Val]:args] {
     FuncProto:proto = get func proto [func_id];
 
     [Val]:casted_args = [Val] [];
@@ -182,7 +182,7 @@ Val?#call nonbuiltin function <Str:func_id> with args <[Val]:args> {
     return return_val;
 }
 
-Val?#call function <Str:func_id> with args <[Val]:args> to <Type_?:result_type_> {
+Val?#call function [Str:func_id] with args [[Val]:args] to [Type_?:result_type_] {
     if (is builtin func id [func_id]) {
         return call builtin [func_id] with args [args] to [result_type_];
     } else {
@@ -190,14 +190,14 @@ Val?#call function <Str:func_id> with args <[Val]:args> to <Type_?:result_type_>
     };
 }
 
-#verify array <Val:arr> non empty {
+#verify array [Val:arr] non empty {
     if_ [expect [[c L_ [0]] eq [[arr].length]] to be [false]];
         extern fn [null] ["array_empty_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
 }
 
-#pad array <Val:outer_arr> to length <Val:outer_len> with value <Val:outer_val> from left: <Bool:pad_left> {
+#pad array [Val:outer_arr] to length [Val:outer_len] with value [Val:outer_val] from left: [Bool:pad_left] {
     Str:name = "pad_right";
     if (pad_left) {
         name = "pad_left";
@@ -264,7 +264,7 @@ end fn;
 };
 }
 
-Val#buffer eq <Val:outer_a> to <Val:outer_b> of len <Val:outer_len> {
+Val#buffer eq [Val:outer_a] to [Val:outer_b] of len [Val:outer_len] {
     assert type_ equality [outer_a], [outer_b];
     Type_:generic = outer_a.type_.generics[0];
     outer_len = cast [outer_len] to [L_];
@@ -297,7 +297,7 @@ end fn;
     return func ret;
 }
 
-Val#count element <Val:outer_elem> in <Val:outer_arr> {
+Val#count element [Val:outer_elem] in [Val:outer_arr] {
     Type_:generic = outer_arr.type_.generics[0];
     Val:casted_elem = cast [outer_elem] to [generic];
 if (specialized fn [L_] ["count"] [[Val] [outer_arr, casted_elem]]) {
@@ -320,7 +320,7 @@ end fn;
     return func ret;
 }
 
-Val#count subarray <Val:outer_subarray> in <Val:outer_arr> {
+Val#count subarray [Val:outer_subarray] in [Val:outer_arr] {
     assert type_ equality [outer_arr], [outer_subarray];
 if (specialized fn [L_] ["count_subarray"] [[Val] [outer_arr, outer_subarray]]) {
     Val:arr = func arg [0];
@@ -355,7 +355,7 @@ end fn;
     return func ret;
 }
 
-Val#overlap count subarray <Val:outer_subarray> in <Val:outer_arr> {
+Val#overlap count subarray [Val:outer_subarray] in [Val:outer_arr] {
 if (specialized fn [L_] ["overlap_count_subarray"] [[Val] [outer_arr, outer_subarray]]) {
     Val:arr = func arg [0];
     Val:target = func arg [1];
@@ -385,7 +385,7 @@ end fn;
     return func ret;
 }
 
-#add split segment of type_ <Type_:arr_type_> from <Val:part_start> to <Val:cur_i> sourced from <Val:arr_content> to <Val:result> {
+#add split segment of type_ [Type_:arr_type_] from [Val:part_start] to [Val:cur_i] sourced from [Val:arr_content] to [Val:result] {
     Type_:generic = arr_type_.generics[0];
 
     part_start = load [part_start];
@@ -410,7 +410,7 @@ end fn;
     [[result].idx[part_idx]] = [part];
 }
 
-Val#split <Val:outer_arr> on <Val:outer_sep> {
+Val#split [Val:outer_arr] on [Val:outer_sep] {
     Type_:arr_type_ = outer_arr.type_;
     Type_:generic = arr_type_.generics[0];
     Type_:result_type_ = Array_ [arr_type_];
@@ -454,7 +454,7 @@ end fn;
     return func ret;
 }
 
-Val#index of elem <Val:outer_elem> in <Val:outer_arr> {
+Val#index of elem [Val:outer_elem] in [Val:outer_arr] {
     Type_:elem_type_ = outer_arr.type_.generics[0];
     outer_elem = cast [outer_elem] to [elem_type_];
 
@@ -482,7 +482,7 @@ end fn;
     return func ret;
 }
 
-Val#index of subarray <Val:outer_subarray> in <Val:outer_arr> {
+Val#index of subarray [Val:outer_subarray] in [Val:outer_arr] {
 if (specialized fn [Z_ [64]] ["index_of_subarray"] [[Val] [outer_arr, outer_subarray]]) {
     Val:arr = func arg [0];
     Val:subarray = func arg [1];
@@ -511,14 +511,14 @@ end fn;
     return func ret;
 }
 
-#verify <Val:val> is not null_ {
+#verify [Val:val] is not null_ {
     if_ [expect [[val] == null_] to be [false]];
         extern fn [null] ["null_value_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
 }
 
-Val#make compare func of <Type_:type_> invert: <Bool:invert> {
+Val#make compare func of [Type_:type_] invert: [Bool:invert] {
     Type_:ptr_type_ = Pointer [type_];
     Str:name = "compare_ptrs";
     if (invert) {
@@ -534,7 +534,7 @@ end fn;
     return func ptr;
 }
 
-Val#sort array <Val:arr> invert: <Bool:invert> {
+Val#sort array [Val:arr] invert: [Bool:invert] {
     Type_:compar_type_ = FuncPtr [Z_] [[Type_] [Internal_, Internal_]];
     Val:compar = make compare func of [arr.type_.generics[0]] invert: [invert];
     compar = cast [compar] to [compar_type_];
@@ -543,7 +543,7 @@ Val#sort array <Val:arr> invert: <Bool:invert> {
     return func ret;
 }
 
-#deduplicate adjacent values in <Val:outer_arr> {
+#deduplicate adjacent values in [Val:outer_arr] {
 if (specialized fn [null] ["dedup"] [[Val] [outer_arr]]) {
     Val:arr = func arg [0];
 
@@ -584,7 +584,7 @@ end fn;
 };
 }
 
-Val#unsafe bitshift <Val:a> by <Val:b> right: <Bool:right> {
+Val#unsafe bitshift [Val:a] by [Val:b] right: [Bool:right] {
     b = cast [b] to [a.type_];
     if (right) {
         return [a] shift right [b];
@@ -593,7 +593,7 @@ Val#unsafe bitshift <Val:a> by <Val:b> right: <Bool:right> {
     };
 }
 
-Val#bitshift <Val:outer_a> by <Val:outer_b> right: <Bool:right> {
+Val#bitshift [Val:outer_a] by [Val:outer_b] right: [Bool:right] {
     Type_:type_ = outer_a.type_;
     Str:name = "bitshift_left";
     if (right) {
@@ -634,7 +634,7 @@ end fn;
     return func ret;
 }
 
-Val#wrap idx <Val:idx> on <Val:arr> {
+Val#wrap idx [Val:idx] on [Val:arr] {
     idx = cast [idx] to [Z_ [64]];
 
     PHINode:result_phi = new PHI [L_];

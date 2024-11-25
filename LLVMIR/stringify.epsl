@@ -1,7 +1,7 @@
 #import operations;
 #import eewriter;
 
-Val#make stringify of <Val:val> {
+Val#make stringify of [Val:val] {
     Type_:type_ = val.type_;
     if ([type_] == [Str_]) {
         return [val].clone;
@@ -15,7 +15,7 @@ Val#make stringify of <Val:val> {
     return result;
 }
 
-#make stringify of <Val:outer_val> to <Val:outer_result> {
+#make stringify of [Val:outer_val] to [Val:outer_result] {
     Type_:type_ = outer_val.type_;
 if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
     Val:val = func arg [0];
@@ -230,7 +230,7 @@ end fn;
 };
 }
 
-Val#ensure stringify of <Val:val> {
+Val#ensure stringify of [Val:val] {
     if ([val.type_] == [Str_]) {
         return val;
     } else {

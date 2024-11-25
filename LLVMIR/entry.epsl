@@ -48,7 +48,7 @@ FuncState#get func state {
     return [get state.func_state].unwrap;
 }
 
-Type_#read type_ <BinJSON:binjson> {
+Type_#read type_ [BinJSON:binjson] {
     [Type_]:generics = [Type_] [];
     for (BinJSON:generic_json in [[binjson].get["generics"]].get_list) {
         [generics].append[read type_ [generic_json]];
@@ -61,7 +61,7 @@ Type_#read type_ <BinJSON:binjson> {
     return Type_ [[[binjson].get["name"]].get_str, bits, generics];
 }
 
-Type_?#read voidable type_ <BinJSON:binjson> {
+Type_?#read voidable type_ [BinJSON:binjson] {
     if ([binjson].is_null) {
         return null;
     };
@@ -77,7 +77,7 @@ Type_?#read voidable type_ <BinJSON:binjson> {
     return Type_ [[[binjson].get["name"]].get_str, bits, generics];
 }
 
-FuncProto#read func proto <BinJSON:binjson> {
+FuncProto#read func proto [BinJSON:binjson] {
     [Type_]:arg_types_ = [Type_] [];
     for (BinJSON:arg_json in [[binjson].get["arguments"]].get_list) {
         [arg_types_].append[read type_ [[arg_json].get["type_"]]];
@@ -168,7 +168,7 @@ BinJSON#read BinJSON_ {
     get state.protos = protos;
 }
 
-FuncProto#get func proto <Str:id> {
+FuncProto#get func proto [Str:id] {
     for (FuncProto:proto in [get state.protos].unwrap) {
         if ([proto.id] equals [id]) {
             return proto;
@@ -184,7 +184,7 @@ FuncProto#get func proto <Str:id> {
     };
 }
 
-#build func <BinJSON:func_json> {
+#build func [BinJSON:func_json] {
     FuncProto:proto = read func proto [func_json];
 if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     [ScopeVar]:vars = [ScopeVar] [];
@@ -239,11 +239,11 @@ end fn;
 };
 }
 
-Val#get special alloc <W:i> {
+Val#get special alloc [W:i] {
     return get func state.special_allocs[i];
 }
 
-ScopeVar#get var <W:id> {
+ScopeVar#get var [W:id] {
     for (ScopeVar:var in get func state.vars) {
         if (var.id == id) {
             return var;
@@ -252,7 +252,7 @@ ScopeVar#get var <W:id> {
     abort "Cannot find a var with ID {}" % id;
 }
 
-[ScopeVar]#get var list <BinJSON:list_json> {
+[ScopeVar]#get var list [BinJSON:list_json] {
     [ScopeVar]:result = [ScopeVar] [];
     for (BinJSON:id_json in [list_json].get_list) {
         [result].append[get var [(W)[id_json].get_int]];
@@ -260,12 +260,12 @@ ScopeVar#get var <W:id> {
     return result;
 }
 
-#push special ref <Val:val> {
+#push special ref [Val:val] {
     [val].incr_ref;
     [get func state.special_refs].append[val];
 }
 
-#pop special ref <Val:val> {
+#pop special ref [Val:val] {
     [Val]:refs = get func state.special_refs;
     Z64:ref_idx = [refs].index_of[val];
     if (ref_idx == -1) {
@@ -275,7 +275,7 @@ ScopeVar#get var <W:id> {
     [val].decr_ref;
 }
 
-#cleanup var list <[ScopeVar]:var_list> {
+#cleanup var list [[ScopeVar]:var_list] {
     for (ScopeVar:var in var_list) {
         [*[var.addr]].decr_ref;
     };
@@ -289,7 +289,7 @@ Type_?#current func ret type_ {
     return get func state.proto.ret_type_;
 }
 
-#perpare for_ function termination returning <Val?:ret_val> {
+#perpare for_ function termination returning [Val?:ret_val] {
     if (ret_val) {
         [[ret_val].unwrap].incr_ref;
     };
@@ -307,7 +307,7 @@ Type_?#current func ret type_ {
     perpare for_ function termination returning [null];
 }
 
-[Val?]#build ir <BinJSON:ir_json> {
+[Val?]#build ir [BinJSON:ir_json] {
     [Val?]:results = [Val?] [];
     for (BinJSON:instruction_json in [ir_json].get_list) {
         [Val]:operands = [Val] [];
@@ -323,7 +323,7 @@ Type_?#current func ret type_ {
     return results;
 }
 
-#build block <BinJSON:block_json> toplevel: <Bool:toplevel> {
+#build block [BinJSON:block_json] toplevel: [Bool:toplevel] {
     [ScopeVar]:old_block_vars = get func state.block_vars;
     [ScopeVar]:old_active_vars = get func state.active_vars;
     get func state.block_vars = get var list [[block_json].get["vars_here"]];
@@ -340,11 +340,11 @@ Type_?#current func ret type_ {
     get func state.active_vars = old_active_vars;
 }
 
-#build block <BinJSON:block_json> {
+#build block [BinJSON:block_json] {
     build block [block_json] toplevel: [false];
 }
 
-#toplevel block termination <BinJSON:block_json> {
+#toplevel block termination [BinJSON:block_json] {
     if ([[block_json].get["does_terminate_function"]].get_bool) {
         mark as unreachable;
     } else {
@@ -353,7 +353,7 @@ Type_?#current func ret type_ {
     };
 }
 
-Val#build seperated value <BinJSON:val_json> {
+Val#build seperated value [BinJSON:val_json] {
     [Val?]:results = build ir [[val_json].get["ir"]];
     Val?:result = results[(W)[[val_json].get["val"]].get_int];
     if (result) {
@@ -367,11 +367,11 @@ Block?#get loop block {
     return get func state.loop_block;
 }
 
-#set loop block <Block?:block> {
+#set loop block [Block?:block] {
     get func state.loop_block = block;
 }
 
-#write result <Str:result> {
+#write result [Str:result] {
     File?:maybe_file = open_file["temp/code.ll"][FILE_WRITE_MODE];
     if ([maybe_file].is_null) {
         abort "Failed to open code.ll";

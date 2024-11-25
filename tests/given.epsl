@@ -1,4 +1,4 @@
-Str?#maybe_get_string<Bool:should_null> {
+Str?#maybe_get_string[Bool:should_null] {
     if (should_null) {
         return null;
     } else {

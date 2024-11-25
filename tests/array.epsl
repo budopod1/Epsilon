@@ -1,4 +1,4 @@
-Z#array<Z:a><Z:b> {
+Z#array[Z:a][Z:b] {
     Array<Array<Z>>:matrix = Array<Array<Z>> [
         Array<Z> [1, 4, 7],
         Array<Z> [2, 5, 8],

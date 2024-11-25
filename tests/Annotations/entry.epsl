@@ -1,7 +1,7 @@
 #import cfile;
 
 @id frwd_test;
-Z#frwd_test<Z:arg> {
+Z#frwd_test[Z:arg] {
     return arg + 1;
 }
 

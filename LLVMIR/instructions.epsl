@@ -4,40 +4,40 @@
 #import binjson;
 #import entry;
 
-Val#build constant value <BinJSON:instruction_json> to <Type_:type_> {
+Val#build constant value [BinJSON:instruction_json] to [Type_:type_] {
     return make constant [[instruction_json].get["constant"]] of type_ [type_];
 }
 
-Val#build addition using <[Val]:operands> to <Type_:type_> {
+Val#build addition using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
     return [operands[0]] + [operands[1]];
 }
 
-Val#build subtraction using <[Val]:operands> to <Type_:type_> {
+Val#build subtraction using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
     return [operands[0]] - [operands[1]];
 }
 
-Val#build multiplication using <[Val]:operands> to <Type_:type_> {
+Val#build multiplication using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
     return [operands[0]] * [operands[1]];
 }
 
-Val#build division using <[Val]:operands> to <Type_:type_> {
+Val#build division using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
     return [operands[0]] / [operands[1]];
 }
 
-Val#build modulo using <[Val]:operands> to <Type_:type_> {
+Val#build modulo using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
     return [operands[0]] % [operands[1]];
 }
 
-Val#build negation using <[Val]:operands> to <Type_:type_> {
+Val#build negation using [[Val]:operands] to [Type_:type_] {
     return negate [cast [operands[0]] to [type_]];
 }
 
-Val#build exponentiation <BinJSON:instruction_json> using <[Val]:operands> to <Type_:type_> {
+Val#build exponentiation [BinJSON:instruction_json] using [[Val]:operands] to [Type_:type_] {
     Str:mode = [[instruction_json].get["mode"]].get_str;
     if ([mode] equals ["chain"]) {
         Val:base = cast [operands[0]] to [type_];
@@ -60,13 +60,13 @@ Val#build exponentiation <BinJSON:instruction_json> using <[Val]:operands> to <T
     abort "Unknown exponentiation mode {}" % mode;
 }
 
-Val#build variable <BinJSON:instruction_json> {
+Val#build variable [BinJSON:instruction_json] {
     W:id = (W)[[instruction_json].get["variable"]].get_int;
     return load [*[get var [id].addr]];
 }
 
 
-Val#build comparison <BinJSON:instruction_json> using <[Val]:operands> {
+Val#build comparison [BinJSON:instruction_json] using [[Val]:operands] {
     Type_:common_type_ = read type_ [[instruction_json].get["common_type_"]];
     Val:o1 = cast [operands[0]] to [common_type_];
     Val:o2 = cast [operands[1]] to [common_type_];
@@ -85,17 +85,17 @@ Val#build comparison <BinJSON:instruction_json> using <[Val]:operands> {
     };
 }
 
-Val#build add one using <[Val]:operands> {
+Val#build add one using [[Val]:operands] {
     Val:operand = operands[0];
     return [operand] + [c [1] [operand.type_]];
 }
 
-Val#build sub one using <[Val]:operands> {
+Val#build sub one using [[Val]:operands] {
     Val:operand = operands[0];
     return [operand] - [c [1] [operand.type_]];
 }
 
-Val#build string literal <BinJSON:instruction_json> to <Type_:type_> {
+Val#build string literal [BinJSON:instruction_json] to [Type_:type_] {
     Str:string = [[instruction_json].get["string"]].get_str;
     Val:arr = malloc pointee [type_];
     [arr].init_ref;
@@ -105,7 +105,7 @@ Val#build string literal <BinJSON:instruction_json> to <Type_:type_> {
     return arr;
 }
 
-Val#build array creation using <[Val]:operands> to <Type_:type_> {
+Val#build array creation using [[Val]:operands] to [Type_:type_] {
     Type_:elem_type_ = type_.generics[0];
     operands = cast [operands] to [elem_type_];
     L:capacity = [operands].len;
@@ -120,7 +120,7 @@ Val#build array creation using <[Val]:operands> to <Type_:type_> {
     return arr;
 }
 
-Val#build array access using <[Val]:operands> {
+Val#build array access using [[Val]:operands] {
     Val:arr = operands[0];
     Val:index = cast [operands[1]] to [L_];
     verify idx [index] in array [arr];
@@ -131,7 +131,7 @@ Val#build array access using <[Val]:operands> {
     return result;
 }
 
-Val#build equality <BinJSON:instruction_json> using <[Val]:operands> inverted: <Bool:inverted> {
+Val#build equality [BinJSON:instruction_json] using [[Val]:operands] inverted: [Bool:inverted] {
     Type_:common_type_ = read type_ [[instruction_json].get["common_type_"]];
     Val:o1 = cast [operands[0]] to [common_type_];
     Val:o2 = cast [operands[1]] to [common_type_];
@@ -142,7 +142,7 @@ Val#build equality <BinJSON:instruction_json> using <[Val]:operands> inverted: <
     };
 }
 
-Val#build instantiation <BinJSON:instruction_json> using <[Val]:operands> to <Type_:type_> {
+Val#build instantiation [BinJSON:instruction_json] using [[Val]:operands] to [Type_:type_] {
     Struct_:struct_ = [[type_].get_struct].unwrap;
     [Val]:casted_vals = [Val] [];
     for (L:i enumerating struct_.fields) {
@@ -153,7 +153,7 @@ Val#build instantiation <BinJSON:instruction_json> using <[Val]:operands> to <Ty
     return new ref struct_ [type_] [casted_vals];
 }
 
-Val#build member access <BinJSON:instruction_json> using <[Val]:operands> {
+Val#build member access [BinJSON:instruction_json] using [[Val]:operands] {
     Type_:struct_type_ = read type_ [[instruction_json].get["struct_type_"]];
     Val:struct_val = cast [operands[0]] to [struct_type_];
     Struct_:struct_ = [[struct_type_].get_struct].unwrap;
@@ -170,14 +170,14 @@ Val#build member access <BinJSON:instruction_json> using <[Val]:operands> {
     abort "Struct {} does not have requested field {}" % struct_.name % member_name;
 }
 
-Val#build zeroed array creation using <[Val]:operands> to <Type_:type_> {
+Val#build zeroed array creation using [[Val]:operands] to [Type_:type_] {
     Val:size = cast [operands[0]] to [L_];
     Val:elem_size = sizeof elem [type_];
     extern fn [Internal_] ["make_blank_array"] [[Type_] [L_, L_]] [[Val] [size, elem_size]];
     return cast [func ret] to [type_];
 }
 
-Val#build format chain using <[Val]:operands> {
+Val#build format chain using [[Val]:operands] {
     Val:template = operands[0];
 
     [Val]:vals_to_check_ref = [Val] [template];
@@ -214,7 +214,7 @@ Val#build format chain using <[Val]:operands> {
     return result;
 }
 
-Val#build boolean operation <BinJSON:instruction_json> using <[Val]:operands> {
+Val#build boolean operation [BinJSON:instruction_json] using [[Val]:operands] {
     PHINode:result_phi = new PHI [Bool_];
 
     Val:o1 = operands[0];
@@ -253,12 +253,12 @@ Val#build null_ value {
     return c null_ [Null_];
 }
 
-Val#build function call <BinJSON:instruction_json> using <[Val]:operands> to <Type_:result_type_> {
+Val#build function call [BinJSON:instruction_json] using [[Val]:operands] to [Type_:result_type_] {
     Str:function_id = [[instruction_json].get["function"]].get_str;
     return [call function [function_id] with args [operands] to [result_type_]].unwrap;
 }
 
-Val#build optional array access using <[Val]:operands> to <Type_:result_type_> {
+Val#build optional array access using [[Val]:operands] to [Type_:result_type_] {
     Val:arr = operands[0];
     Val:idx = cast [operands[1]] to [L_];
     PHINode:phi = new PHI [result_type_];
@@ -277,15 +277,15 @@ Val#build optional array access using <[Val]:operands> to <Type_:result_type_> {
     return [phi].place_here;
 }
 
-Val#build not using <[Val]:operands> {
+Val#build not using [[Val]:operands] {
     return [operands[0]].untruth_value;
 }
 
-Val#build cast using <[Val]:operands> to <Type_:type_> {
+Val#build cast using [[Val]:operands] to [Type_:type_] {
     return cast [operands[0]] to [type_];
 }
 
-Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
+Val#build valued instruction [BinJSON:instruction_json] using [[Val]:operands] {
     Str:type = [[instruction_json].get["type"]].get_str;
     Type_:type_ = read type_ [[instruction_json].get["type_"]];
     if ([type] equals ["constant_value"]) {
@@ -355,14 +355,14 @@ Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
     };
 }
 
-#build initial assignment <BinJSON:instruction_json> using <[Val]:operands> {
+#build initial assignment [BinJSON:instruction_json] using [[Val]:operands] {
     ScopeVar:var = get var [(W)[[instruction_json].get["variable"]].get_int];
     Val:operand = cast [operands[0]] to [read type_ [[instruction_json].get["var_type_"]]];
     [operand].incr_ref;
     [*[var.addr]] = [operand];
 }
 
-#build assignment <BinJSON:instruction_json> using <[Val]:operands> {
+#build assignment [BinJSON:instruction_json] using [[Val]:operands] {
     ScopeVar:var = get var [(W)[[instruction_json].get["variable"]].get_int];
     Val:operand = cast [operands[0]] to [read type_ [[instruction_json].get["var_type_"]]];
     [operand].incr_ref;
@@ -375,13 +375,13 @@ Val#build valued instruction <BinJSON:instruction_json> using <[Val]:operands> {
     ret void;
 }
 
-#build return_ using <[Val]:operands> {
+#build return_ using [[Val]:operands] {
     Val:returnee = cast [operands[0]] to [[current func ret type_].unwrap];
     perpare for_ function termination returning [returnee];
     ret [returnee];
 }
 
-#build while_ <BinJSON:instruction_json> {
+#build while_ [BinJSON:instruction_json] {
     Block?:outer_loop = get loop block;
 Label:cond_label = new label:;
     Val:cond = build seperated value [[instruction_json].get["condition"]];
@@ -392,11 +392,11 @@ Label:cond_label = new label:;
     set loop block [outer_loop];
 }
 
-#build unused value wrapper using <[Val]:operands> {
+#build unused value wrapper using [[Val]:operands] {
     [operands[0]].check_ref;
 }
 
-#build conditional <BinJSON:instruction_json> {
+#build conditional [BinJSON:instruction_json] {
     Label:end_label = new label;
     Label:else_label = end_label;
     BinJSON:else_json = [instruction_json].get["else"];
@@ -436,7 +436,7 @@ Label:cond_label = new label:;
 [end_label]:;
 }
 
-#build array assignment using <[Val]:operands> {
+#build array assignment using [[Val]:operands] {
     Val:arr = operands[0];
     Type_:elem_type_ = arr.type_.generics[0];
     Val:index = cast [operands[1]] to [L_];
@@ -449,7 +449,7 @@ Label:cond_label = new label:;
     [arr].check_ref;
 }
 
-#build member assignment <BinJSON:instruction_json> using <[Val]:operands> {
+#build member assignment [BinJSON:instruction_json] using [[Val]:operands] {
     Type_:struct_type_ = read type_ [[instruction_json].get["struct_type_"]];
     Val:struct_val = cast [operands[0]] to [struct_type_];
     Struct_:struct_ = [[struct_type_].get_struct].unwrap;
@@ -467,7 +467,7 @@ Label:cond_label = new label:;
     [struct_val].check_ref;
 }
 
-#build switch_ <BinJSON:instruction_json> using <[Val]:operands> {
+#build switch_ [BinJSON:instruction_json] using [[Val]:operands] {
     Val:operand = operands[0];
 
     Label:end_label = new label;
@@ -503,7 +503,7 @@ Label:cond_label = new label:;
 [end_label]:;
 }
 
-#build for_ <BinJSON:instruction_json> using <[Val]:operands> {
+#build for_ [BinJSON:instruction_json] using [[Val]:operands] {
     Label:check_label = new label;
     Label:loop_label = new label;
     Label:iter_label = new label;
@@ -622,7 +622,7 @@ Label:cond_label = new label:;
     };
 }
 
-#build given_ <BinJSON:instruction_json> {
+#build given_ [BinJSON:instruction_json] {
     Label:end_label = new label;
     Label:else_label = end_label;
     BinJSON:else_json = [instruction_json].get["else"];
@@ -672,7 +672,7 @@ Label:cond_label = new label:;
 [end_label]:;
 }
 
-#build void function call <BinJSON:instruction_json> using <[Val]:operands> {
+#build void function call [BinJSON:instruction_json] using [[Val]:operands] {
     Str:function_id = [[instruction_json].get["function"]].get_str;
     call function [function_id] with args [operands] to [null];
 }
@@ -682,7 +682,7 @@ Label:cond_label = new label:;
     mark as unreachable;
 }
 
-#build abort_ using <[Val]:operands> {
+#build abort_ using [[Val]:operands] {
     extern fn [null] ["abort_"] [[Type_] [Str_]] [[Val] [operands[0]]];
     mark as unreachable;
 }
@@ -697,7 +697,7 @@ Label:cond_label = new label:;
     continue_ [[get loop block].unwrap];
 }
 
-#build void instruction <BinJSON:instruction_json> using <[Val]:operands> {
+#build void instruction [BinJSON:instruction_json] using [[Val]:operands] {
     Str:type = [[instruction_json].get["type"]].get_str;
     if ([type] equals ["initial_assignment"]) {
         build initial assignment [instruction_json] using [operands];
@@ -740,7 +740,7 @@ Label:cond_label = new label:;
     };
 }
 
-Val?#build instruction <BinJSON:instruction_json> using <[Val]:operands> {
+Val?#build instruction [BinJSON:instruction_json] using [[Val]:operands] {
     if ([instruction_json].contains_key["type_"]) {
         Val:result = build valued instruction [instruction_json] using [operands];
         if (result.assignable) {

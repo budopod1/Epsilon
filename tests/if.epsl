@@ -1,4 +1,4 @@
-Z#test<Z:b> {
+Z#test[Z:b] {
     if (b > 5) {
         return 1;
     } elif b == 5 {

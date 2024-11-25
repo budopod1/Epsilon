@@ -1,4 +1,4 @@
-Bool#do_check<Str?:f> {
+Bool#do_check[Str?:f] {
     return [f].is_null;
 }
 
