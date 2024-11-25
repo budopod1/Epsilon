@@ -1,7 +1,10 @@
+#define __STDC_WANT_LIB_EXT2__ 1
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+
 #include "builtins.h"
 
 struct File {
@@ -52,7 +55,7 @@ struct File *fs_open_file(struct Array *string, uint32_t mode) {
     FILE *C_file = fopen(content, mode_str);
     if (C_file == NULL) return NULL;
 
-    struct File *file = malloc(sizeof(struct File));
+    struct File *file = epsl_malloc(sizeof(struct File));
     file->ref_counter = 0;
     file->file = C_file;
     file->mode = mode;
@@ -111,11 +114,11 @@ struct Array *fs_read_all_file(const struct File *file) {
     uint64_t remaining_text = (uint64_t)(file_len - cur_pos);
     uint64_t capacity = remaining_text;
     if (capacity == 0) capacity = 1;
-    struct Array *result = malloc(sizeof(struct Array));
+    struct Array *result = epsl_malloc(sizeof(struct Array));
     result->ref_counter = 0;
     result->capacity = capacity;
     result->length = remaining_text;
-    char *content = malloc(capacity);
+    char *content = epsl_malloc(capacity);
     result->content = content;
     size_t read = fread(content, remaining_text, 1, file->file);
     if (read != 1) {
@@ -131,11 +134,11 @@ struct Array *fs_read_some_file(const struct File *file, uint64_t amount) {
     if (!file->open) return NULL;
     uint64_t capacity = amount;
     if (capacity == 0) capacity = 1;
-    struct Array *result = malloc(sizeof(struct Array));
+    struct Array *result = epsl_malloc(sizeof(struct Array));
     result->ref_counter = 0;
     result->capacity = capacity;
     result->length = amount;
-    char *content = malloc(capacity);
+    char *content = epsl_malloc(capacity);
     result->content = content;
     size_t read = fread(content, amount, 1, file->file);
     if (read != 1) {
@@ -171,7 +174,7 @@ struct Array *fs_read_file_line(const struct File *file) {
         return NULL;
     }
     if (content[len-1] == '\n') len--;
-    struct Array *result = malloc(sizeof(struct Array));
+    struct Array *result = epsl_malloc(sizeof(struct Array));
     result->ref_counter = 0;
     result->capacity = capacity;
     result->content = content;

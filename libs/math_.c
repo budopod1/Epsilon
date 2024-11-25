@@ -3,6 +3,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "builtins.h"
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -36,7 +38,7 @@ double math_var_base_log(double argument, double base) {
 }
 
 struct C *math_add_C(struct C *a, struct C *b) {
-    struct C *result = malloc(sizeof(struct C));
+    struct C *result = epsl_malloc(sizeof(struct C));
     result->ref_counter = 0;
     result->real = a->real + b->real;
     result->imag = a->imag + b->imag;
@@ -44,7 +46,7 @@ struct C *math_add_C(struct C *a, struct C *b) {
 }
 
 struct C *math_sub_C(struct C *a, struct C *b) {
-    struct C *result = malloc(sizeof(struct C));
+    struct C *result = epsl_malloc(sizeof(struct C));
     result->ref_counter = 0;
     result->real = a->real - b->real;
     result->imag = a->imag - b->imag;
@@ -52,7 +54,7 @@ struct C *math_sub_C(struct C *a, struct C *b) {
 }
 
 struct C *math_mul_C(struct C *a, struct C *b) {
-    struct C *result = malloc(sizeof(struct C));
+    struct C *result = epsl_malloc(sizeof(struct C));
     result->ref_counter = 0;
     result->real = a->real * b->real - a->imag * b->imag;
     result->imag = a->real * b->imag + a->imag * b->real;
@@ -60,7 +62,7 @@ struct C *math_mul_C(struct C *a, struct C *b) {
 }
 
 struct C *math_div_C(struct C *a, struct C *b) {
-    struct C *result = malloc(sizeof(struct C));
+    struct C *result = epsl_malloc(sizeof(struct C));
     result->ref_counter = 0;
     double v = b->real * b->real + b->imag * b->imag;
     result->real = (a->real * b->real + a->imag * b->imag) / v;
@@ -70,7 +72,7 @@ struct C *math_div_C(struct C *a, struct C *b) {
 
 struct C *math_exp_C(struct C *val) {
     double m = exp(val->real);
-    struct C *result = malloc(sizeof(struct C));
+    struct C *result = epsl_malloc(sizeof(struct C));
     result->ref_counter = 0;
     result->real = cos(val->imag) * m;
     result->imag = sin(val->imag) * m;
@@ -78,7 +80,7 @@ struct C *math_exp_C(struct C *val) {
 }
 
 struct C *math_exponent_to_cmplx(double base, double exponent) {
-    struct C *result = malloc(sizeof(struct C));
+    struct C *result = epsl_malloc(sizeof(struct C));
     result->ref_counter = 0;
     if (base >= 0) {
         result->real = pow(base, exponent);
@@ -96,7 +98,7 @@ struct C *math_cmplx_to_exponent(struct C *base, double exponent) {
     double theta = atan2(base->imag, base->real);
     double r = sqrt(base->real*base->real + base->imag*base->imag);
     double m = pow(r, exponent);
-    struct C *result = malloc(sizeof(struct C));
+    struct C *result = epsl_malloc(sizeof(struct C));
     result->ref_counter = 0;
     result->real = cos(theta * exponent) * m;
     result->imag = sin(theta * exponent) * m;

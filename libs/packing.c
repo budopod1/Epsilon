@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <arpa/inet.h>
+
 #include "builtins.h"
 
 #define __FLOAT16_EXISTS__ 0
@@ -34,11 +35,11 @@ static void memcpy_reversed(void *dest, void *const src, size_t amount) {
 }
 
 static struct ByteArray *pack_floating(void *floating, size_t floating_size) {
-    struct ByteArray *arr = malloc(sizeof(struct ByteArray));
+    struct ByteArray *arr = epsl_malloc(sizeof(struct ByteArray));
     arr->ref_counter = 0;
     arr->capacity = floating_size;
     arr->length = floating_size;
-    arr->content = malloc(floating_size);
+    arr->content = epsl_malloc(floating_size);
     if (is_network_byte_order()) {
         memcpy(arr->content, floating, floating_size);
     } else {

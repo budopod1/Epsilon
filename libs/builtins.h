@@ -1,8 +1,13 @@
-#ifndef BUILTINS_H
+#ifndef EPSL_BUILTINS_H
 
-#define BUILTINS_H
+#define EPSL_BUILTINS_H
 
 #include <stdint.h>
+
+// elem types are uint64_ts
+// upper 62 bits are the size
+// second to lowest bit is 1 when the value is not a pointer
+// lowest bit is 1 when the value is nullable
 
 #ifndef __has_builtin
 #define __has_builtin(x) 0
@@ -18,6 +23,14 @@ struct Array {
     uint64_t length;
     void *content;
 };
+
+void out_of_memory_fail();
+
+void *epsl_malloc(uint64_t size);
+
+void *epsl_calloc(uint64_t num, uint64_t size);
+
+void *epsl_realloc(void *ptr, uint64_t new_size);
 
 extern inline uint64_t calc_new_capacity(uint64_t cap);
 
