@@ -11,3 +11,4 @@ TODO:
 * allow `switch` blocks with non-constant operands by converting them to Conditionals using the `equals` builtin (or equivalent)
 * File should have custom destructor that calls `close`
 * create C wrappers for functions that Epsilon calls if they take arguments that are ints of indeterminate size (eg. long, int, size_t)
+* update README and docs
