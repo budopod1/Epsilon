@@ -76,6 +76,7 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
                 ret [do [nonnull_a] equals [nonnull_b] deep: [deep] invert: [invert]];
             end block;
         end block;
+        mark as unreachable;
     } else {
         Struct_?:maybe_struct = [type_].get_struct;
 
