@@ -22,7 +22,7 @@ struct File {
 // returns File?
 struct File *fs_open_file(struct Array *string, uint32_t mode) {
     char mode_str[4];
-    int i = 0;
+    uint32_t i = 0;
 
     if (mode&_FILE_WRITE_MODE) {
         if (mode&_FILE_APPEND_MODE)
@@ -47,7 +47,7 @@ struct File *fs_open_file(struct Array *string, uint32_t mode) {
     mode_str[i] = '\0';
 
     uint64_t len = string->length;
-    increment_length(string, 1);
+    epsl_increment_length(string, 1);
     char* content = string->content;
     content[len] = '\0';
     string->length = len;
@@ -108,9 +108,9 @@ int64_t fs_file_pos(const struct File *file) {
 struct Array *fs_read_all_file(const struct File *file) {
     if (!file->open) return NULL;
     uint64_t file_len = fs_file_length(file);
-    if (file_len == -1) return blank_array(sizeof(char));
+    if (file_len == -1) return epsl_blank_array(sizeof(char));
     uint64_t cur_pos = fs_file_pos(file);
-    if (cur_pos == -1) return blank_array(sizeof(char));
+    if (cur_pos == -1) return epsl_blank_array(sizeof(char));
     uint64_t remaining_text = (uint64_t)(file_len - cur_pos);
     uint64_t capacity = remaining_text;
     if (capacity == 0) capacity = 1;
@@ -188,7 +188,7 @@ bool fs_read_line_reached_EOF() {
 
 // returns [Str]?
 struct Array *fs_read_file_lines(const struct File *file) {
-    struct Array *result = blank_array(sizeof(struct Array));
+    struct Array *result = epsl_blank_array(sizeof(struct Array));
     while (1) {
         struct Array *line = fs_read_file_line(file);
         if (read_line_EOF) {
@@ -205,7 +205,7 @@ struct Array *fs_read_file_lines(const struct File *file) {
             return NULL;
         }
         uint64_t length = result->length;
-        increment_length(result, sizeof(struct Array));
+        epsl_increment_length(result, sizeof(struct Array));
         ((struct Array**)result->content)[length] = line;
         line->ref_counter = 1;
     }

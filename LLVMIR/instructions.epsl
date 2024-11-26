@@ -114,7 +114,7 @@ Val#build array creation using [[Val]:operands] to [Type_:type_] {
     };
     Val:arr = new array [type_] [operands] with capacity [capacity];
     if ([elem_type_].is_ref) {
-        extern fn [null] ["increment_array_ref_counts"] [[Type_] [Internal_, L_]]
+        extern fn [null] ["epsl_increment_array_ref_counts"] [[Type_] [Internal_, L_]]
             [[Val] [cast [arr] to [Internal_], make elem int [elem_type_]]];
     };
     return arr;
@@ -173,7 +173,7 @@ Val#build member access [BinJSON:instruction_json] using [[Val]:operands] {
 Val#build zeroed array creation using [[Val]:operands] to [Type_:type_] {
     Val:size = cast [operands[0]] to [L_];
     Val:elem_size = sizeof elem [type_];
-    extern fn [Internal_] ["make_blank_array"] [[Type_] [L_, L_]] [[Val] [size, elem_size]];
+    extern fn [Internal_] ["epsl_make_blank_array"] [[Type_] [L_, L_]] [[Val] [size, elem_size]];
     return cast [func ret] to [type_];
 }
 
@@ -198,7 +198,7 @@ Val#build format chain using [[Val]:operands] {
         [[str_arr].idx[c [i++]]] = [stringified];
     };
 
-    extern fn [Str_] ["format_string"] [[Type_] [Str_, Pointer [Str_], W_]]
+    extern fn [Str_] ["epsl_format_string"] [[Type_] [Str_, Pointer [Str_], W_]]
         [[Val] [template, str_arr, str_count]];
     Val:result = func ret;
 
@@ -683,7 +683,7 @@ Label:cond_label = new label:;
 }
 
 #build abort_ using [[Val]:operands] {
-    extern fn [null] ["abort_"] [[Type_] [Str_]] [[Val] [operands[0]]];
+    extern fn [null] ["epsl_abort"] [[Type_] [Str_]] [[Val] [operands[0]]];
     mark as unreachable;
 }
 

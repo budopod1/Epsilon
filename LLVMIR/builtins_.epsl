@@ -39,7 +39,7 @@ BuiltinResult#builtin append with [[Val]:args] {
     Type_:generic = arr.type_.generics[0];
     Val:appendee = cast [args[1]] to [generic];
     Val:len = load [[arr].length];
-    extern fn [null] ["increment_length"] [[Type_] [Internal_, L_]]
+    extern fn [null] ["epsl_increment_length"] [[Type_] [Internal_, L_]]
         [[Val] [cast [arr] to [Internal_], make elem int [generic]]];
     [[load [[arr].content]].idx[len]] = [appendee];
     [appendee].incr_ref;
@@ -49,14 +49,14 @@ BuiltinResult#builtin append with [[Val]:args] {
 BuiltinResult#builtin require capacity with [[Val]:args] {
     Val:arr = args[0];
     Val:required_cap = cast [args[1]] to [L_];
-    extern fn [null] ["require_capacity"] [[Type_] [Internal_, L_, L_]]
+    extern fn [null] ["epsl_require_capacity"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], required_cap, sizeof elem [arr.type_]]];
     return make empty builtin result;
 }
 
 BuiltinResult#builtin shrink mem with [[Val]:args] {
     Val:arr = args[0];
-    extern fn [null] ["shrink_mem"] [[Type_] [Internal_, L_]]
+    extern fn [null] ["epsl_shrink_mem"] [[Type_] [Internal_, L_]]
         [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_]]];
     return make empty builtin result;
 }
@@ -67,7 +67,7 @@ BuiltinResult#builtin pop with [[Val]:args] {
     verify idx [idx] in array [arr];
     Val:elem = load [[arr].idx[idx]];
     [elem].checkless_decr_ref;
-    extern fn [null] ["remove_at"] [[Type_] [Internal_, L_, L_]]
+    extern fn [null] ["epsl_remove_at"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], idx, sizeof [elem.type_]]];
     // result is not in params when builtin finishes
     return make builtin result [elem];
@@ -78,7 +78,7 @@ BuiltinResult#builtin insert with [[Val]:args] {
     Val:idx = cast [args[1]] to [L_];
     Type_:generic = arr.type_.generics[0];
     Val:elem = cast [args[2]] to [generic];
-    extern fn [null] ["insert_space"] [[Type_] [Internal_, L_, L_]]
+    extern fn [null] ["epsl_insert_space"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], idx, sizeof [generic]]];
     [elem].incr_ref;
     [[arr].idx[idx]] = [elem];
@@ -93,7 +93,7 @@ BuiltinResult#builtin extend with [[Val]:args] {
     Val:arr1 = cast [args[0]] to [Internal_];
     Val:arr2 = cast [args[1]] to [Internal_];
     assert type_ equality [args[0]], [args[1]];
-    extern fn [null] ["extend_array"] [[Type_] [Internal_, Internal_, L_]]
+    extern fn [null] ["epsl_extend_array"] [[Type_] [Internal_, Internal_, L_]]
         [[Val] [arr1, arr2, make elem generic int [args[0].type_]]];
     return make empty builtin result;
 }
@@ -101,7 +101,7 @@ BuiltinResult#builtin extend with [[Val]:args] {
 BuiltinResult#builtin concat with [[Val]:args] {
     assert type_ equality [args[0]], [args[1]];
     Val:elem = make elem generic int [args[0].type_];
-    extern fn [Internal_] ["concat_arrays"] [[Type_] [Internal_, Internal_, L_]]
+    extern fn [Internal_] ["epsl_concat_arrays"] [[Type_] [Internal_, Internal_, L_]]
         [[Val] [cast [args[0]] to [Internal_], cast [args[1]] to [Internal_], elem]];
     return make builtin result [cast [func ret] to [args[0].type_]];
 }
@@ -149,13 +149,13 @@ BuiltinResult#builtin stringify with [[Val]:args] {
 
 BuiltinResult#builtin print with [[Val]:args] {
     Val:stringified = ensure stringify of [args[0]];
-    extern fn [null] ["print"] [[Type_] [Str_]] [[Val] [stringified]];
+    extern fn [null] ["epsl_print"] [[Type_] [Str_]] [[Val] [stringified]];
     return make empty builtin result;
 }
 
 BuiltinResult#builtin println with [[Val]:args] {
     Val:stringified = ensure stringify of [args[0]];
-    extern fn [null] ["println"] [[Type_] [Str_]] [[Val] [stringified]];
+    extern fn [null] ["epsl_println"] [[Type_] [Str_]] [[Val] [stringified]];
     return make empty builtin result;
 }
 
@@ -174,7 +174,7 @@ BuiltinResult#builtin slice with [[Val]:args] {
     Val:start = cast [args[1]] to [L_];
     Val:end = cast [args[2]] to [L_];
     Val:elem = make elem generic int [arr.type_];
-    extern fn [Internal_] ["slice_array"] [[Type_] [Internal_, L_, L_, L_]]
+    extern fn [Internal_] ["epsl_slice_array"] [[Type_] [Internal_, L_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], start, end, elem]];
     return make builtin result [cast [func ret] to [arr.type_]];
 }
@@ -203,7 +203,7 @@ BuiltinResult#builtin pop end with [[Val]:args] {
 }
 
 BuiltinResult#builtin nest with [[Val]:args] {
-    extern fn [Internal_] ["nest_array"] [[Type_] [Internal_, L_]]
+    extern fn [Internal_] ["epsl_nest_array"] [[Type_] [Internal_, L_]]
         [[Val] [cast [args[0]] to [Internal_], make elem generic int [args[0].type_]]];
     return make builtin result [cast [func ret] to [Array_ [args[0].type_]]];
 }
@@ -257,7 +257,7 @@ BuiltinResult#builtin join with [[Val]:args] {
     Type_:result_type_ = args[1].type_;
     Val:arr = cast [args[0]] to [Internal_];
     Val:sep = cast [args[1]] to [Internal_];
-    extern fn [Internal_] ["join_array"] [[Type_] [Internal_, Internal_, L_]]
+    extern fn [Internal_] ["epsl_join_array"] [[Type_] [Internal_, Internal_, L_]]
         [[Val] [arr, sep, make elem generic int [result_type_]]];
     return make builtin result [cast [func ret] to [result_type_]];
 }
@@ -271,17 +271,17 @@ BuiltinResult#builtin index of with [[Val]:args] {
 }
 
 BuiltinResult#builtin parse int with [[Val]:args] {
-    extern fn [Z_] ["parse_int"] [[Type_] [Str_]] [args];
+    extern fn [Z_] ["epsl_parse_int"] [[Type_] [Str_]] [args];
     return make builtin result [func ret];
 }
 
 BuiltinResult#builtin invalid parsed int {
-    extern fn [Z_] ["get_magic_invalid_parsed_int"] [[Type_] []] [[Val] []];
+    extern fn [Z_] ["epsl_magic_invalid_parsed_int"] [[Type_] []] [[Val] []];
     return make builtin result [func ret];
 }
 
 BuiltinResult#builtin parse float with [[Val]:args] {
-    extern fn [Q_] ["parse_float"] [[Type_] [Str_]] [args];
+    extern fn [Q_] ["epsl_parse_float"] [[Type_] [Str_]] [args];
     return make builtin result [func ret];
 }
 
@@ -290,7 +290,7 @@ BuiltinResult#builtin is_NaN with [[Val]:args] {
 }
 
 BuiltinResult#builtin read input line {
-    extern fn [Str_] ["read_input_line"] [[Type_] []] [[Val] []];
+    extern fn [Str_] ["epsl_read_input_line"] [[Type_] []] [[Val] []];
     return make builtin result [func ret];
 }
 
@@ -327,7 +327,7 @@ BuiltinResult#builtin unique with [[Val]:args] {
 
 BuiltinResult#builtin repeat with [[Val]:args] {
     Type_:type_ = args[0].type_;
-    extern fn [type_] ["repeat_array"] [[Type_] [type_, L_, L_]]
+    extern fn [type_] ["epsl_repeat_array"] [[Type_] [type_, L_, L_]]
         [[Val] [args[0], cast [args[1]] to [L_], make elem generic int [type_]]];
     return make builtin result [func ret];
 }
@@ -445,7 +445,7 @@ BuiltinResult#builtin at assign with [[Val]:args] {
 
 BuiltinResult#builtin expect with [[Val]:args] {
     if_ [expect [[args[0]] == null_] to be [false]];
-        extern fn [null] ["abort_"] [[Type_] [Str_]] [[Val] [args[1]]];
+        extern fn [null] ["epsl_abort"] [[Type_] [Str_]] [[Val] [args[1]]];
         mark as unreachable;
     end block;
     Val:result = bitcast [args[0]] to [unwrap nullability [args[0]]];

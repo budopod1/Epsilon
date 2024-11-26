@@ -24,7 +24,7 @@ struct Array {
     void *content;
 };
 
-void out_of_memory_fail();
+void epsl_out_of_memory_fail();
 
 void *epsl_malloc(uint64_t size);
 
@@ -32,80 +32,80 @@ void *epsl_calloc(uint64_t num, uint64_t size);
 
 void *epsl_realloc(void *ptr, uint64_t new_size);
 
-extern inline uint64_t calc_new_capacity(uint64_t cap);
+extern inline uint64_t epsl_calc_new_capacity(uint64_t cap);
 
-void increment_length(struct Array *array, uint64_t elem_size);
+void epsl_increment_length(struct Array *array, uint64_t elem_size);
 
-void require_capacity(struct Array *array, uint64_t required, uint64_t elem_size);
+void epsl_require_capacity(struct Array *array, uint64_t required, uint64_t elem_size);
 
-void increace_capacity(struct Array *array, uint64_t required, uint64_t elem_size);
+void epsl_increace_capacity(struct Array *array, uint64_t required, uint64_t elem_size);
 
-void shrink_mem(struct Array *array, uint64_t elem_size);
+void epsl_shrink_mem(struct Array *array, uint64_t elem_size);
 
-void remove_at(struct Array *array, uint64_t idx, uint64_t elem_size);
+void epsl_remove_at(struct Array *array, uint64_t idx, uint64_t elem_size);
 
-void insert_space(struct Array *array, uint64_t idx, uint64_t elem_size);
+void epsl_insert_space(struct Array *array, uint64_t idx, uint64_t elem_size);
 
-void increment_array_ref_counts(const struct Array *array, uint64_t elem);
+void epsl_increment_array_ref_counts(const struct Array *array, uint64_t elem);
 
-struct Array *clone_array(const struct Array *array, uint64_t elem);
+struct Array *epsl_clone_array(const struct Array *array, uint64_t elem);
 
-void extend_array(struct Array *array1, const struct Array *array2, uint64_t elem);
+void epsl_extend_array(struct Array *array1, const struct Array *array2, uint64_t elem);
 
-struct Array *concat_arrays(const struct Array *array1, const struct Array *array2, uint64_t elem);
+struct Array *epsl_concat_arrays(const struct Array *array1, const struct Array *array2, uint64_t elem);
 
-struct Array *blank_array(uint64_t elem_size);
+struct Array *epsl_blank_array(uint64_t elem_size);
 
-void print(const struct Array *string);
+void epsl_print(const struct Array *string);
 
-void println(const struct Array *string);
+void epsl_println(const struct Array *string);
 
-extern inline char *formatW8();
+extern inline char *epsl_format_W8();
 
-extern inline char *formatW16();
+extern inline char *epsl_format_W16();
 
-extern inline char *formatW32();
+extern inline char *epsl_format_W32();
 
-extern inline char *formatW64();
+extern inline char *epsl_format_W64();
 
-extern inline char *formatZ8();
+extern inline char *epsl_format_Z8();
 
-extern inline char *formatZ16();
+extern inline char *epsl_format_Z16();
 
-extern inline char *formatZ32();
+extern inline char *epsl_format_Z32();
 
-extern inline char *formatZ64();
+extern inline char *epsl_format_Z64();
 
-struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem);
+struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem);
 
-struct Array *nest_array(const struct Array *arr, uint64_t elem);
+struct Array *epsl_nest_array(const struct Array *arr, uint64_t elem);
 
-struct Array *join_array(const struct Array *arr, const struct Array *sep, uint64_t elem);
+struct Array *epsl_join_array(const struct Array *arr, const struct Array *sep, uint64_t elem);
 
-int32_t parse_int(const struct Array *str);
+int32_t epsl_parse_int(const struct Array *str);
 
-int32_t get_magic_invalid_parsed_int();
+int32_t epsl_magic_invalid_parsed_int();
 
-double parse_float(const struct Array *str);
+double epsl_parse_float(const struct Array *str);
 
-struct Array *read_input_line();
+struct Array *epsl_read_input_line();
 
-void abort_(const struct Array *string);
+void epsl_abort(const struct Array *string);
 
-struct Array *make_blank_array(uint64_t len, uint64_t elem_size);
+struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size);
 
-extern inline void sort_array(struct Array *array, uint64_t elem_size, int (*compar)(const void*, const void*));
+extern inline void epsl_sort_array(struct Array *array, uint64_t elem_size, int (*compar)(const void*, const void*));
 
-struct Array *repeat_array(const struct Array *array, uint64_t times, uint64_t elem);
+struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint64_t elem);
 
-void null_value_fail();
+void epsl_null_value_fail();
 
-struct Array *format_string(struct Array *template_, struct Array *values[], uint32_t value_count);
+struct Array *epsl_format_string(struct Array *template_, struct Array *values[], uint32_t value_count);
 
-void array_idx_fail();
+void epsl_array_idx_fail();
 
-void div_0_fail();
+void epsl_div_0_fail();
 
-void array_empty_fail();
+void epsl_array_empty_fail();
 
 #endif

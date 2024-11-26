@@ -107,7 +107,7 @@ struct C *math_cmplx_to_exponent(struct C *base, double exponent) {
 
 uint32_t math_usum(struct UIntArray *nums) {
     uint32_t result = 0;
-    for (int i = 0; i < nums->length; i++) {
+    for (uint64_t i = 0; i < nums->length; i++) {
         result += nums->content[i];
     }
     return result;
@@ -115,7 +115,7 @@ uint32_t math_usum(struct UIntArray *nums) {
 
 uint32_t math_uprod(struct UIntArray *nums) {
     uint32_t result = 1;
-    for (int i = 0; i < nums->length; i++) {
+    for (uint64_t i = 0; i < nums->length; i++) {
         result *= nums->content[i];
     }
     return result;
@@ -123,15 +123,15 @@ uint32_t math_uprod(struct UIntArray *nums) {
 
 int32_t math_sum(struct IntArray *nums) {
     int32_t result = 0;
-    for (int i = 0; i < nums->length; i++) {
-            result += nums->content[i];
+    for (uint64_t i = 0; i < nums->length; i++) {
+        result += nums->content[i];
     }
     return result;
 }
 
 int32_t math_prod(struct IntArray *nums) {
     int32_t result = 1;
-    for (int i = 0; i < nums->length; i++) {
+    for (uint64_t i = 0; i < nums->length; i++) {
         result *= nums->content[i];
     }
     return result;
@@ -149,7 +149,7 @@ uint32_t math_array_GCD(struct UIntArray *nums) {
     uint32_t len = nums->length;
     if (len == 0) return 0;
     uint32_t gcd = nums->content[0];
-    for (uint32_t i = 1; i < len; i++) {
+    for (uint64_t i = 1; i < len; i++) {
         gcd = math_GCD(gcd, nums->content[i]);
     }
     return gcd;
@@ -183,7 +183,7 @@ bool math_is_infinite_64(double val) {
     return isinf(val) != 0;
 }
 
-int math_fsign(double val) {
+int32_t math_fsign(double val) {
     if (val == 0) {
         return 0;
     } else if (val < 0) {
@@ -193,7 +193,7 @@ int math_fsign(double val) {
     }
 }
 
-int math_isign(int val) {
+int32_t math_isign(int32_t val) {
     if (val == 0) {
         return 0;
     } else if (val < 0) {
@@ -203,7 +203,7 @@ int math_isign(int val) {
     }
 }
 
-int math_icopysign(int magnitude, int direction) {
+int32_t math_icopysign(int32_t magnitude, int32_t direction) {
     return abs(magnitude) * math_isign(direction);
 }
 

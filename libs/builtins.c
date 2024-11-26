@@ -13,7 +13,7 @@
 
 static const char *const MEM_ERR = ERR_START "Out of memory\n";
 
-void out_of_memory_fail() {
+void epsl_out_of_memory_fail() {
     fflush(stdout);
     fwrite(MEM_ERR, strlen(MEM_ERR), 1, stderr);
     exit(1);
@@ -22,7 +22,7 @@ void out_of_memory_fail() {
 void *epsl_malloc(uint64_t size) {
     void *result = malloc(size);
     if (__builtin_expect(result == NULL, 0)) {
-        out_of_memory_fail();
+        epsl_out_of_memory_fail();
     }
     return result;
 }
@@ -30,7 +30,7 @@ void *epsl_malloc(uint64_t size) {
 void *epsl_calloc(uint64_t num, uint64_t size) {
     void *result = calloc(num, size);
     if (__builtin_expect(result == NULL, 0)) {
-        out_of_memory_fail();
+        epsl_out_of_memory_fail();
     }
     return result;
 }
@@ -38,29 +38,29 @@ void *epsl_calloc(uint64_t num, uint64_t size) {
 void *epsl_realloc(void *ptr, uint64_t new_size) {
     void *result = realloc(ptr, new_size);
     if (__builtin_expect(result == NULL, 0)) {
-        out_of_memory_fail();
+        epsl_out_of_memory_fail();
     }
     return result;
 }
 
-extern inline uint64_t calc_new_capacity(uint64_t cap) {
+extern inline uint64_t epsl_calc_new_capacity(uint64_t cap) {
     return 1+(cap*3)/2;
 }
 
-void increment_length(struct Array *array, uint64_t elem_size) {
+void epsl_increment_length(struct Array *array, uint64_t elem_size) {
     uint64_t length = array->length;
     uint64_t capacity = array->capacity;
     array->length = length+1;
     if (capacity == length) {
         // Current growth factor: 1.5
-        uint64_t new_capacity = calc_new_capacity(capacity);
+        uint64_t new_capacity = epsl_calc_new_capacity(capacity);
         array->capacity = new_capacity;
         array->content = epsl_realloc(array->content, elem_size*new_capacity);
     }
 }
 
 // Will grow capacity only to required amount
-void require_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
+void epsl_require_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
     if (array->capacity < required) {
         array->capacity = required;
         array->content = epsl_realloc(array->content, elem_size*required);
@@ -68,9 +68,9 @@ void require_capacity(struct Array *array, uint64_t required, uint64_t elem_size
 }
 
 // Will grow capacity and then apply growth factor
-void increace_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
+void epsl_increace_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
     if (array->capacity < required) {
-        uint64_t new_capacity = calc_new_capacity(required);
+        uint64_t new_capacity = epsl_calc_new_capacity(required);
         array->capacity = new_capacity;
         array->content = epsl_realloc(array->content, elem_size*new_capacity);
     }
@@ -80,13 +80,13 @@ static inline uint64_t min1(uint64_t val) {
     return val == 0 ? 1 : val;
 }
 
-void shrink_mem(struct Array *array, uint64_t elem_size) {
+void epsl_shrink_mem(struct Array *array, uint64_t elem_size) {
     uint64_t new_capacity = min1(array->length);
     array->content = epsl_realloc(array->content, elem_size*new_capacity);
     array->capacity = new_capacity;
 }
 
-void remove_at(struct Array *array, uint64_t idx, uint64_t elem_size) {
+void epsl_remove_at(struct Array *array, uint64_t idx, uint64_t elem_size) {
     uint64_t length = array->length--;
     char* content = array->content;
     char* deststart = content+idx*elem_size;
@@ -96,21 +96,21 @@ void remove_at(struct Array *array, uint64_t idx, uint64_t elem_size) {
 
 static const char *const INSERTSPACE_IDX_ERR = ERR_START "Cannot insert space outside bounds of array\n";
 
-void insert_space(struct Array *array, uint64_t idx, uint64_t elem_size) {
+void epsl_insert_space(struct Array *array, uint64_t idx, uint64_t elem_size) {
     uint64_t length = array->length;
     if (__builtin_expect(idx > length, 0)) {
         fflush(stdout);
         fwrite(INSERTSPACE_IDX_ERR, strlen(INSERTSPACE_IDX_ERR), 1, stderr);
         exit(1);
     }
-    increment_length(array, elem_size);
+    epsl_increment_length(array, elem_size);
     char* content = array->content;
     char* srcstart = content+idx*elem_size;
     char* deststart = srcstart+elem_size;
     memmove((void*)deststart, (void*)srcstart, elem_size*(length-idx));
 }
 
-void increment_array_ref_counts(const struct Array *array, uint64_t elem) {
+void epsl_increment_array_ref_counts(const struct Array *array, uint64_t elem) {
     if (elem & 2) return;
     uint64_t elem_size = elem >> 2;
     uint64_t length = array->length;
@@ -129,7 +129,7 @@ void increment_array_ref_counts(const struct Array *array, uint64_t elem) {
     }
 }
 
-struct Array *clone_array(const struct Array *array, uint64_t elem) {
+struct Array *epsl_clone_array(const struct Array *array, uint64_t elem) {
     struct Array *new_array = epsl_malloc(sizeof(struct Array));
     new_array->ref_counter = 0;
     uint64_t capacity = array->capacity;
@@ -140,29 +140,29 @@ struct Array *clone_array(const struct Array *array, uint64_t elem) {
     void *content = epsl_malloc(size);
     memcpy(content, array->content, size);
     new_array->content = content;
-    increment_array_ref_counts(array, elem);
+    epsl_increment_array_ref_counts(array, elem);
     return new_array;
 }
 
-void extend_array(struct Array *array1, const struct Array *array2, uint64_t elem) {
+void epsl_extend_array(struct Array *array1, const struct Array *array2, uint64_t elem) {
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
     uint64_t new_len = len1 + len2;
     uint64_t elem_size = elem >> 2;
-    increace_capacity(array1, new_len, elem_size);
+    epsl_increace_capacity(array1, new_len, elem_size);
     array1->length = new_len;
-    increment_array_ref_counts(array2, elem);
+    epsl_increment_array_ref_counts(array2, elem);
     memcpy(array1->content+len1*elem_size, array2->content, len2*elem_size);
 }
 
-struct Array *concat_arrays(const struct Array *array1, const struct Array *array2, uint64_t elem) {
+struct Array *epsl_concat_arrays(const struct Array *array1, const struct Array *array2, uint64_t elem) {
     struct Array *new_array = epsl_malloc(sizeof(struct Array));
     new_array->ref_counter = 0;
     uint64_t len1 = array1->length;
     uint64_t len2 = array2->length;
     uint64_t new_len = len1 + len2;
     new_array->length = new_len;
-    uint64_t new_cap = calc_new_capacity(new_len);
+    uint64_t new_cap = epsl_calc_new_capacity(new_len);
     new_array->capacity = new_cap;
     uint64_t elem_size = elem >> 2;
     void *content = epsl_malloc(elem_size*new_cap);
@@ -171,11 +171,11 @@ struct Array *concat_arrays(const struct Array *array1, const struct Array *arra
     memcpy(content, array1->content, size1);
     memcpy(content+size1, array2->content, size2);
     new_array->content = content;
-    increment_array_ref_counts(new_array, elem);
+    epsl_increment_array_ref_counts(new_array, elem);
     return new_array;
 }
 
-struct Array *blank_array(uint64_t elem_size) {
+struct Array *epsl_blank_array(uint64_t elem_size) {
     struct Array *array = epsl_malloc(sizeof(struct Array));
     array->ref_counter = 0;
     array->length = 0;
@@ -184,52 +184,52 @@ struct Array *blank_array(uint64_t elem_size) {
     return array;
 }
 
-void print(const struct Array *string) {
+void epsl_print(const struct Array *string) {
     fwrite(string->content, string->length, 1, stdout);
     fflush(stdout);
 }
 
-void println(const struct Array *string) {
+void epsl_println(const struct Array *string) {
     fwrite(string->content, string->length, 1, stdout);
     putc('\n', stdout);
 }
 
-extern inline char *formatW8() {
+extern inline char *epsl_format_W8() {
     static char *result = "%"PRIu8;
     return result;
 }
 
-extern inline char *formatW16() {
+extern inline char *epsl_format_W16() {
     static char *result = "%"PRIu16;
     return result;
 }
 
-extern inline char *formatW32() {
+extern inline char *epsl_format_W32() {
     static char *result = "%"PRIu32;
     return result;
 }
 
-extern inline char *formatW64() {
+extern inline char *epsl_format_W64() {
     static char *result = "%"PRIu64;
     return result;
 }
 
-extern inline char *formatZ8() {
+extern inline char *epsl_format_Z8() {
     static char *result = "%"PRId8;
     return result;
 }
 
-extern inline char *formatZ16() {
+extern inline char *epsl_format_Z16() {
     static char *result = "%"PRId16;
     return result;
 }
 
-extern inline char *formatZ32() {
+extern inline char *epsl_format_Z32() {
     static char *result = "%"PRId32;
     return result;
 }
 
-extern inline char *formatZ64() {
+extern inline char *epsl_format_Z64() {
     static char *result = "%"PRId64;
     return result;
 }
@@ -237,7 +237,7 @@ extern inline char *formatZ64() {
 static const char *const SLICE_NEG_LEN_ERR = ERR_START "Slice start index can't be after slice end index\n";
 static const char *const SLICE_INDEX_ERR = ERR_START "Slice end index out of range\n";
 
-struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
+struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
     if (__builtin_expect(start > end, 0)) {
         fflush(stdout);
         fwrite(SLICE_NEG_LEN_ERR, strlen(SLICE_NEG_LEN_ERR), 1, stderr);
@@ -260,11 +260,11 @@ struct Array *slice_array(const struct Array *array, uint64_t start, uint64_t en
     void *content = epsl_malloc(size);
     slice->content = content;
     memcpy(content, ((char*)array->content)+(start*elem_size), size);
-    increment_array_ref_counts(slice, elem);
+    epsl_increment_array_ref_counts(slice, elem);
     return slice;
 }
 
-struct Array *nest_array(const struct Array *arr, uint64_t elem) {
+struct Array *epsl_nest_array(const struct Array *arr, uint64_t elem) {
     char *arr_content = (char*)arr->content;
     uint64_t len = arr->length;
     struct Array *result = epsl_malloc(sizeof(struct Array));
@@ -290,7 +290,7 @@ struct Array *nest_array(const struct Array *arr, uint64_t elem) {
     return result;
 }
 
-struct Array *join_array(const struct Array *arr, const struct Array *sep, uint64_t elem) {
+struct Array *epsl_join_array(const struct Array *arr, const struct Array *sep, uint64_t elem) {
     uint64_t elem_size = elem >> 2;
     struct Array *result = epsl_malloc(sizeof(struct Array));
     result->ref_counter = 0;
@@ -300,19 +300,19 @@ struct Array *join_array(const struct Array *arr, const struct Array *sep, uint6
     uint64_t arr_len = arr->length;
     struct Array **arr_content = arr->content;
     for (uint64_t i = 0; i < arr_len; i++) {
-        if (i > 0) extend_array(result, sep, elem);
-        extend_array(result, arr_content[i], elem);
+        if (i > 0) epsl_extend_array(result, sep, elem);
+        epsl_extend_array(result, arr_content[i], elem);
     }
     return result;
 }
 
 const int32_t MAGIC_INVALID_PARSED_INT = -2147483647;
 
-int32_t parse_int(const struct Array *str) {
+int32_t epsl_parse_int(const struct Array *str) {
     int32_t result = 0;
     int32_t multiplier = 1;
     int32_t sign = 1;
-    int valid = 0;
+    bool valid = false;
     char *content = str->content;
     uint64_t length = str->length;
     for (int64_t i = length-1; i >= 0; i--) {
@@ -325,7 +325,7 @@ int32_t parse_int(const struct Array *str) {
         if ('0' <= chr && chr <= '9') {
             result += (chr - '0') * multiplier;
             multiplier *= 10;
-            valid = 1;
+            valid = true;
             continue;
         }
         if (chr == '_' || chr == ',') continue;
@@ -335,11 +335,11 @@ int32_t parse_int(const struct Array *str) {
     return MAGIC_INVALID_PARSED_INT;
 }
 
-int32_t get_magic_invalid_parsed_int() {
+int32_t epsl_magic_invalid_parsed_int() {
     return MAGIC_INVALID_PARSED_INT;
 }
 
-double parse_float(const struct Array *str) {
+double epsl_parse_float(const struct Array *str) {
     char *content = str->content;
     uint64_t length = str->length;
     int64_t dot = 0;
@@ -348,34 +348,38 @@ double parse_float(const struct Array *str) {
     }
 
     // no dot
-    int32_t ival = parse_int(str);
+    int32_t ival = epsl_parse_int(str);
     if (ival == MAGIC_INVALID_PARSED_INT) return NAN;
     return ival;
 
 has_dot:
     if (length == 1) return NAN;
-    int valid = 0;
+
+    bool valid = false;
     double result = 0;
     double multiplier = 0.1;
     double sign = 1;
+
     for (int64_t i = 1; i + dot < length; i++) {
         char chr = content[i + dot];
         if ('0' <= chr && chr <= '9') {
             result += (chr - '0') * multiplier;
             multiplier *= 0.1;
-            valid = 1;
+            valid = true;
             continue;
         }
         if (chr == '_' || chr == ',') continue;
         return NAN;
     }
+
     multiplier = 1;
+
     for (int64_t i = 1; dot - i >= 0; i++) {
         char chr = content[dot - i];
         if ('0' <= chr && chr <= '9') {
             result += (chr - '0') * multiplier;
             multiplier *= 10;
-            valid = 1;
+            valid = true;
             continue;
         }
         if (chr == '_' || chr == ',') continue;
@@ -388,30 +392,34 @@ has_dot:
         }
         return NAN;
     }
-    if (valid) return result * sign;
-    return NAN;
+
+    if (valid) {
+        return result * sign;
+    } else {
+        return NAN;
+    }
 }
 
-struct Array *read_input_line() {
+struct Array *epsl_read_input_line() {
     // Maybe replace with a real readline solution like GNU readline?
-    struct Array *result = blank_array(sizeof(char));
-    while (1) {
+    struct Array *result = epsl_blank_array(sizeof(char));
+    while (true) {
         int chr = getchar();
         if (chr == EOF || chr == '\n' || chr == '\r') return result;
         uint64_t length = result->length;
-        increment_length(result, sizeof(char));
+        epsl_increment_length(result, sizeof(char));
         ((char*)result->content)[length] = (char)chr;
     }
 }
 
-void abort_(const struct Array *string) {
+void epsl_abort(const struct Array *string) {
     fflush(stdout);
     fwrite(string->content, string->length, 1, stderr);
     putc('\n', stderr);
     exit(1);
 }
 
-struct Array *make_blank_array(uint64_t len, uint64_t elem_size) {
+struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size) {
     struct Array *result = epsl_malloc(sizeof(struct Array));
     result->ref_counter = 0;
     uint64_t cap = min1(len);
@@ -422,11 +430,11 @@ struct Array *make_blank_array(uint64_t len, uint64_t elem_size) {
     return result;
 }
 
-extern inline void sort_array(struct Array *array, uint64_t elem_size, int (*compar)(const void*, const void*)) {
+extern inline void epsl_sort_array(struct Array *array, uint64_t elem_size, int (*compar)(const void*, const void*)) {
     qsort(array->content, array->length, elem_size, compar);
 }
 
-struct Array *repeat_array(const struct Array *array, uint64_t times, uint64_t elem) {
+struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint64_t elem) {
     struct Array *result = epsl_malloc(sizeof(struct Array));
     result->ref_counter = 0;
     uint64_t src_len = array->length;
@@ -440,13 +448,13 @@ struct Array *repeat_array(const struct Array *array, uint64_t times, uint64_t e
         memcpy(content+i*src_size, array->content, src_size);
     }
     result->content = content;
-    increment_array_ref_counts(result, elem);
+    epsl_increment_array_ref_counts(result, elem);
     return result;
 }
 
 static const char *const NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found null\n";
 
-void null_value_fail() {
+void epsl_null_value_fail() {
     fflush(stdout);
     fwrite(NULL_FAIL_MESSAGE, strlen(NULL_FAIL_MESSAGE), 1, stderr);
     exit(1);
@@ -456,7 +464,7 @@ static const char *const TOO_FEW_PLACEHOLDERS_MESSAGE = ERR_START "Not enough pl
 static const char *const TOO_MANY_PLACEHOLDERS_MESSAGE = ERR_START "Too many placeholders for given number of values\n";
 static const char *const FORMAT_STRING_PLACEHOLDER = "{}";
 
-struct Array *format_string(struct Array *template_, struct Array *values[], uint32_t value_count) {
+struct Array *epsl_format_string(struct Array *template_, struct Array *values[], uint32_t value_count) {
     size_t placeholder_len = strlen(FORMAT_STRING_PLACEHOLDER);
     uint32_t template_Len = template_->length;
     char *template_Content = template_->content;
@@ -511,7 +519,7 @@ struct Array *format_string(struct Array *template_, struct Array *values[], uin
 
 static const char *const ARR_INDEX_ERR = ERR_START "Specified array index is greater or equal to array length\n";
 
-void array_idx_fail() {
+void epsl_array_idx_fail() {
     fflush(stdout);
     fwrite(ARR_INDEX_ERR, strlen(ARR_INDEX_ERR), 1, stderr);
     exit(1);
@@ -519,7 +527,7 @@ void array_idx_fail() {
 
 static const char *const DIV_0_ERR = ERR_START "Cannot divide an integer by 0\n";
 
-void div_0_fail() {
+void epsl_div_0_fail() {
     fflush(stdout);
     fwrite(DIV_0_ERR, strlen(DIV_0_ERR), 1, stderr);
     exit(1);
@@ -527,7 +535,7 @@ void div_0_fail() {
 
 static const char *const ARR_EMPTY_ERR = ERR_START "Expected an array with a nonzero length\n";
 
-void array_empty_fail() {
+void epsl_array_empty_fail() {
     fflush(stdout);
     fwrite(ARR_EMPTY_ERR, strlen(ARR_EMPTY_ERR), 1, stderr);
     exit(1);
