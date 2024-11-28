@@ -4,7 +4,7 @@ namespace Epsilon;
 public class EPSLFileCompiler : IFileCompiler {
     Program program;
     readonly string fileText;
-    readonly string srcPath;
+    readonly string idPath;
     string IR;
 
     public static void Setup() {
@@ -18,12 +18,12 @@ public class EPSLFileCompiler : IFileCompiler {
         }, "epsl");
     }
 
-    EPSLFileCompiler(string path, string fileText) {
-        Log.Info("Compiling EPSL file", path);
-        srcPath = path;
+    EPSLFileCompiler(string idPath, string fileText) {
+        Log.Info("Compiling EPSL file", idPath);
+        this.idPath = idPath;
         this.fileText = fileText;
         program = new Program(
-            Utils.GetFullPath(path),
+            Utils.GetFullPath(idPath),
             InitialTokenizer.Tokenize(fileText).ToList()
         );
         program.span = new CodeSpan(0, fileText.Length-1);
@@ -34,7 +34,7 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     public string GetIDPath() {
-        return srcPath;
+        return idPath;
     }
 
     public IEnumerable<string> ToImports() {
@@ -163,10 +163,6 @@ public class EPSLFileCompiler : IFileCompiler {
 
     public string GetObj() {
         return null;
-    }
-
-    public string GetSource() {
-        return srcPath;
     }
 
     public bool FromCache() {

@@ -14,7 +14,6 @@ public interface IFileCompiler {
     void FinishCompilation(string suggestedPath, bool recommendLLVM);
     string GetIR();
     string GetObj();
-    string GetSource();
     bool FromCache();
     bool ShouldSaveSPEC();
     FileSourceType GetFileSourceType();

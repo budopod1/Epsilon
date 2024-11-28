@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <clang-c/Index.h>
+#include <stdnoreturn.h>
 
 // clang -Xclang -ast-dump src.h
 
@@ -18,25 +19,6 @@ enum EPSLBuiltinType_ {
     EPSLType_Optional,
     EPSLType_Internal
 };
-
-char *builtin_type__names[] = {
-    "Bool",
-    "Byte",
-    "W",
-    "Z",
-    "Q",
-    "Array",
-    "Optional",
-    "Internal"
-};
-
-enum EPSLBuiltinType_ OptionalableBuiltinTypes_ = EPSLType_Array;
-
-char *skip_struct_prefixes[] = {"_", "ARRAY_"};
-
-char *src_filename = "src.c";
-
-CXFile file;
 
 union EPSLType_Name {
     enum EPSLBuiltinType_ builtin;
@@ -73,10 +55,13 @@ struct EPSLStruct {
     uint32_t field_cap;
     uint32_t field_count;
     struct EPSLField **fields;
+    bool has_ref_counter;
 };
 
 struct CollectedInfo {
-    bool is_private;
+    bool is_section_private;
+    char *common_prefix;
+    char *implementation_location;
     uint32_t struct_cap;
     uint32_t struct_count;
     struct EPSLStruct **structs;
@@ -95,6 +80,36 @@ struct ParamCollectorState {
     uint32_t i;
 };
 
+const char *const builtin_type__names[] = {
+    "Bool",
+    "Byte",
+    "W",
+    "Z",
+    "Q",
+    "Array",
+    "Optional",
+    "Internal"
+};
+
+const enum EPSLBuiltinType_ OptionalableBuiltinTypes_ = EPSLType_Array;
+
+const char *const skip_struct_prefixes[] = {"_", "ARRAY_"};
+
+char *src_filename;
+
+CXTranslationUnit unit;
+
+CXFile file;
+
+#ifndef strdup
+char *strdup(const char *src) {
+    size_t cap = strlen(src)+1;
+    void *result = malloc(cap);
+    memcpy(result, src, cap);
+    return result;
+}
+#endif
+
 extern inline uint32_t grow_cap(uint32_t old) {
     return (old * 3) / 2 + 1;
 }
@@ -107,7 +122,7 @@ bool remove_start(const char *src, const char *start, const char **result) {
     return true;
 }
 
-bool starts_with_any(const char *str, char *prefixes[], uint32_t prefix_count) {
+bool starts_with_any(const char *str, const char *const prefixes[], uint32_t prefix_count) {
     char prefixes_left[prefix_count];
     memset(prefixes_left, 1, prefix_count);
     uint32_t prefixes_left_count = prefix_count;
@@ -157,6 +172,12 @@ void output_EPSLField(struct EPSLField *field) {
 void output_collected(struct CollectedInfo *info) {
     puts("success");
 
+    if (info->implementation_location == NULL) {
+        puts("");
+    } else {
+        puts(info->implementation_location);
+    }
+
     printf("%"PRIu32"\n", info->struct_count);
     for (uint32_t i = 0; i < info->struct_count; i++) {
         puts(info->structs[i]->name);
@@ -193,7 +214,7 @@ unsigned location_to_int(CXSourceLocation location) {
     return offset;
 }
 
-void report_error(CXCursor cursor, char *err, ...) {
+noreturn void report_error(CXCursor cursor, char *err, ...) {
     puts("input error");
 
     va_list list;
@@ -208,7 +229,7 @@ void report_error(CXCursor cursor, char *err, ...) {
     exit(0);
 }
 
-void report_fail(char *err) {
+noreturn void report_fail(char *err) {
     puts("processing error");
     puts(err);
     exit(0);
@@ -311,8 +332,8 @@ void array_struct_decl_to_EPSLType_(CXCursor decl, CXType in, struct EPSLType_ *
     out->generics = visit_state.generic;
 }
 
-enum CXChildVisitResult refCounter_check_visitor(CXCursor field, CXCursor _, CXClientData visit_data) {
-    bool *refCounter_start = (bool*)visit_data;
+enum CXChildVisitResult ref_counter_check_visitor(CXCursor field, CXCursor _, CXClientData visit_data) {
+    bool *ref_counter_start = (bool*)visit_data;
 
     CXString field_name = clang_getCursorSpelling(field);
 
@@ -321,7 +342,7 @@ enum CXChildVisitResult refCounter_check_visitor(CXCursor field, CXCursor _, CXC
         if (!is_uint_of_size(field_type, 8)) {
             report_error(field, "ref_counter field isn't the right type (expected type uint64_t)");
         }
-        *refCounter_start = true;
+        *ref_counter_start = true;
     }
 
     clang_disposeString(field_name);
@@ -329,10 +350,10 @@ enum CXChildVisitResult refCounter_check_visitor(CXCursor field, CXCursor _, CXC
     return CXChildVisit_Break;
 }
 
-bool does_struct_have_refCounter(CXCursor struct_) {
-    bool refCounter_start = false;
-    clang_visitChildren(struct_, &refCounter_check_visitor, &refCounter_start);
-    return refCounter_start;
+bool does_struct_have_ref_counter(CXCursor struct_) {
+    bool ref_counter_start = false;
+    clang_visitChildren(struct_, &ref_counter_check_visitor, &ref_counter_start);
+    return ref_counter_start;
 }
 
 void struct_decl_to_EPSLType_(CXCursor decl, const char *name, CXType in, struct EPSLType_ *out) {
@@ -340,7 +361,7 @@ void struct_decl_to_EPSLType_(CXCursor decl, const char *name, CXType in, struct
     if (remove_start(name, "ARRAY_", &name_base)) {
         array_struct_decl_to_EPSLType_(decl, in, out);
     } else {
-        if (does_struct_have_refCounter(decl)) {
+        if (does_struct_have_ref_counter(decl)) {
             size_t name_len = strlen(name)+1;
             char *name_copy = malloc(name_len);
             memcpy(name_copy, name, name_len);
@@ -365,7 +386,7 @@ bool check_pointer_typedef_patterns(CXString name, CXString underlying_name, CXC
     if (remove_start(clang_getCString(name), "NULLABLE_", &name_base)) {
         const char *underlying_name_cstr = clang_getCString(underlying_name);
         if (strcmp(underlying_name_cstr, name_base) != 0) {
-            report_error(typedef_, "This typedef doesn't refrence the correct struct given its name. It's expected it to refrence %s (given the typedef name), while it refrences %s.", name_base, underlying_name_cstr);
+            report_error(typedef_, "This typedef doesn't reference the correct struct given its name. It's expected it to reference %s (given the typedef name), while it references %s.", name_base, underlying_name_cstr);
         }
 
         struct EPSLType_ *generic = malloc(sizeof(*generic));
@@ -531,19 +552,14 @@ void voidable_CXType_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *
 enum CXChildVisitResult field_collector_visitor(CXCursor cursor, CXCursor _, CXClientData visit_data) {
     struct EPSLStruct *struct_ = (struct EPSLStruct*)visit_data;
 
-    CXType cursor_type = clang_getCursorType(cursor);
-    cursor_type = strip_elaboration(cursor_type);
-    if (cursor_type.kind == CXType_Record) {
-        CXCursor type_decl = clang_getTypeDeclaration(cursor_type);
-        if (type_decl.kind == CXCursor_StructDecl) {
-            clang_visitChildren(type_decl, &field_collector_visitor, visit_data);
-            return CXChildVisit_Continue;
-        }
-    }
-
     CXString field_name = clang_getCursorSpelling(cursor);
     const char *name = clang_getCString(field_name);
     if (strcmp(name, "ref_counter") == 0) {
+        if (struct_->field_count > 0) {
+            report_error(cursor, "The ref_counter must be the struct's first field");
+        } else if (struct_->has_ref_counter) {
+            report_error(cursor, "A struct can't have more than one ref_counter");
+        }
         clang_disposeString(field_name);
         return CXChildVisit_Continue;
     }
@@ -554,6 +570,7 @@ enum CXChildVisitResult field_collector_visitor(CXCursor cursor, CXCursor _, CXC
     clang_disposeString(field_name);
 
     struct EPSLType_ *type_ = malloc(sizeof(*type_));
+    CXType cursor_type = clang_getCursorType(cursor);
     CXType_to_EPSLType_(cursor, cursor_type, type_);
 
     struct EPSLField *field = malloc(sizeof(*field));
@@ -573,7 +590,7 @@ enum CXChildVisitResult field_collector_visitor(CXCursor cursor, CXCursor _, CXC
 
 void collect_struct(struct CollectedInfo *info, CXCursor cursor) {
     if (!clang_isCursorDefinition(cursor)) return;
-    if (!does_struct_have_refCounter(cursor)) return;
+    if (!does_struct_have_ref_counter(cursor)) return;
 
     CXString struct_name = clang_getCursorSpelling(cursor);
     const char *name = clang_getCString(struct_name);
@@ -588,9 +605,7 @@ void collect_struct(struct CollectedInfo *info, CXCursor cursor) {
         return;
     }
 
-    size_t name_len = strlen(name)+1;
-    char *name_copy = malloc(name_len);
-    memcpy(name_copy, name, name_len);
+    char *name_copy = strdup(name);
     clang_disposeString(struct_name);
 
     struct EPSLStruct *struct_ = malloc(sizeof(*struct_));
@@ -598,6 +613,7 @@ void collect_struct(struct CollectedInfo *info, CXCursor cursor) {
     struct_->field_cap = 0;
     struct_->field_count = 0;
     struct_->fields = NULL;
+    struct_->has_ref_counter = false;
 
     clang_visitChildren(cursor, &field_collector_visitor, struct_);
 
@@ -641,9 +657,13 @@ void collect_func(struct CollectedInfo *info, CXCursor cursor) {
         return;
     }
 
-    size_t name_len = strlen(name)+1;
-    char *name_copy = malloc(name_len);
-    memcpy(name_copy, name, name_len);
+    char *name_copy = strdup(name);
+    if (info->common_prefix != NULL
+        && !remove_start(name_copy, info->common_prefix, (const char**)&name_copy)) {
+        clang_disposeString(func_name);
+        free(name_copy);
+        return;
+    }
     clang_disposeString(func_name);
 
     CXString func_symbol = clang_Cursor_getMangling(cursor);
@@ -678,20 +698,147 @@ void check_is_private(struct CollectedInfo *collected_info, CXCursor cursor) {
     CXString union_name = clang_getCursorSpelling(cursor);
     const char *name = clang_getCString(union_name);
     if (strcmp(name, "___EPSL_PUBLIC_STOP") == 0) {
-        collected_info->is_private = true;
+        collected_info->is_section_private = true;
     } else if (strcmp(name, "___EPSL_PUBLIC_START") == 0) {
-        collected_info->is_private = false;
+        collected_info->is_section_private = false;
     }
     clang_disposeString(union_name);
+}
+
+void parse_c_string(CXCursor error_location, char *str) {
+    size_t input_len = strlen(str);
+    if (input_len < 2 || str[0] != '"' || str[input_len-1] != '"') {
+        report_error(error_location, "Expected simple string");
+    }
+
+    bool was_backslash = false;
+    size_t j = 0;
+
+    for (size_t i = 1; i < input_len-1; i++) {
+        char in_char = str[i];
+        if (was_backslash) {
+            char out_char;
+            switch (in_char) {
+            case '\'':
+                out_char = '\'';
+                break;
+            case '"':
+                out_char = '"';
+                break;
+            case '?':
+                out_char = '?';
+                break;
+            case '\\':
+                out_char = '\\';
+                break;
+            case 'a':
+                out_char = '\a';
+                break;
+            case 'b':
+                out_char = '\b';
+                break;
+            case 'f':
+                out_char = '\f';
+                break;
+            case 'n':
+                out_char = '\n';
+                break;
+            case 'r':
+                out_char = '\r';
+                break;
+            case 't':
+                out_char = '\t';
+                break;
+            case 'v':
+                out_char = '\v';
+                break;
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case 'o':
+                report_error(error_location, "Octal escape sequences are currently not supported");
+            case 'x':
+                report_error(error_location, "Hexadecimal escape sequences are currently not supported");
+            case 'u':
+            case 'U':
+            case 'N':
+                report_error(error_location, "Universal character names are not currently supported");
+            default:
+                report_error(error_location, "Invalid escape sequence");
+            }
+
+            str[j++] = out_char;
+            was_backslash = false;
+        } else {
+            if (in_char == '\\') {
+                was_backslash = true;
+            } else if (in_char == '"') {
+                report_error(error_location, "Unescaped \" found in string");
+            } else {
+                str[j++] = in_char;
+            }
+        }
+    }
+
+    str[j] = '\0';
+}
+
+char *get_macro_value(CXCursor macro) {
+    CXToken *tokens;
+    unsigned int num_tokens;
+    clang_tokenize(unit, clang_getCursorExtent(macro), &tokens, &num_tokens);
+
+    if (num_tokens < 2) {
+        report_error(macro, "Required value, no value specified");
+    } else if (num_tokens > 2) {
+        report_error(macro, "Expected one value");
+    }
+
+    CXString cx_macro_value = clang_getTokenSpelling(unit, tokens[1]);
+    char *macro_value = strdup(clang_getCString(cx_macro_value));
+    clang_disposeString(cx_macro_value);
+
+    clang_disposeTokens(unit, tokens, num_tokens);
+
+    return macro_value;
+}
+
+void handle_macro(struct CollectedInfo *collected_info, CXCursor cursor) {
+    CXString cx_macro_name = clang_getCursorSpelling(cursor);
+    const char *macro_name = clang_getCString(cx_macro_name);
+
+    if (strcmp(macro_name, "EPSL_COMMON_PREFIX") == 0) {
+        if (collected_info->common_prefix != NULL) {
+            free(collected_info->common_prefix);
+        }
+        char *common_prefix = get_macro_value(cursor);
+        parse_c_string(cursor, common_prefix);
+        collected_info->common_prefix = common_prefix;
+    } else if (strcmp(macro_name, "EPSL_IMPLEMENTATION_LOCATION") == 0) {
+        if (collected_info->implementation_location != NULL) {
+            free(collected_info->implementation_location);
+        }
+        char *implementation_location = get_macro_value(cursor);
+        parse_c_string(cursor, implementation_location);
+        collected_info->implementation_location = implementation_location;
+    }
+
+    clang_disposeString(cx_macro_name);
 }
 
 enum CXChildVisitResult visit_toplevel(CXCursor cursor, CXCursor _, CXClientData visit_data) {
     struct CollectedInfo *collected_info = (struct CollectedInfo*)visit_data;
 
-    if (!clang_Location_isFromMainFile(clang_getCursorLocation(cursor)))
+    if (!clang_Location_isFromMainFile(clang_getCursorLocation(cursor))) {
         return CXChildVisit_Continue;
-
-    if (collected_info->is_private) {
+    } else if (clang_getCursorLinkage(cursor) == CXLinkage_Internal) {
+        return CXChildVisit_Continue;
+    } else if (collected_info->is_section_private) {
         if (cursor.kind == CXCursor_UnionDecl) {
             check_is_private(collected_info, cursor);
         }
@@ -699,6 +846,8 @@ enum CXChildVisitResult visit_toplevel(CXCursor cursor, CXCursor _, CXClientData
         return CXChildVisit_Continue;
     } else {
         switch (cursor.kind) {
+        case CXCursor_MacroDefinition:
+            handle_macro(collected_info, cursor);
         case CXCursor_StructDecl:
             collect_struct(collected_info, cursor);
             return CXChildVisit_Continue;
@@ -720,17 +869,17 @@ int main(int argc, const char *const argv[]) {
     }
 
     // argv[0] isn't a real argument
-    argc--;
     argv++;
-
     argc--;
-    const char *const src_filename = *argv++;
+
+    const char *const src_filename = *(argv++);
+    argc--;
 
     CXIndex index = clang_createIndex(0, 0);
 
-    CXTranslationUnit unit = clang_parseTranslationUnit(
+    unit = clang_parseTranslationUnit(
         index, src_filename, argv, argc,
-        NULL, 0, CXTranslationUnit_None
+        NULL, 0, CXTranslationUnit_DetailedPreprocessingRecord
     );
 
     if (unit == NULL) {

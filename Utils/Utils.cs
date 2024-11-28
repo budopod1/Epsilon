@@ -142,10 +142,10 @@ public static class Utils {
         }
     }
 
-
     public static string RemoveExtension(string path) {
         return SetExtension(path, extension: null);
     }
+
     public static string GetExtension(string path) {
         string result;
         try {

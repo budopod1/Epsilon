@@ -24,7 +24,7 @@ public class Builder {
 
     static Builder() {
         EPSLFileCompiler.Setup();
-        CFileCompiler.Setup();
+        HeaderFileCompiler.Setup();
     }
 
     public ResultStatus RunWrapped(Action action) {
@@ -73,8 +73,7 @@ public class Builder {
             Console.WriteLine(e.Message);
             return ResultStatus.USERERR;
         } catch (FileProblemException e) {
-            Console.Write(currentFile);
-            Console.WriteLine(":");
+            Console.WriteLine($"In {currentFile}:");
             Console.WriteLine(e.Message);
             return ResultStatus.USERERR;
         }
@@ -163,7 +162,7 @@ public class Builder {
             return status1;
         }
 
-        // We can still load the .epslcache in DONTLOAD mode, because the EPSLSPEC files refrenced
+        // We can still load the .epslcache in DONTLOAD mode, because the EPSLSPEC files referenced
         // by it won't be used anyway
         if (cacheMode <= CacheMode.DONTUSE) {
             cacheOut = new EPSLCACHE(cacheLocation);
@@ -839,15 +838,6 @@ public class Builder {
     }
 
     void ShowCompilationError(SyntaxErrorException e, string text, string file) {
-        Console.ForegroundColor = ConsoleColor.DarkRed;
-        Console.Write("compilation error in ");
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.Write(file);
-        Console.ForegroundColor = ConsoleColor.DarkRed;
-        Console.Write(": ");
-        Console.ResetColor();
-        Console.WriteLine(e.Message);
-
         CodeSpan span = e.span;
 
         if (span == null || text == null) return;
@@ -880,6 +870,14 @@ public class Builder {
                 if (stage == 0) startIndex++;
             }
         }
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.Write("compilation error in ");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Write($"{file}:{startLine}");
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.Write(": ");
+        Console.ResetColor();
+        Console.WriteLine(e.Message);
 
         bool oneLine = startLine == endLine;
 

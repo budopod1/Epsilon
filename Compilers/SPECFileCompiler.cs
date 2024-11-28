@@ -235,12 +235,8 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
         return Utils.JoinPaths(Utils.GetDirectoryName(curPath), objPath);
     }
 
-    public string GetSource() {
-        return obj["source"].GetStringOrNull();
-    }
-
     public bool FromCache() {
-        return GetSource() != null;
+        return obj["source"].IsNull();
     }
 
     public bool ShouldSaveSPEC() {

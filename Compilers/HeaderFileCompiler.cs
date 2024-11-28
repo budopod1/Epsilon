@@ -1,18 +1,22 @@
 namespace Epsilon;
-public class CFileCompiler : IFileCompiler {
+public class HeaderFileCompiler : IFileCompiler {
     readonly string path;
     readonly string idPath;
     readonly string fileText;
     readonly bool isCPP;
 
+    string implementation = null;
     readonly Dictionary<string, LocatedID> structIDs = [];
     readonly HashSet<Struct> structs = [];
     readonly List<RealFunctionDeclaration> funcs = [];
 
     string ir = null;
+    string obj = null;
 
-    static readonly string[] cExtensions = ["c"];
-    static readonly string[] cppExtensions = ["cpp", "cc", "cxx"];
+    static readonly string[] headerImplementationExtensions = ["c", "cpp", "cc", "cxx"];
+    static readonly string[] headerExtensions = ["h", "hpp", "hxx"];
+    static readonly string[] cppExtensions = ["hpp", "hxx", "cpp", "cc", "cxx"];
+    static readonly string[] LLVMImplementationExtensions = ["ll", "bc"];
 
     class LineReader(string source) {
         readonly string[] parts = source.Split("\n");
@@ -33,16 +37,20 @@ public class CFileCompiler : IFileCompiler {
             using (StreamReader file = new(path)) {
                 fileText = file.ReadToEnd();
             }
-            return new CFileCompiler(path, fileText);
-        }, [..cExtensions, ..cppExtensions]);
+            return new HeaderFileCompiler(path, fileText);
+        }, [..headerExtensions, ..headerImplementationExtensions]);
     }
 
-    CFileCompiler(string path, string fileText) {
+    HeaderFileCompiler(string path, string fileText) {
         this.path = path;
         idPath = Utils.Stem(path);
-        Log.Info("Compiling C file", idPath);
+        Log.Info("Compiling file from header", idPath);
         this.fileText = fileText;
-        isCPP = cppExtensions.Contains(Path.GetExtension(path)[1..]);
+        string pathExtension = Utils.GetExtension(path);
+        isCPP = cppExtensions.Contains(pathExtension);
+        if (headerImplementationExtensions.Contains(pathExtension)) {
+            implementation = path;
+        }
     }
 
     public string GetText() {
@@ -120,6 +128,21 @@ public class CFileCompiler : IFileCompiler {
     }
 
     void ReadSerializedSignatures(LineReader reader) {
+        string implementationIn = reader.Line();
+
+        if (implementationIn != "") {
+            implementation = Utils.JoinPaths(
+                Utils.GetDirectoryName(path),
+                implementationIn
+            );
+        }
+
+        if (implementation == null) {
+            throw new FileProblemException(
+                "Header files must include #define EPSL_IMPLEMENTATION_LOCATION \"<implementation location>\""
+            );
+        }
+
         int structCount = reader.Int();
         for (int i = 0; i < structCount; i++) {
             LocatedID id = ReadStructID(reader);
@@ -136,8 +159,9 @@ public class CFileCompiler : IFileCompiler {
     }
 
     IEnumerable<string> FetchSignaturesArgs(string filename) {
-        return new string[] {filename}.Concat(
-            CmdUtils.ListIncludeDirs(isCPP).Select(arg => "-I"+arg));
+        return new string[] {filename}
+            .Concat(CmdUtils.ListIncludeDirs(isCPP).Select(arg => "-I"+arg))
+            .Concat(Subconfigs.GetClangParseConfigs());
     }
 
     void FetchSignatures(string filename) {
@@ -176,7 +200,7 @@ public class CFileCompiler : IFileCompiler {
         File.Copy(path, Utils.JoinPaths(Utils.TempDir(), destName), true);
         FetchSignatures(destName);
 
-        return structIDs.Values.ToHashSet();
+        return [..structIDs.Values];
     }
 
     public void AddStructIDs(HashSet<LocatedID> structIds) {}
@@ -197,9 +221,27 @@ public class CFileCompiler : IFileCompiler {
         return Dependencies.Empty();
     }
 
+    bool IsSelfImplementing() {
+        return headerImplementationExtensions.Contains(
+            Utils.GetExtension(implementation));
+    }
+
     public void FinishCompilation(string destPath, bool recommendLLVM) {
-        ir = destPath + ".bc";
-        CmdUtils.CToLLVM(isCPP, path, ir);
+        string implementationExtension = Utils.GetExtension(implementation);
+        if (IsSelfImplementing()) {
+            ir = destPath + ".bc";
+            CmdUtils.CToLLVM(isCPP, path, ir);
+        } else if (LLVMImplementationExtensions.Contains(implementationExtension)) {
+            ir = destPath + "." + implementationExtension;
+            File.Copy(implementation, ir, overwrite: true);
+        } else if (implementationExtension == "o") {
+            obj = destPath + ".o";
+            File.Copy(implementation, obj, overwrite: true);
+        } else {
+            throw new FileProblemException(
+                $".{implementationExtension} is not a valid extension for a header's implementation"
+            );
+        }
     }
 
     public string GetIR() {
@@ -207,11 +249,7 @@ public class CFileCompiler : IFileCompiler {
     }
 
     public string GetObj() {
-        return null;
-    }
-
-    public string GetSource() {
-        return idPath;
+        return obj;
     }
 
     public bool FromCache() {
@@ -219,7 +257,7 @@ public class CFileCompiler : IFileCompiler {
     }
 
     public bool ShouldSaveSPEC() {
-        return true;
+        return false;
     }
 
     public FileSourceType GetFileSourceType() {

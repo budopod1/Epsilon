@@ -45,7 +45,7 @@ public abstract class AdvancedPatternExtractor<T> : ITokenExtractor<T> {
             part = Part.START;
             bool finishedMatch = false;
             int j;
-            int lastRepeatStop = -2; // this variable should always be assigned before refrence
+            int lastRepeatStop = -2; // this variable should always be assigned before reference
             int pi = 0; // part index
             int repeats = 0;
             List<IToken> tokenList = [];
