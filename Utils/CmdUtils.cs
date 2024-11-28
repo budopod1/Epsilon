@@ -137,6 +137,7 @@ public static class CmdUtils {
     }
 
     public static IEnumerable<string> ListIncludeDirs(bool isCPP) {
+        List<string> includeDirs = [];
         string raw = RunCommand("cpp", ["--verbose", "-x", isCPP ? "c++" : "c", "/dev/null"]);
         bool isSearchList = false;
         foreach (string line in raw.Split("\n")) {
@@ -144,12 +145,13 @@ public static class CmdUtils {
                 if (line == "End of search list.") {
                     isSearchList = false;
                 } else if (line.Length > 0 && line[0] == ' ') {
-                    yield return line[1..];
+                    includeDirs.Add(line[1..]);
                 }
             } else if (line == "#include <...> search starts here:") {
                 isSearchList = true;
             }
         }
+        return includeDirs;
     }
 
     public static string VerifyCSyntax(bool cpp, string file) {

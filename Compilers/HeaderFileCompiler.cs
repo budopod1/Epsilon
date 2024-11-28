@@ -230,7 +230,7 @@ public class HeaderFileCompiler : IFileCompiler {
         string implementationExtension = Utils.GetExtension(implementation);
         if (IsSelfImplementing()) {
             ir = destPath + ".bc";
-            CmdUtils.CToLLVM(isCPP, path, ir);
+            CmdUtils.CToLLVM(isCPP, implementation, ir);
         } else if (LLVMImplementationExtensions.Contains(implementationExtension)) {
             ir = destPath + "." + implementationExtension;
             File.Copy(implementation, ir, overwrite: true);
