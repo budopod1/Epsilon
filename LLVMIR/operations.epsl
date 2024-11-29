@@ -223,7 +223,7 @@ if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
 
         if (pad_left) {
             Val:content_dest = [content] shifted by [fill_amount];
-            extern fn [null] ["memmove"] [[Type_] [Pointer [Byte_], Pointer [Byte_], L_]]
+            extern fn [Internal_] ["epsl_memmove"] [[Type_] [Pointer [Byte_], Pointer [Byte_], L_]]
                 [[Val] [content_dest, content, cur_len]];
         };
 
@@ -235,7 +235,7 @@ if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
                 pad_dest = [content] shifted by [cur_len];
             };
 
-            extern fn [null] ["memset"] [[Type_] [Pointer [Byte_], Z_, L_]]
+            extern fn [Internal_] ["epsl_memset"] [[Type_] [Pointer [Byte_], Z_, L_]]
                 [[Val] [[pad_dest].unwrap, cast [val] to [Z_], fill_amount]];
         } else {
             Val?:from = null;
@@ -270,7 +270,7 @@ Val#buffer eq [Val:outer_a] to [Val:outer_b] of len [Val:outer_len] {
     outer_len = cast [outer_len] to [L_];
 
     if ([generic] == [Byte_]) {
-        extern fn [Z_] ["memcmp"] [[Type_] [Pointer [Byte_], Pointer [Byte_], L_]]
+        extern fn [Z_] ["epsl_memcmp"] [[Type_] [Pointer [Byte_], Pointer [Byte_], L_]]
             [[Val] [outer_a, outer_b, outer_len]];
         return [func ret] eq [c [(Z)0]];
     };
@@ -538,8 +538,8 @@ Val#sort array [Val:arr] invert: [Bool:invert] {
     Type_:compar_type_ = FuncPtr [Z_] [[Type_] [Internal_, Internal_]];
     Val:compar = make compare func of [arr.type_.generics[0]] invert: [invert];
     compar = cast [compar] to [compar_type_];
-    extern fn [null] ["qsort"] [[Type_] [Internal_, L_, L_, compar_type_]]
-        [[Val] [cast [[arr].content] to [Internal_], [arr].length, sizeof elem [arr.type_], compar]];
+    extern fn [null] ["epsl_sort_array"] [[Type_] [Internal_, L_, compar_type_]]
+        [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_], compar]];
     return func ret;
 }
 

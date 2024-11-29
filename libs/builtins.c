@@ -6,12 +6,58 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+#include <threads.h>
+#include <stdarg.h>
 
 #include "builtins.h"
 
 #define ERR_START "FATAL ERROR: "
 
 static const char *const MEM_ERR = ERR_START "Out of memory\n";
+
+void *epsl_memmove(void *dest, const void *src, uint64_t count) {
+    return memmove(dest, src, count);
+}
+
+void *epsl_memset(void *dest, unsigned char ch, uint64_t count) {
+    return memset(dest, ch, count);
+}
+
+int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count) {
+    return memcmp(lhs, rhs, count);
+}
+
+void *epsl_memcpy(void *dest, const void *src, uint64_t count) {
+    return memcpy(dest, src, count);
+}
+
+int32_t epsl_printf(const char *format, ...) {
+    va_list vargs;
+    va_start(vargs, format);
+    int32_t result = vprintf(format, vargs);
+    va_end(vargs);
+    return result;
+}
+
+int32_t epsl_sprintf(char *buffer, const char *format, ...) {
+    va_list vargs;
+    va_start(vargs, format);
+    int32_t result = vsprintf(buffer, format, vargs);
+    va_end(vargs);
+    return result;
+}
+
+int32_t epsl_snprintf(char *buffer, uint64_t bufsz, const char *format, ...) {
+    va_list vargs;
+    va_start(vargs, format);
+    int32_t result = vsnprintf(buffer, bufsz, format, vargs);
+    va_end(vargs);
+    return result;
+} 
+
+void epsl_exit(uint32_t status) {
+    exit(status);
+}
 
 void epsl_out_of_memory_fail() {
     fflush(stdout);
@@ -43,7 +89,7 @@ void *epsl_realloc(void *ptr, uint64_t new_size) {
     return result;
 }
 
-extern inline uint64_t epsl_calc_new_capacity(uint64_t cap) {
+static inline uint64_t epsl_calc_new_capacity(uint64_t cap) {
     return 1+(cap*3)/2;
 }
 
@@ -430,8 +476,19 @@ struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size) {
     return result;
 }
 
-extern inline void epsl_sort_array(struct Array *array, uint64_t elem_size, int (*compar)(const void*, const void*)) {
-    qsort(array->content, array->length, elem_size, compar);
+static thread_local int32_t (*thread_compar_base)(const void*, const void*);
+
+static int compar_wrapper(const void *a, const void *b) {
+    return (*thread_compar_base)(a, b);
+}
+
+void epsl_sort_array(struct Array *array, uint64_t elem_size, int32_t (*compar)(const void*, const void*)) {
+    if (sizeof(int) == sizeof(int32_t)) {
+        qsort(array->content, array->length, elem_size, compar);
+    } else {
+        thread_compar_base = compar;
+        qsort(array->content, array->length, elem_size, &compar_wrapper);
+    }
 }
 
 struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint64_t elem) {

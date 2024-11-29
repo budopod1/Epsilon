@@ -678,7 +678,7 @@ Label:cond_label = new label:;
 }
 
 #build abort_ void {
-    extern fn [null] ["exit"] [[Type_] [Z_]] [[Val] [c [(Z)1]]];
+    extern fn [null] ["epsl_exit"] [[Type_] [Z_]] [[Val] [c [(Z)1]]];
     mark as unreachable;
 }
 

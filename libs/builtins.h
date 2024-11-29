@@ -24,6 +24,22 @@ struct Array {
     void *content;
 };
 
+void *epsl_memmove(void *dest, const void *src, uint64_t count);
+
+void *epsl_memset(void *dest, unsigned char ch, uint64_t count);
+
+int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count);
+
+void *epsl_memcpy(void *dest, const void *src, uint64_t count);
+
+int32_t epsl_printf(const char *format, ...);
+
+int32_t epsl_sprintf(char *buffer, const char *format, ...);
+
+int32_t epsl_snprintf(char *buffer, uint64_t bufsz, const char *format, ...);
+
+void epsl_exit(uint32_t status);
+
 void epsl_out_of_memory_fail();
 
 void *epsl_malloc(uint64_t size);
@@ -31,8 +47,6 @@ void *epsl_malloc(uint64_t size);
 void *epsl_calloc(uint64_t num, uint64_t size);
 
 void *epsl_realloc(void *ptr, uint64_t new_size);
-
-extern inline uint64_t epsl_calc_new_capacity(uint64_t cap);
 
 void epsl_increment_length(struct Array *array, uint64_t elem_size);
 
@@ -94,7 +108,7 @@ void epsl_abort(const struct Array *string);
 
 struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size);
 
-extern inline void epsl_sort_array(struct Array *array, uint64_t elem_size, int (*compar)(const void*, const void*));
+void epsl_sort_array(struct Array *array, uint64_t elem_size, int32_t (*compar)(const void*, const void*));
 
 struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint64_t elem);
 

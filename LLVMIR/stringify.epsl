@@ -84,13 +84,13 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
         Val:casted = cast [val] to [new_type_];
         Val:specifier = [specifier_optional].unwrap;
 
-        extern fn [Z_] ["snprintf"] [[Type_] [Pointer [Byte_], L_, Pointer [Byte_]]]
+        extern fn [Z_] ["epsl_snprintf"] [[Type_] [Pointer [Byte_], L_, Pointer [Byte_]]]
             vargs [[Val] [c null_ [Pointer [Byte_]], c L_ [0], specifier, casted]];
         Val:length = cast [func ret] to [L_];
         Val:required_bytes = [length] + [c L_ [1]];
 
         Val:content = malloc [required_bytes] [Byte_];
-        extern fn [Z_] ["sprintf"] [[Type_] [Pointer [Byte_], Pointer [Byte_]]]
+        extern fn [Z_] ["epsl_sprintf"] [[Type_] [Pointer [Byte_], Pointer [Byte_]]]
             vargs [[Val] [content, specifier, casted]];
 
         [[result].length] = [length];
