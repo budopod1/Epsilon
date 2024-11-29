@@ -28,6 +28,9 @@ for path in changed_files:
     if not file.exists():
         continue
 
+    if file.is_symlink():
+        continue
+
     text1 = file.read_text()
 
     if "\t" in text1:

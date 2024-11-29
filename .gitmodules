@@ -13,3 +13,6 @@
 [submodule "EEWriter"]
 	path = EEWriter
 	url = https://github.com/budopod1/EEWriter.git
+[submodule "C-Run-Command"]
+	path = C-Run-Command
+	url = https://github.com/budopod1/C-Run-Command

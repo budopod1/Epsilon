@@ -8,17 +8,18 @@ public static class CmdUtils {
     static bool HasSetDllResolver = false;
 
     #pragma warning disable CS0649
-    struct _ProcessResult {
+    struct CRCProcessResult {
         public string output;
+        public string error;
         public byte status;
     }
 
     [DllImport("runcommand.so")]
-    static extern _ProcessResult _RunCommand(string prog, string[] args, int argCount);
+    static extern CRCProcessResult CRC_run_command(string prog, string[] args, uint argCount, uint captureMode);
 
     static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath) {
         if (libraryName == "runcommand.so") {
-            string path = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "Utils", "runcommand.so");
+            string path = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "C-Run-Command", "runcommand.so");
             return NativeLibrary.Load(path, assembly, searchPath);
         }
 
@@ -34,7 +35,7 @@ public static class CmdUtils {
 
         string[] args = arguments.ToArray();
         Log.Info(command, $"[{string.Join(", ", arguments)}]");
-        _ProcessResult result = _RunCommand(command, args, args.Length);
+        CRCProcessResult result = CRC_run_command(command, args, (uint)args.Length, 1);
         exitCode = result.status;
         return result.output;
     }
