@@ -53,7 +53,7 @@ int32_t epsl_snprintf(char *buffer, uint64_t bufsz, const char *format, ...) {
     int32_t result = vsnprintf(buffer, bufsz, format, vargs);
     va_end(vargs);
     return result;
-} 
+}
 
 void epsl_exit(uint32_t status) {
     exit(status);

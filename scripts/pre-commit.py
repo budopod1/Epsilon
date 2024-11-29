@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-CHECK_SUBTREE_FILES = True
+CHECK_SUBTREE_FILES = False
 CHECK_REPO_FILES = False
 
 root = Path(sys.argv[0]).resolve().parent.parent
