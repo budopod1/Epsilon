@@ -3,23 +3,26 @@ from pathlib import Path
 import subprocess
 import sys
 
-CHECK_ALL_FILES = False
+CHECK_SUBTREE_FILES = True
+CHECK_REPO_FILES = False
 
 root = Path(sys.argv[0]).resolve().parent.parent
 
-if CHECK_ALL_FILES:
-    changed_proc = subprocess.run(
-        ["git", "ls-tree", "-r", "HEAD", "--name-only"], capture_output=True, text=True
-    )
+if CHECK_SUBTREE_FILES:
+    list_changed_command = ["find"]
+elif CHECK_REPO_FILES:
+    list_changed_command = ["git", "ls-tree", "-r", "HEAD", "--name-only"]
 else:
-    changed_proc = subprocess.run(
-        ["git", "diff", "--name-only", "--cached"], capture_output=True, text=True
-    )
-changed_files = filter(bool, changed_proc.stdout.split("\n"))
+    list_changed_command = ["git", "diff", "--name-only", "--cached"]
+
+list_proccess = subprocess.run(
+    list_changed_command, capture_output=True, text=True
+)
+check_files = filter(bool, list_proccess.stdout.split("\n"))
 
 fixed_files = []
 
-for path in changed_files:
+for path in check_files:
     file = root/path
 
     if file.suffix not in [".cs", ".epsl", ".py", ".c", ".bash"]:
@@ -49,7 +52,7 @@ for path in changed_files:
         file.write_text(text2)
         fixed_files.append(file)
 
-if fixed_files:
+if fixed_files and not CHECK_SUBTREE_FILES:
     subprocess.run(
         ["git", "add", *fixed_files]
     )
