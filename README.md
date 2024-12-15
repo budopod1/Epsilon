@@ -6,34 +6,20 @@ Epsilon is a compiled, statically typed, semi-memory safe programming language w
 
 Epsilon depends on:
 
-* Python (3.10 or greater)
-    * The `virtualenv` package
-* Mono 5
-* LLVM 14
-* Clang
+* Python 3.10 or above
+* .NET 8 or above
+* Clang and LLVM 15 or above
 
 ## Setup
 
-To setup and build Epsilon, run:
+To setup Epsilon, run:
 
     ./setup.bash
 
-## Using Epsilon
+## Documentation
 
-Epsilon has documentation avaliable [here](/docs/syntax.md).
+Epsilon has [outdated documentation here](/docs/syntax.md).
 
-## Running Code
+## epslc
 
-Epsilon files must use the extension `.epsl`. To compile them, run:
-
-    mono <path to Epsilon.exe> compile <input file path> [-o <output file path>]
-
-## Building
-
-After Epsilon has been setup, Epsilon's C# can be rebuilt with `./build.bash`, Epsilon's builtins can be rebuilt with `./buildbuiltins.bash`, and Epsilon's standard library can be rebuilt with `./buildlibs.bash`.
-
-## Testing
-
-Epsilon can be tested with
-
-    ./test.bash
+`epslc` is the Epsilon compiler. Use `epslc init` to create a new Epsilon project, and then run `epslc compile` to compile it. More command usage information is avaliable with `epslc --help` and `epslc compile --help`.

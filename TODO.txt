@@ -9,4 +9,4 @@ TODO:
 * add `Struct` type that's treated as a superclass of all structs
 * allow `switch` blocks with non-constant operands by converting them to Conditionals using the `equals` builtin (or equivalent)
 * File should have custom destructor that calls `close`
-* update README and docs
+* update docs
