@@ -23,22 +23,18 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
     public SubconfigCollection GetSubconfigs() {
         return new SubconfigCollection(
             obj["clang_parse_subconfigs"].IterList().Select(ParseSubconfigFromJSON),
-            obj["linking_configs"].IterList().Select(ParseSubconfigFromJSON)
+            obj["linking_configs"].IterList().Select(ParseSubconfigFromJSON),
+            obj["object_gen_configs"].IterList().Select(ParseSubconfigFromJSON)
         );
     }
 
     public static ISubconfig ParseSubconfigFromJSON(ShapedJSON obj) {
-        string type = obj["type"].GetString();
-
-        switch (type) {
-        case "constant":
-            return new ConstantSubconfig(obj);
-        default:
-            throw new InvalidJSONException(
-                "Invalid type of subconfig",
-                obj.GetJSON()
-            );
-        }
+        return obj["type"].GetString() switch {
+            "constant" => new ConstantSubconfig(obj),
+            _ => throw new InvalidJSONException(
+                "Invalid type of subconfig", obj.GetJSON()
+            ),
+        };
     }
 
     Dictionary<string, string> structIds;
@@ -108,32 +104,21 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
             for (int i = 0; i < template.ListCount(); i++) {
                 ShapedJSON sobj = template[i];
                 string type = sobj["type"].GetString();
-                Dictionary<string, IJSONShape> fields;
-                switch (type) {
-                case "name":
-                    fields = new Dictionary<string, IJSONShape> {
+                sobj = sobj.ToShape(new JSONObjectShape(type switch {
+                    "name" => new Dictionary<string, IJSONShape> {
                         {"name", new JSONStringShape()}
-                    };
-                    break;
-                case "text":
-                    fields = new Dictionary<string, IJSONShape> {
+                    },
+                    "text" => new Dictionary<string, IJSONShape> {
                         {"text", new JSONStringShape()}
-                    };
-                    break;
-                case "argument":
-                    fields = new Dictionary<string, IJSONShape> {
+                    },
+                    "argument" => new Dictionary<string, IJSONShape> {
                         {"name", new JSONStringShape()},
                         {"type_", new JSONStringShape()}
-                    };
-                    break;
-                default:
-                    throw new InvalidJSONException(
-                        "Invalid type of template segment",
-                        sobj.GetJSON()
-                    );
-                }
-
-                sobj = sobj.ToShape(new JSONObjectShape(fields));
+                    },
+                    _ => throw new InvalidJSONException(
+                        "Invalid type of template segment", sobj.GetJSON()
+                    ),
+                }));
 
                 switch (type) {
                 case "name":

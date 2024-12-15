@@ -1,4 +1,3 @@
 {
-    "command_options": [],
     "libraries": ["../EPSL-IR-Gen/irgen", "../EEWriter/eewriter", "../EPSL-BinJSON/binjson"]
 }

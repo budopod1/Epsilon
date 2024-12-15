@@ -1,4 +1,4 @@
-using CsCommandLine;
+using CsCommandConfig;
 using CsJSONTools;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -103,47 +103,30 @@ public class Builder {
         return result;
     }
 
-    public ResultStatus LoadEPSLPROJ(string input, out EPSLPROJ projOut, bool allowNew=true) {
-        EPSLPROJ proj = null;
-
+    public ResultStatus LoadEPSLPROJ(string input, JSONConfigParser EPSLPROJParser, bool allowNew=true) {
         string projLocation = null;
         ResultStatus status1 = RunWrapped(() => {
             string projDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
             string projName = Utils.SetExtension(input, "epslproj");
             projLocation = Utils.JoinPaths(projDirectory, projName);
         });
+
         if (status1 != ResultStatus.GOOD) {
-            projOut = null;
             return status1;
         }
 
-        ResultStatus status2 = RunWrapped(() => {
-            if (Utils.FileExists(projLocation)) {
-                currentFile = projLocation;
-                proj = EPSLPROJ.FromText(projLocation, ParseJSONFile(projLocation));
-                Log.Info("Loaded EPSLPROJ");
-            }
-        });
+        bool projExists = Utils.FileExists(projLocation);
 
-        if (!allowNew && proj == null) {
-            projOut = null;
+        if (!allowNew && !projExists) {
             Console.WriteLine("Cannot find requested EPSLPROJ");
             return ResultStatus.USERERR;
         }
 
-        projOut = proj ?? new EPSLPROJ(projLocation);
-
-        return status2;
-    }
-
-    public ResultStatus ParseAdditionalOptions(ArgumentParser parser, EPSLPROJ proj) {
         return RunWrapped(() => {
-            try {
-                parser.ParseAdditionalOptions(proj.CommandOptions);
-            } catch (ParseProblemException e) {
-                throw new ProjectProblemException(
-                    $"Problem while parsing additional parameters: {e.Message}"
-                );
+            if (projExists) {
+                currentFile = projLocation;
+                EPSLPROJParser.Parse(projLocation, text => currentText = text);
+                Log.Info("Loaded EPSLPROJ");
             }
         });
     }
@@ -225,7 +208,6 @@ public class Builder {
 
             long buildStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            EPSLPROJ proj = settings.Proj;
             EPSLCACHE cache = settings.Cache;
 
             string input = Utils.GetFullPath(settings.InputPath);
@@ -1012,8 +994,13 @@ public class Builder {
         return RunWrapped(() => {
             string fullPath = Utils.GetFullPath(path);
             Utils.CreateFileUnlessExists(Utils.SetExtension(fullPath, "epsl"));
-            EPSLPROJ proj = new(Utils.SetExtension(fullPath, "epslproj"));
-            proj.ToFile();
+            string epslprojLocation = Utils.SetExtension(fullPath, "epslproj");
+            if (!Utils.FileExists(epslprojLocation)) {
+                JSONObject epslprojData = [];
+                PrettyPrintConfig printConfig = new(8, 80);
+                string epslprojStr = epslprojData.PrettyPrint(printConfig);
+                File.WriteAllText(epslprojLocation, epslprojStr);
+            }
         });
     }
 

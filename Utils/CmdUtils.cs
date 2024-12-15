@@ -54,23 +54,18 @@ public static class CmdUtils {
     }
 
     public static void LinkLLVM(IEnumerable<string> sources, string output, bool toLL=false) {
-        List<string> args = ["-o", output];
-        if (toLL) {
-            args.Add("-S");
-        }
-        args.Add("--");
-        args.AddRange(sources);
+        List<string> args = toLL ? ["-S"] : [];
+        args.AddRange(["-o", output, "--", ..sources]);
         RunCommand("llvm-link", args);
     }
 
     public static void OptLLVM(string source, string output) {
-        RunCommand("opt", [
-            "-O3", source, "-o", output
-        ]);
+        RunCommand("opt", ["-O3", source, "-o", output]);
     }
 
     public static void LLVMToObj(string source, string output, bool positionIndependent=false) {
-        List<string> args = [source, "-o", output, "-filetype=obj", "-O=0"];
+        List<string> args = [source, "-o", output, "-filetype=obj", "-O=0",
+            ..Subconfigs.GetObjectGenConfigs()];
         if (positionIndependent) {
             args.Add("--relocation-model=pic");
         }
@@ -78,7 +73,8 @@ public static class CmdUtils {
     }
 
     public static void ClangToExecutable(IEnumerable<string> sources, string output) {
-        List<string> args = ["-no-pie", "-o", output, "-O0", ..Subconfigs.GetLinkingConfigs(), ..sources];
+        List<string> args = ["-no-pie", "-o", output, "-O0", ..Subconfigs.GetLinkingConfigs(),
+            ..Subconfigs.GetObjectGenConfigs(), ..sources];
         RunCommand("clang", args);
     }
 
@@ -133,8 +129,8 @@ public static class CmdUtils {
     }
 
     public static void ToSharedObject(IEnumerable<string> sources, string output) {
-        RunCommand("clang", new string[] {"-shared", "-o", output}
-            .Concat(Subconfigs.GetLinkingConfigs()).Concat(sources));
+        RunCommand("clang", ["-shared", "-o", output, ..Subconfigs.GetLinkingConfigs(),
+            ..Subconfigs.GetObjectGenConfigs(), ..sources]);
     }
 
     public static IEnumerable<string> ListIncludeDirs(bool isCPP) {
@@ -162,8 +158,7 @@ public static class CmdUtils {
     }
 
     public static void CToLLVM(bool cpp, string from, string to_) {
-        IEnumerable<string> args = new string[] {from, "-o", to_, "-emit-llvm", "-c"}
-            .Concat(Subconfigs.GetClangParseConfigs());
-        RunCommand(cpp ? "clang++" : "clang", args);
+        RunCommand(cpp ? "clang++" : "clang", [from, "-o", to_, "-emit-llvm", "-c",
+            ..Subconfigs.GetClangParseConfigs()]);
     }
 }

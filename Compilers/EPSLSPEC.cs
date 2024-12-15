@@ -65,6 +65,9 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
             {"linking_configs", new JSONListShape(new JSONObjectShape(
                 new Dictionary<string, IJSONShape> {{"type", new JSONStringShape()}}
             ))},
+            {"object_gen_configs", new JSONListShape(new JSONObjectShape(
+                new Dictionary<string, IJSONShape> {{"type", new JSONStringShape()}}
+            ))},
             {"imports", new JSONListShape(new JSONStringShape())},
             {"ir", new JSONNullableShape(new JSONStringShape())},
             {"obj", new JSONNullableShape(new JSONStringShape())},
@@ -157,6 +160,8 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
             ["clang_parse_subconfigs"] = new JSONList(Subconfigs.ClangParseConfigs.Select(item => item.GetJSON())),
 
             ["linking_configs"] = new JSONList(Subconfigs.LinkingConfigs.Select(item => item.GetJSON())),
+
+            ["object_gen_configs"] = new JSONList(Subconfigs.ObjectGenConfigs.Select(item => item.GetJSON())),
 
             ["imports"] = new JSONList(Imports.Select(import => new JSONString(import))),
 

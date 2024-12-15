@@ -25,7 +25,7 @@ fixed_files = []
 for path in check_files:
     file = root/path
 
-    if file.suffix not in [".cs", ".epsl", ".py", ".c", ".bash"]:
+    if file.suffix not in [".cs", ".epsl", ".py", ".c", ".h", ".cpp", ".bash"]:
         continue
 
     if not file.exists():

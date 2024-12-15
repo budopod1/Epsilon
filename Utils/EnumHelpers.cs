@@ -1,12 +1,12 @@
 namespace Epsilon;
 public static class EnumHelpers {
     public static CacheMode ParseCacheMode(string txt) {
-        return txt.ToLower() switch {
+        return txt switch {
             "dont-use" => CacheMode.DONTUSE,
             "dont-load" => CacheMode.DONTLOAD,
             "auto" => CacheMode.AUTO,
             "always" => CacheMode.ALWAYS,
-            _ => throw new InvalidOperationException(),
+            _ => throw new ArgumentException("Invalid value", nameof(txt)),
         };
     }
 
@@ -19,7 +19,7 @@ public static class EnumHelpers {
             "package-obj" => OutputType.PACKAGEOBJ,
             "object" => OutputType.OBJECT,
             "shared-object" => OutputType.SHAREDOBJECT,
-            _ => throw new InvalidOperationException(),
+            _ => throw new ArgumentException("Invalid value", nameof(txt)),
         };
     }
 
@@ -33,7 +33,7 @@ public static class EnumHelpers {
             OutputType.PACKAGEOBJ => "package-obj",
             OutputType.OBJECT => "object",
             OutputType.SHAREDOBJECT => "shared-object",
-            _ => throw new InvalidOperationException(),
+            _ => throw new ArgumentException("Invalid value", nameof(outputType)),
         };
     }
 
@@ -45,7 +45,7 @@ public static class EnumHelpers {
             OutputType.LLVMBC => "bc",
             OutputType.OBJECT => "o",
             OutputType.SHAREDOBJECT => "so",
-            _ => throw new InvalidOperationException(),
+            _ => throw new ArgumentException("Invalid value", nameof(outputType)),
         };
     }
 
@@ -54,7 +54,7 @@ public static class EnumHelpers {
             OutputType.EXECUTABLE or OutputType.PACKAGEOBJ or OutputType.OBJECT => false,
             OutputType.LLVMLL or OutputType.LLVMBC or OutputType.PACKAGEBOTH
             or OutputType.SHAREDOBJECT => true,
-            _ => throw new InvalidOperationException(),
+            _ => throw new ArgumentException("Invalid value", nameof(outputType)),
         };
     }
 
@@ -63,7 +63,7 @@ public static class EnumHelpers {
             OutputType.EXECUTABLE or OutputType.LLVMLL or OutputType.LLVMBC
             or OutputType.OBJECT or OutputType.SHAREDOBJECT => false,
             OutputType.PACKAGEBOTH or OutputType.PACKAGEOBJ => true,
-            _ => throw new InvalidOperationException(),
+            _ => throw new ArgumentException("Invalid value", nameof(outputType)),
         };
     }
 
@@ -72,7 +72,7 @@ public static class EnumHelpers {
             OutputType.EXECUTABLE or OutputType.LLVMLL or OutputType.LLVMBC
             or OutputType.OBJECT or OutputType.SHAREDOBJECT => false,
             OutputType.PACKAGEBOTH or OutputType.PACKAGEOBJ => true,
-            _ => throw new InvalidOperationException(),
+            _ => throw new ArgumentException("Invalid value", nameof(outputType)),
         };
     }
 
@@ -81,7 +81,7 @@ public static class EnumHelpers {
             OutputType.EXECUTABLE or OutputType.LLVMLL or OutputType.LLVMBC
             or OutputType.OBJECT or OutputType.SHAREDOBJECT
             or OutputType.PACKAGEBOTH or OutputType.PACKAGEOBJ => false,
-            _ => throw new InvalidOperationException(),
+            _ => throw new ArgumentException("Invalid value", nameof(outputType)),
         };
     }
 

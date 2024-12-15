@@ -36,6 +36,10 @@ public static class Utils {
         return IsInstance(a.GetType(), b);
     }
 
+    public static bool ItemsEqual<T>(IEnumerable<T> strings, params T[] target) {
+        return Enumerable.SequenceEqual(strings, target);
+    }
+
     public static string TitleCase(string text) {
         return char.ToUpper(text[0]) + text[1..].ToLower();
     }
@@ -216,14 +220,23 @@ public static class Utils {
         return JoinPaths(directory, name);
     }
 
+    public static (int, int) LongToInts(long num) {
+        return ((int)(num >> 32), (int)(num & ~0));
+    }
+
     public static (int?, int?) LongToInts(long? num) {
         if (num == null) return (null, null);
-        return ((int)(num.Value >> 32), (int)(num.Value & ~0));
+        return LongToInts(num.Value);
+    }
+
+    public static long IntsToLong((int, int) vals) {
+        (int a, int b) = vals;
+        return ((long)a << 32) + b;
     }
 
     public static long? IntsToLong((int?, int?) vals) {
         (int? a, int? b) = vals;
         if (a == null || b == null) return null;
-        return ((long)a.Value << 32) + b.Value;
+        return IntsToLong((a.Value, b.Value));
     }
 }

@@ -9,11 +9,12 @@
 c_cpp_properties.json
 launch.json
 settings.json
+.editorconfig
+.vscode
 
 # Misc tools
 .ackrc
 vgcore.*
-.vscode
 
 # C# stuff
 /obj
