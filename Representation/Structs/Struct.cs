@@ -19,13 +19,13 @@ public class Struct : IEquatable<Struct> {
         this.selfFields = selfFields;
         symbol = id.GetID();
         foreach (IAnnotation annotation in annotations) {
-            if (annotation is IDAnnotation idA) {
-                symbol = idA.GetID();
-            } else if (annotation is SuperAnnotation superA) {
+            if (annotation is IDAnnotation idAnnotation) {
+                symbol = idAnnotation.GetID();
+            } else if (annotation is SuperAnnotation) {
                 isSuper = true;
-            } else if (annotation is ExtendsAnnotation _extendsAnnotation) {
-                extendsAnnotation = _extendsAnnotation;
-                extendeeName = _extendsAnnotation.GetExtendee();
+            } else if (annotation is ExtendsAnnotation extendsAnnotation) {
+                this.extendsAnnotation = extendsAnnotation;
+                extendeeName = extendsAnnotation.GetExtendee();
             }
         }
     }
