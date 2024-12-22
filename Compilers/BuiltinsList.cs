@@ -872,7 +872,7 @@ public static class BuiltinsList {
                 new("arr", Type_.Any().ArrayOf()),
                 new("idx", new Type_("Z", 64)),
             ], "builtin64", (List<Type_> types_) => types_[0].GetGeneric(0), FunctionSource.Builtin
-        ),  new ExternalFunction(
+        ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
                     new FuncArgPatternSegment(),

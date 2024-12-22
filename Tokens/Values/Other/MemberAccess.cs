@@ -24,7 +24,7 @@ public class MemberAccess(IValueToken o, MemberAccessPostfix member) : UnaryOper
 
     public override string ToString() {
         return Utils.WrapName(
-            GetType().Name,  o.ToString() + ", " + member
+            GetType().Name, o.ToString() + ", " + member
         );
     }
 

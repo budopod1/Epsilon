@@ -98,7 +98,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         return FunctionSource.Program;
     }
 
-    public override string GetCallee()  {
+    public override string GetCallee() {
         return callee;
     }
 
