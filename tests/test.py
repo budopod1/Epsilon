@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
+
 import os
-import time
 import subprocess
 import multiprocessing
 from pathlib import Path
-from ctypes import c_double, c_float, c_int, c_uint, c_ushort, c_ulong, c_long, c_char, CDLL
+from ctypes import c_double, c_int, c_ulong, c_char, CDLL
 
 
 TESTS = [
@@ -486,6 +487,8 @@ def run_test(func, args):
 
 
 def main():
+    os.chdir(Path(__file__).parents[1].absolute())
+
     base_dir = Path("tests").resolve()
 
     print("🔬 Running tests...")
