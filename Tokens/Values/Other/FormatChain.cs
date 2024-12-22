@@ -1,5 +1,5 @@
 namespace Epsilon;
-public class FormatChain : IParentToken, IValueToken {
+public class FormatChain : IParentToken, IValueToken, ICanAbort {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
@@ -62,5 +62,9 @@ public class FormatChain : IParentToken, IValueToken {
 
     public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this).SetOperands([template, ..values]).Register();
+    }
+
+    public bool CanAbort() {
+        return true;
     }
 }

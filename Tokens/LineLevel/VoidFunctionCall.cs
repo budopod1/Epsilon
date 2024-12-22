@@ -36,4 +36,8 @@ public class VoidFunctionCall(FunctionDeclaration function, List<IValueToken> ar
             ["function"] = function.GetID()
         }.SetOperands(arguments).Register();
     }
+
+    public bool CanAbort() {
+        return true;
+    }
 }

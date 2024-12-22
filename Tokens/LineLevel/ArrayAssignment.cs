@@ -1,5 +1,5 @@
 namespace Epsilon;
-public class ArrayAssignment : TrinaryAction<IValueToken, IValueToken, IValueToken>, IAssignment, IVerifier {
+public class ArrayAssignment : TrinaryAction<IValueToken, IValueToken, IValueToken>, IAssignment, ICanAbort, IVerifier {
     public ArrayAssignment(IValueToken array, IValueToken index, IValueToken value) : base(array, index, value) {}
     public ArrayAssignment(ArrayAccess access, IValueToken value) : base(access.GetArray(), access.GetIndex(), value) {}
 
@@ -20,5 +20,9 @@ public class ArrayAssignment : TrinaryAction<IValueToken, IValueToken, IValueTok
     public int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this)
             .SetOperands([o1, o2, o3]).Register();
+    }
+
+    public bool CanAbort() {
+        return true;
     }
 }

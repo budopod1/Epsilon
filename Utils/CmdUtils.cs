@@ -129,7 +129,7 @@ public static class CmdUtils {
     }
 
     public static void ToSharedObject(IEnumerable<string> sources, string output) {
-        RunCommand("clang", ["-shared", "-o", output, ..Subconfigs.GetLinkingConfigs(),
+        RunCommand("clang", ["-shared", "-fPIC", "-o", output, ..Subconfigs.GetLinkingConfigs(),
             ..Subconfigs.GetObjectGenConfigs(), ..sources]);
     }
 

@@ -1,5 +1,5 @@
 namespace Epsilon;
-public class AbortVoid : IFunctionTerminator, IBlockEndOnly {
+public class AbortVoid : IFunctionTerminator, IBlockEndOnly, ICanAbort {
     public IParentToken parent { get; set; }
     public CodeSpan span { get; set; }
 
@@ -12,6 +12,10 @@ public class AbortVoid : IFunctionTerminator, IBlockEndOnly {
     }
 
     public bool DoesTerminateFunction() {
+        return true;
+    }
+
+    public bool CanAbort() {
         return true;
     }
 }

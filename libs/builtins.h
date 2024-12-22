@@ -17,12 +17,24 @@
 #define __builtin_expect(expr, val) expr
 #endif
 
+#define EPSL_PANIC(str) epsl_panic(str, strlen(str))
+
 struct Array {
     uint64_t ref_counter;
     uint64_t capacity;
     uint64_t length;
     void *content;
 };
+
+#define ERROR_STACK_SIZE 4096
+
+extern const char *epsl_error_stack[ERROR_STACK_SIZE];
+
+extern const char **epsl_error_stack_top;
+
+void epsl_panic(const char *message, uint64_t message_len);
+
+void epsl_formatted_panic(const char *format, ...);
 
 void *epsl_memmove(void *dest, const void *src, uint64_t count);
 
@@ -105,6 +117,8 @@ double epsl_parse_float(const struct Array *str);
 struct Array *epsl_read_input_line();
 
 void epsl_abort(const struct Array *string);
+
+void epsl_abort_void();
 
 struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size);
 

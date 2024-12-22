@@ -40,4 +40,8 @@ public class FunctionCall(FunctionDeclaration function, List<IValueToken> argume
             ["function"] = function.GetID()
         }.SetOperands(arguments).Register();
     }
+
+    public bool CanAbort() {
+        return true;
+    }
 }

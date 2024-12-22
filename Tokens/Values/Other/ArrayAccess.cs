@@ -1,5 +1,5 @@
 namespace Epsilon;
-public class ArrayAccess : BinaryOperation<IValueToken, IValueToken>, IAssignableValue, IVerifier {
+public class ArrayAccess : BinaryOperation<IValueToken, IValueToken>, IAssignableValue, ICanAbort, IVerifier {
     public ArrayAccess(IValueToken array, IValueToken index) : base(array, index) {}
     public ArrayAccess(IValueToken array, ValueList index) : base(array, null) {
         if (index.Count != 1)
@@ -36,5 +36,9 @@ public class ArrayAccess : BinaryOperation<IValueToken, IValueToken>, IAssignabl
 
     public IAssignment AssignTo(IValueToken value) {
         return new ArrayAssignment(this, value);
+    }
+
+    public bool CanAbort() {
+        return true;
     }
 }

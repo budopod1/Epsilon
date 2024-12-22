@@ -16,6 +16,10 @@ public class SerializableInstruction {
         if (token is IValueToken valueToken) {
             obj["type_"] = valueToken.GetType_().GetJSON();
         }
+        if (token is ICanAbort canAbort && canAbort.CanAbort()
+            && TokenUtils.GetParentOfType<Program>(token).GetBuildSettings().GenerateErrorFrames) {
+            obj["error_frame"] = new JSONString(TokenUtils.GenerateErrorFrame(token));
+        }
     }
 
     public SerializableInstruction SetOperands(IEnumerable<ISerializableToken> operands) {

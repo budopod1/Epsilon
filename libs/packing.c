@@ -68,13 +68,12 @@ struct ByteArray *packing_pack_quadruple(__float128 floating) {
 }
 #endif
 
-const char *const BAD_LEN_FOR_FLOATING_ERR = ERR_START "Not enough remaining space in the array to read a %d bit floating point number\n";
-
 void packing_unpack_floating(struct ByteArray *arr, uint64_t pos, void *floating, size_t floating_size) {
     if (__builtin_expect(pos + floating_size >= arr->length, 0)) {
-        fflush(stdout);
-        fprintf(stderr, BAD_LEN_FOR_FLOATING_ERR, 8 * (int)floating_size);
-        exit(1);
+        epsl_formatted_panic(
+            ERR_START "Not enough remaining space in the array to read a %d bit floating point number",
+            8 * (int)floating_size
+        );
     }
 
     char *data = arr->content + pos;

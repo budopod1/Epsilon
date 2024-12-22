@@ -11,9 +11,39 @@
 
 #include "builtins.h"
 
+void epsl_panic(const char *message, uint64_t message_len) {
+    fflush(stdout);
+    const char **error_stack_frame = epsl_error_stack;
+    if (epsl_error_stack_top == error_stack_frame) {
+        fputs("No traceback avaliable\n", stderr);
+    } else {
+        // 'last most call recent' has no meaning
+        // I just couldn't figure out what Python's 'most recent call last'
+        // meant until I asked ChatGPT
+        fputs("Traceback (last most call recent):\n", stderr);
+        do {
+            fputs(*++error_stack_frame, stderr);
+            fputc('\n', stderr);
+        } while (error_stack_frame != epsl_error_stack_top);
+    }
+    fwrite(message, message_len, 1, stderr);
+    fputc('\n', stderr);
+    exit(1);
+}
+
+void epsl_formatted_panic(const char *format, ...) {
+    va_list vargs;
+    va_start(vargs, format);
+    size_t msg_len = vsnprintf(NULL, 0, format, vargs);
+    char buffer[msg_len+1];
+    vsprintf(buffer, format, vargs);
+    epsl_panic(buffer, msg_len);
+    va_end(vargs);
+}
+
 #define ERR_START "FATAL ERROR: "
 
-static const char *const MEM_ERR = ERR_START "Out of memory\n";
+#define BUILTINS_PANIC(message) static const char *const panic_message = ERR_START message; EPSL_PANIC(panic_message)
 
 void *epsl_memmove(void *dest, const void *src, uint64_t count) {
     return memmove(dest, src, count);
@@ -60,9 +90,7 @@ void epsl_exit(uint32_t status) {
 }
 
 void epsl_out_of_memory_fail() {
-    fflush(stdout);
-    fwrite(MEM_ERR, strlen(MEM_ERR), 1, stderr);
-    exit(1);
+    BUILTINS_PANIC("Out of memory");
 }
 
 void *epsl_malloc(uint64_t size) {
@@ -140,14 +168,10 @@ void epsl_remove_at(struct Array *array, uint64_t idx, uint64_t elem_size) {
     memmove((void*)deststart, (void*)srcstart, elem_size*(length-idx-1));
 }
 
-static const char *const INSERTSPACE_IDX_ERR = ERR_START "Cannot insert space outside bounds of array\n";
-
 void epsl_insert_space(struct Array *array, uint64_t idx, uint64_t elem_size) {
     uint64_t length = array->length;
     if (__builtin_expect(idx > length, 0)) {
-        fflush(stdout);
-        fwrite(INSERTSPACE_IDX_ERR, strlen(INSERTSPACE_IDX_ERR), 1, stderr);
-        exit(1);
+        BUILTINS_PANIC("Cannot insert space outside bounds of array");
     }
     epsl_increment_length(array, elem_size);
     char* content = array->content;
@@ -280,20 +304,13 @@ extern inline char *epsl_format_Z64() {
     return result;
 }
 
-static const char *const SLICE_NEG_LEN_ERR = ERR_START "Slice start index can't be after slice end index\n";
-static const char *const SLICE_INDEX_ERR = ERR_START "Slice end index out of range\n";
-
 struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
     if (__builtin_expect(start > end, 0)) {
-        fflush(stdout);
-        fwrite(SLICE_NEG_LEN_ERR, strlen(SLICE_NEG_LEN_ERR), 1, stderr);
-        exit(1);
+        BUILTINS_PANIC("Slice start index can't be after slice end index");
     }
 
     if (__builtin_expect(end > array->length, 0)) {
-        fflush(stdout);
-        fwrite(SLICE_INDEX_ERR, strlen(SLICE_INDEX_ERR), 1, stderr);
-        exit(1);
+        BUILTINS_PANIC("Slice end index out of range");
     }
 
     struct Array *slice = epsl_malloc(sizeof(struct Array));
@@ -459,10 +476,11 @@ struct Array *epsl_read_input_line() {
 }
 
 void epsl_abort(const struct Array *string) {
-    fflush(stdout);
-    fwrite(string->content, string->length, 1, stderr);
-    putc('\n', stderr);
-    exit(1);
+    epsl_panic(string->content, string->length);
+}
+
+void epsl_abort_void() {
+    EPSL_PANIC("abort");
 }
 
 struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size) {
@@ -509,16 +527,10 @@ struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint6
     return result;
 }
 
-static const char *const NULL_FAIL_MESSAGE = ERR_START "Expected non-null value, found null\n";
-
 void epsl_null_value_fail() {
-    fflush(stdout);
-    fwrite(NULL_FAIL_MESSAGE, strlen(NULL_FAIL_MESSAGE), 1, stderr);
-    exit(1);
+    BUILTINS_PANIC("Expected non-null value, found null");
 }
 
-static const char *const TOO_FEW_PLACEHOLDERS_MESSAGE = ERR_START "Not enough placeholders for given number of values\n";
-static const char *const TOO_MANY_PLACEHOLDERS_MESSAGE = ERR_START "Too many placeholders for given number of values\n";
 static const char *const FORMAT_STRING_PLACEHOLDER = "{}";
 
 struct Array *epsl_format_string(struct Array *template_, struct Array *values[], uint32_t value_count) {
@@ -537,31 +549,28 @@ struct Array *epsl_format_string(struct Array *template_, struct Array *values[]
     uint64_t seg_start = 0;
     uint64_t template_iter_len = template_Len - placeholder_len + 1;
     for (uint64_t i = 0; i < template_iter_len; i++) {
-        if (memcmp(template_Content + i, FORMAT_STRING_PLACEHOLDER, placeholder_len) == 0) {
-            if (__builtin_expect(value_idx == value_count, 0)) {
-                fflush(stdout);
-                fwrite(TOO_MANY_PLACEHOLDERS_MESSAGE, strlen(TOO_MANY_PLACEHOLDERS_MESSAGE), 1, stderr);
-                exit(1);
-            }
+        if (memcmp(template_Content + i, FORMAT_STRING_PLACEHOLDER, placeholder_len))
+            continue;
 
-            uint64_t seg_len = i - seg_start;
-            memcpy(result + result_idx, template_Content + seg_start, seg_len);
-            result_idx += seg_len;
-
-            struct Array *value = values[value_idx++];
-            uint64_t value_len = value->length;
-            memcpy(result + result_idx, value->content, value_len);
-            result_idx += value_len;
-
-            seg_start = i + placeholder_len;
-            i = seg_start - 1;
+        if (__builtin_expect(value_idx == value_count, 0)) {
+            BUILTINS_PANIC("Too many placeholders for given number of values");
         }
+
+        uint64_t seg_len = i - seg_start;
+        memcpy(result + result_idx, template_Content + seg_start, seg_len);
+        result_idx += seg_len;
+
+        struct Array *value = values[value_idx++];
+        uint64_t value_len = value->length;
+        memcpy(result + result_idx, value->content, value_len);
+        result_idx += value_len;
+
+        seg_start = i + placeholder_len;
+        i = seg_start - 1;
     }
 
     if (__builtin_expect(value_idx < value_count, 0)) {
-        fflush(stdout);
-        fwrite(TOO_FEW_PLACEHOLDERS_MESSAGE, strlen(TOO_FEW_PLACEHOLDERS_MESSAGE), 1, stderr);
-        exit(1);
+        BUILTINS_PANIC("Not enough placeholders for given number of values");
     }
 
     memcpy(result + result_idx, template_Content + seg_start, template_Len - seg_start);
@@ -574,26 +583,14 @@ struct Array *epsl_format_string(struct Array *template_, struct Array *values[]
     return result_arr;
 }
 
-static const char *const ARR_INDEX_ERR = ERR_START "Specified array index is greater or equal to array length\n";
-
 void epsl_array_idx_fail() {
-    fflush(stdout);
-    fwrite(ARR_INDEX_ERR, strlen(ARR_INDEX_ERR), 1, stderr);
-    exit(1);
+    BUILTINS_PANIC("Specified array index is greater or equal to array length");
 }
-
-static const char *const DIV_0_ERR = ERR_START "Cannot divide an integer by 0\n";
 
 void epsl_div_0_fail() {
-    fflush(stdout);
-    fwrite(DIV_0_ERR, strlen(DIV_0_ERR), 1, stderr);
-    exit(1);
+    BUILTINS_PANIC("Cannot divide an integer by 0");
 }
 
-static const char *const ARR_EMPTY_ERR = ERR_START "Expected an array with a nonzero length\n";
-
 void epsl_array_empty_fail() {
-    fflush(stdout);
-    fwrite(ARR_EMPTY_ERR, strlen(ARR_EMPTY_ERR), 1, stderr);
-    exit(1);
+    BUILTINS_PANIC("Expected an array with a nonzero length");
 }

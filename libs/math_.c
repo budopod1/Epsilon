@@ -156,11 +156,15 @@ uint32_t math_array_GCD(struct UIntArray *nums) {
 }
 
 uint32_t math_LCM(uint32_t n, uint32_t m) {
-    return n * m / math_GCD(n, m);
+    uint32_t GCD = math_GCD(n, m);
+    if (GCD == 0) return 0;
+    return n * m / GCD;
 }
 
 uint32_t math_array_LCM(struct UIntArray *nums) {
-    return math_uprod(nums) / math_array_GCD(nums);
+    uint32_t GCD = math_array_GCD(nums);
+    if (GCD == 0) return 0;
+    return math_uprod(nums) / GCD;
 }
 
 double math_get_e() {

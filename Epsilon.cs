@@ -11,6 +11,7 @@ public class Epsilon {
 
         config.AddOption(new EnumOption("cache-mode", ["dont-use", "dont-load", "auto", "always"], "AUTO"));
         config.AddOption(new EnumOption("optimization-level", ["0", "min", "1", "normal", "2", "max"], "min"));
+        config.AddOption(new BoolOption("generate-error-frames", true));
         config.AddOption(new BoolOption("link-builtins", true));
         config.AddOption(new BoolOption("link-libraries", true));
         config.AddOption(new BoolOption("link-builtin-modules", true));
@@ -43,6 +44,9 @@ public class Epsilon {
             "The mode to use when loading and saving parital compilation files.");
         parser.Flag(["opt", "O"], "optimization-level", new StringArgumentValue(),
             "The optimization level");
+
+        parser.Flag(["no-generate-error-frames", "G"], "generate-error-frames",
+            new ConstArgumentValue<bool>(false), "Don't generate error frames");
 
         parser.Flag(["no-link-builtins"], "link-builtins", new ConstArgumentValue<bool>(false),
             "Don't link the result to Epsilon's builtins");
@@ -105,6 +109,8 @@ public class Epsilon {
             CacheMode cacheMode = EnumHelpers.ParseCacheMode(config["cache-mode"]);
             OptimizationLevel optimizationLevel = EnumHelpers.ParseOptimizationLevel(
                 config["optimization-level"]);
+            bool generateErrorFrames = config["generate-error-frames"]
+                && optimizationLevel == OptimizationLevel.MIN;
             OutputType outputType = EnumHelpers.ParseOutputType(config["output-type"]);
 
             bool linkBuiltins = config["link-builtins"] && !outputType.MustntLinkBuiltins();
@@ -121,7 +127,7 @@ public class Epsilon {
 
             BuildSettings settings = new(
                 input, config["output-location"], cache, cacheMode, optimizationLevel,
-                outputType, linkBuiltins, linkLibraries, linkBuiltinModules
+                outputType, generateErrorFrames, linkBuiltins, linkLibraries, linkBuiltinModules
             );
 
             TestResult(builder.Build(settings));

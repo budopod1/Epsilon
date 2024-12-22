@@ -8,23 +8,23 @@ public class EPSLFileCompiler : IFileCompiler {
     string IR;
 
     public static void Setup() {
-        Builder.RegisterDispatcher((BuildSettings _, string path) => {
+        Builder.RegisterDispatcher((BuildSettings buildSettings, string path) => {
             string fileText;
             using (StreamReader file = new(path)) {
                 fileText = file.ReadToEnd();
             }
             string stemmed = Utils.Stem(path);
-            return new EPSLFileCompiler(stemmed, fileText);
+            return new EPSLFileCompiler(path, stemmed, fileText, buildSettings);
         }, "epsl");
     }
 
-    EPSLFileCompiler(string idPath, string fileText) {
+    EPSLFileCompiler(string realPath, string idPath, string fileText, BuildSettings buildSettings) {
         Log.Info("Compiling EPSL file", idPath);
         this.idPath = idPath;
         this.fileText = fileText;
         program = new Program(
-            Utils.GetFullPath(idPath),
-            InitialTokenizer.Tokenize(fileText).ToList()
+            realPath, Utils.GetFullPath(idPath), new FileExerptManager(fileText),
+            InitialTokenizer.Tokenize(fileText).ToList(), buildSettings
         );
         program.span = new CodeSpan(0, fileText.Length-1);
     }
@@ -1001,9 +1001,10 @@ Please clarify between the functions that take the types:
                 ((TextToken)tokens[1]).GetText()
             ], assignable, value
         );
+        newValue.span = TokenUtils.MergeSpans(tokens);
 
         IAssignment assignment = assignable.AssignTo(newValue);
-
+        newValue.span = newValue.span;
         return [assignment];
     }
 
@@ -1016,8 +1017,10 @@ Please clarify between the functions that take the types:
         } else {
             newValue = new SubOne(assignable);
         }
+        newValue.span = operand.span;
 
         IAssignment assignment = assignable.AssignTo(newValue);
+        assignment.span = operand.span;
 
         IValueToken result;
         if (pre) {
@@ -1026,7 +1029,9 @@ Please clarify between the functions that take the types:
             result = assignable;
         }
 
-        return [new CommaOperation(assignment, result)];
+        CommaOperation comma = new(assignment, result);
+        comma.span = operand.span;
+        return [comma];
     }
 
     Program ParseFunctionCode(Program program) {

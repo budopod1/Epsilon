@@ -25,12 +25,12 @@ Val#build multiplication using [[Val]:operands] to [Type_:type_] {
 
 Val#build division using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
-    return [operands[0]] / [operands[1]];
+    return safe [operands[0]] / [operands[1]];
 }
 
 Val#build modulo using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
-    return [operands[0]] % [operands[1]];
+    return safe [operands[0]] % [operands[1]];
 }
 
 Val#build negation using [[Val]:operands] to [Type_:type_] {
@@ -678,7 +678,7 @@ Label:cond_label = new label:;
 }
 
 #build abort_ void {
-    extern fn [null] ["epsl_exit"] [[Type_] [Z_]] [[Val] [c [(Z)1]]];
+    extern fn [null] ["epsl_abort_void"] [[Type_] []] [[Val] []];
     mark as unreachable;
 }
 
@@ -741,6 +741,10 @@ Label:cond_label = new label:;
 }
 
 Val?#build instruction [BinJSON:instruction_json] using [[Val]:operands] {
+    Val?:instruction_result = null;
+    if ([instruction_json].contains_key["error_frame"]) {
+        add error frame [[[instruction_json].get["error_frame"]].get_str];
+    };
     if ([instruction_json].contains_key["type_"]) {
         Val:result = build valued instruction [instruction_json] using [operands];
         if (result.assignable) {
@@ -751,9 +755,12 @@ Val?#build instruction [BinJSON:instruction_json] using [[Val]:operands] {
             abort "Expected type_ {} from instruction {}, got type_ {}" % [expected_type_].stringify
                 % [[instruction_json].get["type"]].get_str % [result.type_].stringify;
         };
-        return result;
+        instruction_result = result;
     } else {
         build void instruction [instruction_json] using [operands];
-        return null;
     };
+    if (!is block terminated && [instruction_json].contains_key["error_frame"]) {
+        remove error frame;
+    };
+    return instruction_result;
 }

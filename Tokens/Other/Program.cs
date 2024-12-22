@@ -2,7 +2,10 @@ using CsJSONTools;
 
 namespace Epsilon;
 public class Program : TreeToken, IVerifier, IHasScope {
-    readonly string path;
+    readonly string realPath;
+    readonly string idPath;
+    readonly FileExerptManager exerptManager;
+    readonly BuildSettings buildSettings;
     readonly HashSet<LocatedID> structIds = [];
     readonly IDCounter functionIDCounter = new();
     readonly IDCounter scopeVarIDCounter = new();
@@ -11,13 +14,24 @@ public class Program : TreeToken, IVerifier, IHasScope {
     readonly List<RealFunctionDeclaration> externalDeclarations = [];
     readonly IScope scope;
 
-    public Program(string path, List<IToken> tokens) : base(tokens) {
-        this.path = path;
+    public Program(string realPath, string idPath, FileExerptManager exerptManager,
+            List<IToken> tokens, BuildSettings buildSettings) : base(tokens) {
+        this.realPath = realPath;
+        this.idPath = idPath;
+        this.exerptManager = exerptManager;
+        this.buildSettings = buildSettings;
         scope = new Scope(scopeVarIDCounter);
     }
 
-    public Program(string path, List<IToken> tokens, HashSet<LocatedID> structIds, IDCounter functionIDCounter, IDCounter scopeVarIDCounter, HashSet<Struct> structsHere, List<(CodeSpan, Type_)> parsedTypes_, List<RealFunctionDeclaration> externalDeclarations, IScope scope) : base(tokens) {
-        this.path = path;
+    public Program(string realPath, string idPath, FileExerptManager exerptManager, List<IToken> tokens,
+            BuildSettings buildSettings, HashSet<LocatedID> structIds, IDCounter functionIDCounter,
+            IDCounter scopeVarIDCounter, HashSet<Struct> structsHere,
+            List<(CodeSpan, Type_)> parsedTypes_,
+            List<RealFunctionDeclaration> externalDeclarations, IScope scope) : base(tokens) {
+        this.realPath = realPath;
+        this.idPath = idPath;
+        this.exerptManager = exerptManager;
+        this.buildSettings = buildSettings;
         this.structIds = structIds;
         this.functionIDCounter = functionIDCounter;
         this.scopeVarIDCounter = scopeVarIDCounter;
@@ -25,6 +39,18 @@ public class Program : TreeToken, IVerifier, IHasScope {
         this.parsedTypes_ = parsedTypes_;
         this.externalDeclarations = externalDeclarations;
         this.scope = scope;
+    }
+
+    public string GetRealPath() {
+        return realPath;
+    }
+
+    public FileExerptManager GetExerptManager() {
+        return exerptManager;
+    }
+
+    public BuildSettings GetBuildSettings() {
+        return buildSettings;
     }
 
     public HashSet<LocatedID> GetStructIDs() {
@@ -83,7 +109,10 @@ public class Program : TreeToken, IVerifier, IHasScope {
     }
 
     protected override TreeToken _Copy(List<IToken> tokens) {
-        return new Program(path, tokens, structIds, functionIDCounter, scopeVarIDCounter, structsHere, parsedTypes_, externalDeclarations, scope);
+        return new Program(
+            realPath, idPath, exerptManager, tokens, buildSettings, structIds, functionIDCounter,
+            scopeVarIDCounter, structsHere, parsedTypes_, externalDeclarations, scope
+        );
     }
 
     public void Verify() {
@@ -95,14 +124,13 @@ public class Program : TreeToken, IVerifier, IHasScope {
                 );
             }
             if (token is Function func) {
-                if (func.IsMain()) {
-                    if (foundMain) {
-                        throw new SyntaxErrorException(
-                            "Only one main function can be defined", func
-                        );
-                    }
-                    foundMain = true;
+                if (!func.IsMain()) continue;
+                if (foundMain) {
+                    throw new SyntaxErrorException(
+                        "Only one main function can be defined", func
+                    );
                 }
+                foundMain = true;
             }
         }
     }
@@ -116,7 +144,7 @@ public class Program : TreeToken, IVerifier, IHasScope {
                 externalDeclarations.Select(declaration => declaration.GetJSON())
             ),
             ["structs"] = new JSONList(StructsCtx.Structs().Select(struct_ => struct_.GetJSON())),
-            ["id_path"] = new JSONString(path),
+            ["id_path"] = new JSONString(idPath),
             ["globals"] = new JSONList(Scope.GetVarsJSON(scope))
         };
         return obj;

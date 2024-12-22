@@ -84,4 +84,26 @@ public static class TokenUtils {
         }
         return true;
     }
+
+    public static string GenerateErrorFrame(IToken token) {
+        Function function = GetParentOfType<Function>(token);
+        Program program = GetParentOfType<Program>(function);
+        FileExerptManager exerptManager = program.GetExerptManager();
+        int spanStart = token.span.GetStart();
+        int spanEnd = token.span.GetEnd();
+        int startLine = exerptManager.GetLineIdxFromPos(spanStart);
+        int endLine = exerptManager.GetLineIdxFromPos(spanEnd);
+        string exerpt = exerptManager.GetLineFromIdx(startLine).Trim();
+        string annotatedExerpt = "\n    "+exerpt;
+        // We should only show the annotation if there is something other
+        // than the annotated section in the exerpt
+        int irrelevantContentThreshold = 4;
+        if (startLine == endLine
+            && spanEnd - spanStart + irrelevantContentThreshold < exerpt.Length) {
+            string annotation = exerptManager.AnnotateLine(spanStart, spanEnd, "┗", "━", "┛");
+            annotatedExerpt += "\n    "+annotation;
+        }
+        string locationInfo = $"  File \"{program.GetRealPath()}\", line {startLine+1}";
+        return locationInfo + annotatedExerpt;
+    }
 }
