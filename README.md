@@ -14,7 +14,7 @@ Epsilon depends on:
 
 To setup Epsilon, run:
 
-    ./setup.bash
+    ./scripts/setup.bash
 
 ## Documentation
 
