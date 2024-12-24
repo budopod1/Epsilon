@@ -94,26 +94,29 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
         BaseType_ baseValueType_ = valueType_.GetBaseType_();
         bool isInt = baseValueType_.IsInt();
         bool isFloat = baseValueType_.IsFloat();
-        if (!isInt && !isFloat) {
+        bool isStr = valueType_.Equals(Type_.String());
+        if (!isInt && !isFloat && !isStr) {
             throw new SyntaxErrorException(
                 $"Cannot switch on type {valueType_}", value
             );
         }
         foreach (SwitchArm arm in arms) {
-            BaseType_ targetBaseType_ = arm.GetTarget().GetType_().GetBaseType_();
-            if (isInt) {
-                if (!targetBaseType_.IsInt()) {
-                    throw new SyntaxErrorException(
-                        $"Switches on an integer type must have integer targets", arm.GetTarget()
-                    );
-                }
+            Type_ targetType_ = arm.GetTarget().GetType_();
+            BaseType_ targetBaseType_ = targetType_.GetBaseType_();
+            if (isInt && !targetBaseType_.IsInt()) {
+                throw new SyntaxErrorException(
+                    $"Switches on an integer type must have integer targets", arm.GetTarget()
+                );
             }
-            if (isFloat) {
-                if (!targetBaseType_.IsFloat()) {
-                    throw new SyntaxErrorException(
-                        $"Switches on an float type must have float targets", arm.GetTarget()
-                    );
-                }
+            if (isFloat && !targetBaseType_.IsFloat()) {
+                throw new SyntaxErrorException(
+                    $"Switches on an float type must have float targets", arm.GetTarget()
+                );
+            }
+            if (isStr && !targetType_.Equals(Type_.String())) {
+                throw new SyntaxErrorException(
+                    $"Switches on a string type must have string targets", arm.GetTarget()
+                );
             }
         }
     }
@@ -121,7 +124,6 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public bool DoesTerminateFunction() {
         if (default_ == null) return false;
         if (!default_.DoesTerminateFunction()) return false;
-        return arms.All(arm =>
-            arm.GetBlock().DoesTerminateFunction());
+        return arms.All(arm => arm.GetBlock().DoesTerminateFunction());
     }
 }

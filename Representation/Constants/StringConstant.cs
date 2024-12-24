@@ -21,6 +21,9 @@ public class StringConstant(string value) : IConstant {
     }
 
     public IJSONValue GetJSON() {
-        throw new InvalidOperationException("String constants cannot appear in the final IR");
+        return new JSONObject {
+            ["type"] = new JSONString("string"),
+            ["value"] = new JSONString(value)
+        };
     }
 }

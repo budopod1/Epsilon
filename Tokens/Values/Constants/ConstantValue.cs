@@ -5,6 +5,11 @@ public class ConstantValue(IConstant constant) : Unit<IConstant>(constant), IVal
     }
 
     public int UncachedSerialize(SerializationContext context) {
+        if (GetValue() is StringConstant) {
+            throw new InvalidOperationException(
+                "String constants cannot appear in the final IR"
+            );
+        }
         return new SerializableInstruction(context, this) {
             ["constant"] = GetValue()
         }.Register();
