@@ -1,0 +1,13 @@
+Z#foo[Z:param] {
+    Str:s = [param].stringify;
+    switch (s)
+    ("1") {
+        return 10;
+    }
+    ("10") {
+        return 8;
+    }
+    {
+        return 0;
+    };
+}

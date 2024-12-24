@@ -417,6 +417,16 @@ TESTS = [
         ]
     },
     {
+        "file": "switchstr.epsl",
+        "func": 0,
+        "sig": (c_int, c_int),
+        "tests": [
+            {"arguments": [1], "compare": "exact", "expect": 10},
+            {"arguments": [10], "compare": "exact", "expect": 8},
+            {"arguments": [20], "compare": "exact", "expect": 0},
+        ]
+    },
+    {
         "file": "uninitvalue.epsl",
         "func": 0,
         "sig": (c_int, c_int),

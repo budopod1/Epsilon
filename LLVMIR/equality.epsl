@@ -107,3 +107,27 @@ end fn;
 
     return func ret;
 }
+
+Val#[Val:outer_val] equals const str [Str:target] {
+    Val:outer_const_str = const str [target];
+    private accessibility;
+if (fn [Bool_] ["str_equals_const_str"] [[Type_] [Str_, L_, Pointer [Byte_]]]
+    [[Val] [outer_val, c L_ [[target].len], outer_const_str]]) {
+    Val:val = func arg [0];
+    Val:target_len = func arg [1];
+    Val:const_str = func arg [2];
+
+    if_ [[[val].length] ne [target_len]];
+        ret [c [false]];
+    end block;
+
+    extern fn [Z_] ["epsl_memcmp"] [[Type_] [Pointer [Byte_], Pointer [Byte_], L_]]
+        [[Val] [[val].content, const_str, target_len]];
+
+    ret [[func ret] eq [c [(Z)0]]];
+
+end fn;
+};
+
+    return func ret;
+}

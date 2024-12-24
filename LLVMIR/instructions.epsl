@@ -1,6 +1,7 @@
 #import operations;
 #import stringify;
 #import eewriter;
+#import equality;
 #import binjson;
 #import entry;
 
@@ -475,17 +476,18 @@ Label:cond_label = new label:;
 #build switch_ [BinJSON:instruction_json] using [[Val]:operands] {
     Val:operand = operands[0];
 
-    if ([operand.type_] == [Str_]) {
-        Label:end_label = new label;
-        Label:default_label = end_label;
-        BinJSON:default_json = [instruction_json].get["default"];
-        if (![default_json].is_null) {
-            default_label = new label;
-        };
+    Label:end_label = new label;
+    Label:default_label = end_label;
+    BinJSON:default_json = [instruction_json].get["default"];
+    if (![default_json].is_null) {
+        default_label = new label;
+    };
 
+    [BinJSON]:arms_json = [[instruction_json].get["arms"]].get_list;
+    [Label]:block_labels = [Label] [];
+
+    if ([operand.type_].is_numeric) {
         [Val]:block_targets = [Val] [];
-        [Label]:block_labels = [Label] [];
-        [BinJSON]:arms_json = [[instruction_json].get["arms"]].get_list;
         for (BinJSON:arm_json in arms_json) {
             [block_targets].append[make constant [[arm_json].get["target"]]
                 of type_ [operand.type_]];
@@ -493,21 +495,42 @@ Label:cond_label = new label:;
         };
 
         switch_ on [operand] to [block_targets] [block_labels] otherwise [default_label];
-
+    } else {
         for (L:i enumerating arms_json) {
-        [block_labels[i]]:;
-            build block [[arms_json[i]].get["block"]];
-            goto_ [end_label];
-        };
+            BinJSON:arm_json = arms_json[i];
+            Label:otherwise = default_label;
+            Label?:next_label = null;
+            if (i != [arms_json].len-1) {
+                otherwise = new label;
+                next_label = otherwise;
+            };
+            Label:block_label = new label;
 
-        if (![default_json].is_null) {
-        [default_label]:;
-            build block [default_json];
-            goto_ [end_label];
-        };
+            Str:target_str = [[[arm_json].get["target"]].get["value"]].get_str;
+            Val:cond = [operand] equals const str [target_str];
+            goto_ [consume truth [cond]] ? [block_label] : [otherwise];
 
-    [end_label]:;
-    }
+            [block_labels].append[block_label];
+
+            if (next_label) {
+            [[next_label].unwrap]:;
+            };
+        };
+    };
+
+    for (L:i enumerating arms_json) {
+    [block_labels[i]]:;
+        build block [[arms_json[i]].get["block"]];
+        goto_ [end_label];
+    };
+
+    if (![default_json].is_null) {
+    [default_label]:;
+        build block [default_json];
+        goto_ [end_label];
+    };
+
+[end_label]:;
 }
 
 #build for_ [BinJSON:instruction_json] using [[Val]:operands] {

@@ -9,6 +9,10 @@ public class StringLiteral(string str) : IValueToken {
         return Type_.String();
     }
 
+    public string GetString() {
+        return str;
+    }
+
     public virtual int UncachedSerialize(SerializationContext context) {
         return new SerializableInstruction(context, this) {
             ["string"] = str

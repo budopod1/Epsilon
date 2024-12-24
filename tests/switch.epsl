@@ -9,5 +9,4 @@ Z#switch[Z:i] {
     {
         return 5;
     };
-    return 0;
 }

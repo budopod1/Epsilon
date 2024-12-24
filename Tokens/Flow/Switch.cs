@@ -44,7 +44,15 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
         }
         for (int i = 0; i < armsTokenLen; i+=2) {
             Group group = (Group)rest[i];
-            if (group.Sub() is not ConstantValue constant) {
+            IValueToken sub = group.Sub();
+            ConstantValue constant;
+            if (sub is ConstantValue directConstant) {
+                constant = directConstant;
+            } else if (sub is StringLiteral stringLiteral) {
+                constant = new ConstantValue(new StringConstant(
+                    stringLiteral.GetString()
+                ));
+            }else {
                 throw new SyntaxErrorException(
                     "Switch arm values can only be constants", group
                 );

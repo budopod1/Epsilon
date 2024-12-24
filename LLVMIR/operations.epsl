@@ -138,6 +138,8 @@ Val#make constant [BinJSON:constant_json] of type_ [Type_:type_] {
             abort "Unknown special float type {}" % val_str;
         };
         return c [val] [type_];
+    } elif ([constant_type] equals ["string"]) {
+        abort "String constants cannot be created as standard constants";
     };
     abort "Unknown constant type {}" % constant_type;
 }
