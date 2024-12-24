@@ -91,6 +91,13 @@ Val#consume truth [Val:val] {
     end block;
 }
 
+#verify [Val:arr] is resizable {
+    if_ [expect [[[arr].capacity] eq [c L_ [0]]] to be [false]];
+        extern fn [null] ["epsl_nonresizable_array_fail"] [[Type_] []] [[Val] []];
+        mark as unreachable;
+    end block;
+}
+
 Val#make elem int [Type_:type_] {
     Val:result = [sizeof [type_]] * [c L_ [4]];
     if (![type_].is_ref) {
@@ -205,6 +212,9 @@ Val?#call function [Str:func_id] with args [[Val]:args] to [Type_?:result_type_]
 
 if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
     Val:arr = func arg [0];
+
+    verify [arr] is resizable;
+
     Type_:generic = arr.type_.generics[0];
     Val:len = cast [func arg [1]] to [L_];
     Val:val = cast [func arg [2]] to [generic];
@@ -546,6 +556,8 @@ Val#sort array [Val:arr] invert: [Bool:invert] {
 #deduplicate adjacent values in [Val:outer_arr] {
 if (specialized fn [null] ["dedup"] [[Val] [outer_arr]]) {
     Val:arr = func arg [0];
+
+    verify [arr] is resizable;
 
     Val:arr_len = load [[arr].length];
 

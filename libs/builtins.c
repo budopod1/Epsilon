@@ -117,6 +117,10 @@ void *epsl_realloc(void *ptr, uint64_t new_size) {
     return result;
 }
 
+void epsl_nonresizable_array_fail() {
+    BUILTINS_PANIC("The specified array can't be resized");
+}
+
 static inline uint64_t epsl_calc_new_capacity(uint64_t cap) {
     return 1+(cap*3)/2;
 }
@@ -124,6 +128,7 @@ static inline uint64_t epsl_calc_new_capacity(uint64_t cap) {
 void epsl_increment_length(struct Array *array, uint64_t elem_size) {
     uint64_t length = array->length;
     uint64_t capacity = array->capacity;
+    if (capacity == 0) epsl_nonresizable_array_fail();
     array->length = length+1;
     if (capacity == length) {
         // Current growth factor: 1.5
@@ -135,7 +140,9 @@ void epsl_increment_length(struct Array *array, uint64_t elem_size) {
 
 // Will grow capacity only to required amount
 void epsl_require_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
-    if (array->capacity < required) {
+    uint64_t capacity = array->capacity;
+    if (capacity == 0) epsl_nonresizable_array_fail();
+    if (capacity < required) {
         array->capacity = required;
         array->content = epsl_realloc(array->content, elem_size*required);
     }
@@ -143,7 +150,9 @@ void epsl_require_capacity(struct Array *array, uint64_t required, uint64_t elem
 
 // Will grow capacity and then apply growth factor
 void epsl_increace_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
-    if (array->capacity < required) {
+    uint64_t capacity = array->capacity;
+    if (capacity == 0) epsl_nonresizable_array_fail();
+    if (capacity < required) {
         uint64_t new_capacity = epsl_calc_new_capacity(required);
         array->capacity = new_capacity;
         array->content = epsl_realloc(array->content, elem_size*new_capacity);
@@ -155,12 +164,14 @@ static inline uint64_t min1(uint64_t val) {
 }
 
 void epsl_shrink_mem(struct Array *array, uint64_t elem_size) {
+    if (array->capacity == 0) epsl_nonresizable_array_fail();
     uint64_t new_capacity = min1(array->length);
     array->content = epsl_realloc(array->content, elem_size*new_capacity);
     array->capacity = new_capacity;
 }
 
 void epsl_remove_at(struct Array *array, uint64_t idx, uint64_t elem_size) {
+    if (array->capacity == 0) epsl_nonresizable_array_fail();
     uint64_t length = array->length--;
     char* content = array->content;
     char* deststart = content+idx*elem_size;
@@ -202,9 +213,11 @@ void epsl_increment_array_ref_counts(const struct Array *array, uint64_t elem) {
 struct Array *epsl_clone_array(const struct Array *array, uint64_t elem) {
     struct Array *new_array = epsl_malloc(sizeof(struct Array));
     new_array->ref_counter = 0;
+    uint64_t length = array->length;
     uint64_t capacity = array->capacity;
+    capacity = capacity == 0 ? min1(length) : capacity;
     new_array->capacity = capacity;
-    new_array->length = array->length;
+    new_array->length = length;
     uint64_t elem_size = elem >> 2;
     uint64_t size = capacity * elem_size;
     void *content = epsl_malloc(size);

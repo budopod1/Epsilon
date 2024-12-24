@@ -60,6 +60,8 @@ void *epsl_calloc(uint64_t num, uint64_t size);
 
 void *epsl_realloc(void *ptr, uint64_t new_size);
 
+void epsl_nonresizable_array_fail();
+
 void epsl_increment_length(struct Array *array, uint64_t elem_size);
 
 void epsl_require_capacity(struct Array *array, uint64_t required, uint64_t elem_size);

@@ -16,7 +16,7 @@ Val#do [Val:outer_a] equals [Val:outer_b] deep: [Bool:deep] invert: [Bool:invert
         ret [c [invert]];
     };
 
-    Str:name = "equals";
+    Str:name = ["equals"].clone;
     if (deep) {
         [name].extend["_deep"];
     };

@@ -97,11 +97,16 @@ Val#build sub one using [[Val]:operands] {
 
 Val#build string literal [BinJSON:instruction_json] to [Type_:type_] {
     Str:string = [[instruction_json].get["string"]].get_str;
+    /*
     Val:arr = malloc pointee [type_];
     [arr].init_ref;
     [[arr].length] = [c L_ [[string].len]];
     [[arr].capacity] = [c L_ [[string].len + 1]];
     [[arr].content] = [mut str [string] with [1] extra capacity];
+    */
+    Val:str_mem = global mut str [string];
+    [Val]:elements = [Val] [c L_ [1], c L_ [0], c L_ [[string].len], str_mem];
+    Val:arr = make global struct_ [Str_] [null] [elements];
     return arr;
 }
 

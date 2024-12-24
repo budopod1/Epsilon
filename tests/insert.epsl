@@ -1,5 +1,5 @@
 Z#main {
-    Str:txt = "str";
+    Str:txt = ["str"].clone;
     [txt].insert[1]['f'];
     W:total = 0;
     for (W:i enumerating txt) {

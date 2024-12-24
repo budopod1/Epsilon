@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "builtins.h"
 
@@ -20,7 +21,7 @@ struct File {
 #define _FILE_BINARY_MODE 8
 
 // returns File?
-struct File *fs_open_file(struct Array *string, uint32_t mode) {
+struct File *fs_open_file(struct Array *file_path, uint32_t mode) {
     char mode_str[4];
     uint32_t i = 0;
 
@@ -46,13 +47,12 @@ struct File *fs_open_file(struct Array *string, uint32_t mode) {
 
     mode_str[i] = '\0';
 
-    uint64_t len = string->length;
-    epsl_increment_length(string, 1);
-    char* content = string->content;
-    content[len] = '\0';
-    string->length = len;
+    uint64_t file_path_len = file_path->length;
+    char c_file_path[file_path_len+1];
+    memcpy(c_file_path, file_path->content, file_path_len);
+    c_file_path[file_path_len] = '\0';
 
-    FILE *C_file = fopen(content, mode_str);
+    FILE *C_file = fopen(c_file_path, mode_str);
     if (C_file == NULL) return NULL;
 
     struct File *file = epsl_malloc(sizeof(struct File));
