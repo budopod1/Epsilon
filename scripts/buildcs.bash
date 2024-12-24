@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 cd "${0%/*}/.."
 
 dotnet build --property:OutputPath=bin

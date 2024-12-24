@@ -37,12 +37,12 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
     public Switch(IValueToken value, IToken[] rest) {
         this.value = value;
         arms = [];
-        int max = rest.Length;
-        if (max % 2 == 1) {
-            max--;
+        int armsTokenLen = rest.Length;
+        if (armsTokenLen % 2 == 1) {
+            armsTokenLen--;
             default_ = (CodeBlock)rest[^1];
         }
-        for (int i = 0; i < max; i+=2) {
+        for (int i = 0; i < armsTokenLen; i+=2) {
             Group group = (Group)rest[i];
             if (group.Sub() is not ConstantValue constant) {
                 throw new SyntaxErrorException(

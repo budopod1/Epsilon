@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 cd "${0%/*}/.."
 
 clang LLVMIR/bootstrap.bc libs/builtins.bc libs/fs.bc libs/packing.bc -lc -o LLVMIR/result -Wno-override-module

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 cd "${0%/*}/.."
 
 echo "Installing epslc..."
 
 echo "Loading submodules..."
-# git submodule init
-# git submodule update --recursive --remote
+git submodule init
+git submodule update --recursive --remote
 
 echo "Building executable..."
 ./scripts/buildcs.bash

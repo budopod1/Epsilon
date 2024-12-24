@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 cd "${0%/*}/.."
 
 clang ./C-Run-Command/runcommand.c -o ./C-Run-Command/runcommand.so -shared -Wall -Wextra -Wno-unused-parameter
