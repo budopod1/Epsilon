@@ -52,7 +52,7 @@ public class Switch : IFlowControl, IVerifier, IFunctionTerminator {
                 constant = new ConstantValue(new StringConstant(
                     stringLiteral.GetString()
                 ));
-            }else {
+            } else {
                 throw new SyntaxErrorException(
                     "Switch arm values can only be constants", group
                 );
