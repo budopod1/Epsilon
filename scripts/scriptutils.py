@@ -2,7 +2,20 @@ from pathlib import Path
 import subprocess
 import sys
 import os
-from contextlib import chdir
+
+try:
+    from contextlib import chdir
+except ImportError:
+    from contextlib import contextmanager
+
+    @contextmanager
+    def chdir(temp_cwd):
+        old_cwd = os.getcwd()
+        os.chdir(temp_cwd)
+        try:
+            yield
+        finally:
+            os.chdir(old_cwd)
 
 
 def run_cmd(*args: str):

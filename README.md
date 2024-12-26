@@ -6,7 +6,7 @@ Epsilon is a compiled, statically typed, semi-memory safe programming language w
 
 Epsilon depends on:
 
-* Python 3.11 or above
+* Python 3.10 or above
 * .NET 8 or above
 * Clang and LLVM 15 or above
 

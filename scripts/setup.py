@@ -3,6 +3,7 @@ from scriptutils import *
 from buildcs import build_cs
 from buildlibs import build_libs
 from bootstrap import bootstrap
+from buildmisc import build_misc
 
 
 def setup():
@@ -24,6 +25,7 @@ def setup():
     bootstrap()
 
     print("Completing setup...")
+    build_misc()
     run_cmd("ln", "-fs", "../../scripts/pre-commit.py", ".git/hooks/pre-commit")
     run_cmd("mkdir", "-p", "temp")
 
