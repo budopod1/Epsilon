@@ -165,8 +165,9 @@ public class HeaderFileCompiler : IFileCompiler {
     }
 
     void FetchSignatures(string filename) {
-        string scriptPath = $"scripts{Path.DirectorySeparatorChar}fetchsignatures.bash";
-        LineReader reader = new(CmdUtils.RunScript(scriptPath, FetchSignaturesArgs(filename)));
+        string scriptPath = $"scripts{Path.DirectorySeparatorChar}fetchsignatures.py";
+        string filePath = $"temp{Path.DirectorySeparatorChar}{filename}";
+        LineReader reader = new(CmdUtils.RunScript(scriptPath, FetchSignaturesArgs(filePath)));
         string status = reader.Line();
         switch (status) {
         case "success":

@@ -1832,6 +1832,6 @@ Please clarify between the functions that take the types:
     }
 
     void CreateLLVMIR() {
-        CmdUtils.RunScript($"scripts{Path.DirectorySeparatorChar}runbackend.bash");
+        CmdUtils.RunScript($"scripts{Path.DirectorySeparatorChar}runbackend.py");
     }
 }

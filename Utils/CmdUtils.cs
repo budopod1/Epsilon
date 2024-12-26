@@ -85,9 +85,7 @@ public static class CmdUtils {
     }
 
     public static string RunScript(string name, IEnumerable<string> args=null) {
-        IEnumerable<string> bashArgs = ["--", Utils.JoinPaths(Utils.ProjectAbsolutePath(), name)];
-        if (args != null) bashArgs = bashArgs.Concat(args);
-        return RunCommand("bash", bashArgs);
+        return RunCommand(name, args ?? []);
     }
 
     public static void LinkObjsToObj(IEnumerable<string> sources, string output) {

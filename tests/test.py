@@ -472,7 +472,7 @@ def get_func(func_id, source, result_file):
 def compile_file(source, result_file):
     proccess = subprocess.run(
         [
-            "./scripts/epslc.bash", "compile", "-t", "shared-object",
+            "./scripts/epslc.py", "compile", "-t", "shared-object",
             str(source), "-o", str(result_file), "-H", "dont-use",
         ], capture_output=True, timeout=TIMEOUT
     )

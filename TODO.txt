@@ -9,3 +9,4 @@ TODO:
 * File should have custom destructor that calls `close`
 * update docs
 * add Windows support
+* instead of runbackend and fetchsignatures, call the executables directly
