@@ -8,3 +8,4 @@ TODO:
 * add `Struct` type that's treated as a superclass of all structs
 * File should have custom destructor that calls `close`
 * update docs
+* add Windows support
