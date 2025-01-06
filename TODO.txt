@@ -10,3 +10,4 @@ TODO:
 * update docs
 * add Windows support
 * instead of runbackend and fetchsignatures, call the executables directly
+* potentially add noundef to all function arguments, add nonnull to parameters that are structs/arrays but not Optionals
