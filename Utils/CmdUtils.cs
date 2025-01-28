@@ -19,7 +19,8 @@ public static class CmdUtils {
 
     static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath) {
         if (libraryName == "runcommand.so") {
-            string path = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "C-Run-Command", "runcommand.so");
+            string trueName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "runcommand.dll" : "runcommand.so";
+            string path = Utils.JoinPaths(Utils.ProjectAbsolutePath(), "C-Run-Command", trueName);
             return NativeLibrary.Load(path, assembly, searchPath);
         }
 
@@ -35,9 +36,14 @@ public static class CmdUtils {
 
         string[] args = arguments.ToArray();
         Log.Info(command, $"[{string.Join(", ", arguments)}]");
-        CRCProcessResult result = CRC_run_command(command, args, (uint)args.Length, 1);
+        CRCProcessResult result = CRC_run_command(command, args, (uint)args.Length, 7);
         exitCode = result.status;
-        return result.output;
+
+        string output = result.output;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            output = output.Replace("\r\n", "\n");
+        }
+        return output;
     }
 
     static string RunCommand(string command, IEnumerable<string> arguments) {
@@ -53,14 +59,33 @@ public static class CmdUtils {
         return result;
     }
 
+    public static string RunPython(string file, IEnumerable<string> args=null, bool ignoreErrors=false) {
+        string cmd = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "py" : "python3";
+        IEnumerable<string> pyArgs = [file, ..args??[]];
+        if (ignoreErrors) {
+            return RunCommand(cmd, pyArgs, out int _exitCode);
+        } else {
+            return RunCommand(cmd, pyArgs);
+        }
+    }
+
+    public static string RunScript(string name, IEnumerable<string> args=null, bool ignoreErrors=false) {
+        return RunPython(Utils.JoinPaths(Utils.ProjectAbsolutePath(), "scripts", name),
+            args, ignoreErrors);
+    }
+
+    public static string RunLLVMTool(string name, IEnumerable<string> args=null, bool ignoreErrors=false) {
+        return RunScript("mapLLVMcmd.py", [name, ..args??[]], ignoreErrors);
+    }
+
     public static void LinkLLVM(IEnumerable<string> sources, string output, bool toLL=false) {
         List<string> args = toLL ? ["-S"] : [];
         args.AddRange(["-o", output, "--", ..sources]);
-        RunCommand("llvm-link", args);
+        RunLLVMTool("llvm-link", args);
     }
 
     public static void OptLLVM(string source, string output) {
-        RunCommand("opt", ["-O3", source, "-o", output]);
+        RunLLVMTool("opt", ["-O3", source, "-o", output]);
     }
 
     public static void LLVMToObj(string source, string output, bool positionIndependent=false) {
@@ -69,13 +94,12 @@ public static class CmdUtils {
         if (positionIndependent) {
             args.Add("--relocation-model=pic");
         }
-        RunCommand("llc", args);
+        RunLLVMTool("llc", args);
     }
 
     public static void ClangToExecutable(IEnumerable<string> sources, string output) {
-        List<string> args = ["-no-pie", "-o", output, "-O0", ..Subconfigs.GetLinkingConfigs(),
-            ..Subconfigs.GetObjectGenConfigs(), ..sources];
-        RunCommand("clang", args);
+        RunLLVMTool("clang", ["-no-pie", "-o", output, "-O0", ..Subconfigs.GetLinkingConfigs(),
+            ..Subconfigs.GetObjectGenConfigs(), ..sources]);
     }
 
     public static void LLVMsToObj(List<string> sources, string output, bool positionIndependent=false) {
@@ -84,14 +108,10 @@ public static class CmdUtils {
         LLVMToObj(linkedIR, output, positionIndependent);
     }
 
-    public static string RunScript(string name, IEnumerable<string> args=null) {
-        return RunCommand(name, args ?? []);
-    }
-
     public static void LinkObjsToObj(IEnumerable<string> sources, string output) {
         // This doesn't use Subconfigs.GetLinkingConfigs() because it isn't
         // linking to an executable
-        RunCommand("ld", new string[] {"-r", "-o", output}.Concat(sources));
+        RunScript("linkobjects.py", [output, ..sources]);
     }
 
     public static void FilesToObject(IEnumerable<string> sources, string output) {
@@ -127,36 +147,23 @@ public static class CmdUtils {
     }
 
     public static void ToSharedObject(IEnumerable<string> sources, string output) {
-        RunCommand("clang", ["-shared", "-fPIC", "-o", output, ..Subconfigs.GetLinkingConfigs(),
+        RunScript("makeso.py", [output, ..Subconfigs.GetLinkingConfigs(),
             ..Subconfigs.GetObjectGenConfigs(), ..sources]);
     }
 
     public static IEnumerable<string> ListIncludeDirs(bool isCPP) {
-        List<string> includeDirs = [];
-        string raw = RunCommand("cpp", ["--verbose", "-x", isCPP ? "c++" : "c", "/dev/null"]);
-        bool isSearchList = false;
-        foreach (string line in raw.Split("\n")) {
-            if (isSearchList) {
-                if (line == "End of search list.") {
-                    isSearchList = false;
-                } else if (line.Length > 0 && line[0] == ' ') {
-                    includeDirs.Add(line[1..]);
-                }
-            } else if (line == "#include <...> search starts here:") {
-                isSearchList = true;
-            }
-        }
-        return includeDirs;
+        return RunScript("listincludedirs.py", [isCPP ? "c++" : "c"])
+            .Trim().Split("\n");
     }
 
     public static string VerifyCSyntax(bool cpp, string file) {
         IEnumerable<string> args = new string[] {file, "-fsyntax-only"}
             .Concat(Subconfigs.GetClangParseConfigs());
-        return RunCommand(cpp ? "clang++" : "clang", args, out int exitCode);
+        return RunLLVMTool(cpp ? "clang++" : "clang", args, ignoreErrors: true);
     }
 
     public static void CToLLVM(bool cpp, string from, string to_) {
-        RunCommand(cpp ? "clang++" : "clang", [from, "-o", to_, "-emit-llvm", "-c",
-            ..Subconfigs.GetClangParseConfigs()]);
+        RunLLVMTool(cpp ? "clang++" : "clang", [from, "-o", to_,
+            "-emit-llvm", "-c", ..Subconfigs.GetClangParseConfigs()]);
     }
 }

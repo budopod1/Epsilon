@@ -1,3 +1,4 @@
+@id testee;
 Z#switch[Z:i] {
     switch i
     (1) {

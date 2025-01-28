@@ -1,3 +1,4 @@
+@id testee;
 Z#foo[Z:a] {
     if a == 1 {
         return 2;

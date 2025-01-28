@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 from scriptutils import *
+from mapLLVMcmd import run_LLVM_cmd
 
 
 def bootstrap():
-    run_cmd("clang", "LLVMIR/bootstrap.bc", "libs/builtins.bc", "libs/fs.bc",
-        "libs/packing.bc", "-lc", "-o", "LLVMIR/result", "-Wno-override-module")
+    run_LLVM_cmd("clang", *(["--rtlib=compiler-rt"]*is_windows()),
+        "LLVMIR/bootstrap.bc", "libs/builtins.bc", "libs/fs.bc",
+        "libs/packing.bc", "-o", "LLVMIR/result", "-Wno-override-module")
 
     print("Bootstrapped backend")
 

@@ -1,3 +1,4 @@
+@id testee;
 Byte#string[Z:i] {
     return "abcdefghijklmnopqrstuvwxyz"[i];
 }

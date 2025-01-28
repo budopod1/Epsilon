@@ -1,5 +1,6 @@
 #import math;
 
+@id testee;
 Q#foo[Z:a] {
     return exp[C [0, a]].real;
 }

@@ -1,3 +1,4 @@
+@id testee;
 Q#test {
     Z:a = parse_int["123"];
     Q:b = parse_float["456.789"];

@@ -1,3 +1,4 @@
+@id testee;
 Z#test[Z:b] {
     if (b > 5) {
         return 1;

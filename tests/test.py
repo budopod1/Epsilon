@@ -1,49 +1,50 @@
 #!/usr/bin/env python3
 
 import os
+import queue
 import subprocess
 import multiprocessing
 from pathlib import Path
-from ctypes import c_double, c_int, c_ulong, c_char, CDLL
+from ctypes import c_double, c_int32, c_uint64, c_char, CDLL
 
 
 TESTS = [
     {
         "file": Path("Annotations") / "entry.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 7}
         ]
     },
     {
         "file": Path("CPP") / "entry.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 4}
         ]
     },
     {
         "file": Path("Internal") / "entry.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 12}
         ]
     },
     {
         "file": "arithmetic.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 51}
         ]
     },
     {
         "file": "array.epsl",
-        "func": 0,
-        "sig": (c_int, c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32, c_int32),
         "tests": [
             {"arguments": [0, 0], "compare": "exact", "expect": 1},
             {"arguments": [2, 1], "compare": "exact", "expect": 6},
@@ -51,160 +52,160 @@ TESTS = [
     },
     {
         "file": "arrayaccess.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 16}
         ]
     },
     {
         "file": "arrayassign.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 7}
         ]
     },
     {
         "file": "at.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 33}
         ]
     },
     {
         "file": "basic.epsl",
-        "func": 0,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
     },
     {
         "file": "bitshift.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 97}
         ]
     },
     {
         "file": "bitwise.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 3}
         ]
     },
     {
         "file": "blankarray.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 3}
         ]
     },
     {
         "file": "bool.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
     },
     {
         "file": "capacity.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 0}
         ]
     },
     {
         "file": "circular1.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 2}
         ]
     },
     {
         "file": "compound.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 10}
         ]
     },
     {
         "file": "count.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 36}
         ]
     },
     {
         "file": "dedup.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 8709120}
         ]
     },
     {
         "file": "equals.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 10}
         ]
     },
     {
         "file": "file.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 20}
         ]
     },
     {
         "file": "format.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 352},
         ]
     },
     {
         "file": "for.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 49},
         ]
     },
     {
         "file": "given.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 230}
         ]
     },
     {
         "file": "global.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 3}
         ]
     },
     {
         "file": "if.epsl",
-        "func": 0,
-        "sig": (c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32),
         "tests": [
             {"arguments": [6], "compare": "exact", "expect": 1},
             {"arguments": [5], "compare": "exact", "expect": 0},
@@ -213,8 +214,8 @@ TESTS = [
     },
     {
         "file": "if2.epsl",
-        "func": 0,
-        "sig": (c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 1},
             {"arguments": [2], "compare": "exact", "expect": 0}
@@ -222,55 +223,55 @@ TESTS = [
     },
     {
         "file": "if3.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 0}
         ]
     },
     {
         "file": "increment.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 6}
         ]
     },
     {
         "file": "indexof.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 5}
         ]
     },
     {
         "file": "join.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 4271}
         ]
     },
     {
         "file": "insert.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 676}
         ]
     },
     {
         "file": "mathimport.epsl",
-        "func": 0,
-        "sig": (c_double, c_int),
+        "func": "testee",
+        "sig": (c_double, c_int32),
         "tests": [
             {"arguments": [1], "compare": "float", "expect": 0.54}
         ]
     },
     {
         "file": "mathimport3.epsl",
-        "func": 0,
+        "func": "testee",
         "sig": (c_double, c_double),
         "tests": [
             {"arguments": [-4], "compare": "float", "expect": 2}
@@ -278,7 +279,7 @@ TESTS = [
     },
     {
         "file": "mathtest.epsl",
-        "func": 0,
+        "func": "testee",
         "sig": (c_double, c_double),
         "tests": [
             {"arguments": [3], "compare": "float", "expect": 35.54}
@@ -286,8 +287,8 @@ TESTS = [
     },
     {
         "file": "multipath.epsl",
-        "func": 0,
-        "sig": (c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 2},
             {"arguments": [3], "compare": "exact", "expect": 3}
@@ -295,23 +296,23 @@ TESTS = [
     },
     {
         "file": "nullkw.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
     },
     {
         "file": "pad.epsl",
-        "func": 0,
-        "sig": (c_ulong,),
+        "func": "testee",
+        "sig": (c_uint64,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 10391070184567263232}
         ]
     },
     {
         "file": "parsenum.epsl",
-        "func": 0,
+        "func": "testee",
         "sig": (c_double,),
         "tests": [
             {"arguments": [], "compare": "float", "expect": 581.789}
@@ -319,72 +320,72 @@ TESTS = [
     },
     {
         "file": "pop.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 7}
         ]
     },
     {
         "file": "repeat.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 78}
         ]
     },
     {
         "file": "round.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1}
         ]
     },
     {
         "file": "shortcircuit.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 22}
         ]
     },
     {
         "file": "slice.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 498}
         ]
     },
     {
-        "file": "split.epsl",
-        "func": 0,
-        "sig": (c_ulong,),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 4359359347200}
-        ]
-    },
-    {
         "file": "sort.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 564}
         ]
     },
     {
+        "file": "split.epsl",
+        "func": "testee",
+        "sig": (c_uint64,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 4359359347200}
+        ]
+    },
+    {
         "file": "startsends.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 6}
         ]
     },
     {
         "file": "string.epsl",
-        "func": 0,
-        "sig": (c_char, c_int),
+        "func": "testee",
+        "sig": (c_char, c_int32),
         "tests": [
             {"arguments": [0], "compare": "exact", "expect": b"a"},
             {"arguments": [14], "compare": "exact", "expect": b"o"},
@@ -392,24 +393,24 @@ TESTS = [
     },
     {
         "file": "stringify.epsl",
-        "func": 0,
-        "sig": (c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32),
         "tests": [
             {"arguments": [10], "compare": "exact", "expect": 2851}
         ]
     },
     {
         "file": "struct.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 5}
         ]
     },
     {
         "file": "switch.epsl",
-        "func": 0,
-        "sig": (c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 2},
             {"arguments": [2], "compare": "exact", "expect": -2},
@@ -418,8 +419,8 @@ TESTS = [
     },
     {
         "file": "switchstr.epsl",
-        "func": 0,
-        "sig": (c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 10},
             {"arguments": [10], "compare": "exact", "expect": 8},
@@ -428,8 +429,8 @@ TESTS = [
     },
     {
         "file": "uninitvalue.epsl",
-        "func": 0,
-        "sig": (c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32),
         "tests": [
             {"arguments": [1], "compare": "exact", "expect": 42},
             {"arguments": [0], "compare": "exact", "expect": 24}
@@ -437,16 +438,16 @@ TESTS = [
     },
     {
         "file": "unique.epsl",
-        "func": -1,
-        "sig": (c_int,),
+        "func": "main",
+        "sig": (c_int32,),
         "tests": [
             {"arguments": [], "compare": "exact", "expect": 1080}
         ]
     },
     {
         "file": "while.epsl",
-        "func": 0,
-        "sig": (c_int, c_int),
+        "func": "testee",
+        "sig": (c_int32, c_int32),
         "tests": [
             {"arguments": [4], "compare": "exact", "expect": 10},
             {"arguments": [6], "compare": "exact", "expect": 21},
@@ -455,25 +456,15 @@ TESTS = [
 ]
 
 
-manager = multiprocessing.Manager()
-
-
 TIMEOUT = 15
-
-
-def get_func(func_id, source, result_file):
-    so = CDLL(result_file)
-
-    func = "main" if func_id == -1 else f"{source.with_suffix('')}/{str(func_id)}"
-
-    return getattr(so, func)
 
 
 def compile_file(source, result_file):
     proccess = subprocess.run(
         [
-            "./scripts/epslc.py", "compile", "-t", "shared-object",
-            str(source), "-o", str(result_file), "-H", "dont-use",
+            "dotnet", "executables/EpsilonLang.dll", "compile", "-t",
+            "shared-object", str(source), "-o", str(result_file), "-H",
+            "dont-use",
         ], capture_output=True, timeout=TIMEOUT
     )
     output = proccess.stdout+proccess.stderr
@@ -489,11 +480,18 @@ def equal(mode, a, b):
         return abs(a - b) < 0.005
 
 
-test_result = manager.dict()
+def do_test_proc(comm, result_file, func_name, sig, args):
+    so = CDLL(result_file)
+    func = getattr(so, func_name)
+    func.restype, *func.argtypes = sig
+    comm.put(func(*args))
 
 
-def run_test(func, args):
-    test_result["result"] = func(*args)
+def nowait_queue_get(queue_obj):
+    try:
+        return queue_obj.get_nowait()
+    except queue.Empty:
+        return None
 
 
 def main():
@@ -529,29 +527,27 @@ def main():
             failed += len(group["tests"])
             continue
 
-        func = get_func(group["func"], source, result_file)
-        func.restype, *func.argtypes = group["sig"]
-
         for test in group["tests"]:
             print(f"Running test {test_idx}/{test_count}...")
 
-            test_result["result"] = None
+            comm = multiprocessing.Queue()
 
-            process = multiprocessing.Process(
-                target=run_test, args=(func, test["arguments"]))
+            process = multiprocessing.Process(target=do_test_proc, args=(
+                comm, result_file, group["func"], group["sig"], test["arguments"]
+            ))
             process.start()
             process.join(TIMEOUT)
+            process.terminate()
+            process.join()
 
             if process.is_alive():
-                process.terminate()
-                process.join()
                 print("❌ Test failed!")
                 print(f"Test did not complete within {TIMEOUT} seconds")
                 failed += 1
             else:
-                expect = test["expect"]
+                result = nowait_queue_get(comm)
 
-                result = test_result["result"]
+                expect = test["expect"]
 
                 if result is None:
                     print("😬 Probable segmentation fault :(")
@@ -566,7 +562,16 @@ def main():
 
             test_idx += 1
 
-        os.remove(result_file)
+        try:
+            exp_file = result_file.with_suffix(".exp")
+            if exp_file.exists():
+                exp_file.unlink()
+            lib_file = result_file.with_suffix(".lib")
+            if lib_file.exists():
+                lib_file.unlink()
+            result_file.unlink()
+        except PermissionError:
+            pass
 
     print("\nTests completed:")
     if failed > 0:

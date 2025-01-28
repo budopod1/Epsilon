@@ -1,4 +1,6 @@
-#define __STDC_WANT_LIB_EXT2__ 1
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>

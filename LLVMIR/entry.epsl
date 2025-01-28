@@ -185,6 +185,9 @@ FuncProto#get func proto [Str:id] {
 }
 
 #build func [BinJSON:func_json] {
+    if ([[func_json].get["dllexport"]].get_bool) {
+        add func specifier ["dllexport"];
+    };
     FuncProto:proto = read func proto [func_json];
 if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     [ScopeVar]:vars = [ScopeVar] [];

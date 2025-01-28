@@ -1,9 +1,12 @@
 # Executable output
 /Compilers/signatures
 /LLVMIR/result
-/LLVMIR/code
-/Epsilon.exe
 *.so
+
+# Symlinks
+/bin
+/libs/runcommand.c
+/libs/runcommand.h
 
 # VSCode stuff
 c_cpp_properties.json
@@ -13,12 +16,14 @@ settings.json
 .vscode
 
 # Misc tools
-.ackrc
+/.ackrc
 vgcore.*
+/LLVM
+/.vs
 
 # C# stuff
 /obj
-/bin
+/executables
 
 # Intermediate files
 *.pyc
@@ -27,6 +32,8 @@ vgcore.*
 /temp/*
 *.o
 !/LLVMIR/bootstrap.bc
+*.exp
+*.lib
 
 # Epsilon specific
 *.epslcache

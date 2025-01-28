@@ -3,7 +3,7 @@ from scriptutils import *
 
 
 def build_cs():
-    run_cmd("dotnet", "build", "--property:OutputPath=bin")
+    run_cmd("dotnet", "build")
 
 
 if __name__ == "__main__":

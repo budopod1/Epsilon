@@ -1,3 +1,4 @@
+@id testee;
 Z#test[Z:i] {
     Z:num;
     if (i) {

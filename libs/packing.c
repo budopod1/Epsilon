@@ -1,8 +1,11 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <arpa/inet.h>
 
 #include "builtins.h"
 
@@ -23,7 +26,11 @@ struct ByteArray {
 };
 
 static bool is_network_byte_order() {
-    return htons(1) == 1;
+    union {
+        short num;
+        char arr[2];
+    } tester = {0x0102};
+    return tester.arr[0] == 1;
 }
 
 static void memcpy_reversed(void *dest, void *const src, size_t amount) {

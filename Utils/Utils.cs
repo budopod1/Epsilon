@@ -60,10 +60,10 @@ public static class Utils {
 
     public static string ProjectAbsolutePath() {
         DirectoryInfo dir = new(AppDomain.CurrentDomain.BaseDirectory);
-        if (dir.Name != "bin") {
-            throw new IOException("The Epsilon executable must be in a directory named 'bin'");
+        if (dir.Name == "bin" || dir.Name == "executables") {
+            return dir.Parent.FullName;
         }
-        return dir.Parent.FullName;
+        throw new IOException("The Epsilon executable must be in a directory named 'bin' or 'executables'");
     }
 
     public static bool ApproxEquals(double a, double b) {

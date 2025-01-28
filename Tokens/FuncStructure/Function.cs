@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using CsJSONTools;
 
 namespace Epsilon;
@@ -30,6 +31,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
     readonly bool doesReturnVoid;
     readonly string id;
     readonly string callee;
+    bool customCallee;
     readonly List<Type_> specialAllocs = [];
 
     public Function(string idPath, Program program, PatternExtractor<List<IToken>> pattern, List<FunctionArgumentToken> arguments, CodeBlock block, Type_ returnType_, List<IAnnotation> annotations) {
@@ -49,20 +51,18 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
         ).ToList();
         id = $"{idPath}/{program.GetFunctionID()}";
 
-        bool setCallee = false;
+        callee = id;
+        customCallee = false;
         foreach (IAnnotation annotation in annotations) {
-            if (annotation is IDAnnotation idA && !setCallee) {
+            if (annotation is IDAnnotation idA) {
                 callee = idA.GetID();
-                setCallee = true;
+                customCallee = true;
+                break;
             }
         }
-        if (Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments()) && !setCallee) {
+        if (Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments()) && !customCallee) {
             callee = "main";
-            setCallee = true;
-        }
-        if (!setCallee) {
-            callee = id;
-            setCallee = true;
+            customCallee = true;
         }
     }
 
@@ -131,6 +131,8 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
             specialAllocs.Select(type_=>type_.GetJSON())
         );
         obj["is_main"] = new JSONBool(IsMain());
+        bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        obj["dllexport"] = new JSONBool(isWindows && customCallee);
         return obj;
     }
 

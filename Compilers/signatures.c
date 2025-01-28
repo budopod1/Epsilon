@@ -4,8 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <inttypes.h>
-#include <clang-c/Index.h>
 #include <stdnoreturn.h>
+#include "clang-c/Index.h"
 
 // clang -Xclang -ast-dump src.h
 
@@ -101,13 +101,8 @@ CXTranslationUnit unit;
 
 CXFile file;
 
-#ifndef strdup
-char *strdup(const char *src) {
-    size_t cap = strlen(src)+1;
-    void *result = malloc(cap);
-    memcpy(result, src, cap);
-    return result;
-}
+#ifdef _MSC_VER
+#define strdup _strdup
 #endif
 
 extern inline uint32_t grow_cap(uint32_t old) {

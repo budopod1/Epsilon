@@ -1,5 +1,6 @@
 #import math;
 
+@id testee;
 Q#do_test[Q:a] {
     return cmplx [a] ** [0.5].imag;
 }

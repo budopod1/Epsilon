@@ -5,7 +5,7 @@ from epslc import epslc
 
 
 def build_bootstrap():
-    build_backend([])
+    build_backend()
     epslc(["compile", "LLVMIR/", "-t", "llvm-bc", "-o", "LLVMIR/bootstrap.bc",
         "--no-link-builtins", "--no-link-builtin-modules"])
     print("Built bootstrap file")

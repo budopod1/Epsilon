@@ -9,10 +9,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
     public static void Setup() {
         Builder.RegisterDispatcher((BuildSettings buildSettings, string path) => {
-            string fileText;
-            using (StreamReader file = new(path)) {
-                fileText = file.ReadToEnd();
-            }
+            string fileText = JSONTools.ReadFileText(new StreamReader(path));
             string stemmed = Utils.Stem(path);
             return new EPSLFileCompiler(path, stemmed, fileText, buildSettings);
         }, "epsl");
@@ -1832,6 +1829,6 @@ Please clarify between the functions that take the types:
     }
 
     void CreateLLVMIR() {
-        CmdUtils.RunScript($"scripts{Path.DirectorySeparatorChar}runbackend.py");
+        CmdUtils.RunScript("runbackend.py");
     }
 }

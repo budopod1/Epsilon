@@ -3,7 +3,7 @@ from scriptutils import *
 
 
 def fetch_signatures(args):
-    run_cmd("./Compilers/signatures", *args)
+    print(run_cmd("./Compilers/signatures", *args, capture_out=True), end="")
 
 
 if __name__ == "__main__":

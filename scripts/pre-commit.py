@@ -34,7 +34,7 @@ for path in check_files:
     if file.is_symlink():
         continue
 
-    text1 = file.read_text()
+    text1 = file.read_text(encoding="UTF-8")
 
     if "\t" in text1:
         print("tab character found in", path)
@@ -49,7 +49,7 @@ for path in check_files:
         text2 += "\n"
 
     if text2 != text1:
-        file.write_text(text2)
+        file.write_text(text2, encoding="UTF-8")
         fixed_files.append(file)
 
 if fixed_files and not CHECK_SUBTREE_FILES:

@@ -1,3 +1,4 @@
+@id testee;
 Z#triangle[Z:v] {
     Z:i = 1;
     Z:t = 0;

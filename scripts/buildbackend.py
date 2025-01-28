@@ -3,7 +3,9 @@ from scriptutils import *
 from epslc import epslc
 
 
-def build_backend(args):
+def build_backend(args=None):
+    if args is None:
+        args = []
     PROJECTS = [
         "EPSL-BinJSON/binjson", "EPSL-IR-Gen/irgen", "EEWriter/eewriter", "LLVMIR/"
     ]

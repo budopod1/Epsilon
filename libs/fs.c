@@ -1,4 +1,6 @@
-#define __STDC_WANT_LIB_EXT2__ 1
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -89,7 +91,7 @@ bool fs_close_file(struct File *file) {
     return false;
 }
 
-int64_t fs_file_length(const struct File *file) {
+static int64_t _file_binary_len(const struct File *file) {
     if (!file->open) return -1;
     FILE *fp = file->file;
     long start_pos = ftell(fp);
@@ -99,33 +101,72 @@ int64_t fs_file_length(const struct File *file) {
     return length;
 }
 
-int64_t fs_file_pos(const struct File *file) {
+int64_t fs_file_length(const struct File *file) {
+    if (file->mode&_FILE_BINARY_MODE) {
+        return _file_binary_len(file);
+    } else {
+        return -1;
+    }
+}
+
+static int64_t _file_binary_pos(const struct File *file) {
     if (!file->open) return -1;
     return (uint64_t)ftell(file->file);
 }
 
+int64_t fs_file_pos(const struct File *file) {
+    if (file->mode&_FILE_BINARY_MODE) {
+        return _file_binary_pos(file);
+    } else {
+        return -1;
+    }
+}
+
 // returns: Str?
 struct Array *fs_read_all_file(const struct File *file) {
-    if (!file->open) return NULL;
-    uint64_t file_len = fs_file_length(file);
-    if (file_len == -1) return epsl_blank_array(sizeof(char));
-    uint64_t cur_pos = fs_file_pos(file);
-    if (cur_pos == -1) return epsl_blank_array(sizeof(char));
-    uint64_t remaining_text = (uint64_t)(file_len - cur_pos);
-    uint64_t capacity = remaining_text;
+    uint64_t max_remaining = _file_binary_len(file);
+    if (max_remaining == -1) return NULL;
+
+    uint64_t cur_pos = _file_binary_pos(file);
+    if (cur_pos == -1) return NULL;
+    max_remaining -= cur_pos;
+
+    uint64_t capacity = max_remaining;
     if (capacity == 0) capacity = 1;
-    struct Array *result = epsl_malloc(sizeof(struct Array));
+    char *content = epsl_malloc(capacity);
+
+    uint64_t length;
+
+    if (file->mode&_FILE_BINARY_MODE) {
+        length = max_remaining;
+        size_t read = fread(content, max_remaining, 1, file->file);
+        if (read != 1) {
+            free(content);
+            return NULL;
+        }
+    } else {
+        length = 0;
+        char *buf_ptr = content;
+
+        size_t read;
+        do {
+            read = fread(buf_ptr, 1, max_remaining, file->file);
+            length += read;
+            buf_ptr += read;
+            max_remaining -= read;
+        } while (read != 0);
+
+        if (!feof(file->file)) {
+            free(content);
+            return NULL;
+        }
+    }
+
+    struct Array *result = epsl_malloc(sizeof(*result));
     result->ref_counter = 0;
     result->capacity = capacity;
-    result->length = remaining_text;
-    char *content = epsl_malloc(capacity);
+    result->length = length;
     result->content = content;
-    size_t read = fread(content, remaining_text, 1, file->file);
-    if (read != 1) {
-        free(result);
-        free(content);
-        return NULL;
-    }
     return result;
 }
 
@@ -159,6 +200,24 @@ bool fs_jump_file_pos(const struct File *file, uint64_t amount) {
     return fseek(file->file, (long)amount, SEEK_CUR) == 0;
 }
 
+static int64_t _fs_read_line(char **line, uint64_t *cap, FILE *file) {
+    if (*line == NULL) {
+        *cap = 0;
+    }
+    uint64_t len = 0;
+
+    while (true) {
+        int c = fgetc(file);
+        if (ferror(file)) return -1;
+        if (c == EOF || c == '\n') return len;
+        if (len == *cap) {
+            *cap = (*cap * 3) / 2 + 64;
+            *line = epsl_realloc(*line, *cap);
+        }
+        (*line)[len++] = c;
+    }
+}
+
 static bool read_line_EOF = false;
 
 // returns: Str?
@@ -167,7 +226,7 @@ struct Array *fs_read_file_line(const struct File *file) {
     if (!file->open) return NULL;
     char *content = NULL;
     size_t capacity = 0;
-    int64_t len = (int64_t)getline(&content, &capacity, file->file);
+    int64_t len = (int64_t)_fs_read_line(&content, &capacity, file->file);
     if (len == -1) {
         free(content);
         read_line_EOF = true;

@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace Epsilon;
 public static class Subconfigs {
     static readonly List<ISubconfig> ClangParseConfigs = [];
@@ -51,7 +53,13 @@ public static class Subconfigs {
     }
 
     public static IEnumerable<string> GetLinkingConfigs() {
-        return ExpandSubconfigs(LinkingConfigs).Concat(["-lc", "-lm"]);
+        IEnumerable<string> configs = ExpandSubconfigs(LinkingConfigs);
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            configs = configs.Concat(["--rtlib=compiler-rt"]);
+        } else {
+            configs = configs.Concat(["-lm"]);
+        }
+        return configs;
     }
 
     public static IEnumerable<string> GetObjectGenConfigs() {

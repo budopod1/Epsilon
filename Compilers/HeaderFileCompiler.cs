@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 namespace Epsilon;
 public class HeaderFileCompiler : IFileCompiler {
     readonly string path;
@@ -33,10 +35,7 @@ public class HeaderFileCompiler : IFileCompiler {
 
     public static void Setup() {
         Builder.RegisterDispatcher((BuildSettings settings, string path) => {
-            string fileText;
-            using (StreamReader file = new(path)) {
-                fileText = file.ReadToEnd();
-            }
+            string fileText = JSONTools.ReadFileText(new StreamReader(path));
             return new HeaderFileCompiler(path, fileText);
         }, [..headerExtensions, ..headerImplementationExtensions]);
     }
@@ -165,7 +164,7 @@ public class HeaderFileCompiler : IFileCompiler {
     }
 
     void FetchSignatures(string filename) {
-        string scriptPath = $"scripts{Path.DirectorySeparatorChar}fetchsignatures.py";
+        string scriptPath = "fetchsignatures.py";
         string filePath = $"temp{Path.DirectorySeparatorChar}{filename}";
         LineReader reader = new(CmdUtils.RunScript(scriptPath, FetchSignaturesArgs(filePath)));
         string status = reader.Line();
