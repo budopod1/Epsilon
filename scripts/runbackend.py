@@ -3,7 +3,7 @@ from scriptutils import *
 
 
 def run_backend():
-    run_cmd("./LLVMIR/result")
+    run_cmd("./LLVMIRBuilder/result")
 
 
 if __name__ == "__main__":

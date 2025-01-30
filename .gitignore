@@ -1,6 +1,6 @@
 # Executable output
 /Compilers/signatures
-/LLVMIR/result
+/LLVMIRBuilder/result
 *.so
 
 # Symlinks
@@ -31,9 +31,9 @@ vgcore.*
 *.ll
 /temp/*
 *.o
-!/LLVMIR/bootstrap.bc
 *.exp
 *.lib
+!/LLVMIRBuilder/bootstrap.bc
 
 # Epsilon specific
 *.epslcache
