@@ -148,13 +148,12 @@ struct Array *fs_read_all_file(const struct File *file) {
         length = 0;
         char *buf_ptr = content;
 
-        size_t read;
-        do {
-            read = fread(buf_ptr, 1, max_remaining, file->file);
-            length += read;
-            buf_ptr += read;
-            max_remaining -= read;
-        } while (read != 0);
+        int c = fgetc(file->file);
+        while (c != EOF) {
+            length++;
+            *(buf_ptr++) = c;
+            c = fgetc(file->file);
+        }
 
         if (!feof(file->file)) {
             free(content);

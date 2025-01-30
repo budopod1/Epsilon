@@ -13,7 +13,7 @@ To setup Epsilon, run:
 Epsilon depends on:
 
 * Python 3.10 or above
-* .NET 9 or above
+* .NET 8
 * Clang and LLVM 15 or above
 
 On Windows, installation of a C standard library may also be required. MSVC or MigGW are recommended for this.

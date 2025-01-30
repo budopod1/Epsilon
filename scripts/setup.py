@@ -154,6 +154,7 @@ def setup():
     print("Setting up epslc...")
 
     require_folder("temp")
+    require_folder("bin")
 
     verify_dependencies()
 
