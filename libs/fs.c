@@ -109,17 +109,9 @@ int64_t fs_file_length(const struct File *file) {
     }
 }
 
-static int64_t _file_binary_pos(const struct File *file) {
+int64_t fs_file_pos(const struct File *file) {
     if (!file->open) return -1;
     return (uint64_t)ftell(file->file);
-}
-
-int64_t fs_file_pos(const struct File *file) {
-    if (file->mode&_FILE_BINARY_MODE) {
-        return _file_binary_pos(file);
-    } else {
-        return -1;
-    }
 }
 
 // returns: Str?
@@ -127,7 +119,7 @@ struct Array *fs_read_all_file(const struct File *file) {
     uint64_t max_remaining = _file_binary_len(file);
     if (max_remaining == -1) return NULL;
 
-    uint64_t cur_pos = _file_binary_pos(file);
+    uint64_t cur_pos = fs_file_pos(file);
     if (cur_pos == -1) return NULL;
     max_remaining -= cur_pos;
 
