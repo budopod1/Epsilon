@@ -168,7 +168,7 @@ void output_collected(struct CollectedInfo *info) {
     puts("success");
 
     if (info->implementation_location == NULL) {
-        puts("");
+        putchar('\n');
     } else {
         puts(info->implementation_location);
     }
