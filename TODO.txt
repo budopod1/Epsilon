@@ -1,12 +1,14 @@
 TODO:
-* `Matrix` type?
-* `Map` type
+* add ability to load compiler modules at runtime, enabling:
+  * packages that contain `Matrix` and `Map` types
+* @value annotation for structs that allows them to be treated as value types
 * serialization and complete compilation of `Poly` types_
-* add way to apply operation to every element of array (like Linq Select)
-* lifetime analysis to eliminate rec counting ops and use stack allocs instead of heap allocs when possible
+* add way to apply operation to every element of array (like Linq's `.Select()`)
+* lifetime analysis to eliminate ref counting ops and use stack allocs instead of heap allocs when possible
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `Struct` type that's treated as a superclass of all structs
 * File should have custom destructor that calls `close`
 * update docs
 * instead of runbackend and fetchsignatures, call the executables directly
 * potentially add noundef to all function arguments, add dereferenceable(<n>) to parameters that are structs/arrays, and dereferenceable_or_null(<n>) to Optionals
+* find clang and LLVM tools with version numbers (eg llvm-link-18)
