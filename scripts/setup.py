@@ -88,9 +88,9 @@ def assist_windows_LLVM_installation():
 
 
 def assist_non_windows_installation():
-    print("Please install clang and clang-tools")
+    print("Please install clang and llvm-dev")
     if has_cmd("apt"):
-        print("(e.g. sudo apt install clang clang-tools)")
+        print("(e.g. sudo apt install clang llvm-dev)")
 
 
 def assist_llvm_installation(has_base_clang):
@@ -128,7 +128,7 @@ git not found.
         assist_llvm_installation(has_base_clang=False)
         abort()
     if not has_LLVM_cmd("llvm-link"):
-        print("Required LLVM tools not found")
+        print("Required LLVM tool (llvm-link) not found")
         assist_llvm_installation(has_base_clang=True)
         abort()
 

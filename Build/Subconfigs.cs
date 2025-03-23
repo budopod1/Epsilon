@@ -53,10 +53,9 @@ public static class Subconfigs {
     }
 
     public static IEnumerable<string> GetLinkingConfigs() {
-        IEnumerable<string> configs = ExpandSubconfigs(LinkingConfigs);
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-            configs = configs.Concat(["--rtlib=compiler-rt"]);
-        } else {
+        IEnumerable<string> configs = ExpandSubconfigs(LinkingConfigs)
+            .Concat(["--rtlib=compiler-rt"]);
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
             configs = configs.Concat(["-lm"]);
         }
         return configs;
