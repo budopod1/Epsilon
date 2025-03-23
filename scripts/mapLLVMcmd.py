@@ -14,12 +14,22 @@ def _map_local_LLVM_cmd(LLVM_cmd: str) -> str | None:
     return None
 
 
+def _map_global_LLVM_cmd(LLVM_cmd: str) -> str | None:
+    for dir in os.environ["PATH"].split(os.path.pathsep):
+        for binary in Path(dir).glob(LLVM_cmd+"*"):
+            if binary.name == LLVM_cmd:
+                return binary.name
+            before, _, after = binary.name.rpartition("-")
+            if before == LLVM_cmd and all(c.isdigit() for c in after):
+                return binary.name
+
+
 def map_LLVM_cmd(LLVM_cmd: str) -> str:
-    return _map_local_LLVM_cmd(LLVM_cmd) or LLVM_cmd
+    return _map_local_LLVM_cmd(LLVM_cmd) or _map_global_LLVM_cmd(LLVM_cmd) or LLVM_cmd
 
 
 def has_LLVM_cmd(LLVM_cmd: str) -> bool:
-    return bool(_map_local_LLVM_cmd(LLVM_cmd) or has_cmd(LLVM_cmd))
+    return bool(_map_local_LLVM_cmd(LLVM_cmd) or _map_global_LLVM_cmd(LLVM_cmd))
 
 
 def run_LLVM_cmd(LLVM_cmd: str, *args, capture_out=False):

@@ -7,7 +7,7 @@ from mapLLVMcmd import run_LLVM_cmd
 def build_c_file(file):
     path = Path(file)
     bitcode_path = path.with_suffix(".bc")
-    run_cmd("clang", "-c", "-O3", "-emit-llvm", path, "-o", bitcode_path)
+    run_LLVM_cmd("clang", "-c", "-O3", "-emit-llvm", path, "-o", bitcode_path)
     object_path = path.with_suffix(".o")
     run_LLVM_cmd("clang", "-c", bitcode_path, "-o", object_path, "-O1")
 
