@@ -3,7 +3,7 @@ from scriptutils import *
 
 
 def epslc(args):
-    run_cmd("dotnet", Path("executables/EpsilonLang.dll").absolute(),
+    run_cmd("dotnet", Path("executables/Epsilon.dll").absolute(),
         *args, use_dash_x_flag=False)
 
 

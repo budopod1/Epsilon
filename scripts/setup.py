@@ -143,7 +143,7 @@ def make_project_symlinks():
     if not is_windows():
         make_symlink("scripts/pre-commit.py", ".git/hooks/pre-commit")
     if is_windows():
-        make_symlink("executables/EpsilonLang.exe", "bin/epslc.exe")
+        make_symlink("executables/Epsilon.exe", "bin/epslc.exe")
     else:
         make_symlink("scripts/epslc.py", "bin/epslc")
     make_symlink("C-Run-Command/runcommand.c", "libs/runcommand.c")

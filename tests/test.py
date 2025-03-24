@@ -462,7 +462,7 @@ TIMEOUT = 15
 def compile_file(source, result_file):
     proccess = subprocess.run(
         [
-            "dotnet", "executables/EpsilonLang.dll", "compile", "-t",
+            "dotnet", "executables/Epsilon.dll", "compile", "-t",
             "shared-object", str(source), "-o", str(result_file), "-H",
             "dont-use",
         ], capture_output=True, timeout=TIMEOUT
