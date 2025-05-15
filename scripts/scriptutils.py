@@ -1,6 +1,10 @@
+import sys
+
+if sys.version_info < (3, 10):
+    sys.exit("Python 3.10 or higher is required")
+
 from pathlib import Path
 import subprocess
-import sys
 import os
 import urllib.request
 import urllib.error
@@ -54,6 +58,12 @@ def has_cmd(cmd) -> bool:
     return subprocess.run(check_command, capture_output=True).returncode == 0
 
 
+def get_user_shell_name() -> str | None:
+    if "SHELL" in os.environ:
+        return Path(os.environ["SHELL"]).parts[-1]
+    return None
+
+
 def run_powershell_script(script_path: Path, *args, as_admin=False):
     if as_admin:
         run_powershell_script(
@@ -82,6 +92,10 @@ def cd_to_proj_root():
 
 def is_windows() -> bool:
     return sys.platform.startswith("win")
+
+
+def is_macos() -> bool:
+    return sys.platform == "darwin"
 
 
 def is_root() -> bool:
@@ -158,8 +172,8 @@ def download_file(remote_url, local_path):
 
 
 __all__ = [
-    "Path", "sys", "os", "chdir", "run_cmd", "has_cmd",
-    "run_powershell_script", "add_to_windows_path", "is_windows",
+    "Path", "sys", "os", "chdir", "run_cmd", "has_cmd", "get_user_shell_name",
+    "run_powershell_script", "add_to_windows_path", "is_windows", "is_macos",
     "get_project_root", "cd_to_proj_root", "is_root", "abort",
     "cmd_options_prompt", "download_file", "shutil", "LOCAL_LLVM_INSTALL_DIR"
 ]

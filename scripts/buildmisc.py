@@ -14,6 +14,36 @@ def get_libclang_required_flags():
 
     if is_windows():
         yield "-llibclang"
+    elif is_macos():
+        LLVM_locations = [
+            Path.home() / "Cellar/llvm",
+            Path("/opt/homebew/Cellar/llvm"),
+            Path("/usr/local/Cellar/llvm")
+        ]
+
+        LLVM_installations = (
+            version
+            for LLVM_location in LLVM_locations
+            if LLVM_location.is_dir()
+            for version in LLVM_location.iterdir()
+            if version.parts[-1][0] != "."
+        )
+
+        chosen_version = None
+        chosen_installation = None
+
+        for installation in LLVM_installations:
+            version_parts = installation.parts[-1].split(".")
+            major_version = int(version_parts[0])
+            if chosen_version is None or major_version > chosen_version:
+                chosen_version = major_version
+                chosen_installation = installation
+
+        if chosen_installation is not None:
+            yield f"-I{chosen_installation / "include"}"
+            yield f"-L{chosen_installation / "lib"}"
+
+        yield "-lclang"
     else:
         linux_headers = Path("/usr/lib")
         chosen_version = None

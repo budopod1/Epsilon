@@ -23,22 +23,33 @@ def windows_install():
 
 
 def install_for_user_nonwindows():
+    shell = get_user_shell_name() or "bash"
+    rc_file = f".{shell}rc"
+    default_script = rc_file if is_macos() else ".profile"
+
     chosen_opt = cmd_options_prompt(
-        "Add epslc to PATH in .profile (recommended)",
+        f"Add epslc to PATH in {default_script} (recommended)",
         "Add epslc to PATH somewhere else"
     )
 
-    add_in_script_path = Path.home() / ".profile"
+    add_in_script_path = Path.home() / default_script
     if chosen_opt == 1:
-        print("Where would you like to add epslc to PATH? (e.g. .bashrc)")
+        where_msg = "Where would you like to add epslc to PATH?"
+        if default_script != rc_file:
+            where_msg += f" (e.g. {rc_file})"
+        print(where_msg)
         add_in_script_path = Path.home() / input("> ")
 
-    with open(add_in_script_path) as file:
-        script_content = file.read()
     path_to_add = Path(BIN_FOLDER).absolute()
-    script_content += f"\nexport PATH=$PATH:{path_to_add}\n"
-    with open(add_in_script_path, "w") as file:
-        file.write(script_content)
+    with open(add_in_script_path, "a") as file:
+        file.write(f"\nexport PATH=$PATH:{path_to_add}\n")
+
+
+def install_with_symlink():
+    symlink_location = Path(input("Symlink location? "))
+    if not symlink_location.is_dir():
+        abort("The specified folder was not found")
+    make_symlink(EXECUTION_TARGET, symlink_location / "epslc")
 
 
 def nonwindows_install():
@@ -56,8 +67,7 @@ def nonwindows_install():
     elif chosen_opt == 1:
         install_for_user_nonwindows()
     elif chosen_opt == 2:
-        symlink_location = input("Symlink location? ")
-        make_symlink(EXECUTION_TARGET, Path(symlink_location) / "epslc")
+        install_with_symlink()
 
 
 def install():

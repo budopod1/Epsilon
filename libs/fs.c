@@ -191,11 +191,11 @@ bool fs_jump_file_pos(const struct File *file, uint64_t amount) {
     return fseek(file->file, (long)amount, SEEK_CUR) == 0;
 }
 
-static int64_t _fs_read_line(char **line, uint64_t *cap, FILE *file) {
+static int64_t _fs_read_line(char **line, size_t *cap, FILE *file) {
     if (*line == NULL) {
         *cap = 0;
     }
-    uint64_t len = 0;
+    size_t len = 0;
 
     while (true) {
         int c = fgetc(file);

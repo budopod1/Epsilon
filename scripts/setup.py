@@ -89,7 +89,9 @@ def assist_windows_LLVM_installation():
 
 def assist_non_windows_installation():
     print("Please install clang and llvm-dev")
-    if has_cmd("apt"):
+    if has_cmd("brew"):
+        print("(e.g. brew install llvm)")
+    elif has_cmd("apt"):
         print("(e.g. sudo apt install clang llvm-dev)")
 
 

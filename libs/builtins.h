@@ -9,6 +9,12 @@
 // second to lowest bit is 1 when the value is not a pointer
 // lowest bit is 1 when the value is nullable
 
+#if __STDC_VERSION__ < 201112L
+#error "C11 or greater is required"
+#elif __STDC_VERSION__ < 202311L
+#define thread_local _Thread_local
+#endif
+
 #ifndef __has_builtin
 #define __has_builtin(x) 0
 #endif
