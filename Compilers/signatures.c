@@ -376,13 +376,18 @@ void struct_decl_to_EPSLType_(CXCursor decl, const char *name, CXType in, struct
     }
 }
 
-bool check_pointer_typedef_patterns(CXString name, CXString underlying_name, CXCursor typedef_, CXType underlying, struct EPSLType_ *out) {
+bool check_special_pointer_typedef(CXString name, CXCursor typedef_, CXType underlying, struct EPSLType_ *out) {
+    CXCursor underlying_decl = clang_getTypeDeclaration(underlying);
+    CXString underlying_name = clang_getCursorSpelling(underlying_decl);
+
     const char *name_base;
     if (remove_start(clang_getCString(name), "NULLABLE_", &name_base)) {
         const char *underlying_name_cstr = clang_getCString(underlying_name);
         if (strcmp(underlying_name_cstr, name_base) != 0) {
-            report_error(typedef_, "This typedef doesn't reference the correct struct given its name. It's expected it to reference %s (given the typedef name), while it references %s.", name_base, underlying_name_cstr);
+            report_error(typedef_, "This typedef is expected it to reference the struct %s (given the typedef name), while it instead incorrectly references %s.", name_base, underlying_name_cstr);
         }
+
+        clang_disposeString(underlying_name);
 
         struct EPSLType_ *generic = malloc(sizeof(*generic));
         CXType_pointee_to_EPSLType_(typedef_, underlying, generic);
@@ -398,17 +403,16 @@ bool check_pointer_typedef_patterns(CXString name, CXString underlying_name, CXC
         out->generics = generic;
         return true;
     }
+
+    clang_disposeString(underlying_name);
     return false;
 }
 
 void pointer_typedef_to_EPSLType_(CXString name, CXCursor typedef_, CXType underlying, struct EPSLType_ *out) {
     underlying = strip_elaboration(underlying);
     if (underlying.kind == CXType_Record) {
-        CXCursor underlying_decl = clang_getTypeDeclaration(underlying);
-        CXString underlying_name = clang_getCursorSpelling(underlying_decl);
-        if (check_pointer_typedef_patterns(name, underlying_name, typedef_, underlying, out))
+        if (check_special_pointer_typedef(name, typedef_, underlying, out))
             return;
-        clang_disposeString(underlying_name);
     }
     CXType_pointee_to_EPSLType_(typedef_, underlying, out);
 }
