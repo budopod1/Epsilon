@@ -10,4 +10,3 @@ TODO:
 * File should have custom destructor that calls `close`
 * update docs
 * instead of runbackend and fetchsignatures, call the executables directly
-* potentially add noundef to all function arguments, add dereferenceable(<n>) to parameters that are structs/arrays, and dereferenceable_or_null(<n>) to Optionals

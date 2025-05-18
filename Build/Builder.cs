@@ -853,7 +853,7 @@ public class Builder {
             }
         }
         Console.ForegroundColor = ConsoleColor.DarkRed;
-        Console.Write("compilation error in ");
+        Console.Write("compilation error at ");
         Console.ForegroundColor = ConsoleColor.Red;
         Console.Write($"{file}:{startLine}");
         Console.ForegroundColor = ConsoleColor.DarkRed;
