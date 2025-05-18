@@ -59,14 +59,22 @@ public static class CmdUtils {
         return result;
     }
 
-    public static string RunPython(string file, IEnumerable<string> args=null, bool ignoreErrors=false) {
-        string cmd = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "py" : "python3";
-        IEnumerable<string> pyArgs = [file, ..args??[]];
+    static string RunCommand(string cmd, IEnumerable<string> args = null, bool ignoreErrors = false) {
         if (ignoreErrors) {
-            return RunCommand(cmd, pyArgs, out int _exitCode);
+            return RunCommand(cmd, args ?? [], out int _exitCode);
         } else {
-            return RunCommand(cmd, pyArgs);
+            return RunCommand(cmd, args ?? []);
         }
+    }
+
+    public static string RunProjExecutable(string file, IEnumerable<string> args = null, bool ignoreErrors = false) {
+        return RunCommand(Utils.JoinPaths(Utils.ProjectAbsolutePath(), file), args, ignoreErrors);
+    }
+
+    public static string RunPython(string file, IEnumerable<string> args = null, bool ignoreErrors = false) {
+        string cmd = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "py" : "python3";
+        IEnumerable<string> pyArgs = [file, .. args ?? []];
+        return RunCommand(cmd, pyArgs, ignoreErrors);
     }
 
     public static string RunScript(string name, IEnumerable<string> args=null, bool ignoreErrors=false) {
