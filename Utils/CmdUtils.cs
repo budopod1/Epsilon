@@ -68,7 +68,11 @@ public static class CmdUtils {
     }
 
     public static string RunProjExecutable(string file, IEnumerable<string> args = null, bool ignoreErrors = false) {
-        return RunCommand(Utils.JoinPaths(Utils.ProjectAbsolutePath(), file), args, ignoreErrors);
+        string startingCWD = Environment.CurrentDirectory;
+        Environment.CurrentDirectory = Utils.ProjectAbsolutePath();
+        string result = RunCommand(Utils.JoinPaths(Utils.ProjectAbsolutePath(), file), args, ignoreErrors);
+        Environment.CurrentDirectory = startingCWD;
+        return result;
     }
 
     public static string RunPython(string file, IEnumerable<string> args = null, bool ignoreErrors = false) {
