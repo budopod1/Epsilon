@@ -11,7 +11,8 @@ def build_backend(args=None):
         "LLVMIRBuilder/"
     ]
     for proj in PROJECTS:
-        epslc(["compile", proj, *args])
+        if epslc(["compile", proj, *args]) != 0:
+            return
     print("Compiled backend")
 
 

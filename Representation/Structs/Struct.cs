@@ -6,6 +6,7 @@ public class Struct : IEquatable<Struct> {
     readonly List<Field> selfFields = null;
     IEnumerable<Field> allFields = null;
     readonly string symbol;
+    readonly string destructorSymbol = null;
     readonly bool isSuper = false;
     bool partiallyLoaded = true;
 
@@ -30,10 +31,11 @@ public class Struct : IEquatable<Struct> {
         }
     }
 
-    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string extendeeID) {
+    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, string extendeeID) {
         id = new LocatedID(path, name);
         this.allFields = allFields;
         this.symbol = symbol;
+        this.destructorSymbol = destructorSymbol;
         this.extendeeID = extendeeID;
         partiallyLoaded = false;
     }
@@ -82,6 +84,10 @@ public class Struct : IEquatable<Struct> {
 
     public string GetSymbol() {
         return symbol;
+    }
+
+    public string GetDestructorSymbol() {
+        return destructorSymbol;
     }
 
     public bool IsSuper() {
@@ -142,7 +148,7 @@ public class Struct : IEquatable<Struct> {
     }
 
     public override string ToString() {
-        string result = $"Name: {GetName()}, Path: {GetPath()}, Symbol: {symbol}, Extends: {GetExtendeeForComp()}";
+        string result = $"Name: {GetName()}, Path: {GetPath()}, Symbol: {symbol}, Destructor Symbol: {destructorSymbol}, Extends: {GetExtendeeForComp()}";
         foreach (Field field in GetFieldsForComp()) {
             result += "\n" + field.ToString();
         }
@@ -159,6 +165,7 @@ public class Struct : IEquatable<Struct> {
                 field => field.GetJSON()
             )),
             ["symbol"] = new JSONString(symbol),
+            ["destructor"] = JSONString.OrNull(destructorSymbol),
             ["extendee"] = JSONString.OrNull(extendeeID)
         };
     }
@@ -166,6 +173,7 @@ public class Struct : IEquatable<Struct> {
     public bool Equals(Struct other) {
         if (GetID() != other.GetID()) return false;
         if (GetSymbol() != other.GetSymbol()) return false;
+        if (GetDestructorSymbol() != other.GetDestructorSymbol()) return false;
         if (GetExtendeeForComp() != other.GetExtendeeForComp()) return false;
         return GetFieldsForComp().SequenceEqual(other.GetFieldsForComp());
     }

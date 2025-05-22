@@ -82,13 +82,10 @@ extern inline uint32_t fs_file_binary_mode() {
     return _FILE_BINARY_MODE;
 }
 
-bool fs_close_file(struct File *file) {
-    if (!file->open) return false;
-    if (fclose(file->file) == 0) {
-        file->open = false;
-        return true;
-    }
-    return false;
+void fs_close_file(struct File *file) {
+    if (!file->open) return;
+    fclose(file->file);
+    file->open = false;
 }
 
 static int64_t _file_binary_len(const struct File *file) {

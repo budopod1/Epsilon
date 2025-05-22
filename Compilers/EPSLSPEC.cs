@@ -51,6 +51,7 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
                         }
                     ))},
                     {"symbol", new JSONStringShape()},
+                    {"destructor", new JSONNullableShape(new JSONStringShape())},
                     {"extendee", new JSONNullableShape(new JSONStringShape())}
                 }
             ))},
@@ -130,6 +131,7 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
                     ["type_"] = new JSONString(type_Creator.MakeSPECType_(field.GetType_()))
                 }));
                 sobj["symbol"] = new JSONString(struct_.GetSymbol());
+                sobj["destructor"] = JSONString.OrNull(struct_.GetDestructorSymbol());
                 sobj["extendee"] = JSONString.OrNull(struct_.GetExtendeeID());
                 return sobj;
             })),

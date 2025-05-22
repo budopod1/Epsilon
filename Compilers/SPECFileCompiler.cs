@@ -87,7 +87,9 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
                         fobj["name"].GetString(),
                         MakeSPECType_(fobj["type_"])
                     )
-                ).ToList(), sobj["symbol"].GetString(),
+                ).ToList(),
+                sobj["symbol"].GetString(),
+                sobj["destructor"].GetStringOrNull(),
                 sobj["extendee"].GetStringOrNull()
             )
         ).ToHashSet();

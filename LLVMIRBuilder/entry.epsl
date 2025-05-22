@@ -120,7 +120,6 @@ BinJSON#read BinJSON_ {
     if ([bytes].is_null) {
         abort "Failed to read code.binjson";
     };
-    [file].close;
     return parse_BinJSON[[bytes].unwrap];
 }
 
@@ -134,9 +133,17 @@ BinJSON#read BinJSON_ {
                 read type_ [[field_json].get["type_"]]
             ]];
         };
+        Str?:destructor = null;
+        if (![[struct_json].get["destructor"]].is_null) {
+            destructor = [[struct_json].get["destructor"]].get_str;
+        };
         Struct_:struct_ = Struct_ [
-            [[struct_json].get["id"]].get_str, [[struct_json].get["name"]].get_str,
-            [[struct_json].get["symbol"]].get_str, true, fields
+            [[struct_json].get["id"]].get_str,
+            [[struct_json].get["name"]].get_str,
+            [[struct_json].get["symbol"]].get_str,
+            destructor,
+            true, // is a refrence type
+            fields
         ];
         [structs].append[struct_];
         [struct_].register;
@@ -383,5 +390,4 @@ Block?#get loop block {
     if (![file].write[result]) {
         abort "Failed to write to code.ll";
     };
-    [file].close;
 }
