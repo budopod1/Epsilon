@@ -183,7 +183,7 @@ TESTS = [
         "func": "main",
         "sig": (c_int32,),
         "tests": [
-            {"arguments": [], "compare": "exact", "expect": 49},
+            {"arguments": [], "compare": "exact", "expect": 53},
         ]
     },
     {

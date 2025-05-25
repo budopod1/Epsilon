@@ -547,6 +547,7 @@ Label:cond_label = new label:;
     Val:from = c [0] [idx_type_];
     Val?:maybe_to = null;
     Val?:maybe_array = null;
+    Val?:maybe_array_len = null;
     Val?:maybe_array_len_ptr = null;
     Val?:maybe_array_content_ptr = null;
     Val:step = c [1] [idx_type_];
@@ -586,26 +587,35 @@ Label:cond_label = new label:;
             Val:array_len_ptr = [array].length;
             maybe_array_len_ptr = array_len_ptr;
             maybe_array_content_ptr = [array].content;
-            maybe_to = cast [load [array_len_ptr]] to [idx_type_];
+            maybe_array_len = cast [load [array_len_ptr]] to [idx_type_];
         };
     };
 
-    Val:to = [maybe_to].unwrap;
+    Val:upper = [[maybe_to] || [maybe_array_len]].unwrap;
 
     if (signed_step) {
-        [idx_var] = [[negative_step] ? [[to] - [c [1] [idx_type_]]] : [from]];
+        [idx_var] = [[negative_step] ? [[upper] - [c [1] [idx_type_]]] : [from]];
     } else {
         [idx_var] = [from];
     };
 
 [check_label]:;
-    if (is_in || is_enumerating) {
-        to = cast [load [[maybe_array_len_ptr].unwrap]] to [idx_type_];
-    };
-
     Val:idx = load [idx_var];
 
-    Val:should_exit = [idx] ge [to];
+    Val?:maybe_should_exit = null;
+    given (maybe_to as Val:to) {
+        maybe_should_exit = [idx] ge [to];
+    };
+    given (maybe_array_len_ptr as Val:arr_len_ptr) {
+        Val:arr_len = cast [load [arr_len_ptr]] to [idx_type_];
+        Val:is_past_len = [idx] ge [arr_len];
+        given (maybe_should_exit as Val:should_exit) {
+            maybe_should_exit = [is_past_len] OR [should_exit];
+        } else {
+            maybe_should_exit = is_past_len;
+        };
+    };
+    Val:should_exit = [maybe_should_exit].unwrap;
     if (signed_step) {
         should_exit = [should_exit] OR [[idx] lt [from]];
     };
@@ -647,8 +657,8 @@ Label:cond_label = new label:;
     goto_ [check_label];
 
 [finish_label]:;
-    if (maybe_array) {
-        pop special ref [[maybe_array].unwrap];
+    given (maybe_array as Val:array) {
+        pop special ref [array];
     };
 }
 

@@ -27,5 +27,9 @@ Z#main {
         counter += i;
     }; // totals 9
 
-    return counter; // totals 49
+    for (Z:i in arr to 3 step -1) {
+        counter += i;
+    }; // totals 4
+
+    return counter; // totals 53
 }
