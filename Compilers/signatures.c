@@ -56,6 +56,7 @@ struct EPSLStruct {
     uint32_t field_count;
     struct EPSLField **fields;
     bool has_ref_counter;
+    char *destructor;
 };
 
 struct CollectedInfo {
@@ -184,6 +185,7 @@ void output_collected(struct CollectedInfo *info) {
         for (uint32_t j = 0; j < struct_->field_count; j++) {
             output_EPSLField(struct_->fields[j]);
         }
+        puts(struct_->destructor == NULL ? "" : struct_->destructor);
     }
 
     printf("%"PRIu32"\n", info->func_count);
@@ -420,13 +422,6 @@ void pointer_typedef_to_EPSLType_(CXString name, CXCursor typedef_, CXType under
 void CXType_pointee_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *out) {
     in = strip_elaboration(in);
     switch (in.kind) {
-    case CXType_Void:
-        out->base_type_.is_builtin = true;
-        out->base_type_.name.builtin = EPSLType_Internal;
-        out->base_type_.bits = -1;
-        out->generic_count = 0;
-        out->generics = NULL;
-        break;
     case CXType_Typedef: {
         CXCursor typedef_ = clang_getTypeDeclaration(in);
         CXString name = clang_getTypedefName(in);
@@ -459,7 +454,12 @@ void CXType_pointee_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *o
         break;
     }
     default:
-        report_error(cursor, "Cannot parse C type to Epsilon type");
+        out->base_type_.is_builtin = true;
+        out->base_type_.name.builtin = EPSLType_Internal;
+        out->base_type_.bits = -1;
+        out->generic_count = 0;
+        out->generics = NULL;
+        break;
     }
 }
 
@@ -613,6 +613,7 @@ void collect_struct(struct CollectedInfo *info, CXCursor cursor) {
     struct_->field_count = 0;
     struct_->fields = NULL;
     struct_->has_ref_counter = false;
+    struct_->destructor = NULL;
 
     clang_visitChildren(cursor, &field_collector_visitor, struct_);
 
@@ -644,6 +645,17 @@ enum CXChildVisitResult param_collector_visitor(CXCursor cursor, CXCursor _, CXC
     return CXChildVisit_Continue;
 }
 
+void collect_destructor(struct CollectedInfo *info, CXCursor cursor, char *func_name, const char *struct_name) {
+    for (uint32_t i = 0; i < info->struct_count; i++) {
+        struct EPSLStruct *struct_ = info->structs[i];
+        if (strcmp(struct_->name, struct_name) == 0) {
+            struct_->destructor = func_name;
+            return;
+        }
+    }
+    report_error(cursor, "A destructor must appear after the struct it is attatched to");
+}
+
 void collect_func(struct CollectedInfo *info, CXCursor cursor) {
     CXString func_name = clang_getCursorSpelling(cursor);
     const char *name = clang_getCString(func_name);
@@ -657,12 +669,21 @@ void collect_func(struct CollectedInfo *info, CXCursor cursor) {
     }
 
     char *name_copy = strdup(name);
+
+    const char *struct_name;
+    if (remove_start(name_copy, "DESTRUCT_", &struct_name)) {
+        collect_destructor(info, cursor, name_copy, struct_name);
+        clang_disposeString(func_name);
+        return;
+    }
+
     if (info->common_prefix != NULL
         && !remove_start(name_copy, info->common_prefix, (const char**)&name_copy)) {
         clang_disposeString(func_name);
         free(name_copy);
         return;
     }
+
     clang_disposeString(func_name);
 
     CXString func_symbol = clang_Cursor_getMangling(cursor);

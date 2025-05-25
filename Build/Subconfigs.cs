@@ -49,7 +49,8 @@ public static class Subconfigs {
     }
 
     public static IEnumerable<string> GetClangParseConfigs() {
-        return ExpandSubconfigs(ClangParseConfigs).Concat(["-D", "EPSL_PROJECT"]);
+        return ExpandSubconfigs(ClangParseConfigs)
+            .Concat(["-D", "EPSL_PROJECT", "-I"+Utils.EPSLLIBS()]);
     }
 
     public static IEnumerable<string> GetLinkingConfigs() {

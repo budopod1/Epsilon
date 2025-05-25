@@ -95,7 +95,9 @@ public class HeaderFileCompiler : IFileCompiler {
             string fieldName = reader.Line();
             fields.Add(new Field(fieldName, fieldType_));
         }
-        return new Struct(idPath, name, fields, "structs."+name, null, null);
+        string destructorSymbol = reader.Line();
+        if (destructorSymbol == "") destructorSymbol = null;
+        return new Struct(idPath, name, fields, "structs." + name, destructorSymbol, null);
     }
 
     RealExternalFunction ReadFunc(LineReader reader) {
