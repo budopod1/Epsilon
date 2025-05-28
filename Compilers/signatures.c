@@ -673,11 +673,11 @@ char *get_func_symbol(CXCursor cursor) {
     return get_C_func_symbol(cursor);
 }
 
-void collect_destructor(struct CollectedInfo *info, CXCursor cursor, char *func_name, const char *struct_name) {
+void collect_destructor(struct CollectedInfo *info, CXCursor cursor, const char *struct_name) {
     for (uint32_t i = 0; i < info->struct_count; i++) {
         struct EPSLStruct *struct_ = info->structs[i];
         if (strcmp(struct_->name, struct_name) == 0) {
-            struct_->destructor = func_name;
+            struct_->destructor = get_func_symbol(cursor);
             return;
         }
     }
@@ -700,7 +700,8 @@ void collect_func(struct CollectedInfo *info, CXCursor cursor) {
 
     const char *struct_name;
     if (remove_start(name_copy, "DESTRUCT_", &struct_name)) {
-        collect_destructor(info, cursor, name_copy, struct_name);
+        collect_destructor(info, cursor, struct_name);
+        free(name_copy);
         clang_disposeString(func_name);
         return;
     }
