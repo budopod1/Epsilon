@@ -160,7 +160,7 @@ public class HeaderFileCompiler : IFileCompiler {
     }
 
     IEnumerable<string> FetchSignaturesArgs(string filename) {
-        return new string[] {filename}
+        return new string[] {filename, isCPP ? "c++" : "c"}
             .Concat(CmdUtils.ListIncludeDirs(isCPP).Select(arg => "-I"+arg))
             .Concat(Subconfigs.GetClangParseConfigs());
     }

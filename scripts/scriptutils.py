@@ -47,10 +47,10 @@ def run_cmd(*args, passthrough=True, capture_out=False, use_dash_x_flag=True):
     if process.returncode != 0:
         print(proc_out, end="")
         sys.exit(process.returncode)
-    if passthrough:
-        print(proc_out.strip() and proc_out, end="")
     if capture_out:
         return proc_out
+    elif passthrough:
+        print(proc_out.strip() and proc_out, end="")
 
 
 def has_cmd(cmd) -> bool:

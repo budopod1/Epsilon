@@ -96,7 +96,7 @@ const enum EPSLBuiltinType_ OptionalableBuiltinTypes_ = EPSLType_Array;
 
 const char *const skip_struct_prefixes[] = {"_", "ARRAY_"};
 
-char *src_filename;
+const char *src_language;
 
 CXTranslationUnit unit;
 
@@ -645,6 +645,34 @@ enum CXChildVisitResult param_collector_visitor(CXCursor cursor, CXCursor _, CXC
     return CXChildVisit_Continue;
 }
 
+char *get_C_func_symbol(CXCursor cursor) {
+    CXString func_name = clang_getCursorSpelling(cursor);
+    char *result = strdup(clang_getCString(func_name));
+    clang_disposeString(func_name);
+    return result;
+}
+
+char *get_func_symbol(CXCursor cursor) {
+    if (strcmp(src_language, "c++") == 0) {
+        CXString func_mangled = clang_Cursor_getMangling(cursor);
+        const char *mangled = clang_getCString(func_mangled);
+        size_t mangled_len = strlen(mangled);
+        if (mangled_len >= 3 && memcmp(mangled, "__Z", 3) == 0) {
+            mangled++;
+        } else if (mangled_len >= 2 && memcmp(mangled, "_Z", 2) == 0) {
+
+        } else {
+            clang_disposeString(func_mangled);
+            return get_C_func_symbol(cursor);
+        }
+        char *result = strdup(mangled);
+        clang_disposeString(func_mangled);
+        return result;
+    }
+
+    return get_C_func_symbol(cursor);
+}
+
 void collect_destructor(struct CollectedInfo *info, CXCursor cursor, char *func_name, const char *struct_name) {
     for (uint32_t i = 0; i < info->struct_count; i++) {
         struct EPSLStruct *struct_ = info->structs[i];
@@ -686,17 +714,12 @@ void collect_func(struct CollectedInfo *info, CXCursor cursor) {
 
     clang_disposeString(func_name);
 
-    CXString func_symbol = clang_Cursor_getMangling(cursor);
-    const char *symbol = clang_getCString(func_symbol);
-    size_t symbol_len = strlen(symbol)+1;
-    char *symbol_copy = malloc(symbol_len);
-    memcpy(symbol_copy, symbol, symbol_len);
-    clang_disposeString(func_symbol);
+    char *symbol = get_func_symbol(cursor);
 
     CXType func_type = clang_getCursorType(cursor);
 
     struct EPSLFunc *func = malloc(sizeof(*func));
-    func->symbol = symbol_copy;
+    func->symbol = symbol;
     voidable_CXType_to_EPSLType_(cursor, clang_getResultType(func_type), &func->ret_type_);
     func->name = name_copy;
     func->arg_count = clang_getNumArgTypes(func_type);
@@ -714,7 +737,7 @@ void collect_func(struct CollectedInfo *info, CXCursor cursor) {
     info->funcs[old_count] = func;
 }
 
-void check_is_private(struct CollectedInfo *collected_info, CXCursor cursor) {
+void check_is_private_marker(struct CollectedInfo *collected_info, CXCursor cursor) {
     CXString union_name = clang_getCursorSpelling(cursor);
     const char *name = clang_getCString(union_name);
     if (strcmp(name, "___EPSL_PUBLIC_STOP") == 0) {
@@ -860,7 +883,7 @@ enum CXChildVisitResult visit_toplevel(CXCursor cursor, CXCursor _, CXClientData
         return CXChildVisit_Continue;
     } else if (collected_info->is_section_private) {
         if (cursor.kind == CXCursor_UnionDecl) {
-            check_is_private(collected_info, cursor);
+            check_is_private_marker(collected_info, cursor);
         }
 
         return CXChildVisit_Continue;
@@ -875,7 +898,7 @@ enum CXChildVisitResult visit_toplevel(CXCursor cursor, CXCursor _, CXClientData
             collect_func(collected_info, cursor);
             return CXChildVisit_Continue;
         case CXCursor_UnionDecl:
-            check_is_private(collected_info, cursor);
+            check_is_private_marker(collected_info, cursor);
             return CXChildVisit_Continue;
         default:
             return CXChildVisit_Continue;
@@ -884,7 +907,7 @@ enum CXChildVisitResult visit_toplevel(CXCursor cursor, CXCursor _, CXClientData
 }
 
 int main(int argc, const char *const argv[]) {
-    if (argc < 2) {
+    if (argc < 3) {
         report_fail("Not enough arguments\n");
     }
 
@@ -893,6 +916,9 @@ int main(int argc, const char *const argv[]) {
     argc--;
 
     const char *const src_filename = *(argv++);
+    argc--;
+
+    src_language = *(argv++);
     argc--;
 
     CXIndex index = clang_createIndex(0, 0);
