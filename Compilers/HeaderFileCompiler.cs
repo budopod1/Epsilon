@@ -193,7 +193,11 @@ public class HeaderFileCompiler : IFileCompiler {
     }
 
     public SubconfigCollection GetSubconfigs() {
-        return SubconfigCollection.Empty();
+        List<ISubconfig> linkingSubconfigs = [];
+        if (isCPP) {
+            linkingSubconfigs.Add(new ConstantSubconfig(["-lstdc++"]));
+        }
+        return new SubconfigCollection([], linkingSubconfigs, []);
     }
 
     public HashSet<LocatedID> ToStructIDs() {

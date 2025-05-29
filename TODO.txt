@@ -8,4 +8,3 @@ TODO:
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `Struct` type that's treated as a superclass of all structs
 * update docs
-* fix linker errors when compiling C++ by using clang++ during final compilation when required

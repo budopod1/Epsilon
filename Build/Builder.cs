@@ -224,6 +224,7 @@ public class Builder {
             Log.Status("Loading tree");
             LoadTree(settings, tree, projectDirectory);
             DetermineShouldCache();
+            LoadFileSubconfigs();
             Log.Status("Transfering struct IDs");
             TransferStructIDs();
             Log.Status("Transfering declarations");
@@ -531,6 +532,12 @@ public class Builder {
                     return;
                 }
             }
+        }
+    }
+
+    void LoadFileSubconfigs() {
+        foreach (FileTree file in files.Values) {
+            Subconfigs.AddSubconfigCollection(file.Subconfigs);
         }
     }
 
