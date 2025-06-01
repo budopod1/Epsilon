@@ -205,12 +205,20 @@ public static class Utils {
         return false;
     }
 
+    public static bool IsPathIn(string sub, string super) {
+        return GetFullPath(sub).StartsWith(GetFullPath(super));
+    }
+
     public static string TempDir() {
         return JoinPaths(ProjectAbsolutePath(), "temp");
     }
 
     public static string EPSLLIBS() {
         return JoinPaths(ProjectAbsolutePath(), "libs");
+    }
+
+    public static string PackagesDir() {
+        return JoinPaths(ProjectAbsolutePath(), "packages");
     }
 
     public static string Stem(string path) {

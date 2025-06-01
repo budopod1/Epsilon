@@ -1,16 +1,18 @@
 using CsCommandConfig;
 using CsJSONTools;
+using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
 namespace Epsilon;
 public class Builder {
     static readonly Dictionary<string, Func<BuildSettings, string, IFileCompiler>> dispatchers = [];
+    public static IJSONShape EPSLPROJShape;
 
     bool shouldCache = false;
     string currentFile = "";
     string currentText = "";
-    Dictionary<string, string> libraries;
+    Dictionary<string, string> packagePaths;
     Dictionary<string, FileTree> files;
     static readonly List<string> EXTENSIONS = ["epslspec"];
     static readonly List<string> PREFIXES = ["", "."];
@@ -57,7 +59,18 @@ public class Builder {
             Console.WriteLine();
             return ResultStatus.USERERR;
         } catch (IOException e) {
-            Console.Write("IO Error: ");
+            Console.WriteLine("IO Error: " + e.Message);
+            return ResultStatus.USERERR;
+        } catch (UnauthorizedAccessException e) {
+            Console.WriteLine(e.Message);
+            return ResultStatus.FAIL;
+        } catch (HttpRequestException e) {
+            if (e.StatusCode != null) {
+                Console.WriteLine($"Got HTTP error code {e.StatusCode}");
+            }
+            Console.WriteLine(e.Message);
+            return ResultStatus.FAIL;
+        } catch (UriFormatException e) {
             Console.WriteLine(e.Message);
             return ResultStatus.USERERR;
         } catch (InvalidJSONException e) {
@@ -72,6 +85,12 @@ public class Builder {
         } catch (ProjectProblemException e) {
             Console.WriteLine(e.Message);
             return ResultStatus.USERERR;
+        } catch (PackagingProblemException e) {
+            if (e.Package_ != null) {
+                Console.WriteLine($"With respect to the package {e.Package_.Name}:");
+            }
+            Console.WriteLine(e.Message);
+            return ResultStatus.USERERR;
         } catch (FileProblemException e) {
             Console.WriteLine($"In {currentFile}:");
             Console.WriteLine(e.Message);
@@ -83,9 +102,8 @@ public class Builder {
 
     public ResultStatus WipeTempDir() {
         return RunWrapped(() => {
-            foreach (string file in Utils.GetFilesInDir(Utils.TempDir())) {
-                Utils.TryDelete(file);
-            }
+            Directory.Delete(Utils.TempDir(), recursive: true);
+            Directory.CreateDirectory(Utils.TempDir());
         });
     }
 
@@ -182,20 +200,17 @@ public class Builder {
         }
     }
 
-    public ResultStatus RegisterLibraries(string input, IEnumerable<string> relPaths) {
+    public ResultStatus RegisterPackages(IEnumerable<string> packageNames) {
         return RunWrapped(() => {
-            string projDirectory = Utils.GetFullPath(Utils.GetDirectoryName(input));
-            IEnumerable<string> paths = relPaths
-                .Select(path => Utils.JoinPaths(
-                    projDirectory, path.Replace("%EPSLLIBS%", Utils.EPSLLIBS())))
-                .Distinct();
-            try {
-                libraries = paths.ToDictionary2((path) => Utils.GetFileNameWithoutExtension(path));
-            } catch (DuplicateKeyException<string, string> e) {
-                throw new ProjectProblemException(
-                    $"All libraries must have distinct names. Libaries '{e.Initial}' and '{e.Duplicate}' both have name '{e.Key}'."
+            IEnumerable<Package> packages = ReadPackageJSON();
+            packagePaths = packageNames
+                .Select(packageName => packages
+                    .FirstOrDefault(package => package.Name == packageName)
+                    ?? throw new ProjectProblemException($"No package named '{packageName}' can be found")
+                ).ToDictionary(
+                    package => package.Name,
+                    package => Utils.JoinPaths(package.Path, package.Name)
                 );
-            }
         });
     }
 
@@ -423,7 +438,7 @@ public class Builder {
                 List<string> folders = [
                     projDirectory, Utils.EPSLLIBS()
                 ];
-                if (libraries.TryGetValue(partialPath, out string value)) {
+                if (packagePaths.TryGetValue(partialPath, out string value)) {
                     folders.Add(value);
                 }
                 foreach (string folder in folders) {
@@ -997,17 +1012,271 @@ public class Builder {
         });
     }
 
+    public void WriteEPSLPROJ(string path, IJSONValue json) {
+        PrettyPrintConfig printConfig = new(8, 80);
+        string epslprojStr = json.PrettyPrint(printConfig);
+        File.WriteAllText(Utils.SetExtension(path, "epslproj"), epslprojStr);
+    }
+
     public ResultStatus CreateEPSLPROJ(string path) {
         return RunWrapped(() => {
             string fullPath = Utils.GetFullPath(path);
             Utils.CreateFileUnlessExists(Utils.SetExtension(fullPath, "epsl"));
             string epslprojLocation = Utils.SetExtension(fullPath, "epslproj");
             if (!Utils.FileExists(epslprojLocation)) {
-                JSONObject epslprojData = [];
-                PrettyPrintConfig printConfig = new(8, 80);
-                string epslprojStr = epslprojData.PrettyPrint(printConfig);
-                File.WriteAllText(epslprojLocation, epslprojStr);
+                WriteEPSLPROJ(epslprojLocation, new JSONObject());
             }
+        });
+    }
+
+    ShapedJSON ReadEPSLPROJ(string path) {
+        IJSONValue json = ParseJSONFile(Utils.SetExtension(path, "epslproj"));
+        return new ShapedJSON(json, EPSLPROJShape);
+    }
+
+    string PackageJSONLocation() {
+        return Utils.JoinPaths(Utils.PackagesDir(), "packages.json");
+    }
+
+    IEnumerable<Package> GetDefaultPackages() {
+        return [
+            new Package("binjson", Utils.JoinPaths(
+                Utils.ProjectAbsolutePath(), "EPSL-BinJSON"
+            ), null),
+            new Package("irgen", Utils.JoinPaths(
+                Utils.ProjectAbsolutePath(), "EPSL-IR-Gen"
+            ), null),
+            new Package("eewriter", Utils.JoinPaths(
+                Utils.ProjectAbsolutePath(), "EEWriter"
+            ), null),
+        ];
+    }
+
+    IEnumerable<string> GetEPSLPROJPackageNames(ShapedJSON json) {
+        if (!json.HasKey("packages")) return [];
+        return json["packages"].IterList().Select(item => item.GetString());
+    }
+
+    void WritePackageJSON(IEnumerable<Package> packages) {
+        File.WriteAllText(
+            PackageJSONLocation(),
+            new JSONObject {{"packages", new JSONList(
+                packages.Select(package => package.GetJSON())
+            )}}.Stringify()
+        );
+    }
+
+    IEnumerable<Package> ReadPackageJSON() {
+        if (!File.Exists(PackageJSONLocation())) {
+            IEnumerable<Package> packages = GetDefaultPackages();
+            WritePackageJSON(packages);
+            return packages;
+        }
+        ShapedJSON shapedJSON = new(
+            ParseJSONFile(PackageJSONLocation()), Package.PackagesShape);
+        return shapedJSON["packages"].IterList().Select(Package.FromJSON);
+    }
+
+    string GetPackageName(ShapedJSON projJSON) {
+        if (!projJSON.HasKey("file")) {
+            throw new PackagingProblemException(
+                "Can't determine the name of this package as it does not specify a name with the 'file' field"
+            );
+        }
+        return projJSON["file"].GetString();
+    }
+
+    public ResultStatus AddPackageToEPSLPROJ(string package, string project) {
+        return RunWrapped(() => {
+            ShapedJSON json = ReadEPSLPROJ(project);
+            IEnumerable<string> packageNames = GetEPSLPROJPackageNames(json);
+            if (packageNames.Contains(package)) {
+                throw new PackagingProblemException($"{package} is already installed");
+            }
+            json.GetObject()["packages"] = new JSONList(packageNames
+                .Concat([package]).Select(name => new JSONString(name)));
+            WriteEPSLPROJ(project, json.GetJSON());
+        });
+    }
+
+    public ResultStatus RemovePackageFromEPSLPROJ(string package, string project, bool silenceOut=false) {
+        return RunWrapped(() => {
+            ShapedJSON json = ReadEPSLPROJ(project);
+            IEnumerable<string> packageNames = GetEPSLPROJPackageNames(json);
+            if (!packageNames.Contains(package)) {
+                if (silenceOut) return;
+                throw new PackagingProblemException($"{package} isn't installed");
+            }
+            json.GetObject()["packages"] = new JSONList(packageNames
+                .Where(name => name != package)
+                .Select(name => new JSONString(name)));
+            WriteEPSLPROJ(project, json.GetJSON());
+        });
+    }
+
+    void DisplayPackageDetails(Package package) {
+        Console.ForegroundColor = ConsoleColor.DarkGreen;
+        Console.WriteLine(package.Name);
+        Console.ResetColor();
+        Console.WriteLine($"Installed at: {package.Path}");
+        Console.Write("Source: ");
+        if (package.Source == null) {
+            Console.WriteLine("\x1b[3m(none)\x1b[0m");
+        } else {
+            Console.WriteLine(package.Source);
+        }
+        Console.WriteLine();
+    }
+
+    public ResultStatus ListPackages(string project, bool allPackages) {
+        return RunWrapped(() => {
+            IEnumerable<Package> packages = ReadPackageJSON();
+            if (!allPackages) {
+                ShapedJSON json = ReadEPSLPROJ(project);
+                IEnumerable<string> projPackages = GetEPSLPROJPackageNames(json);
+                packages = packages.Where(package => projPackages.Contains(package.Name));
+            }
+
+            foreach (Package package in packages) {
+                DisplayPackageDetails(package);
+            }
+        });
+    }
+
+    void RegisterPackage(Package newPackage) {
+        IEnumerable<Package> packages = ReadPackageJSON();
+            if (packages.Any(package => package.Name == newPackage.Name)) {
+            throw new PackagingProblemException(
+                "Duplicate package names are not allowed", newPackage
+            );
+        }
+        WritePackageJSON(packages.Concat([newPackage]));
+    }
+
+    public ResultStatus RegisterProjectAsPackage(string projectPath) {
+        return RunWrapped(() => {
+            ShapedJSON epslprojJSON = ReadEPSLPROJ(projectPath);
+            string projectName = GetPackageName(epslprojJSON);
+            RegisterPackage(new Package(
+                projectName, Utils.GetDirectoryName(projectPath), null
+            ));
+        });
+    }
+
+    void DownloadFile(string url, string dest) {
+        Log.Status($"Downloading file from {url} to {dest}");
+        Uri uri = new(url);
+        if (!uri.IsAbsoluteUri) {
+            throw new UriFormatException($"The specified URL must be absolute, {url} is not");
+        }
+        using HttpClient client = new();
+        Task<Stream> stream = client.GetStreamAsync(uri);
+        using Stream file = new FileStream(dest, FileMode.OpenOrCreate);
+        stream.Result.CopyTo(file);
+    }
+
+    void ExtractFolder(string src, string dest) {
+        try {
+            ZipFile.ExtractToDirectory(src, dest);
+        } catch (InvalidDataException) {
+            throw new PackagingProblemException(
+                "Can't install package: don't know how to handle the downloaded file"
+            );
+        }
+    }
+
+    void TryUnwrapRedundantFolder(string dir) {
+        string[] subdirectories = Directory.GetDirectories(dir);
+        if (Directory.GetFiles(dir).Length == 0
+            && subdirectories.Length == 1) {
+            string unwrappedTemp = Utils.JoinPaths(Utils.TempDir(), "unwrapped");
+            Directory.Move(subdirectories[0], unwrappedTemp);
+            Directory.Delete(dir, recursive: true);
+            Directory.Move(unwrappedTemp, dir);
+        }
+    }
+
+    public ResultStatus InstallPackage(string url, string addToProject) {
+        string packageName = null;
+
+        ResultStatus status1 = RunWrapped(() => {
+            int dotIdx = url.LastIndexOf('.');
+            string extension = dotIdx == -1 ? "" : url[(dotIdx + 1)..];
+            if (extension.Any(chr => !Utils.NameChars.Contains(chr))) {
+                extension = "";
+            }
+            string folderDest = Utils.JoinPaths(Utils.TempDir(), "package");
+
+            if (extension == "git") {
+                CmdUtils.GitClone(url, folderDest);
+            } else {
+                string downloadDest = Utils.JoinPaths(Utils.TempDir(), "download." + extension);
+                DownloadFile(url, downloadDest);
+                ExtractFolder(downloadDest, folderDest);
+                TryUnwrapRedundantFolder(folderDest);
+            }
+
+            string projFileLocation = Utils.JoinPaths(folderDest, "entry.epslproj");
+            if (!File.Exists(projFileLocation)) {
+                throw new PackagingProblemException(
+                    "The downloaded package does not contain a entry.epslproj file"
+                );
+            }
+
+            ShapedJSON projJSON = ReadEPSLPROJ(projFileLocation);
+            packageName = GetPackageName(projJSON);
+
+            if (ReadPackageJSON().Any(package => package.Name == packageName)) {
+                throw new PackagingProblemException(
+                    $"A package named '{packageName}' has already been installed"
+                );
+            }
+
+            string installDest = Utils.JoinPaths(Utils.PackagesDir(), packageName);
+            if (Directory.Exists(installDest)) {
+                Directory.Delete(installDest, recursive: true);
+            }
+            Directory.Move(folderDest, installDest);
+
+            CmdUtils.RunScript("epslc.py", ["compile", installDest + Path.DirectorySeparatorChar]);
+
+            RegisterPackage(new Package(
+                packageName, installDest, url
+            ));
+        });
+
+        if (status1 != ResultStatus.GOOD) return status1;
+
+        try {
+            ReadEPSLPROJ(addToProject);
+            return AddPackageToEPSLPROJ(packageName, addToProject);
+        } catch (IOException) { }
+
+        return ResultStatus.GOOD;
+    }
+
+    public ResultStatus UninstallPackage(string packageName, string project) {
+        try {
+            ReadEPSLPROJ(project);
+            RemovePackageFromEPSLPROJ(packageName, project, silenceOut: true);
+        } catch (IOException) {};
+        return RunWrapped(() => {
+            List<Package> packages = ReadPackageJSON().ToList();
+            Package uninstallee = packages
+                .FirstOrDefault(package => package.Name == packageName);
+            if (uninstallee == null) {
+                throw new PackagingProblemException(
+                    $"No package by the name '{packageName}' can be found"
+                );
+            }
+            if (Utils.IsPathIn(uninstallee.Path, Utils.PackagesDir())) {
+                Log.Status("Deleting directory", uninstallee.Path);
+                Directory.Delete(uninstallee.Path, recursive: true);
+            } else {
+                Console.WriteLine("The package's files have not been removed as the package was installed manually");
+            }
+            packages.Remove(uninstallee);
+            WritePackageJSON(packages);
         });
     }
 

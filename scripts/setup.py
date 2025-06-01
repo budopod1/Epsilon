@@ -157,6 +157,7 @@ def setup():
 
     require_folder("temp")
     require_folder("bin")
+    require_folder("packages")
 
     verify_dependencies()
 

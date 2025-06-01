@@ -2,6 +2,7 @@
 /Compilers/signatures
 /LLVMIRBuilder/result
 *.so
+/packages
 
 # Symlinks
 /bin

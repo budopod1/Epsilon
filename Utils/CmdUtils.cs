@@ -7,7 +7,7 @@ public static class CmdUtils {
 
     static bool HasSetDllResolver = false;
 
-    #pragma warning disable CS0649
+#pragma warning disable CS0649
     struct CRCProcessResult {
         public string output;
         public string error;
@@ -81,18 +81,18 @@ public static class CmdUtils {
         return RunCommand(cmd, pyArgs, ignoreErrors);
     }
 
-    public static string RunScript(string name, IEnumerable<string> args=null, bool ignoreErrors=false) {
+    public static string RunScript(string name, IEnumerable<string> args = null, bool ignoreErrors = false) {
         return RunPython(Utils.JoinPaths(Utils.ProjectAbsolutePath(), "scripts", name),
             args, ignoreErrors);
     }
 
-    public static string RunLLVMTool(string name, IEnumerable<string> args=null, bool ignoreErrors=false) {
-        return RunScript("mapLLVMcmd.py", [name, ..args??[]], ignoreErrors);
+    public static string RunLLVMTool(string name, IEnumerable<string> args = null, bool ignoreErrors = false) {
+        return RunScript("mapLLVMcmd.py", [name, .. args ?? []], ignoreErrors);
     }
 
-    public static void LinkLLVM(IEnumerable<string> sources, string output, bool toLL=false) {
+    public static void LinkLLVM(IEnumerable<string> sources, string output, bool toLL = false) {
         List<string> args = toLL ? ["-S"] : [];
-        args.AddRange(["-o", output, "--", ..sources]);
+        args.AddRange(["-o", output, "--", .. sources]);
         RunLLVMTool("llvm-link", args);
     }
 
@@ -100,7 +100,7 @@ public static class CmdUtils {
         RunLLVMTool("opt", ["-O3", source, "-o", output]);
     }
 
-    public static void LLVMToObj(string source, string output, bool positionIndependent=false) {
+    public static void LLVMToObj(string source, string output, bool positionIndependent = false) {
         List<string> args = [source, "-o", output, "-filetype=obj", "-O=0",
             ..Subconfigs.GetObjectGenConfigs()];
         if (positionIndependent) {
@@ -114,7 +114,7 @@ public static class CmdUtils {
             ..Subconfigs.GetObjectGenConfigs(), ..sources]);
     }
 
-    public static void LLVMsToObj(List<string> sources, string output, bool positionIndependent=false) {
+    public static void LLVMsToObj(List<string> sources, string output, bool positionIndependent = false) {
         string linkedIR = Utils.JoinPaths(Utils.TempDir(), "linked.bc");
         LinkLLVM(sources, linkedIR);
         LLVMToObj(linkedIR, output, positionIndependent);
@@ -123,7 +123,7 @@ public static class CmdUtils {
     public static void LinkObjsToObj(IEnumerable<string> sources, string output) {
         // This doesn't use Subconfigs.GetLinkingConfigs() because it isn't
         // linking to an executable
-        RunScript("linkobjects.py", [output, ..sources]);
+        RunScript("linkobjects.py", [output, .. sources]);
     }
 
     public static void FilesToObject(IEnumerable<string> sources, string output) {
@@ -132,17 +132,17 @@ public static class CmdUtils {
 
         foreach (string source in sources) {
             switch (Utils.GetExtension(source)) {
-            case "ll":
-            case "bc":
-                llvm.Add(source);
-                break;
-            case "o":
-                objs.Add(source);
-                break;
-            default:
-                throw new ArgumentException(
-                    $"{source} can't be converted into a .o file via CmdUtils.FilesToObject"
-                );
+                case "ll":
+                case "bc":
+                    llvm.Add(source);
+                    break;
+                case "o":
+                    objs.Add(source);
+                    break;
+                default:
+                    throw new ArgumentException(
+                        $"{source} can't be converted into a .o file via CmdUtils.FilesToObject"
+                    );
             }
         }
 
@@ -169,7 +169,7 @@ public static class CmdUtils {
     }
 
     public static string VerifyCSyntax(bool cpp, string file) {
-        IEnumerable<string> args = new string[] {file, "-fsyntax-only"}
+        IEnumerable<string> args = new string[] { file, "-fsyntax-only" }
             .Concat(Subconfigs.GetClangParseConfigs());
         return RunLLVMTool(cpp ? "clang++" : "clang", args, ignoreErrors: true);
     }
@@ -177,5 +177,9 @@ public static class CmdUtils {
     public static void CToLLVM(bool cpp, string from, string to_) {
         RunLLVMTool(cpp ? "clang++" : "clang", [from, "-o", to_,
             "-emit-llvm", "-c", ..Subconfigs.GetClangParseConfigs()]);
+    }
+
+    public static void GitClone(string repo, string dest) {
+        RunCommand("git", ["clone", repo, dest]);
     }
 }

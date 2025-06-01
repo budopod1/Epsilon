@@ -7,7 +7,7 @@ def build_backend(args=None):
     if args is None:
         args = []
     PROJECTS = [
-        "EPSL-BinJSON/binjson", "EPSL-IR-Gen/irgen", "EEWriter/eewriter",
+        "EPSL-BinJSON/", "EPSL-IR-Gen/", "EEWriter/",
         "LLVMIRBuilder/"
     ]
     for proj in PROJECTS:
