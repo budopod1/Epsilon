@@ -2,6 +2,7 @@
 #import eewriter;
 #import binjson;
 #import builtins_;
+#import stringify;
 
 [Val]#cast [[Val]:vals] to [Type_:type_] {
     [Val]:result = [Val] [];
@@ -204,6 +205,18 @@ Val?#call function [Str:func_id] with args [[Val]:args] to [Type_?:result_type_]
         extern fn [null] ["epsl_array_empty_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
+}
+
+#call string func [Str:fn_name] [Val:arg] {
+    Bool:needs_stringification = !([arg.type_] == [Str_]);
+    if (needs_stringification) {
+        arg = make stringify of [arg];
+    };
+    extern fn [null] [fn_name] [[Type_] [Str_]] [[Val] [arg]];
+    if (needs_stringification) {
+        free[[arg].content];
+        free[arg];
+    };
 }
 
 #pad array [Val:outer_arr] to length [Val:outer_len] with value [Val:outer_val] from left: [Bool:pad_left] {

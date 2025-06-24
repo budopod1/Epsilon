@@ -52,7 +52,8 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
                     ))},
                     {"symbol", new JSONStringShape()},
                     {"destructor", new JSONNullableShape(new JSONStringShape())},
-                    {"extendee", new JSONNullableShape(new JSONStringShape())}
+                    {"extendee", new JSONNullableShape(new JSONStringShape())},
+                    {"global_free_fn", new JSONBoolShape()}
                 }
             ))},
             {"dependencies", new JSONListShape(new JSONObjectShape(new Dictionary<string, IJSONShape> {
@@ -123,17 +124,16 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
                 return dobj;
             })),
 
-            ["structs"] = new JSONList(Structs.Select(struct_ => {
-                JSONObject sobj = [];
-                sobj["name"] = new JSONString(struct_.GetName());
-                sobj["fields"] = new JSONList(struct_.GetFields().Select(field => new JSONObject {
+            ["structs"] = new JSONList(Structs.Select(struct_ => new JSONObject {
+                ["name"] = new JSONString(struct_.GetName()),
+                ["fields"] = new JSONList(struct_.GetFields().Select(field => new JSONObject {
                     ["name"] = new JSONString(field.GetName()),
                     ["type_"] = new JSONString(type_Creator.MakeSPECType_(field.GetType_()))
-                }));
-                sobj["symbol"] = new JSONString(struct_.GetSymbol());
-                sobj["destructor"] = JSONString.OrNull(struct_.GetDestructorSymbol());
-                sobj["extendee"] = JSONString.OrNull(struct_.GetExtendeeID());
-                return sobj;
+                })),
+                ["symbol"] = new JSONString(struct_.GetSymbol()),
+                ["destructor"] = JSONString.OrNull(struct_.GetDestructorSymbol()),
+                ["extendee"] = JSONString.OrNull(struct_.GetExtendeeID()),
+                ["global_free_fn"] = new JSONBool(struct_.HasGlobalFreeFn())
             })),
 
             ["types_"] = type_Creator.GetJSON(),
@@ -147,15 +147,15 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
                     ), () => [], () => []
                 ).Select((KeyValuePair<string, (List<Struct> structs, List<RealFunctionDeclaration> functions)> kvpair) => {
                     FileTree file = builder.GetFileByIDPath(kvpair.Key);
-                    JSONObject dobj = [];
-                    dobj["path"] = new JSONString(kvpair.Key);
-                    dobj["functions"] = new JSONList(kvpair.Value.functions.Select(
-                        func => new JSONInt(file.Declarations.IndexOf(func))
-                    ));
-                    dobj["structs"] = new JSONList(kvpair.Value.structs.Select(
-                        struct_ => new JSONString(struct_.GetName())
-                    ));
-                    return dobj;
+                    return new JSONObject {
+                        ["path"] = new JSONString(kvpair.Key),
+                        ["functions"] = new JSONList(kvpair.Value.functions.Select(
+                            func => new JSONInt(file.Declarations.IndexOf(func))
+                        )),
+                        ["structs"] = new JSONList(kvpair.Value.structs.Select(
+                            struct_ => new JSONString(struct_.GetName())
+                        ))
+                    };
                 })
             ),
 

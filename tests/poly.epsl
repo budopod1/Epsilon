@@ -1,0 +1,39 @@
+@super;
+F {
+    Z:a
+}
+
+@super;
+@extends F;
+G {
+    Z:b
+}
+
+@super;
+@extends G;
+H {
+    Z:c
+}
+
+Z#main {
+    H:h = H [1, 2, 3];
+
+    :F:sf = h;
+
+    Z:counter = 0;
+    counter += sf.a;
+
+    given (sf as :H:sh) {
+        counter += 2;
+    };
+
+    given (sf as :G:sg) {
+        counter += 4;
+    };
+
+    given (sf as H:h) {
+        counter += 8;
+    };
+
+    return counter;
+}

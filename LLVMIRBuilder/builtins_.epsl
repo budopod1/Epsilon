@@ -148,14 +148,12 @@ BuiltinResult#builtin stringify with [[Val]:args] {
 }
 
 BuiltinResult#builtin print with [[Val]:args] {
-    Val:stringified = ensure stringify of [args[0]];
-    extern fn [null] ["epsl_print"] [[Type_] [Str_]] [[Val] [stringified]];
+    call string func ["epsl_print"] [args[0]];
     return make empty builtin result;
 }
 
 BuiltinResult#builtin println with [[Val]:args] {
-    Val:stringified = ensure stringify of [args[0]];
-    extern fn [null] ["epsl_println"] [[Type_] [Str_]] [[Val] [stringified]];
+    call string func ["epsl_println"] [args[0]];
     return make empty builtin result;
 }
 
@@ -300,7 +298,7 @@ BuiltinResult#builtin is null_ with [[Val]:args] {
 
 BuiltinResult#builtin unwrap with [[Val]:args] {
     verify [args[0]] is not null_;
-    Val:result = bitcast [args[0]] to [unwrap nullability [args[0]]];
+    Val:result = unwrap nullability [args[0]];
     return make builtin result [result] is params;
 }
 
@@ -352,8 +350,8 @@ BuiltinResult#builtin round with [[Val]:args] {
 }
 
 BuiltinResult#builtin inner with [[Val]:args] {
-    assume [[args[0]] ne [c null_ [args[0].type_]]];
-    Val:result = bitcast [args[0]] to [unwrap nullability [args[0]]];
+    assume [[args[0]] != null_];
+    Val:result = unwrap nullability [args[0]];
     return make builtin result [result] is params;
 }
 
@@ -367,7 +365,7 @@ BuiltinResult#builtin nullable or with [[Val]:args] {
         maybe_result_type_ = a.type_.generics[0];
     };
     Type_:result_type_ = [maybe_result_type_].unwrap;
-    Val:a_is_null = [a] eq [c null_ [a.type_]];
+    Val:a_is_null = [a] == null_;
     return make builtin result [[a_is_null]
         ? [cast [b] to [result_type_]]
         : [cast [a] to [result_type_]]] in params;
@@ -383,7 +381,7 @@ BuiltinResult#builtin nullable and with [[Val]:args] {
         maybe_result_type_ = Optional_ [b.type_];
     };
     Type_:result_type_ = [maybe_result_type_].unwrap;
-    Val:a_is_null = [a] eq [c null_ [a.type_]];
+    Val:a_is_null = [a] == null_;
     return make builtin result [[a_is_null]
         ? [c null_ [result_type_]]
         : [cast [b] to [result_type_]]] in params;
@@ -448,7 +446,7 @@ BuiltinResult#builtin expect with [[Val]:args] {
         extern fn [null] ["epsl_abort"] [[Type_] [Str_]] [[Val] [args[1]]];
         mark as unreachable;
     end block;
-    Val:result = bitcast [args[0]] to [unwrap nullability [args[0]]];
+    Val:result = unwrap nullability [args[0]];
     return make builtin result [result] is params;
 }
 

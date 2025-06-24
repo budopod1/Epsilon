@@ -597,6 +597,13 @@ struct Array *epsl_format_string(struct Array *template_, struct Array *values[]
     return result_arr;
 }
 
+bool epsl_check_vtable_extends(struct VTableBase *vtable, uint64_t id) {
+    for (uint64_t i = 0; i < vtable->extendee_count; i++) {
+        if (vtable->extendees[i] == id) return true;
+    }
+    return false;
+}
+
 void epsl_array_idx_fail() {
     BUILTINS_PANIC("Specified array index is greater or equal to array length");
 }

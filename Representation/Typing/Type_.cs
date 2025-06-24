@@ -261,7 +261,7 @@ public class Type_ : IEquatable<Type_> {
         Struct source = StructsCtx.GetStructOrPolyFromType_(this);
         if (source == null) return false;
         if (!otherWasOptional) return false;
-        Struct dest = StructsCtx.GetStructFromType_(other);
+        Struct dest = StructsCtx.GetStructOrPolyFromType_(other);
         if (dest == null) return false;
         return dest.ExtendList().Contains(source);
     }

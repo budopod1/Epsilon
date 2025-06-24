@@ -90,6 +90,7 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
                 ).ToList(),
                 sobj["symbol"].GetString(),
                 sobj["destructor"].GetStringOrNull(),
+                sobj["global_free_fn"].GetBool(),
                 sobj["extendee"].GetStringOrNull()
             )
         ).ToHashSet();

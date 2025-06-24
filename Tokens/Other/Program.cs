@@ -144,6 +144,9 @@ public class Program : TreeToken, IVerifier, IHasScope {
                 externalDeclarations.Select(declaration => declaration.GetJSON())
             ),
             ["structs"] = new JSONList(StructsCtx.Structs().Select(struct_ => struct_.GetJSON())),
+            ["structs_here"] = new JSONList(
+                structsHere.Select(struct_ => new JSONString(struct_.GetID()))
+            ),
             ["id_path"] = new JSONString(idPath),
             ["globals"] = new JSONList(Scope.GetVarsJSON(scope))
         };

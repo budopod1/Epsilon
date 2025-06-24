@@ -319,6 +319,14 @@ TESTS = [
         ]
     },
     {
+        "file": "poly.epsl",
+        "func": "main",
+        "sig": (c_int32,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 15}
+        ]
+    },
+    {
         "file": "pop.epsl",
         "func": "main",
         "sig": (c_int32,),

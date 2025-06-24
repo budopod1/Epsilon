@@ -3,6 +3,7 @@
 #define EPSL_BUILTINS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 // elem types are uint64_ts
 // upper 62 bits are the size
@@ -30,6 +31,14 @@ struct Array {
     uint64_t capacity;
     uint64_t length;
     void *content;
+};
+
+struct VTableBase {
+    uint64_t id_num;
+    uint64_t extendee_count;
+    uint64_t *extendees;
+    struct Array *id_str;
+    void (*free_fn)(void*);
 };
 
 #define ERROR_STACK_SIZE 4096
@@ -137,6 +146,8 @@ struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint6
 void epsl_null_value_fail();
 
 struct Array *epsl_format_string(struct Array *template_, struct Array *values[], uint32_t value_count);
+
+bool epsl_check_vtable_extends(struct VTableBase *vtable, uint64_t id);
 
 void epsl_array_idx_fail();
 

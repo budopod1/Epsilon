@@ -1,0 +1,66 @@
+{"functions": [
+    {"id": "conversion_pack_half", "callee": "conversion_pack_half", "return_type_": "Str", "template": [
+        {"type": "argument", "name": "argument", "type_": "Q16"}, {"type": "text", "text": "."}, {"type": "name", "name": "pack"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_pack_float", "callee": "conversion_pack_float", "return_type_": "Str", "template": [
+        {"type": "argument", "name": "argument", "type_": "Q32"}, {"type": "text", "text": "."}, {"type": "name", "name": "pack"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_pack_double", "callee": "conversion_pack_double", "return_type_": "Str", "template": [
+        {"type": "argument", "name": "argument", "type_": "Q64"}, {"type": "text", "text": "."}, {"type": "name", "name": "pack"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_pack_quadruple", "callee": "conversion_pack_quadruple", "return_type_": "Str", "template": [
+        {"type": "argument", "name": "argument", "type_": "Q128"}, {"type": "text", "text": "."}, {"type": "name", "name": "pack"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "conversion_unpack_half", "callee": "conversion_unpack_half", "return_type_": "Q16", "template": [
+        {"type": "name", "name": "unpack_Q16"}, {"type": "argument", "name": "array", "type_": "Str"}, {"type": "argument", "name": "startingPos", "type_": "W64"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_unpack_float", "callee": "conversion_unpack_float", "return_type_": "Q32", "template": [
+        {"type": "name", "name": "unpack_Q32"}, {"type": "argument", "name": "array", "type_": "Str"}, {"type": "argument", "name": "startingPos", "type_": "W64"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_unpack_double", "callee": "conversion_unpack_double", "return_type_": "Q64", "template": [
+        {"type": "name", "name": "unpack_Q64"}, {"type": "argument", "name": "array", "type_": "Str"}, {"type": "argument", "name": "startingPos", "type_": "W64"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_unpack_quadruple", "callee": "conversion_unpack_quadruple", "return_type_": "Q128", "template": [
+        {"type": "name", "name": "unpack_Q128"}, {"type": "argument", "name": "array", "type_": "Str"}, {"type": "argument", "name": "startingPos", "type_": "W64"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "conversion_str_to_W32", "callee": "conversion_str_to_W32", "return_type_": "W32", "template": [
+        {"type": "argument", "name": "str", "type_": "Str"}, {"type": "text", "text": "."}, {"type": "name", "name": "parse_as_W32"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_str_to_W64", "callee": "conversion_str_to_W64", "return_type_": "W64", "template": [
+        {"type": "argument", "name": "str", "type_": "Str"}, {"type": "text", "text": "."}, {"type": "name", "name": "parse_as_W64"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "conversion_str_to_Z32", "callee": "conversion_str_to_Z32", "return_type_": "Z32", "template": [
+        {"type": "argument", "name": "str", "type_": "Str"}, {"type": "text", "text": "."}, {"type": "name", "name": "parse_as_Z32"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_str_to_Z64", "callee": "conversion_str_to_Z64", "return_type_": "Z64", "template": [
+        {"type": "argument", "name": "str", "type_": "Str"}, {"type": "text", "text": "."}, {"type": "name", "name": "parse_as_Z64"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "conversion_based_str_to_W32", "callee": "conversion_based_str_to_W32", "return_type_": "W32", "template": [
+        {"type": "argument", "name": "str", "type_": "Str"}, {"type": "text", "text": "."}, {"type": "name", "name": "parse_as_W32_in_base"}, {"type": "argument", "name": "str", "type_": "W32"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_based_str_to_W64", "callee": "conversion_based_str_to_W64", "return_type_": "W64", "template": [
+        {"type": "argument", "name": "str", "type_": "Str"}, {"type": "text", "text": "."}, {"type": "name", "name": "parse_as_W64_in_base"}, {"type": "argument", "name": "str", "type_": "W32"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "conversion_based_str_to_Z32", "callee": "conversion_based_str_to_Z32", "return_type_": "Z32", "template": [
+        {"type": "argument", "name": "str", "type_": "Str"}, {"type": "text", "text": "."}, {"type": "name", "name": "parse_as_Z32_in_base"}, {"type": "argument", "name": "str", "type_": "W32"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "conversion_based_str_to_Z64", "callee": "conversion_based_str_to_Z64", "return_type_": "Z64", "template": [
+        {"type": "argument", "name": "str", "type_": "Str"}, {"type": "text", "text": "."}, {"type": "name", "name": "parse_as_Z64_in_base"}, {"type": "argument", "name": "str", "type_": "W32"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"}
+], "types_": [
+    {"given_name": "Z32", "name": "Z", "bits": 32, "generics": []},
+    {"given_name": "Z64", "name": "Z", "bits": 64, "generics": []},
+    {"given_name": "W32", "name": "W", "bits": 32, "generics": []},
+    {"given_name": "W64", "name": "W", "bits": 64, "generics": []},
+    {"given_name": "Q16", "name": "Q", "bits": 16, "generics": []},
+    {"given_name": "Q32", "name": "Q", "bits": 32, "generics": []},
+    {"given_name": "Q64", "name": "Q", "bits": 64, "generics": []},
+    {"given_name": "Q128", "name": "Q", "bits": 128, "generics": []},
+    {"given_name": "Byte", "name": "Byte", "bits": null, "generics": []},
+    {"given_name": "Str", "name": "Array", "bits": null, "generics": ["Byte"]}
+], "structs": [], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "object_gen_configs": [], "imports": [], "ir": "conversion.bc", "obj": "conversion.o", "source": null, "source_type": "Library", "id_path": "libs/conversion"}

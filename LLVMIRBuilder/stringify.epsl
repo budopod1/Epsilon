@@ -156,9 +156,28 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
             [[result].capacity] = [c L_ [[str].len]];
             [[result].content] = [mut str [str]];
         else_;
-            Val:casted_val = bitcast [val] to [unwrap nullability [type_]];
-            make stringify of [casted_val] to [result];
+            make stringify of [unwrap nullability [val]] to [result];
         end block;
+    } elif ([type_].is_poly) {
+        Str:prefix = "poly ";
+        Val:prefix_len = c L_ [[prefix].len];
+
+        Val:struct_id = [[val].vtable].vtable_item[3];
+        Val:struct_id_len = load [[struct_id].length];
+        Val:length = [prefix_len] + [struct_id_len];
+
+        [[result].length] = [length];
+        [[result].capacity] = [length];
+
+        Val:buffer = malloc [length] [Byte_];
+
+        Val:prefix_str = const str [prefix];
+        memcpy [prefix_len] [prefix_str] to [buffer];
+
+        Val:shifted_buffer = [buffer] shifted by [prefix_len];
+        memcpy [struct_id_len] [[struct_id].content] to [shifted_buffer];
+
+        [[result].content] = [buffer];
     } else {
         Struct_?:maybe_struct = [type_].get_struct;
         if ([maybe_struct].is_null) {
@@ -228,12 +247,4 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
     ret void;
 end fn;
 };
-}
-
-Val#ensure stringify of [Val:val] {
-    if ([val.type_] == [Str_]) {
-        return val;
-    } else {
-        return make stringify of [val];
-    };
 }

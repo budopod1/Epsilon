@@ -11,9 +11,9 @@ Val#do [Val:outer_a] equals [Val:outer_b] deep: [Bool:deep] invert: [Bool:invert
             return [outer_a] eq [outer_b];
         };
     } elif ([type_.name] equals ["Null"]) {
-        ret [c [!invert]];
+        return c [!invert];
     } elif ([type_.name] equals ["Internal"]) {
-        ret [c [invert]];
+        return c [invert];
     };
 
     Str:name = ["equals"].clone;
@@ -71,12 +71,20 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
                 ret [c [invert]];
             else_;
                 Type_:nonnull_type_ = unwrap nullability [type_];
-                Val:nonnull_a = bitcast [a] to [nonnull_type_];
-                Val:nonnull_b = bitcast [b] to [nonnull_type_];
+                Val:nonnull_a = cast [a] to [nonnull_type_];
+                Val:nonnull_b = cast [b] to [nonnull_type_];
                 ret [do [nonnull_a] equals [nonnull_b] deep: [deep] invert: [invert]];
             end block;
         end block;
         mark as unreachable;
+    } elif ([type_].is_poly) {
+        // since we don't yet support true value-based equality between poly
+        // types_, we have to revert to checking for object identity
+        if (invert) {
+            ret [[a] ne [b]];
+        } else {
+            ret [[a] eq [b]];
+        };
     } else {
         Struct_?:maybe_struct = [type_].get_struct;
 

@@ -6,7 +6,7 @@ from mapLLVMcmd import run_LLVM_cmd
 def bootstrap():
     run_LLVM_cmd("clang", "--rtlib=compiler-rt", "-Wno-override-module",
         "LLVMIRBuilder/bootstrap.bc", "libs/builtins.bc", "libs/fs.bc",
-        "libs/packing.bc", "-o", "LLVMIRBuilder/result")
+        "libs/conversion.bc", "-o", "LLVMIRBuilder/result")
 
     print("Bootstrapped backend")
 

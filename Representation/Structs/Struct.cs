@@ -1,4 +1,7 @@
 using CsJSONTools;
+using System.Dynamic;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Epsilon;
 public class Struct : IEquatable<Struct> {
@@ -9,11 +12,14 @@ public class Struct : IEquatable<Struct> {
     readonly string destructorSymbol = null;
     readonly bool isSuper = false;
     bool partiallyLoaded = true;
+    bool globalFreeFn;
 
     Struct extendee = null;
     string extendeeID = null;
     readonly string extendeeName = null;
     readonly ExtendsAnnotation extendsAnnotation = null;
+
+    ulong numID = 0;
 
     public Struct(string path, string name, List<Field> selfFields, List<IAnnotation> annotations) {
         id = new LocatedID(path, name);
@@ -29,13 +35,15 @@ public class Struct : IEquatable<Struct> {
                 extendeeName = extendsAnnotation.GetExtendee();
             }
         }
+        globalFreeFn = true;
     }
 
-    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, string extendeeID) {
+    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, bool globalFreeFn, string extendeeID) {
         id = new LocatedID(path, name);
         this.allFields = allFields;
         this.symbol = symbol;
         this.destructorSymbol = destructorSymbol;
+        this.globalFreeFn = globalFreeFn;
         this.extendeeID = extendeeID;
         partiallyLoaded = false;
     }
@@ -82,6 +90,14 @@ public class Struct : IEquatable<Struct> {
         return id.GetID();
     }
 
+    public ulong GetIDNum() {
+        if (numID == 0) {
+            byte[] digest = SHA256.HashData(Encoding.UTF8.GetBytes(GetID()));
+            numID = BitConverter.ToUInt64(digest, 0);
+        }
+        return numID;
+    }
+
     public string GetSymbol() {
         return symbol;
     }
@@ -110,6 +126,10 @@ public class Struct : IEquatable<Struct> {
 
     public string GetExtendeeForComp() {
         return extendeeID ?? extendeeName;
+    }
+
+    public bool HasGlobalFreeFn() {
+        return globalFreeFn;
     }
 
     public IEnumerable<Field> GetFields() {
@@ -160,13 +180,18 @@ public class Struct : IEquatable<Struct> {
     public IJSONValue GetJSON() {
         return new JSONObject {
             ["id"] = new JSONString(GetID()),
+            ["id_num"] = new JSONString(GetIDNum().ToString("x")),
             ["name"] = new JSONString(GetName()),
             ["fields"] = new JSONList(GetFields().Select(
                 field => field.GetJSON()
             )),
             ["symbol"] = new JSONString(symbol),
             ["destructor"] = JSONString.OrNull(destructorSymbol),
-            ["extendee"] = JSONString.OrNull(extendeeID)
+            ["is_super"] = new JSONBool(isSuper),
+            ["extendees"] = new JSONList(ExtendList().Select(
+                struct_ => new JSONString(struct_.GetIDNum().ToString("x"))
+            )),
+            ["global_free_fn"] = new JSONBool(globalFreeFn)
         };
     }
 

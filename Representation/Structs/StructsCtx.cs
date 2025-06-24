@@ -24,12 +24,7 @@ public static class StructsCtx {
         if (type_.GetBaseType_().GetName() == "Poly") {
             type_ = type_.GetGeneric(0);
         }
-        string name = type_.GetBaseType_().GetName();
-        if (structs.TryGetValue(name, out Struct value)) {
-            return value;
-        } else {
-            return null;
-        }
+        return GetStructFromType_(type_);
     }
 
     public static void Add(Struct struct_) {

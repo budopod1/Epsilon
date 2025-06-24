@@ -28,7 +28,7 @@ def build_libs():
 
         build_c_file("fs.c")
         build_c_file("math_.c")
-        build_c_file("packing.c")
+        build_c_file("conversion.c")
 
     print("Libraries built")
 

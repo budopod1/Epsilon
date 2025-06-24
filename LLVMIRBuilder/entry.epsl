@@ -1,6 +1,7 @@
 #import binjson;
 #import eewriter;
 #import instructions;
+#import conversion;
 #import fs;
 
 ScopeVar {
@@ -137,11 +138,19 @@ BinJSON#read BinJSON_ {
         if (![[struct_json].get["destructor"]].is_null) {
             destructor = [[struct_json].get["destructor"]].get_str;
         };
+        [L]:extendee_ids = [L] [];
+        for (BinJSON:id_json in [[struct_json].get["extendees"]].get_list) {
+            [extendee_ids].append[[[id_json].get_str].parse_as_W64_in_base[16]];
+        };
         Struct_:struct_ = Struct_ [
             [[struct_json].get["id"]].get_str,
+            [[[struct_json].get["id_num"]].get_str].parse_as_W64_in_base[16],
             [[struct_json].get["name"]].get_str,
             [[struct_json].get["symbol"]].get_str,
             destructor,
+            [[struct_json].get["global_free_fn"]].get_bool,
+            [[struct_json].get["is_super"]].get_bool,
+            extendee_ids,
             true, // is a refrence type
             fields
         ];
@@ -149,6 +158,15 @@ BinJSON#read BinJSON_ {
         [struct_].register;
     };
     get state.structs = structs;
+    for (BinJSON:id_json in [[get state.binjson].get["structs_here"]].get_list) {
+        Struct_:struct_ = [get struct_ by id [[id_json].get_str]].unwrap;
+        if (struct_.has_global_free_fn) {
+            generate free fn for_ [struct_] private: [false];
+        };
+        if ([struct_.extendee_ids].len > 0 || struct_.is_super) {
+            generate vtable for_ [struct_];
+        };
+    };
 }
 
 #generate globals {
