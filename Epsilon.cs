@@ -87,7 +87,7 @@ public class Epsilon {
         parser.Tree("clean");
         parser.SetBranchHelp("Clean up all of a project's temporary files");
         parser.Positional("file", new StringArgumentValue(),
-            "The .epslproj file");
+            "The project to clean", isOptional: true);
 
         parser.Tree("init");
         parser.SetBranchHelp("Create a new Epsilon project");
@@ -148,9 +148,10 @@ public class Epsilon {
         TestResult(builder.ComputeInputPath(config["file"], out string inputPath));
 
         if (Utils.ItemsEqual(config["branch"], "compile")) {
+            string entryPath = inputPath;
             JSONConfigParser EPSLPROJParser = new(config, json => {
                 if (json.HasKey("file")) {
-                    inputPath = Utils.JoinPaths(
+                    entryPath = Utils.JoinPaths(
                         Utils.GetDirectoryName(inputPath),
                         json["file"].GetString()
                     );
@@ -182,7 +183,7 @@ public class Epsilon {
             }
 
             BuildSettings settings = new(
-                inputPath, config["output-location"], cache, cacheMode, optimizationLevel,
+                entryPath, config["output-location"], cache, cacheMode, optimizationLevel,
                 outputType, generateErrorFrames, linkBuiltins, linkLibraries, linkBuiltinModules
             );
 
