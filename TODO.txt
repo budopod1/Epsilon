@@ -7,6 +7,5 @@ TODO:
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `Struct` type that's treated as a superclass of all structs
 * update docs
-* `equals` function and family should return early when values `==` eachother
 * make id paths relative to the project root (eg Epsilon/tom/entry, not /home/martin/Epsilon/tom/entry)
 * make Optional<T> valid for primitve T

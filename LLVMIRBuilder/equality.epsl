@@ -27,6 +27,10 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
     Val:a = func arg [0];
     Val:b = func arg [1];
 
+    if_ [[a] eq [b]];
+        ret [c [!invert]];
+    end block;
+
     if ([type_.name] equals ["Array"]) {
         Val:a_len = load [[a].length];
         Val:b_len = load [[b].length];
@@ -80,11 +84,11 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
     } elif ([type_].is_poly) {
         // since we don't yet support true value-based equality between poly
         // types_, we have to revert to checking for object identity
-        if (invert) {
-            ret [[a] ne [b]];
-        } else {
-            ret [[a] eq [b]];
-        };
+
+        // object identity is already checked above, so if we get here,
+        // we know the objects do not have the same identity, and we
+        // can return that they are not equal
+        ret [c [invert]];
     } else {
         Struct_?:maybe_struct = [type_].get_struct;
 
