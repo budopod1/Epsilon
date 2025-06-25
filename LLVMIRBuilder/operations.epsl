@@ -117,8 +117,8 @@ Val#make elem generic int [Type_:type_] {
     return make elem int [type_.generics[0]];
 }
 
-Val#make constant [BinJSON:constant_json] of type_ [Type_:type_] {
-    BinJSON:val_json = [constant_json].get["value"];
+Val#make constant [:BinJSON:constant_json] of type_ [Type_:type_] {
+    :BinJSON:val_json = [constant_json].get["value"];
     Str:constant_type = [[constant_json].get["type"]].get_str;
     if (([constant_type] equals ["int"]) || ([constant_type] equals ["uint"])) {
         return c [[val_json].get_int] [type_];

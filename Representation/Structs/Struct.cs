@@ -10,10 +10,10 @@ public class Struct : IEquatable<Struct> {
     IEnumerable<Field> allFields = null;
     readonly string symbol;
     readonly string destructorSymbol = null;
-    readonly bool isSuper = false;
     bool partiallyLoaded = true;
     bool globalFreeFn;
 
+    readonly bool isSuper = false;
     Struct extendee = null;
     string extendeeID = null;
     readonly string extendeeName = null;
@@ -38,12 +38,13 @@ public class Struct : IEquatable<Struct> {
         globalFreeFn = true;
     }
 
-    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, bool globalFreeFn, string extendeeID) {
+    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, bool globalFreeFn, bool isSuper, string extendeeID) {
         id = new LocatedID(path, name);
         this.allFields = allFields;
         this.symbol = symbol;
         this.destructorSymbol = destructorSymbol;
         this.globalFreeFn = globalFreeFn;
+        this.isSuper = isSuper;
         this.extendeeID = extendeeID;
         partiallyLoaded = false;
     }
