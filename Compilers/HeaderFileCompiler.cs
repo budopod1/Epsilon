@@ -34,15 +34,16 @@ public class HeaderFileCompiler : IFileCompiler {
     }
 
     public static void Setup() {
-        Builder.RegisterDispatcher((BuildSettings settings, string path) => {
+        Builder.RegisterDispatcher((BuildSettings buildSettings, string path) => {
             string fileText = JSONTools.ReadFileText(new StreamReader(path));
-            return new HeaderFileCompiler(path, fileText);
+            string idPath = buildSettings.GetIDPath(path);
+            return new HeaderFileCompiler(path, idPath, fileText);
         }, [..headerExtensions, ..headerImplementationExtensions]);
     }
 
-    HeaderFileCompiler(string path, string fileText) {
+    HeaderFileCompiler(string path, string idPath, string fileText) {
         this.path = path;
-        idPath = Utils.Stem(path);
+        this.idPath = idPath;
         Log.Info("Compiling file from header", idPath);
         this.fileText = fileText;
         string pathExtension = Utils.GetExtension(path);

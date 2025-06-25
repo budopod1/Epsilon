@@ -1,4 +1,5 @@
 namespace Epsilon;
+
 public class BuildSettings(string inputPath, string providedOutput, EPSLCACHE cache,
         CacheMode cacheMode, OptimizationLevel optLevel, OutputType outputType,
         bool generateErrorFrames, bool linkBuiltins, bool linkLibraries,
@@ -13,4 +14,15 @@ public class BuildSettings(string inputPath, string providedOutput, EPSLCACHE ca
     public bool LinkBuiltins = linkBuiltins;
     public bool LinkLibraries = linkLibraries;
     public bool LinkBuiltinModules = linkBuiltinModules;
+
+    public string GetIDPath(string path) {
+        path = Utils.Stem(path);
+        DirectoryInfo inputDir = new(Utils.GetDirectoryName(InputPath));
+        string relPath = Path.GetRelativePath(inputDir.Parent.FullName, path);
+        if (relPath.StartsWith("..")) {
+            return path;
+        } else {
+            return Path.DirectorySeparatorChar + relPath;
+        }
+    }
 }
