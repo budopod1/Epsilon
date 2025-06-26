@@ -43,5 +43,5 @@
     {"given_name": "[Str]?", "name": "Optional", "bits": null, "generics": ["[Str]"]},
     {"given_name": "L", "name": "W", "bits": 64, "generics": []}
 ], "structs": [
-    {"name": "File", "fields": [{"name": "file", "type_": "Internal"}, {"name": "mode", "type_": "W32"}, {"name": "open", "type_": "Bool"}], "symbol": "fs_File", "destructor": "fs_close_file", "global_free_fn": false, "is_super": false, "extendee": null}
+    {"name": "File", "fields": [{"name": "file", "type_": "Internal"}, {"name": "mode", "type_": "W32"}, {"name": "open", "type_": "Bool"}], "symbol": "fs_File", "destructor": "fs_close_file", "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null}
 ], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "object_gen_configs": [], "imports": [], "ir": "fs.bc", "obj": "fs.o", "source": null, "source_type": "Library", "id_path": "libs/fs"}

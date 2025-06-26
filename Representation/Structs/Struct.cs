@@ -14,6 +14,7 @@ public class Struct : IEquatable<Struct> {
     bool globalFreeFn;
 
     readonly bool isSuper = false;
+    readonly bool isAbstract = false;
     Struct extendee = null;
     string extendeeID = null;
     readonly string extendeeName = null;
@@ -25,26 +26,31 @@ public class Struct : IEquatable<Struct> {
         id = new LocatedID(path, name);
         this.selfFields = selfFields;
         symbol = id.GetID();
+        bool hasConcreteAnnotation = false;
         foreach (IAnnotation annotation in annotations) {
             if (annotation is IDAnnotation idAnnotation) {
                 symbol = idAnnotation.GetID();
             } else if (annotation is SuperAnnotation) {
                 isSuper = true;
+            } else if (annotation is ConcreteAnnotation) {
+                hasConcreteAnnotation = true;
             } else if (annotation is ExtendsAnnotation extendsAnnotation) {
                 this.extendsAnnotation = extendsAnnotation;
                 extendeeName = extendsAnnotation.GetExtendee();
             }
         }
+        isAbstract = isSuper && !hasConcreteAnnotation;
         globalFreeFn = true;
     }
 
-    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, bool globalFreeFn, bool isSuper, string extendeeID) {
+    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, bool globalFreeFn, bool isSuper, bool isAbstract, string extendeeID) {
         id = new LocatedID(path, name);
         this.allFields = allFields;
         this.symbol = symbol;
         this.destructorSymbol = destructorSymbol;
         this.globalFreeFn = globalFreeFn;
         this.isSuper = isSuper;
+        this.isAbstract = isAbstract;
         this.extendeeID = extendeeID;
         partiallyLoaded = false;
     }
@@ -109,6 +115,10 @@ public class Struct : IEquatable<Struct> {
 
     public bool IsSuper() {
         return isSuper;
+    }
+
+    public bool IsAbstract() {
+        return isAbstract;
     }
 
     public string GetExtendeeID() {

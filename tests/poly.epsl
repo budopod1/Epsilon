@@ -10,6 +10,7 @@ G {
 }
 
 @super;
+@concrete;
 @extends G;
 H {
     Z:c

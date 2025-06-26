@@ -3,7 +3,7 @@ public abstract class Holder(List<IToken> tokens) : TreeToken(tokens) {
     public Block GetBlock() {
         if (Count < 2) return null;
         IToken token = this[1];
-        if (!(token is Block)) return null;
+        if (token is not Block) return null;
         return (Block)token;
     }
 

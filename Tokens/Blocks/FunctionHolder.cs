@@ -17,14 +17,14 @@ public class FunctionHolder : Holder, IAnnotatable {
     public RawFuncSignature GetRawSignature() {
         if (Count < 2) return null;
         IToken token = this[0];
-        if (!(token is RawFuncSignature)) return null;
+        if (token is not RawFuncSignature) return null;
         return (RawFuncSignature)token;
     }
 
     public FuncSignature GetSignature() {
         if (Count < 2) return null;
         IToken token = this[0];
-        if (!(token is FuncSignature)) return null;
+        if (token is not FuncSignature) return null;
         return (FuncSignature)token;
     }
 

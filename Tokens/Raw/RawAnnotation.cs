@@ -8,6 +8,8 @@ public class RawAnnotation(string type, List<IToken> tokens) : TreeToken(tokens)
             return IDAnnotation.FromTokens(this, GetTokens());
         case "super":
             return SuperAnnotation.FromTokens(this, GetTokens());
+        case "concrete":
+            return ConcreteAnnotation.FromTokens(this, GetTokens());
         case "extends":
             return ExtendsAnnotation.FromTokens(this, GetTokens());
         default:

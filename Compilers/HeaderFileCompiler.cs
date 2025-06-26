@@ -99,7 +99,7 @@ public class HeaderFileCompiler : IFileCompiler {
         string destructorSymbol = reader.Line();
         if (destructorSymbol == "") destructorSymbol = null;
         return new Struct(idPath, name, fields, "structs." + name, destructorSymbol,
-            globalFreeFn: false, isSuper: false, extendeeID: null);
+            globalFreeFn: false, isSuper: false, isAbstract: false, extendeeID: null);
     }
 
     RealExternalFunction ReadFunc(LineReader reader) {

@@ -12,7 +12,7 @@ public class Line(List<IToken> tokens) : TreeToken(tokens), IVerifier, ISerializ
         }
         if (Count == 0) return;
         IToken token = this[0];
-        if (!(token is ICompleteLine)) {
+        if (token is not ICompleteLine) {
             throw new SyntaxErrorException(
                 "Incomplete line", token
             );

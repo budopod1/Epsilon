@@ -31,7 +31,7 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
         values = [];
         foreach (ValueListItem listItem in list.GetValues()) {
             if (listItem.Count == 0) continue;
-            if (listItem.Count != 1 || !(listItem[0] is IValueToken)) {
+            if (listItem.Count != 1 || listItem[0] is not IValueToken) {
                 throw new SyntaxErrorException("Malformed instantiation parameter", listItem);
             }
             values.Add((IValueToken)listItem[0]);
@@ -63,6 +63,11 @@ public class Instantiation : IParentToken, IValueToken, IVerifier {
 
     public void Verify() {
         Struct struct_ = StructsCtx.GetStructFromType_(type_);
+        if (struct_.IsAbstract()) {
+            throw new SyntaxErrorException(
+                $"Cannot instantiate the abstract struct {type_}", this
+            );
+        }
         List<Field> fields = struct_.GetFields().ToList();
         if (fields.Count != values.Count) {
             throw new SyntaxErrorException(

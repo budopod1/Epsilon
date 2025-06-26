@@ -7,7 +7,7 @@ public class OptionalArrayAccess : BinaryOperation<IValueToken, IValueToken>, IV
                 $"Arrays can only be indexed with 1 value, not {index.Count} values", index
             );
         ValueListItem indexListItem = (ValueListItem)index[0];
-        if (indexListItem.Count != 1 || !(indexListItem[0] is IValueToken))
+        if (indexListItem.Count != 1 || indexListItem[0] is not IValueToken)
             throw new SyntaxErrorException(
                 $"Malformed array index", indexListItem
             );
