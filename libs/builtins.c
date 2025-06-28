@@ -383,9 +383,7 @@ struct Array *epsl_join_array(const struct Array *arr, const struct Array *sep, 
     return result;
 }
 
-const int32_t MAGIC_INVALID_PARSED_INT = -2147483647;
-
-int32_t epsl_parse_int(const struct Array *str) {
+uint64_t epsl_parse_int(const struct Array *str) {
     int32_t result = 0;
     int32_t multiplier = 1;
     int32_t sign = 1;
@@ -406,14 +404,14 @@ int32_t epsl_parse_int(const struct Array *str) {
             continue;
         }
         if (chr == '_' || chr == ',') continue;
-        return MAGIC_INVALID_PARSED_INT;
+        goto parse_error;
     }
-    if (valid) return result * sign;
-    return MAGIC_INVALID_PARSED_INT;
-}
+    if (!valid) goto parse_error;
 
-int32_t epsl_magic_invalid_parsed_int() {
-    return MAGIC_INVALID_PARSED_INT;
+    return (uint32_t)(result * sign);
+
+parse_error:
+    return (uint64_t)1 << 32;
 }
 
 double epsl_parse_float(const struct Array *str) {
@@ -425,12 +423,12 @@ double epsl_parse_float(const struct Array *str) {
     }
 
     // no dot
-    int32_t ival = epsl_parse_int(str);
-    if (ival == MAGIC_INVALID_PARSED_INT) return NAN;
-    return ival;
+    uint64_t ival = epsl_parse_int(str);
+    if (ival & ((uint64_t)1 << 32)) goto parse_error;
+    return (int32_t)(ival & ((uint64_t)1<<32) - 1);
 
 has_dot:
-    if (length == 1) return NAN;
+    if (length == 1) goto parse_error;
 
     bool valid = false;
     double result = 0;
@@ -446,7 +444,7 @@ has_dot:
             continue;
         }
         if (chr == '_' || chr == ',') continue;
-        return NAN;
+        goto parse_error;
     }
 
     multiplier = 1;
@@ -467,14 +465,17 @@ has_dot:
             }
             if (chr == '+') continue;
         }
-        return NAN;
+        goto parse_error;
     }
 
     if (valid) {
         return result * sign;
     } else {
-        return NAN;
+        goto parse_error;
     }
+
+parse_error:
+    return NAN;
 }
 
 struct Array *epsl_read_input_line() {

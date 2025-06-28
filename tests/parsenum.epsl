@@ -1,8 +1,10 @@
 @id testee;
 Q#test {
-    Z:a = parse_int["123"];
-    Q:b = parse_float["456.789"];
-    Bool:c = parse_int["1b3"] == invalid_parsed_int;
-    Bool:d = is_NaN[parse_float["4e6.7h9"]];
-    return a + b + c + d;
+    Z:a = [parse_int["123"]].unwrap;
+    Q:b = [parse_float["456.789"]].unwrap;
+    // all booleans should be true
+    Bool:c = [parse_int["1b3"]].is_null;
+    Bool:d = [parse_float["4e6.7h9"]].is_null;
+    Bool:e = [parse_float["-2000000000"]].unwrap < -1000000000;
+    return a + b + c + d * 2 + e * 4;
 }

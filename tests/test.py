@@ -315,7 +315,7 @@ TESTS = [
         "func": "testee",
         "sig": (c_double,),
         "tests": [
-            {"arguments": [], "compare": "float", "expect": 581.789}
+            {"arguments": [], "compare": "float", "expect": 586.789}
         ]
     },
     {

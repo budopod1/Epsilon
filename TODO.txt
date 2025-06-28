@@ -6,6 +6,7 @@ TODO:
 * lifetime analysis to eliminate ref counting ops and use stack allocs instead of heap allocs when possible
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * add `Struct` type that's treated as a superclass of all structs
+* fix scoping rules: don't allow access to variables before their first definition
 * update docs
-* make Optional<T> valid for primitve T
+* make Optional<T> valid for all T
 * add support for a @private annotation

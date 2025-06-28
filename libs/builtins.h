@@ -125,9 +125,7 @@ struct Array *epsl_nest_array(const struct Array *arr, uint64_t elem);
 
 struct Array *epsl_join_array(const struct Array *arr, const struct Array *sep, uint64_t elem);
 
-int32_t epsl_parse_int(const struct Array *str);
-
-int32_t epsl_magic_invalid_parsed_int();
+uint64_t epsl_parse_int(const struct Array *str);
 
 double epsl_parse_float(const struct Array *str);
 

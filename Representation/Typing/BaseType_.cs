@@ -66,7 +66,7 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"Q", new List<string> {"Bool", "Byte", "W", "Z"}},
     };
 
-    public static readonly List<string> Optionable = [
+    public static readonly List<string> OptionableNonValue = [
         "Array", "Poly"
     ];
 
@@ -190,7 +190,8 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool IsOptionable() {
-        return Optionable.Contains(name) || !IsBuiltin();
+        return OptionableNonValue.Contains(name) || NumberTypes_.Contains(name)
+            || !IsBuiltin();
     }
 
     public bool IsNullable() {

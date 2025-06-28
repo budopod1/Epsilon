@@ -520,13 +520,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([1])
             ), [
                 new("str", Type_.String()),
-            ], "builtin36", new Type_("Z", 32), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new UnitPatternSegment<string>(typeof(Name), "invalid_parsed_int"),
-                ], new EmptyPatternProcessor()
-            ), [], "builtin37", new Type_("Z", 32), FunctionSource.Builtin
+            ], "builtin36", new Type_("Z", 32).OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -535,7 +529,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([1])
             ), [
                 new("str", Type_.String()),
-            ], "builtin38", new Type_("Q", 64), FunctionSource.Builtin
+            ], "builtin38", new Type_("Q", 64).OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
