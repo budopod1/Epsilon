@@ -55,6 +55,7 @@ Val#integer [Val:base_in] to the [Val:exponent_in] {
     Type_:base_type_ = base_in.type_;
     Type_:exponent_type_ = exponent_in.type_;
 
+    add func attr ["memory(none)"];
 if (specialized fn [base_type_] ["integer_exponent"] [[Val] [base_in, exponent_in]]) {
     Val:base = var [base_type_] [func arg [0]];
     Val:exponent = var [exponent_type_] [func arg [1]];
@@ -300,6 +301,7 @@ Val#buffer eq [Val:outer_a] to [Val:outer_b] of len [Val:outer_len] {
         return [func ret] eq [c [(Z)0]];
     };
 
+    add func attr ["memory(argmem: read)"];
 if (specialized fn [Bool_] ["buffer_cmp"] [[Val] [outer_a, outer_b, outer_len]]) {
     Val:a = func arg [0];
     Val:b = func arg [1];
@@ -325,6 +327,7 @@ end fn;
 Val#count element [Val:outer_elem] in [Val:outer_arr] {
     Type_:generic = outer_arr.type_.generics[0];
     Val:casted_elem = cast [outer_elem] to [generic];
+    add func attr ["memory(read, inaccessiblemem: none)"];
 if (specialized fn [L_] ["count"] [[Val] [outer_arr, casted_elem]]) {
     Val:arr = func arg [0];
     Val:target = func arg [1];
@@ -347,6 +350,7 @@ end fn;
 
 Val#count subarray [Val:outer_subarray] in [Val:outer_arr] {
     assert type_ equality [outer_arr], [outer_subarray];
+    add func attr ["memory(read, inaccessiblemem: none)"];
 if (specialized fn [L_] ["count_subarray"] [[Val] [outer_arr, outer_subarray]]) {
     Val:arr = func arg [0];
     Val:target = func arg [1];
@@ -381,6 +385,7 @@ end fn;
 }
 
 Val#overlap count subarray [Val:outer_subarray] in [Val:outer_arr] {
+    add func attr ["memory(read, inaccessiblemem: none)"];
 if (specialized fn [L_] ["overlap_count_subarray"] [[Val] [outer_arr, outer_subarray]]) {
     Val:arr = func arg [0];
     Val:target = func arg [1];
@@ -483,6 +488,7 @@ Val#index of elem [Val:outer_elem] in [Val:outer_arr] {
     Type_:elem_type_ = outer_arr.type_.generics[0];
     outer_elem = cast [outer_elem] to [elem_type_];
 
+    add func attr ["memory(read, inaccessiblemem: none)"];
 if (specialized fn [Z_ [64]] ["index_of_elem"] [[Val] [outer_arr, outer_elem]]) {
     Val:arr = func arg [0];
     Val:target = func arg [1];
@@ -508,6 +514,7 @@ end fn;
 }
 
 Val#index of subarray [Val:outer_subarray] in [Val:outer_arr] {
+    add func attr ["memory(read, inaccessiblemem: none)"];
 if (specialized fn [Z_ [64]] ["index_of_subarray"] [[Val] [outer_arr, outer_subarray]]) {
     Val:arr = func arg [0];
     Val:subarray = func arg [1];
@@ -549,6 +556,7 @@ Val#make compare func of [Type_:type_] invert: [Bool:invert] {
     if (invert) {
         name = "invert_compare_ptrs";
     };
+    add func attr ["memory(argmem: read)"];
 if (specialized fn [Z_] [name] [[Type_] [ptr_type_, ptr_type_]]) {
     Val:a = load [*[func arg [invert]]];
     Val:b = load [*[func arg [1-invert]]];
@@ -626,6 +634,7 @@ Val#bitshift [Val:outer_a] by [Val:outer_b] right: [Bool:right] {
     if (right) {
         name = "bitshift_right";
     };
+    add func attr ["memory(none)"];
 if (specialized fn [type_] [name] [[Val] [outer_a, outer_b]]) {
     Val:a = func arg [0];
     Val:b = func arg [1];

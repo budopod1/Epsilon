@@ -77,6 +77,7 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
             Str:type__name = type_.name;
             new_type_ = Type_ [type__name, new_bits, [Type_] []];
             Str:specifier_func = "epsl_format_{}{}" % type__name % new_bits;
+            add func attr ["memory(none)"];
             extern fn [Pointer [Byte_]] [specifier_func] [[Type_] []] [[Val] []];
             specifier_optional = func ret;
         };
