@@ -9,5 +9,4 @@ TODO:
 * fix scoping rules: don't allow access to variables before their first definition
 * update docs
 * add support for a @private annotation
-* fix stringification of Optional<Str>
 * mark `add` and `sub` ops on the ref counter as `nuw`

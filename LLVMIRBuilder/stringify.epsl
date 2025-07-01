@@ -97,6 +97,15 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
         [[result].length] = [length];
         [[result].capacity] = [required_bytes];
         [[result].content] = [content];
+    } elif ([type_] == [Str_]) {
+        Val:str_len = load [[val].length];
+
+        Val:content = malloc [str_len] [Byte_];
+        memcpy [str_len] [[val].content] to [content];
+
+        [[result].length] = [str_len];
+        [[result].capacity] = [str_len];
+        [[result].content] = [content];
     } elif ([type_.name] equals ["Array"]) {
         Str:start_str = "{} [" % [type_].stringify;
         Val:result_length = var [c L_ [[start_str].len]];
