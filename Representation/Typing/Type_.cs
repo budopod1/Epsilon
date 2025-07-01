@@ -110,13 +110,6 @@ public class Type_ : IEquatable<Type_> {
                 $"Incorrect number of generics on base type {baseType_} (got {generics.Count}, expected {baseType_.GenericsAmount()})"
             );
         }
-        if (baseType_.GetName() == "Optional") {
-            if (!generics[0].GetBaseType_().IsOptionable()) {
-                throw new IllegalType_Exception(
-                    $"Invalid generic {generics[0]} for Optional type"
-                );
-            }
-        }
         if (StructsCtx.AreStructsLoaded()) {
             VerifyValidPoly(recursive: false);
         }
@@ -148,11 +141,7 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public Type_ OptionalOf() {
-        if (baseType_.GetName() == "Optional") {
-            return this;
-        } else {
-            return new Type_("Optional", [this]);
-        }
+        return new Type_("Optional", [this]);
     }
 
     public Type_ ArrayOf() {
@@ -224,16 +213,25 @@ public class Type_ : IEquatable<Type_> {
         return source.ExtendList().Contains(dest);
     }
 
+    static void UnwrapOptionalConversion(Type_ from, Type_ to, out Type_ fromOut, out Type_ toOut, out bool toWasOptional) {
+        toWasOptional = false;
+        while (true) {
+            to = to.UnwrapOptional(out bool unwrappedLayer);
+            if (!unwrappedLayer) break;
+            toWasOptional = true;
+            from = from.UnwrapOptional();
+        }
+        fromOut = from;
+        toOut = to;
+    }
+
     public bool IsConvertibleTo(Type_ other) {
         Type_ this_ = this;
         if (baseType_.IsAny() || other.GetBaseType_().IsAny())
             return true;
         if (this_.IsConvertibleNullTo(other)) return true;
         // conversion to optional is always implicit
-        other = other.UnwrapOptional(out bool otherWasOptional);
-        if (otherWasOptional) {
-            this_ = this_.UnwrapOptional();
-        }
+        UnwrapOptionalConversion(this_, other, out this_, out other, out bool _);
         if (this_.IsConvertibleToPolySub(other)) return true;
         if (this_.HasGenerics()) return this_.Matches(other);
         if (other.HasGenerics()) return false;
@@ -270,10 +268,7 @@ public class Type_ : IEquatable<Type_> {
         if (IsConvertibleTo(other)) return true;
         Type_ this_ = this;
         // conversion to optional is always implicit
-        other = other.UnwrapOptional(out bool otherWasOptional);
-        if (otherWasOptional) {
-            this_ = this_.UnwrapOptional();
-        }
+        UnwrapOptionalConversion(this_, other, out this_, out other, out bool otherWasOptional);
         if (this_.IsCastablePolyToOptional(other, otherWasOptional)) return true;
         if (this_.HasGenerics()) return this_.Matches(other);
         if (other.HasGenerics()) return false;

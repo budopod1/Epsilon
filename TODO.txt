@@ -8,5 +8,6 @@ TODO:
 * add `Struct` type that's treated as a superclass of all structs
 * fix scoping rules: don't allow access to variables before their first definition
 * update docs
-* make Optional<T> valid for all T
 * add support for a @private annotation
+* mark `equals` family of functions with the `memory(read)` attribute in IR
+* fix stringification of Optional<Str>

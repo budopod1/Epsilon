@@ -24,13 +24,7 @@ public class OptionalArrayAccess : BinaryOperation<IValueToken, IValueToken>, IV
 
     public Type_ GetType_() {
         Type_ elemType_ = o1.GetType_().GetGeneric(0);
-        if (elemType_.GetBaseType_().IsOptionable()) {
-            return elemType_.OptionalOf();
-        } else {
-            throw new SyntaxErrorException(
-                $"Cannot peform optional array access on array containing non-optionable type {elemType_}", this
-            );
-        }
+        return elemType_.OptionalOf();
     }
 
     public void Verify() {

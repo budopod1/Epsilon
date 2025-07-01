@@ -295,6 +295,14 @@ TESTS = [
         ]
     },
     {
+        "file": "nestedoptional.epsl",
+        "func": "main",
+        "sig": (c_int32,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 3}
+        ]
+    },
+    {
         "file": "nullkw.epsl",
         "func": "main",
         "sig": (c_int32,),

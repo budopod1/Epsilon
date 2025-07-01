@@ -189,11 +189,6 @@ public class BaseType_ : IEquatable<BaseType_> {
         return BuiltInTypes_.Contains(name);
     }
 
-    public bool IsOptionable() {
-        return OptionableNonValue.Contains(name) || NumberTypes_.Contains(name)
-            || !IsBuiltin();
-    }
-
     public bool IsNullable() {
         return name == "Optional" || IsNull();
     }

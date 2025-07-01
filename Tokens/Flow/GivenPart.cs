@@ -38,11 +38,6 @@ public class GivenPart : BinaryAction<IValueToken, CodeBlock>, IVerifier {
     }
 
     public void Verify() {
-        if (toType_.GetBaseType_().GetName() == "Optional") {
-            throw new SyntaxErrorException(
-                $"Given part will always be triggered as specified type is {toType_}", this
-            );
-        }
         Type_ optionalType_ = toType_.OptionalOf();
         Type_ valType_ = o1.GetType_();
         if (!valType_.IsCastableTo(optionalType_)) {

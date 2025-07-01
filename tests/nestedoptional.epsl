@@ -1,0 +1,18 @@
+Z#main {
+    Str?:s = null;
+    Str??:n1 = s;
+    Str???:n2 = n1;
+    given (n2 as Str??:u2) {
+        given (u2 as Str?:u1) {
+            given (u1 as Str?:u0) {
+                given (u0 as Str:um1) {
+                    return 4;
+                };
+                return 3;
+            };
+            return 2;
+        };
+        return 1;
+    };
+    return 0;
+}
