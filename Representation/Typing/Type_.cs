@@ -206,9 +206,9 @@ public class Type_ : IEquatable<Type_> {
     }
 
     bool IsConvertibleToPolySub(Type_ other) {
-        Struct source = StructsCtx.GetStructOrPolyFromType_(this);
+        Struct source = StructsCtx.GetStructFromMaybePolyType_(this);
         if (source == null) return false;
-        Struct dest = StructsCtx.GetStructOrPolyFromType_(other);
+        Struct dest = StructsCtx.GetStructFromPolyType_(other);
         if (dest == null) return false;
         return source.ExtendList().Contains(dest);
     }
@@ -255,11 +255,10 @@ public class Type_ : IEquatable<Type_> {
     }
 
     bool IsCastablePolyToOptional(Type_ other, bool otherWasOptional) {
-        if (baseType_.GetName() != "Poly") return false;
-        Struct source = StructsCtx.GetStructOrPolyFromType_(this);
-        if (source == null) return false;
         if (!otherWasOptional) return false;
-        Struct dest = StructsCtx.GetStructOrPolyFromType_(other);
+        Struct source = StructsCtx.GetStructFromPolyType_(this);
+        if (source == null) return false;
+        Struct dest = StructsCtx.GetStructFromMaybePolyType_(other);
         if (dest == null) return false;
         return dest.ExtendList().Contains(source);
     }

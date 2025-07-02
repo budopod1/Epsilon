@@ -20,7 +20,14 @@ public static class StructsCtx {
         }
     }
 
-    public static Struct GetStructOrPolyFromType_(Type_ type_) {
+    public static Struct GetStructFromPolyType_(Type_ type_) {
+        if (type_.GetBaseType_().GetName() != "Poly") {
+            return null;
+        }
+        return GetStructFromType_(type_.GetGeneric(0));
+    }
+
+    public static Struct GetStructFromMaybePolyType_(Type_ type_) {
         if (type_.GetBaseType_().GetName() == "Poly") {
             type_ = type_.GetGeneric(0);
         }
