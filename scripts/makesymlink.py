@@ -1,10 +1,9 @@
 from scriptutils import *
 
 
-# if this could be called make_quote_on_quote_symlink, it would be
 def make_symlink(target, location):
-    if Path(location).exists(follow_symlinks=False):
-        return
+    # if a symlink already exists at the location, delete it
+    Path(location).unlink(missing_ok=True)
     try:
         os.symlink(Path(target).absolute(), location)
     except OSError:
