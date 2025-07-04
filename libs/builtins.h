@@ -51,13 +51,7 @@ void epsl_panic(const char *message, uint64_t message_len);
 
 void epsl_formatted_panic(const char *format, ...);
 
-void *epsl_memmove(void *dest, const void *src, uint64_t count);
-
-void *epsl_memset(void *dest, unsigned char ch, uint64_t count);
-
 int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count);
-
-void *epsl_memcpy(void *dest, const void *src, uint64_t count);
 
 int32_t epsl_printf(const char *format, ...);
 

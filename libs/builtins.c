@@ -46,20 +46,8 @@ void epsl_formatted_panic(const char *format, ...) {
 
 #define BUILTINS_PANIC(message) static const char *const panic_message = ERR_START message; EPSL_PANIC(panic_message)
 
-void *epsl_memmove(void *dest, const void *src, uint64_t count) {
-    return memmove(dest, src, count);
-}
-
-void *epsl_memset(void *dest, unsigned char ch, uint64_t count) {
-    return memset(dest, ch, count);
-}
-
 int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count) {
     return memcmp(lhs, rhs, count);
-}
-
-void *epsl_memcpy(void *dest, const void *src, uint64_t count) {
-    return memcpy(dest, src, count);
 }
 
 int32_t epsl_printf(const char *format, ...) {

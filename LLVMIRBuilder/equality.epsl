@@ -24,7 +24,7 @@ Val#do [Val:outer_a] equals [Val:outer_b] deep: [Bool:deep] invert: [Bool:invert
         [name].extend["_invert"];
     };
 
-    add func attr ["memory(read, inaccessiblemem: none)"];
+    add func attrs [[Str] ["mustprogress", "nofree", "nosync", "memory(read, inaccessiblemem: none)"]];
 if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
     Val:a = func arg [0];
     Val:b = func arg [1];
