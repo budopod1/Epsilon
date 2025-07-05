@@ -45,9 +45,9 @@ Val#do chain power of [Val:base] to the [Z:exponent] {
         return safe [c [1] [base.type_]] / [do chain power of [base] to the [-exponent]];
     } elif (exponent % 2 == 0) {
         Val:factor = do chain power of [base] to the [exponent ~/ 2];
-        return [factor] * [factor];
+        return [factor] * [factor] bound: [false];
     } else {
-        return [do chain power of [base] to the [exponent - 1]] * [base];
+        return [do chain power of [base] to the [exponent - 1]] * [base] bound: [false];
     };
 }
 
@@ -66,14 +66,14 @@ if (specialized fn [base_type_] ["integer_exponent"] [[Val] [base_in, exponent_i
         Val:exponent_1 = c [1] [exponent_type_];
         Val:base_here = load [base];
         if_ [[[exponent_here] AND [exponent_1]].truth_value];
-            [result] = [[result] * [base_here]];
+            [result] = [[result] * [base_here] bound: [false]];
         end block;
         Val:exponent_new = [exponent_here] shift right [exponent_1];
         [exponent] = [exponent_new];
         if_ [[exponent_new].untruth_value];
             ret [result];
         end block;
-        [base] = [[base_here] * [base_here]];
+        [base] = [[base_here] * [base_here] bound: [false]];
     goto_ [loop];
 end fn;
 };
@@ -101,12 +101,12 @@ Val#consume truth [Val:val] {
 }
 
 Val#make elem int [Type_:type_] {
-    Val:result = [sizeof [type_]] * [c L_ [4]];
+    Val:result = [sizeof [type_]] * [c L_ [4]]  bound: [true];
     if (![type_].is_ref) {
-        result = [result] + [c L_ [2]];
+        result = [result] + [c L_ [2]] bound: [true];
     };
     if ([type_].is_nullable) {
-        result = [result] + [c L_ [1]];
+        result = [result] + [c L_ [1]] bound: [true];
     };
     return result;
 }
@@ -245,7 +245,7 @@ if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
 
         [[arr].length] = [len];
 
-        Val:fill_amount = [len] - [cur_len];
+        Val:fill_amount = [len] - [cur_len] bound: [true];
 
         if (pad_left) {
             Val:content_dest = [content] shifted by [fill_amount];
@@ -278,7 +278,7 @@ if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
             while_ [[i_now] lt [[to].unwrap]] from [check_label];
                 [[content].idx[i_now]] = [val];
                 [val].incr_ref;
-                [i] = [[i_now] + [c L_ [1]]];
+                [i] = [[i_now] + [c L_ [1]] bound: [true]];
             end block;
         };
     end block;
@@ -313,7 +313,7 @@ Label:check_label = new label:;
         if_ [[[a].idx[cur_i]] ne [[b].idx[cur_i]]];
             ret [c [false]];
         end block;
-        [i] = [[cur_i] + [c L_ [1]]];
+        [i] = [[cur_i] + [c L_ [1]] bound: [true]];
     end block;
 
     ret [c [true]];
@@ -337,9 +337,9 @@ Label:check_label = new label:;
     Val:cur_i = load [i];
     while_ [[cur_i] lt [arr_len]] from [check_label];
         if_ [[[arr].idx[cur_i]] eq [target]];
-            [count] = [[count] + [c L_ [1]]];
+            [count] = [[count] + [c L_ [1]] bound: [true]];
         end block;
-        [i] = [[cur_i] + [c L_ [1]]];
+        [i] = [[cur_i] + [c L_ [1]] bound: [true]];
     end block;
     ret [count];
 end fn;
@@ -359,7 +359,7 @@ if (specialized fn [L_] ["count_subarray"] [[Val] [outer_arr, outer_subarray]]) 
         ret [c L_ [0]];
     end block;
 
-    Val:i_to = [arr_len] - [target_len];
+    Val:i_to = [arr_len] - [target_len] bound: [true];
     Val:count = var [c L_ [0]];
     Val:i = var [c L_ [0]];
 
@@ -370,12 +370,12 @@ Label:check_label = new label:;
 
         Val:arr_buffer = [[arr].content] shifted by [cur_i];
         if_ [buffer eq [arr_buffer] to [[target].content] of len [target_len]];
-            [count] = [[count] + [c L_ [1]]];
-            [i] = [[cur_i] + [target_len]];
+            [count] = [[count] + [c L_ [1]] bound: [true]];
+            [i] = [[cur_i] + [target_len] bound: [true]];
             continue_ [loop];
         end block;
 
-        [i] = [[cur_i] + [c L_ [1]]];
+        [i] = [[cur_i] + [c L_ [1]] bound: [true]];
     end block;
     ret [count];
 end fn;
@@ -394,7 +394,7 @@ if (specialized fn [L_] ["overlap_count_subarray"] [[Val] [outer_arr, outer_suba
         ret [c L_ [0]];
     end block;
 
-    Val:i_to = [arr_len] - [target_len];
+    Val:i_to = [arr_len] - [target_len] bound: [true];
     Val:count = var [c L_ [0]];
     Val:i = var [c L_ [0]];
 
@@ -403,10 +403,10 @@ Label:check_label = new label:;
     while_ [[cur_i] le [i_to]] from [check_label];
         Val:arr_buffer = [[arr].content] shifted by [cur_i];
         if_ [buffer eq [arr_buffer] to [[target].content] of len [target_len]];
-            [count] = [[count] + [c L_ [1]]];
+            [count] = [[count] + [c L_ [1]] bound: [true]];
         end block;
 
-        [i] = [[cur_i] + [c L_ [1]]];
+        [i] = [[cur_i] + [c L_ [1]] bound: [true]];
     end block;
     ret [count];
 end fn;
@@ -419,7 +419,7 @@ end fn;
 
     part_start = load [part_start];
 
-    Val:part_len = [cur_i] - [part_start];
+    Val:part_len = [cur_i] - [part_start] bound: [true];
     Val:part = malloc pointee [arr_type_];
     [[part].ref] = [c L_ [1]];
     Val:part_cap = [[part_len] eq [c L_ [0]]] ? [c L_ [1]] : [part_len];
@@ -444,14 +444,24 @@ Val#split [Val:outer_arr] on [Val:outer_sep] {
     Type_:generic = arr_type_.generics[0];
     Type_:result_type_ = Array_ [arr_type_];
 if (specialized fn [result_type_] ["split"] [[Val] [outer_arr, outer_sep]]) {
+
     Val:arr = func arg [0];
     Val:arr_len = load [[arr].length];
     Val:arr_content = load [[arr].content];
+
     Val:sep = func arg [1];
     Val:sep_len = load [[sep].length];
+
+    if_ [[sep_len] gt [arr_len]];
+        Val:new_arr = [arr].clone;
+        [new_arr].incr_ref;
+        ret [new array [result_type_] [[Val] [new_arr]]];
+    end block;
+
     Val:result = new array [result_type_] [[Val] []] with capacity [3];
+    Val:i_to = [arr_len] - [sep_len] bound: [true];
+
     Val:part_start = var [c L_ [0]];
-    Val:i_to = [arr_len] - [sep_len];
 
     Val:i = var [c L_ [0]];
 Label:check_label = new label:;
@@ -464,13 +474,13 @@ Label:check_label = new label:;
             add split segment of type_ [arr_type_] from [part_start] to [cur_i]
             sourced from [arr_content] to [result];
 
-            Val:new_i = [cur_i] + [sep_len];
+            Val:new_i = [cur_i] + [sep_len] bound: [true];
             [i] = [new_i];
             [part_start] = [new_i];
             continue_ [loop];
         end block;
 
-        [i] = [[cur_i] + [c L_ [1]]];
+        [i] = [[cur_i] + [c L_ [1]] bound: [true]];
     end block;
 
     add split segment of type_ [arr_type_] from [part_start] to [arr_len]
@@ -502,7 +512,7 @@ Label:check_label = new label:;
         if_ [[elem] eq [target]];
             ret [cur_i];
         end block;
-        [i] = [[cur_i] + [c [1] [Z_ [64]]]];
+        [i] = [[cur_i] + [c [1] [Z_ [64]]] bound: [true]];
     end block;
 
     ret [c [-1] [Z_ [64]]];
@@ -522,8 +532,13 @@ if (specialized fn [Z_ [64]] ["index_of_subarray"] [[Val] [outer_arr, outer_suba
     Val:arr_content = load [[arr].content];
     Val:subarray_len = load [[subarray].length];
     Val:subarray_content = load [[subarray].content];
+
+    if_ [[subarray_len] gt [arr_len]];
+        ret [c [0] [Z_ [64]]];
+    end block;
+
     Val:i = var [c [0] [Z_ [64]]];
-    Val:i_to = cast [[arr_len] - [subarray_len]] to [Z_ [64]];
+    Val:i_to = cast [[arr_len] - [subarray_len] bound: [true]] to [Z_ [64]];
 
 Label:check_label = new label:;
     Val:cur_i = load [i];
@@ -532,7 +547,7 @@ Label:check_label = new label:;
         if_ [buffer eq [arr_buffer] to [subarray_content] of len [subarray_len]];
             ret [cur_i];
         end block;
-        [i] = [[cur_i] + [c [1] [Z_ [64]]]];
+        [i] = [[cur_i] + [c [1] [Z_ [64]]] bound: [true]];
     end block;
 
     ret [c [-1] [Z_ [64]]];
@@ -559,7 +574,7 @@ Val#make compare func of [Type_:type_] invert: [Bool:invert] {
 if (specialized fn [Z_] [name] [[Type_] [ptr_type_, ptr_type_]]) {
     Val:a = load [*[func arg [invert]]];
     Val:b = load [*[func arg [1-invert]]];
-    ret [[cast [[a] gt [b]] to [Z_]] - [cast [[b] gt [a]] to [Z_]]];
+    ret [[cast [[a] gt [b]] to [Z_]] - [cast [[b] gt [a]] to [Z_]] bound: [false]];
 end fn;
 };
 
@@ -598,13 +613,13 @@ Label:check_label = new label:;
     Val:cur_i = load [i];
     while_ [[cur_i] lt [arr_len]] from [check_label];
         Val:elem = load [[arr].idx[cur_i]];
-        [i] = [[cur_i] + [c L_ [1]]];
+        [i] = [[cur_i] + [c L_ [1]] bound: [true]];
         if_ [[elem] eq [last]];
             [elem].decr_ref;
         else_;
             Val:cur_j = load [j];
             [[arr].idx[j]] = [elem];
-            [j] = [[j] + [c L_ [1]]];
+            [j] = [[j] + [c L_ [1]] bound: [true]];
             [last] = [elem];
         end block;
     end block;
@@ -678,7 +693,7 @@ Val#wrap idx [Val:idx] on [Val:arr] {
 
     Val:arr_len = load [[arr].length];
     if_ [[idx] lt [c [0] [Z_ [64]]]];
-        [result_phi].add_incoming[[arr_len] + [idx_L_]];
+        [result_phi].add_incoming[[arr_len] + [idx_L_] bound: [false]];
     end block;
 
     Val:result = [result_phi].place_here;

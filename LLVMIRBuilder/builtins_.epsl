@@ -192,7 +192,7 @@ BuiltinResult#builtin overlap count with [[Val]:args] {
 BuiltinResult#builtin pop end with [[Val]:args] {
     Val:arr = args[0];
     verify array [arr] non empty;
-    Val:idx = [load [[arr].length]] - [c L_ [1]];
+    Val:idx = [load [[arr].length]] - [c L_ [1]] bound: [true];
     Val:elem = load [[arr].idx[idx]];
     [elem].checkless_decr_ref;
     [[arr].length] = [idx];
@@ -238,7 +238,7 @@ if (specialized fn [Bool_] ["ends_with"] [args]) {
         ret [c [false]];
     end block;
 
-    Val:arr_buffer = [[arr].content] shifted by [[arr_len] - [sub_len]];
+    Val:arr_buffer = [[arr].content] shifted by [[arr_len] - [sub_len] bound: [true]];
     ret [buffer eq [arr_buffer] to [[sub].content] of len [sub_len]];
 end fn;
 };

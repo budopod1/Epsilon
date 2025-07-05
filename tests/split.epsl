@@ -6,5 +6,6 @@ L#func {
     for (Str:part in parts) {
         product *= [part].len;
     };
+    product += [[""].split["371"]].len;
     return product;
 }

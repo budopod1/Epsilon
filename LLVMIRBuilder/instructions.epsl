@@ -11,17 +11,17 @@ Val#build constant value [:BinJSON:instruction_json] to [Type_:type_] {
 
 Val#build addition using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
-    return [operands[0]] + [operands[1]];
+    return [operands[0]] + [operands[1]] bound: [false];
 }
 
 Val#build subtraction using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
-    return [operands[0]] - [operands[1]];
+    return [operands[0]] - [operands[1]] bound: [false];
 }
 
 Val#build multiplication using [[Val]:operands] to [Type_:type_] {
     operands = cast [operands] to [type_];
-    return [operands[0]] * [operands[1]];
+    return [operands[0]] * [operands[1]] bound: [false];
 }
 
 Val#build division using [[Val]:operands] to [Type_:type_] {
@@ -88,12 +88,12 @@ Val#build comparison [:BinJSON:instruction_json] using [[Val]:operands] {
 
 Val#build add one using [[Val]:operands] {
     Val:operand = operands[0];
-    return [operand] + [c [1] [operand.type_]];
+    return [operand] + [c [1] [operand.type_]] bound: [false];
 }
 
 Val#build sub one using [[Val]:operands] {
     Val:operand = operands[0];
-    return [operand] - [c [1] [operand.type_]];
+    return [operand] - [c [1] [operand.type_]] bound: [false];
 }
 
 Val#build string literal [:BinJSON:instruction_json] to [Type_:type_] {
@@ -584,7 +584,8 @@ Label:cond_label = new label:;
     Val:upper = [[maybe_to] || [maybe_array_len]].unwrap;
 
     if (signed_step) {
-        [idx_var] = [[negative_step] ? [[upper] - [c [1] [idx_type_]]] : [from]];
+        [idx_var] = [[negative_step] ?
+            [[upper] - [c [1] [idx_type_]] bound: [false]] : [from]];
     } else {
         [idx_var] = [from];
     };
@@ -642,7 +643,7 @@ Label:cond_label = new label:;
         end block;
     };
 
-    [idx_var] = [[idx] + [step]];
+    [idx_var] = [[idx] + [step] bound: [false]];
 
     goto_ [check_label];
 

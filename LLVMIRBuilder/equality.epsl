@@ -59,7 +59,7 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
                 ret [c [invert]];
             end block;
 
-            [i] = [[cur_i] + [c L_ [1]]];
+            [i] = [[cur_i] + [c L_ [1]] bound: [true]];
         end block;
 
         ret [c [!invert]];

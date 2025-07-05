@@ -88,7 +88,7 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
         extern fn [Z_] ["epsl_snprintf"] [[Type_] [Pointer [Byte_], L_, Pointer [Byte_]]]
             vargs [[Val] [c null_ [Pointer [Byte_]], c L_ [0], specifier, casted]];
         Val:length = cast [func ret] to [L_];
-        Val:required_bytes = [length] + [c L_ [1]];
+        Val:required_bytes = [length] + [c L_ [1]] bound: [true];
 
         Val:content = malloc [required_bytes] [Byte_];
         extern fn [Z_] ["epsl_sprintf"] [[Type_] [Pointer [Byte_], Pointer [Byte_]]]
@@ -121,9 +121,9 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
             if_ [[i] gt [c L_ [0]]];
                 Val:old_result_len = load [result_length];
                 [[result_content].idx[old_result_len]] = [c [',']];
-                old_result_len = [old_result_len] + [c L_ [1]];
+                old_result_len = [old_result_len] + [c L_ [1]] bound: [true];
                 [[result_content].idx[old_result_len]] = [c [' ']];
-                old_result_len = [old_result_len] + [c L_ [1]];
+                old_result_len = [old_result_len] + [c L_ [1]] bound: [true];
                 [result_length] = [old_result_len];
             end block;
 
@@ -133,12 +133,12 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
 
             Val:stringified_len = load [[stringified].length];
             old_result_len = load [result_length];
-            Val:new_result_len = [old_result_len] + [stringified_len];
+            Val:new_result_len = [old_result_len] + [stringified_len] bound: [true];
             [result_length] = [new_result_len];
 
-            Val:required_capacity = [new_result_len] + [c L_ [2]];
+            Val:required_capacity = [new_result_len] + [c L_ [2]] bound: [true];
             if_ [[required_capacity] gt [result_capacity]];
-                Val:new_result_capacity = [[required_capacity] * [c L_ [3]]]
+                Val:new_result_capacity = [[required_capacity] * [c L_ [3]] bound: [true]]
                     / [c L_ [2]];
                 [result_capacity] = [new_result_capacity];
                 [result_content] = [realloc [result_content] to [new_result_capacity] elements];
@@ -150,13 +150,13 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
             free [stringified_content];
             free [stringified];
 
-            [i] = [[i] + [c L_ [1]]];
+            [i] = [[i] + [c L_ [1]] bound: [true]];
         end block;
 
         Val:final_result_length = load [result_length];
         [[result_content].idx[final_result_length]] = [c [']']];
 
-        [[result].length] = [[final_result_length] + [c L_ [1]]];
+        [[result].length] = [[final_result_length] + [c L_ [1]] bound: [true]];
         [[result].capacity] = [result_capacity];
         [[result].content] = [result_content];
     } elif ([type_.name] equals ["Optional"]) {
@@ -174,7 +174,7 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
 
         Val:struct_id = [[val].vtable].vtable_item[3];
         Val:struct_id_len = load [[struct_id].length];
-        Val:length = [prefix_len] + [struct_id_len];
+        Val:length = [prefix_len] + [struct_id_len] bound: [true];
 
         [[result].length] = [length];
         [[result].capacity] = [length];
@@ -220,10 +220,10 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
             for (L:i enumerating stringifieds) {
                 [length_steps].append[total_length];
                 Val:stringified_len = stringified_lens[i];
-                total_length = [total_length] + [stringified_len];
+                total_length = [total_length] + [stringified_len] bound: [true];
             };
 
-            total_length = [total_length] + [c L_ [2*[stringifieds].len - 1]];
+            total_length = [total_length] + [c L_ [2*[stringifieds].len - 1]] bound: [true];
 
             Val:result_content = malloc [total_length] [Byte_];
 
@@ -231,7 +231,7 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
                 to [result_content];
 
             for (L:i enumerating stringifieds) {
-                Val:shift_amount = [length_steps[i]] + [c L_ [i * 2]];
+                Val:shift_amount = [length_steps[i]] + [c L_ [i * 2]] bound: [true];
                 Val:location = [result_content] shifted by [shift_amount];
                 if (i > 0) {
                     [*[[location] shifted by [c [-2]]]] = [c [',']];
@@ -240,7 +240,7 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
                 memcpy [stringified_lens[i]] [stringified_contents[i]] to [location];
             };
 
-            Val:closing_pos = [total_length] - [c L_ [1]];
+            Val:closing_pos = [total_length] - [c L_ [1]] bound: [true];
             [*[[result_content] shifted by [closing_pos]]] = [c [']']];
 
             for (L:i enumerating stringifieds) {

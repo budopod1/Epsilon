@@ -643,7 +643,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 List<Field> fields = listParser.Parse(block);
                 if (fields == null) {
                     throw new SyntaxErrorException(
-                        "Malformed struct", token
+                        "Malformed struct body", token
                     );
                 }
                 structs.Add(new Struct(GetIDPath(), nameStr, fields,

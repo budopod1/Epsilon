@@ -9,4 +9,5 @@ TODO:
 * fix scoping rules: don't allow access to variables before their first definition
 * update docs
 * add support for a @private annotation
-* mark `add` and `sub` ops on the ref counter as `nuw`
+* add `prefix_concat` and `postfix_concat` builtins
+* have `new array` incr the ref counter of its elements 

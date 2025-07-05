@@ -387,7 +387,7 @@ TESTS = [
         "func": "testee",
         "sig": (c_uint64,),
         "tests": [
-            {"arguments": [], "compare": "exact", "expect": 4359359347200}
+            {"arguments": [], "compare": "exact", "expect": 4359359347201}
         ]
     },
     {
