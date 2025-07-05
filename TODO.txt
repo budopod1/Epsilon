@@ -10,4 +10,3 @@ TODO:
 * update docs
 * add support for a @private annotation
 * add `prefix_concat` and `postfix_concat` builtins
-* have `new array` incr the ref counter of its elements 

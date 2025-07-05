@@ -109,10 +109,6 @@ Val#build array creation using [[Val]:operands] to [Type_:type_] {
         capacity = 10;
     };
     Val:arr = new array [type_] [operands] with capacity [capacity];
-    if ([elem_type_].is_ref) {
-        extern fn [null] ["epsl_increment_array_ref_counts"] [[Type_] [Internal_, L_]]
-            [[Val] [cast [arr] to [Internal_], make elem int [elem_type_]]];
-    };
     return arr;
 }
 

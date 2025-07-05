@@ -454,7 +454,6 @@ if (specialized fn [result_type_] ["split"] [[Val] [outer_arr, outer_sep]]) {
 
     if_ [[sep_len] gt [arr_len]];
         Val:new_arr = [arr].clone;
-        [new_arr].incr_ref;
         ret [new array [result_type_] [[Val] [new_arr]]];
     end block;
 
