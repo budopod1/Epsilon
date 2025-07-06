@@ -1,0 +1,16 @@
+Z#main {
+    [[Z]]:s = [[Z]] [[Z] [1], [Z] [2]];
+    [Z]:a = [s].prefix_concat[[Z] [3]];
+    Z:a_total = 0;
+    for (L:i enumerating a) {
+        a_total += i * a[i];
+    };
+
+    [Z]:b = [s].postfix_concat[[Z] [4]];
+    Z:b_total = 0;
+    for (L:i enumerating b) {
+        b_total += i * b[i];
+    };
+
+    return [a_total] ^ [b_total];
+}

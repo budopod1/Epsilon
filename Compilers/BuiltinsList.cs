@@ -493,7 +493,7 @@ public static class BuiltinsList {
                 new("sep", Type_.Any().ArrayOf()),
             ], "builtin34", (List<Type_> types_) => {
                 if (!types_[0].GetGeneric(0).Equals(types_[1]))
-                    throw new FunctionCallTypes_Exception($"Cannot join of array of type {types_[0]} on array of type {types_[1]}", 1);
+                    throw new FunctionCallTypes_Exception($"Cannot join an array of type {types_[0]} on an array of type {types_[1]}", 1);
                 return types_[1];
             }, FunctionSource.Builtin
         ), new ExternalFunction(
@@ -898,6 +898,38 @@ public static class BuiltinsList {
                 new("fail_msg", Type_.String())
             ], "builtin66", (List<Type_> types_) => types_[0].GetGeneric(0),
             FunctionSource.Builtin
-        ),
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "prefix_concat"),
+                    new FuncArgPatternSegment(),
+                ], new SlotPatternProcessor([0, 3])
+            ), [
+                new("arr", Type_.Any().ArrayOf().ArrayOf()),
+                new("prefix", Type_.Any().ArrayOf()),
+            ], "builtin67", (List<Type_> types_) => {
+                if (!types_[0].GetGeneric(0).Equals(types_[1]))
+                    throw new FunctionCallTypes_Exception($"Cannot prefix elements of type {types_[0].GetGeneric(0)} with an array of type {types_[1]}", 1);
+                return types_[1];
+            }, FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "postfix_concat"),
+                    new FuncArgPatternSegment(),
+                ], new SlotPatternProcessor([0, 3])
+            ), [
+                new("arr", Type_.Any().ArrayOf().ArrayOf()),
+                new("postfix", Type_.Any().ArrayOf()),
+            ], "builtin68", (List<Type_> types_) => {
+                if (!types_[0].GetGeneric(0).Equals(types_[1]))
+                    throw new FunctionCallTypes_Exception($"Cannot postfix elements of type {types_[0].GetGeneric(0)} with an array of type {types_[1]}", 1);
+                return types_[1];
+            }, FunctionSource.Builtin
+        )
     ];
 }

@@ -34,6 +34,14 @@ TESTS = [
         ]
     },
     {
+        "file": "affix.epsl",
+        "func": "main",
+        "sig": (c_int32,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 25}
+        ]
+    },
+    {
         "file": "arithmetic.epsl",
         "func": "main",
         "sig": (c_int32,),

@@ -357,16 +357,36 @@ struct Array *epsl_nest_array(const struct Array *arr, uint64_t elem) {
 
 struct Array *epsl_join_array(const struct Array *arr, const struct Array *sep, uint64_t elem) {
     uint64_t elem_size = elem >> 2;
-    struct Array *result = epsl_malloc(sizeof(struct Array));
-    result->ref_counter = 0;
-    result->length = 0;
-    result->capacity = 1;
-    result->content = epsl_malloc(elem_size);
+    struct Array *result = epsl_blank_array(elem_size);
     uint64_t arr_len = arr->length;
     struct Array **arr_content = arr->content;
     for (uint64_t i = 0; i < arr_len; i++) {
         if (i > 0) epsl_extend_array(result, sep, elem);
         epsl_extend_array(result, arr_content[i], elem);
+    }
+    return result;
+}
+
+struct Array *epsl_prefix_concat(const struct Array *arr, const struct Array *prefix, uint64_t elem) {
+    uint64_t elem_size = elem >> 2;
+    struct Array *result = epsl_blank_array(elem_size);
+    uint64_t arr_len = arr->length;
+    struct Array **arr_content = arr->content;
+    for (uint64_t i = 0; i < arr_len; i++) {
+        epsl_extend_array(result, prefix, elem);
+        epsl_extend_array(result, arr_content[i], elem);
+    }
+    return result;
+}
+
+struct Array *epsl_postfix_concat(const struct Array *arr, const struct Array *postfix, uint64_t elem) {
+    uint64_t elem_size = elem >> 2;
+    struct Array *result = epsl_blank_array(elem_size);
+    uint64_t arr_len = arr->length;
+    struct Array **arr_content = arr->content;
+    for (uint64_t i = 0; i < arr_len; i++) {
+        epsl_extend_array(result, arr_content[i], elem);
+        epsl_extend_array(result, postfix, elem);
     }
     return result;
 }
