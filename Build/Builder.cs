@@ -1040,8 +1040,8 @@ public class Builder {
 
     IEnumerable<Package> GetDefaultPackages() {
         return [
-            new Package("binjson", Utils.JoinPaths(
-                Utils.ProjectAbsolutePath(), "EPSL-BinJSON"
+            new Package("json", Utils.JoinPaths(
+                Utils.ProjectAbsolutePath(), "EPSL-JSON"
             ), null),
             new Package("irgen", Utils.JoinPaths(
                 Utils.ProjectAbsolutePath(), "EPSL-IR-Gen"

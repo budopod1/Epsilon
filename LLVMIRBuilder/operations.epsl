@@ -1,6 +1,6 @@
 #import entry;
 #import eewriter;
-#import binjson;
+#import json;
 #import builtins_;
 #import stringify;
 

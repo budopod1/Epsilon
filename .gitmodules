@@ -1,8 +1,8 @@
 [submodule "Cs-JSON-Tools"]
 	path = Cs-JSON-Tools
 	url = https://github.com/budopod1/Cs-JSON-Tools.git
-[submodule "EPSL-BinJSON"]
-	path = EPSL-BinJSON
+[submodule "EPSL-JSON"]
+	path = EPSL-JSON
 	url = https://github.com/budopod1/EPSL-BinJSON
 [submodule "EPSL-IR-Gen"]
 	path = EPSL-IR-Gen

@@ -2,7 +2,7 @@
 #import stringify;
 #import eewriter;
 #import equality;
-#import binjson;
+#import json;
 #import entry;
 
 Val#build constant value [:JSON:instruction_json] to [Type_:type_] {
