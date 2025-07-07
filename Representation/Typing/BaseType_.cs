@@ -11,7 +11,8 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Optional",
         "Null",
         "Internal",
-        "Poly"
+        "Poly",
+        "Struct",
     ];
 
     public static readonly List<string> NumberTypes_ = [
@@ -65,10 +66,6 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"Z", new List<string> {"Bool", "Byte", "W", "Q"}},
         {"Q", new List<string> {"Bool", "Byte", "W", "Z"}},
     };
-
-    public static readonly List<string> OptionableNonValue = [
-        "Array", "Poly"
-    ];
 
     public static readonly List<string> ValueTypes_ = [
         "Bool", "Byte", "W", "Z", "Q", "Null", "Internal"
@@ -199,6 +196,10 @@ public class BaseType_ : IEquatable<BaseType_> {
 
     public bool IsValueType_() {
         return ValueTypes_.Contains(name);
+    }
+
+    public bool IsPoly() {
+        return name == "Poly" || name == "Struct";
     }
 
     public override string ToString() {

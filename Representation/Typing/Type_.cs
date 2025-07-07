@@ -171,15 +171,6 @@ public class Type_ : IEquatable<Type_> {
         return this;
     }
 
-    public Type_ UnwrapPoly(out bool was) {
-        if (baseType_.GetName() == "Poly") {
-            was = true;
-            return generics[0];
-        }
-        was = false;
-        return this;
-    }
-
     public BaseType_ GetBaseType_() {
         return baseType_;
     }
@@ -208,6 +199,7 @@ public class Type_ : IEquatable<Type_> {
     bool IsConvertibleToPolySub(Type_ other) {
         Struct source = StructsCtx.GetStructFromMaybePolyType_(this);
         if (source == null) return false;
+        if (other.GetBaseType_().GetName() == "Struct") return true;
         Struct dest = StructsCtx.GetStructFromPolyType_(other);
         if (dest == null) return false;
         return source.ExtendList().Contains(dest);
@@ -256,10 +248,11 @@ public class Type_ : IEquatable<Type_> {
 
     bool IsCastablePolyToOptional(Type_ other, bool otherWasOptional) {
         if (!otherWasOptional) return false;
-        Struct source = StructsCtx.GetStructFromPolyType_(this);
-        if (source == null) return false;
         Struct dest = StructsCtx.GetStructFromMaybePolyType_(other);
         if (dest == null) return false;
+        if (GetBaseType_().GetName() == "Struct") return true;
+        Struct source = StructsCtx.GetStructFromPolyType_(this);
+        if (source == null) return false;
         return dest.ExtendList().Contains(source);
     }
 

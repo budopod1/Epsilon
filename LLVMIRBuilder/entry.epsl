@@ -163,9 +163,7 @@ Z#main {
         if (struct_.has_global_free_fn) {
             generate free fn for_ [struct_] private: [false];
         };
-        if ([struct_.extendee_ids].len > 0 || struct_.is_super) {
-            generate vtable for_ [struct_];
-        };
+        generate vtable for_ [struct_];
     };
 }
 

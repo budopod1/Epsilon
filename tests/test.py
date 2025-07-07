@@ -432,6 +432,14 @@ TESTS = [
         ]
     },
     {
+        "file": "structtype.epsl",
+        "func": "main",
+        "sig": (c_int32,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 41}
+        ]
+    },
+    {
         "file": "switch.epsl",
         "func": "testee",
         "sig": (c_int32, c_int32),

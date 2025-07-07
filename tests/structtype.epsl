@@ -1,0 +1,33 @@
+Foo {
+    Z:a
+}
+
+@super;
+H1 {
+    Z:a
+}
+
+@extends H1;
+H2 {
+    Z:b
+}
+
+Z#f1 [Struct:struct] {
+    given (struct as Foo:f) {
+        return f.a;
+    } else {
+        return 0;
+    };
+}
+
+Z#f2 [Struct:struct] {
+    given (struct as :H1:h1) {
+        return h1.a;
+    } else {
+        return 0;
+    };
+}
+
+Z#main {
+    return f1 [Foo [23]] + f2 [H2 [18, 78]];
+}
