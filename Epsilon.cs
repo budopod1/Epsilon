@@ -51,7 +51,7 @@ public class Epsilon {
         parser.Flag(["opt", "O"], "optimization-level", new StringArgumentValue(),
             "The optimization level");
 
-        parser.Flag(["no-generate-error-frames", "G"], "generate-error-frames",
+        parser.Flag(["no-generate-error-frames", "F"], "generate-error-frames",
             new ConstArgumentValue<bool>(false), "Don't generate error frames");
 
         parser.Flag(["no-link-builtins"], "link-builtins", new ConstArgumentValue<bool>(false),
