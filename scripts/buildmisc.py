@@ -40,8 +40,8 @@ def get_libclang_required_flags():
                 chosen_installation = installation
 
         if chosen_installation is not None:
-            yield f"-I{chosen_installation / "include"}"
-            yield f"-L{chosen_installation / "lib"}"
+            yield f"-I{chosen_installation / 'include'}"
+            yield f"-L{chosen_installation / 'lib'}"
 
         yield "-lclang"
     else:
