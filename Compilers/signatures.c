@@ -656,15 +656,19 @@ char *get_func_symbol(CXCursor cursor) {
     if (strcmp(src_language, "c++") == 0) {
         CXString func_mangled = clang_Cursor_getMangling(cursor);
         const char *mangled = clang_getCString(func_mangled);
-        size_t mangled_len = strlen(mangled);
-        if (mangled_len >= 3 && memcmp(mangled, "__Z", 3) == 0) {
+
+        const char *const mangling_starts[] = {"_Z", "?"};
+        uint32_t mangling_start_count = sizeof(mangling_starts) / sizeof(*mangling_starts);
+
+        if (*mangled == '_' && starts_with_any(mangled+1, mangling_starts, mangling_start_count)) {
             mangled++;
-        } else if (mangled_len >= 2 && memcmp(mangled, "_Z", 2) == 0) {
+        } else if (starts_with_any(mangled, mangling_starts, mangling_start_count)) {
 
         } else {
             clang_disposeString(func_mangled);
             return get_C_func_symbol(cursor);
         }
+
         char *result = strdup(mangled);
         clang_disposeString(func_mangled);
         return result;
