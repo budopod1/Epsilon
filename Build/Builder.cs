@@ -1020,11 +1020,17 @@ public class Builder {
 
     public ResultStatus CreateEPSLPROJ(string path) {
         return RunWrapped(() => {
+            string projectName = Utils.GetFileNameWithoutExtension(path);
             string fullPath = Utils.GetFullPath(path);
             Utils.CreateFileUnlessExists(Utils.SetExtension(fullPath, "epsl"));
-            string epslprojLocation = Utils.SetExtension(fullPath, "epslproj");
+            string epslprojLocation = Utils.JoinPaths(
+                Utils.GetDirectoryName(fullPath), "entry.epslproj");
             if (!Utils.FileExists(epslprojLocation)) {
-                WriteEPSLPROJ(epslprojLocation, new JSONObject());
+                JSONObject projJSON = [];
+                if (projectName != "entry") {
+                    projJSON["file"] = new JSONString(projectName);
+                }
+                WriteEPSLPROJ(epslprojLocation, projJSON);
             }
         });
     }
