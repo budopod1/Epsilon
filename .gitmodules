@@ -16,3 +16,6 @@
 [submodule "Cs-Command-Config"]
 	path = Cs-Command-Config
 	url = https://github.com/budopod1/Cs-Command-Config
+[submodule "EPSL-Console-Styles"]
+	path = EPSL-Console-Styles
+	url = https://github.com/budopod1/EPSL-Console-Styles.git
