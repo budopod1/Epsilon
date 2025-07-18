@@ -32,7 +32,7 @@ void epsl_panic(const char *message, uint64_t message_len) {
     exit(1);
 }
 
-void epsl_formatted_panic(const char *format, ...) {
+void epsl_panicf(const char *format, ...) {
     va_list vargs;
     va_start(vargs, format);
     size_t msg_len = vsnprintf(NULL, 0, format, vargs);
@@ -43,8 +43,6 @@ void epsl_formatted_panic(const char *format, ...) {
 }
 
 #define ERR_START "FATAL ERROR: "
-
-#define BUILTINS_PANIC(message) static const char *const panic_message = ERR_START message; EPSL_PANIC(panic_message)
 
 int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count) {
     return memcmp(lhs, rhs, count);
@@ -79,7 +77,7 @@ void epsl_exit(uint32_t status) {
 }
 
 void epsl_out_of_memory_fail() {
-    BUILTINS_PANIC("Out of memory");
+    epsl_panicf(ERR_START "Out of memory");
 }
 
 void *epsl_malloc(uint64_t size) {
@@ -107,7 +105,7 @@ void *epsl_realloc(void *ptr, uint64_t new_size) {
 }
 
 void epsl_nonresizable_array_fail() {
-    BUILTINS_PANIC("The specified array can't be resized");
+    epsl_panicf(ERR_START "The specified array can't be resized");
 }
 
 static inline uint64_t epsl_calc_new_capacity(uint64_t cap) {
@@ -171,7 +169,7 @@ void epsl_remove_at(struct Array *array, uint64_t idx, uint64_t elem_size) {
 void epsl_insert_space(struct Array *array, uint64_t idx, uint64_t elem_size) {
     uint64_t length = array->length;
     if (__builtin_expect(idx > length, 0)) {
-        BUILTINS_PANIC("Cannot insert space outside bounds of array");
+        epsl_panicf(ERR_START "Cannot insert space outside bounds of array");
     }
     epsl_increment_length(array, elem_size);
     char* content = array->content;
@@ -308,11 +306,11 @@ extern inline char *epsl_format_Z64() {
 
 struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
     if (__builtin_expect(start > end, 0)) {
-        BUILTINS_PANIC("Slice start index can't be after slice end index");
+        epsl_panicf(ERR_START "Slice start index can't be after slice end index");
     }
 
     if (__builtin_expect(end > array->length, 0)) {
-        BUILTINS_PANIC("Slice end index out of range");
+        epsl_panicf(ERR_START "Slice end index out of range");
     }
 
     struct Array *slice = epsl_malloc(sizeof(struct Array));
@@ -503,7 +501,7 @@ void epsl_abort(const struct Array *string) {
 }
 
 void epsl_abort_void() {
-    EPSL_PANIC("abort");
+    epsl_panicf("abort");
 }
 
 struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size) {
@@ -551,7 +549,7 @@ struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint6
 }
 
 void epsl_null_value_fail() {
-    BUILTINS_PANIC("Expected non-null value, found null");
+    epsl_panicf(ERR_START "Expected non-null value, found null");
 }
 
 static const char *const FORMAT_STRING_PLACEHOLDER = "{}";
@@ -576,7 +574,7 @@ struct Array *epsl_format_string(struct Array *template_, struct Array *values[]
             continue;
 
         if (__builtin_expect(value_idx == value_count, 0)) {
-            BUILTINS_PANIC("Too many placeholders for given number of values");
+            epsl_panicf(ERR_START "Too many placeholders for given number of values");
         }
 
         uint64_t seg_len = i - seg_start;
@@ -593,7 +591,7 @@ struct Array *epsl_format_string(struct Array *template_, struct Array *values[]
     }
 
     if (__builtin_expect(value_idx < value_count, 0)) {
-        BUILTINS_PANIC("Not enough placeholders for given number of values");
+        epsl_panicf(ERR_START "Not enough placeholders for given number of values");
     }
 
     memcpy(result + result_idx, template_Content + seg_start, template_Len - seg_start);
@@ -614,13 +612,13 @@ bool epsl_check_vtable_extends(struct VTableBase *vtable, uint64_t id) {
 }
 
 void epsl_array_idx_fail() {
-    BUILTINS_PANIC("Specified array index is greater or equal to array length");
+    epsl_panicf(ERR_START "Specified array index is greater or equal to array length");
 }
 
 void epsl_div_0_fail() {
-    BUILTINS_PANIC("Cannot divide an integer by 0");
+    epsl_panicf(ERR_START "Cannot divide an integer by 0");
 }
 
 void epsl_array_empty_fail() {
-    BUILTINS_PANIC("Expected an array with a nonzero length");
+    epsl_panicf(ERR_START "Expected an array with a nonzero length");
 }

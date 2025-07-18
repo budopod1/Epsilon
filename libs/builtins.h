@@ -24,8 +24,6 @@
 #define __builtin_expect(expr, val) expr
 #endif
 
-#define EPSL_PANIC(str) epsl_panic(str, strlen(str))
-
 struct Array {
     uint64_t ref_counter;
     uint64_t capacity;
@@ -49,7 +47,7 @@ extern const char **epsl_error_stack_top;
 
 void epsl_panic(const char *message, uint64_t message_len);
 
-void epsl_formatted_panic(const char *format, ...);
+void epsl_panicf(const char *format, ...);
 
 int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count);
 

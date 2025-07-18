@@ -77,7 +77,7 @@ struct ByteArray *conversion_pack_quadruple(__float128 floating) {
 
 void conversion_unpack_floating(struct ByteArray *arr, uint64_t pos, void *floating, size_t floating_size) {
     if (__builtin_expect(pos + floating_size >= arr->length, 0)) {
-        epsl_formatted_panic(
+        epsl_panicf(
             ERR_START "Not enough remaining space in the array to read a %d bit floating point number",
             8 * (int)floating_size
         );
@@ -121,7 +121,7 @@ __float128 conversion_unpack_quadruple(struct ByteArray *arr, uint64_t pos) {
 
 #define parse_str_to_int_inner(base, fail_val)\
     if (base < 2 || base > 26) {\
-        epsl_formatted_panic(\
+        epsl_panicf(\
             ERR_START "The base must be in the range 2 to 36, got %d", base\
         );\
     }\
