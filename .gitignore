@@ -39,3 +39,5 @@ vgcore.*
 # Epsilon specific
 *.epslcache
 .*.epslspec
+
+_sub

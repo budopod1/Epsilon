@@ -1,0 +1,7 @@
+#import tokenizer;
+
+Z#main {
+    TokenizationResult:result = tokenize ["Z#foo {println[\"Hello, world!\"]; return 0;}"];
+    println[result];
+    return 0;
+}

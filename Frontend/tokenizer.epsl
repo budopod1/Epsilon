@@ -1,0 +1,389 @@
+#import conversion;
+
+@super;
+TokenData {}
+
+@extends TokenData;
+IdentifierTokenData {
+    Str:val
+}
+
+@extends TokenData;
+IntTokenData {
+    Z64:val
+}
+
+@extends TokenData;
+FloatTokenData {
+    Q:val
+}
+
+@extends TokenData;
+ByteTokenData {
+    Byte:val
+}
+
+@extends TokenData;
+StrTokenData {
+    Str:val
+}
+
+// Token IDs:
+// <256 is a raw byte value
+// 300 - identifier
+// 301 - int
+// 302 - float
+// 303 - byte
+// 304 - string
+
+Tokens {
+    [W]:ids,
+    [W]:start_indexes,
+    [W]:end_indexes,
+    [:TokenData?]:data
+}
+
+TokenizationResult {
+    Tokens:tokens,
+    [TokenizationError]:errors
+}
+
+TokenizationError {
+    W:index,
+    Str:message
+}
+
+TokenDataResult {
+    :TokenData?:data,
+    TokenizationError?:error
+}
+
+ParsedStrEscape {
+    W:src_len,
+    Str:parsed,
+    TokenizationError?:error
+}
+
+Bool#[Byte:byte].is_whitespace {
+    return byte == ' ' || byte == '\n'
+        || byte == '\r' || byte == '\t'
+        || byte == '\v' || byte == '\f';
+}
+
+Bool#[Byte:byte].is_digit {
+    return '0' <= byte && byte <= '9';
+}
+
+Bool#[Byte:byte].is_identifier {
+    return ('a' <= byte && byte <= 'z')
+        || ('A' <= byte && byte <= 'Z')
+        || [byte].is_digit
+        || byte == '_'
+        || byte > 127;
+}
+
+ParsedStrEscape#parse_escape [Str:txt] at [W:index] {
+    W:src_len = 1;
+    Str:parsed = "";
+    switch txt[index]
+    ('"') {parsed = "\"";}
+    ('\'') {parsed = "'";}
+    ('\\') {parsed = "\\";}
+    ('/') {parsed = "/";}
+    ('0') {parsed = "\0";}
+    ('b') {parsed = "\b";}
+    ('f') {parsed = "\f";}
+    ('n') {parsed = "\n";}
+    ('r') {parsed = "\r";}
+    ('t') {parsed = "\t";}
+    ('x') {
+        src_len = 3;
+        if index + src_len > [txt].len {
+            return ParsedStrEscape [0, "", TokenizationError [
+                index, "Expected two hex characters after '\\x'"
+            ]];
+        };
+        Str:hex = [txt].slice[index+1][index+3];
+        W:val = [hex].parse_as_W32_in_base[16];
+        if (val > 255) {
+            return ParsedStrEscape [0, "", TokenizationError [
+                index, "Expected two hex characters after '\\x'"
+            ]];
+        };
+        parsed = Str [(Byte)val];
+    }
+    {
+        return ParsedStrEscape [0, "", TokenizationError [
+            index, "Invalid escape code '\\{}'" % txt[index]
+        ]];
+    };
+    return ParsedStrEscape [src_len, parsed, null];
+}
+
+TokenDataResult#parse_string_token [Str:txt] {
+    Str:parsed = Str [];
+    Bool:was_backslash = false;
+    L:i = 0;
+    while i < [txt].len {
+        Byte:byte = txt[i];
+        if was_backslash {
+            was_backslash = false;
+            ParsedStrEscape:escape = parse_escape [txt] at [i];
+            given (escape.error as TokenizationError:error) {
+                return TokenDataResult [null, error];
+            };
+            [parsed].extend[escape.parsed];
+            i += escape.src_len;
+        } else {
+            if (byte == '\\') {
+                was_backslash = true;
+            } else {
+                [parsed].append[byte];
+            };
+            i++;
+        };
+    };
+    return TokenDataResult [StrTokenData [parsed], null];
+}
+
+TokenDataResult#parse_byte_token [Str:txt] {
+    Byte:byte = '\0';
+    if [txt].len == 0 {
+        return TokenDataResult [null, TokenizationError [
+            0, "Byte constants cannot be empty"
+        ]];
+    } elif txt[0] == '\\' {
+        ParsedStrEscape:escape = parse_escape [txt] at [1];
+        given escape.error as TokenizationError:error {
+            return TokenDataResult [null, error];
+        };
+        if escape.src_len != [txt].len || [escape.parsed].len > 0 {
+            return TokenDataResult [null, TokenizationError [
+                0, "Byte constants must contain exactly one byte"
+            ]];
+        };
+        byte = escape.parsed[0];
+    } elif [txt].len > 1 {
+        return TokenDataResult [null, TokenizationError [
+            0, "Byte constants must contain exactly one byte"
+        ]];
+    } else {
+        byte = txt[0];
+    };
+    return TokenDataResult [ByteTokenData [byte], null];
+}
+
+TokenDataResult#parse_int_token [Str:txt] {
+    Z64:val = [txt].parse_as_Z64;
+    return TokenDataResult [IntTokenData [val], null];
+}
+
+TokenDataResult#parse_float_token [Str:txt] {
+    given (parse_float [txt] as Q:val) {
+        return TokenDataResult [FloatTokenData [val], null];
+    } else {
+        return TokenDataResult [null, TokenizationError [
+            0, "Invalid float"
+        ]];
+    };
+}
+
+TokenizationResult#tokenize [Str:input] {
+    Tokens:tokens = Tokens [[W] [], [W] [], [W] [], [:TokenData?] []];
+    [TokenizationError]:errors = [TokenizationError] [];
+
+    /*
+    parse state:
+    0 - standard
+    1 - string
+    2 - string, was backslash
+    3 - byte
+    4 - byte, was backslash
+    5 - line comment
+    6 - block comment
+    7 - int
+    8 - float
+    9 - identifier
+    */
+    W:parse_state = 0;
+
+    Str:so_far = [""].clone;
+    W:token_start = 0;
+
+    W:index = 0;
+    while index < [input].len {
+        Bool:is_end = index == [input].len-1;
+        Byte:byte = input[index];
+        switch parse_state
+        (0) {
+            if [byte].is_whitespace {
+
+            } elif byte == '"' {
+                parse_state = 1;
+                token_start = index;
+                so_far = Str [];
+            } elif byte == '\'' {
+                parse_state = 3;
+                token_start = index;
+                so_far = Str [];
+            } elif [byte].is_digit {
+                parse_state = 7;
+                token_start = index--;
+                so_far = Str [];
+            } elif [byte].is_identifier {
+                parse_state = 9;
+                token_start = index--;
+                so_far = Str [];
+            } else {
+                Bool:is_comment = false;
+                if byte == '/' && !is_end {
+                    Byte:next = input[index+1];
+                    if next == '/' {
+                        parse_state = 5;
+                        is_comment = true;
+                    } elif next == '*' {
+                        parse_state = 6;
+                        is_comment = true;
+                    };
+                };
+                if !is_comment {
+                    [tokens.ids].append[byte];
+                    [tokens.start_indexes].append[index];
+                    [tokens.end_indexes].append[index];
+                    [tokens.data].append[null];
+                };
+            };
+        }
+        (1) {
+            if byte == '"' {
+                [tokens.ids].append[304];
+                [tokens.start_indexes].append[token_start];
+                [tokens.end_indexes].append[index];
+                TokenDataResult:data_result = parse_string_token [so_far];
+                given data_result.error as TokenizationError:error {
+                    error.index += token_start+1; // +1 because of leading "
+                    [errors].append[error];
+                };
+                [tokens.data].append[data_result.data];
+                parse_state = 0;
+            } else {
+                if byte == '\\' {
+                    parse_state = 2;
+                };
+                [so_far].append[byte];
+            };
+        }
+        (2) {
+            [so_far].append[byte];
+            parse_state = 1;
+        }
+        (3) {
+            if byte == '\'' {
+                [tokens.ids].append[303];
+                [tokens.start_indexes].append[token_start];
+                [tokens.end_indexes].append[index];
+                TokenDataResult:data_result = parse_byte_token [so_far];
+                given data_result.error as TokenizationError:error {
+                    error.index += token_start+1; // +1 because of leading '
+                    [errors].append[error];
+                };
+                [tokens.data].append[data_result.data];
+                parse_state = 0;
+                continue;
+            } elif byte == '\\' {
+                parse_state = 4;
+            };
+            [so_far].append[byte];
+        }
+        (4) {
+            [so_far].append[byte];
+            parse_state = 3;
+        }
+        (5) {
+            if byte == '\n' {
+                parse_state = 0;
+            };
+        }
+        (6) {
+            if byte == '/' && input[index-1] == '*' {
+                parse_state = 0;
+            };
+        }
+        (7) {
+            Bool:is_num_end = is_end;
+            if [byte].is_digit {
+                [so_far].append[byte];
+            } elif byte == '.' {
+                index--;
+                parse_state = 8;
+            } else {
+                is_num_end = true;
+                parse_state = 0;
+                index--;
+            };
+            if is_num_end {
+                [tokens.ids].append[301];
+                [tokens.start_indexes].append[token_start];
+                [tokens.end_indexes].append[index+1];
+                TokenDataResult:data_result = parse_int_token [so_far];
+                given data_result.error as TokenizationError:error {
+                    error.index += token_start;
+                    [errors].append[error];
+                };
+                [tokens.data].append[data_result.data];
+            };
+        }
+        (8) {
+            Bool:is_num_end = is_end;
+            if [byte].is_digit {
+                [so_far].append[byte];
+            } else {
+                is_num_end = true;
+                parse_state = 0;
+                index--;
+            };
+            if is_num_end {
+                [tokens.ids].append[302];
+                [tokens.start_indexes].append[token_start];
+                [tokens.end_indexes].append[index+1];
+                TokenDataResult:data_result = parse_float_token [so_far];
+                given data_result.error as TokenizationError:error {
+                    error.index += token_start;
+                    [errors].append[error];
+                };
+                [tokens.data].append[data_result.data];
+            };
+        }
+        (9) {
+            Bool:is_identifier_end = is_end;
+            if [byte].is_identifier {
+                [so_far].append[byte];
+            } else {
+                is_identifier_end = true;
+                parse_state = 0;
+                index--;
+            };
+            if is_identifier_end {
+                [tokens.ids].append[300];
+                [tokens.start_indexes].append[token_start];
+                [tokens.end_indexes].append[index+1];
+                [tokens.data].append[IdentifierTokenData [so_far]];
+            };
+        }
+        {abort;};
+        index++;
+    };
+
+    if parse_state == 1 || parse_state == 2 {
+        [errors].append[TokenizationError [
+            [input].len, "Unterminated string literal"
+        ]];
+    };
+    if parse_state == 3 || parse_state == 4 {
+        [errors].append[TokenizationError [
+            [input].len, "Unterminated byte literal"
+        ]];
+    };
+
+    return TokenizationResult [tokens, errors];
+}
