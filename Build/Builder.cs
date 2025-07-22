@@ -12,7 +12,7 @@ public class Builder {
     bool shouldCache = false;
     string currentFile = "";
     string currentText = "";
-    Dictionary<string, string> packagePaths;
+    Dictionary<string, string> packagePaths = [];
     Dictionary<string, FileTree> files;
     static readonly List<string> EXTENSIONS = ["epslspec"];
     static readonly List<string> PREFIXES = ["", "."];
@@ -203,14 +203,23 @@ public class Builder {
     public ResultStatus LoadPackagesForCompilation(IEnumerable<string> packageNames) {
         return RunWrapped(() => {
             IEnumerable<Package> packages = ReadPackageJSON();
-            packagePaths = packageNames
-                .Select(packageName => packages
-                    .FirstOrDefault(package => package.Name == packageName)
-                    ?? throw new ProjectProblemException($"No package named '{packageName}' can be found")
-                ).ToDictionary(
-                    package => package.Name,
-                    package => Utils.JoinPaths(package.Path, package.Name)
-                );
+            Stack<string> packageQueue = new(packageNames);
+            while (packageQueue.Count != 0) {
+                string packageName = packageQueue.Pop();
+                Package package = packages
+                    .FirstOrDefault(package => package.Name == packageName);
+                if (package == null) {
+                    throw new ProjectProblemException(
+                        $"No package named '{packageName}' can be found"
+                    );
+                }
+                packagePaths[packageName] = Utils.JoinPaths(package.Path, packageName);
+                foreach (string dependency in package.Dependencies) {
+                    if (!packagePaths.ContainsKey(dependency)) {
+                        packageQueue.Push(dependency);
+                    }
+                }
+            }
         });
     }
 
@@ -1048,16 +1057,16 @@ public class Builder {
         return [
             new Package("consolestyles", Utils.JoinPaths(
                 Utils.ProjectAbsolutePath(), "EPSL-Console-Styles"
-            ), null),
+            ), null, []),
             new Package("json", Utils.JoinPaths(
                 Utils.ProjectAbsolutePath(), "EPSL-JSON"
-            ), null),
+            ), null, ["consolestyles"]),
             new Package("irgen", Utils.JoinPaths(
                 Utils.ProjectAbsolutePath(), "EPSL-IR-Gen"
-            ), null),
+            ), null, []),
             new Package("eewriter", Utils.JoinPaths(
                 Utils.ProjectAbsolutePath(), "EEWriter"
-            ), null),
+            ), null, ["irgen"]),
         ];
     }
 
@@ -1093,6 +1102,14 @@ public class Builder {
             );
         }
         return projJSON["file"].GetString();
+    }
+
+    IEnumerable<string> GetPackageDependencies(ShapedJSON projJSON) {
+        if (!projJSON.HasKey("packages")) {
+            return [];
+        }
+        return projJSON["packages"].IterList()
+            .Select(dependency => dependency.GetString());
     }
 
     public ResultStatus AddPackageToEPSLPROJ(string package, string project) {
@@ -1134,6 +1151,14 @@ public class Builder {
         } else {
             Console.WriteLine(package.Source);
         }
+        Console.Write("Dependencies: ");
+        if (package.Dependencies.Any()) {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(string.Join(", ", package.Dependencies));
+            Console.ResetColor();
+        } else {
+            Console.WriteLine("\x1b[3m(none)\x1b[0m");
+        }
         Console.WriteLine();
     }
 
@@ -1165,9 +1190,9 @@ public class Builder {
     public ResultStatus RegisterProjectAsPackage(string projectPath) {
         return RunWrapped(() => {
             ShapedJSON epslprojJSON = ReadEPSLPROJ(projectPath);
-            string projectName = GetPackageName(epslprojJSON);
             RegisterPackage(new Package(
-                projectName, Utils.GetDirectoryName(projectPath), null
+                GetPackageName(epslprojJSON), Utils.GetDirectoryName(projectPath),
+                source: null, GetPackageDependencies(epslprojJSON)
             ));
         });
     }
@@ -1249,8 +1274,9 @@ public class Builder {
 
             CmdUtils.RunScript("epslc.py", ["compile", installDest + Path.DirectorySeparatorChar]);
 
+            IEnumerable<string> dependencies = GetPackageDependencies(projJSON);
             RegisterPackage(new Package(
-                packageName, installDest, url
+                packageName, installDest, url, dependencies
             ));
         });
 
