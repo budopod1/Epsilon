@@ -200,7 +200,7 @@ public class Builder {
         }
     }
 
-    public ResultStatus RegisterPackages(IEnumerable<string> packageNames) {
+    public ResultStatus LoadPackagesForCompilation(IEnumerable<string> packageNames) {
         return RunWrapped(() => {
             IEnumerable<Package> packages = ReadPackageJSON();
             packagePaths = packageNames
@@ -1154,7 +1154,7 @@ public class Builder {
 
     void RegisterPackage(Package newPackage) {
         IEnumerable<Package> packages = ReadPackageJSON();
-            if (packages.Any(package => package.Name == newPackage.Name)) {
+        if (packages.Any(package => package.Name == newPackage.Name)) {
             throw new PackagingProblemException(
                 "Duplicate package names are not allowed", newPackage
             );
