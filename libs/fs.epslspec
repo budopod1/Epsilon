@@ -7,7 +7,7 @@
 
     {"id": "fs_file_append_mode", "callee": "fs_file_append_mode", "return_type_": "W32", "template": [{"type": "name", "name": "FILE_APEND_MODE"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "fs_file_binary_mode", "callee": "fs_file_binary_mode", "return_type_": "W32", "template": [{"type": "name", "name": "FILE_BINARY_MODE"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "fs_file_text_mode", "callee": "fs_file_text_mode", "return_type_": "W32", "template": [{"type": "name", "name": "FILE_TEXT_MODE"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
     {"id": "fs_close_file", "callee": "fs_close_file", "return_type_": null, "template": [{"type": "argument", "name": "file", "type_": "File"}, {"type": "text", "text": "."}, {"type": "name", "name": "close"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 

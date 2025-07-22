@@ -20,7 +20,7 @@ struct File {
 #define _FILE_READ_MODE 1
 #define _FILE_WRITE_MODE 2
 #define _FILE_APPEND_MODE 4
-#define _FILE_BINARY_MODE 8
+#define _FILE_TEXT_MODE 8
 
 // returns File?
 struct File *fs_open_file(struct Array *file_path, uint32_t mode) {
@@ -43,7 +43,7 @@ struct File *fs_open_file(struct Array *file_path, uint32_t mode) {
         return NULL;
     }
 
-    if (mode&_FILE_BINARY_MODE) {
+    if (!(mode&_FILE_TEXT_MODE)) {
         mode_str[i++] = 'b';
     }
 
@@ -78,8 +78,8 @@ extern inline uint32_t fs_file_append_mode() {
     return _FILE_APPEND_MODE;
 }
 
-extern inline uint32_t fs_file_binary_mode() {
-    return _FILE_BINARY_MODE;
+extern inline uint32_t fs_file_text_mode() {
+    return _FILE_TEXT_MODE;
 }
 
 void fs_close_file(struct File *file) {
@@ -99,10 +99,10 @@ static int64_t _file_binary_len(const struct File *file) {
 }
 
 int64_t fs_file_length(const struct File *file) {
-    if (file->mode&_FILE_BINARY_MODE) {
-        return _file_binary_len(file);
-    } else {
+    if (file->mode&_FILE_TEXT_MODE) {
         return -1;
+    } else {
+        return _file_binary_len(file);
     }
 }
 
@@ -126,25 +126,27 @@ struct Array *fs_read_all_file(const struct File *file) {
 
     uint64_t length;
 
-    if (file->mode&_FILE_BINARY_MODE) {
-        length = max_remaining;
-        size_t read = fread(content, max_remaining, 1, file->file);
-        if (read != 1) {
+    if (file->mode&_FILE_TEXT_MODE) {
+        length = 0;
+        char *buf_ptr = content;
+
+        int c;
+        while ((c = fgetc(file->file)) != EOF) {
+            if (length++ >= capacity) {
+                free(content);
+                return NULL;
+            }
+            *(buf_ptr++) = c;
+        }
+
+        if (!feof(file->file)) {
             free(content);
             return NULL;
         }
     } else {
-        length = 0;
-        char *buf_ptr = content;
-
-        int c = fgetc(file->file);
-        while (c != EOF) {
-            length++;
-            *(buf_ptr++) = c;
-            c = fgetc(file->file);
-        }
-
-        if (!feof(file->file)) {
+        length = max_remaining;
+        size_t read = fread(content, max_remaining, 1, file->file);
+        if (read != 1) {
             free(content);
             return NULL;
         }
