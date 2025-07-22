@@ -9,7 +9,7 @@ CHECK_REPO_FILES = False
 root = Path(sys.argv[0]).resolve().parent.parent
 
 if CHECK_SUBTREE_FILES:
-    list_changed_command = ["find"]
+    list_changed_command = ["find", "-type", "f"]
 elif CHECK_REPO_FILES:
     list_changed_command = ["git", "ls-tree", "-r", "HEAD", "--name-only"]
 else:

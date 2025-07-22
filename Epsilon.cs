@@ -174,7 +174,7 @@ public class Epsilon {
             bool linkLibraries = config["link-libraries"] && !outputType.MustntLinkLibraries();
             bool linkBuiltinModules = config["link-builtin-modules"] && !outputType.MustntLinkBuiltinModules();
 
-            TestResult(builder.RegisterPackages(config["packages"]));
+            TestResult(builder.LoadPackagesForCompilation(config["packages"]));
             TestResult(builder.LoadEPSLCACHE(inputPath, cacheMode, out EPSLCACHE cache));
 
             if (cacheMode > CacheMode.DONTLOAD && EPSLCACHE.MustDiscardCache(cache.LastOutputType, outputType)) {
