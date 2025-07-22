@@ -112,7 +112,7 @@ Z#main {
 }
 
 :JSON#read BinJSON_ {
-    File?:maybe_file = open_file["temp/code.binjson"][[FILE_READ_MODE] | [FILE_BINARY_MODE]];
+    File?:maybe_file = open_file["temp/code.binjson"][FILE_READ_MODE];
     if ([maybe_file].is_null) {
         abort "Failed to open code.binjson";
     };

@@ -8,5 +8,4 @@ TODO:
 * fix scoping rules: don't allow access to variables before their first definition
 * add support for a @private annotation
 * add support for `\u` escape codes in EPSL-JSON
-* make binary mode the default file opening mode
 * if you require a package that itself requires another package, make the top level package automatically require the grandchild
