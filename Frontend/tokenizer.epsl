@@ -91,11 +91,14 @@ ParsedStrEscape#parse_escape [Str:txt] at [W:index] {
     ('\\') {parsed = "\\";}
     ('/') {parsed = "/";}
     ('0') {parsed = "\0";}
+    ('a') {parsed = "\a";}
     ('b') {parsed = "\b";}
+    ('e') {parsed = "\e";}
     ('f') {parsed = "\f";}
     ('n') {parsed = "\n";}
     ('r') {parsed = "\r";}
     ('t') {parsed = "\t";}
+    ('v') {parsed = "\v";}
     ('x') {
         src_len = 3;
         if index + src_len > [txt].len {
@@ -157,7 +160,7 @@ TokenDataResult#parse_byte_token [Str:txt] {
         given escape.error as TokenizationError:error {
             return TokenDataResult [null, error];
         };
-        if escape.src_len != [txt].len || [escape.parsed].len > 0 {
+        if escape.src_len+1 != [txt].len || [escape.parsed].len > 1 {
             return TokenDataResult [null, TokenizationError [
                 0, "Byte constants must contain exactly one byte"
             ]];
@@ -289,11 +292,12 @@ TokenizationResult#tokenize [Str:input] {
                 };
                 [tokens.data].append[data_result.data];
                 parse_state = 0;
-                continue;
-            } elif byte == '\\' {
-                parse_state = 4;
+            } else {
+                if byte == '\\' {
+                    parse_state = 4;
+                };
+                [so_far].append[byte];
             };
-            [so_far].append[byte];
         }
         (4) {
             [so_far].append[byte];

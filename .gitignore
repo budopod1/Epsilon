@@ -1,6 +1,7 @@
 # Executable output
 /Compilers/signatures
 /LLVMIRBuilder/result
+/Frontend/epslc
 *.so
 /packages
 

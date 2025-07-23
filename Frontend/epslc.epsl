@@ -1,7 +1,42 @@
+/*
+find -type f -name "*.epsl" | xargs cat > Frontend/all.cepsl
+*/
+
 #import tokenizer;
+#import time;
+#import fs;
+
+#do parse perf test on [Str:content] {
+    L:line_count = [content].count['\n'];
+    L:token_count = 0;
+
+    W:repeat_count = 100;
+
+    Q:start = read perf counter;
+    for (L:i to repeat_count) {
+        TokenizationResult:result = tokenize [content];
+        token_count = [result.tokens.ids].len;
+    };
+    Q:end = read perf counter;
+
+    Q:duration = (end - start) / repeat_count;
+
+    println["Average duration: {}" % duration];
+    println["Token count: {}" % token_count];
+    println["Line count: {}" % line_count];
+    println["Lines per second: {}" % (line_count / duration)];
+}
 
 Z#main {
-    TokenizationResult:result = tokenize ["Z#foo {println[\"Hello, world!\"]; return 0;}"];
-    println[result];
+    given open_file["all.cepsl"][FILE_READ_MODE] as File:file {
+        given [file].read_all as Str:content {
+            do parse perf test on [content];
+        } else {
+            abort "Failed to read file";
+        };
+    } else {
+        abort "Failed to open file";
+    };
+
     return 0;
 }
