@@ -9,4 +9,7 @@ def epslc(args):
 
 
 if __name__ == "__main__":
-    sys.exit(epslc(sys.argv[1:]))
+    try:
+        sys.exit(epslc(sys.argv[1:]))
+    except KeyboardInterrupt:
+        pass
