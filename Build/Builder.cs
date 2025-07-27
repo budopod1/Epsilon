@@ -410,6 +410,7 @@ public class Builder {
         string generatedEPSLSPEC = null;
         if (source != null) {
             if (settings.CacheMode <= CacheMode.DONTLOAD) return null;
+            if (shouldGetIR(settings) && obj["ir"].IsNull()) return null;
             if (!Utils.FileExists(source)) {
                 Log.Info("Rejecting EPSLSPEC file, source file could not be found");
                 throw new InvalidSPECResourceException(
