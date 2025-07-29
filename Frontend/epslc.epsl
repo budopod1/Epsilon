@@ -10,7 +10,7 @@ find -type f -name "*.epsl" | xargs cat > Frontend/all.cepsl
     L:line_count = [content].count['\n'];
     L:token_count = 0;
 
-    W:repeat_count = 100;
+    W:repeat_count = 200;
 
     Q:start = read perf counter;
     for (L:i to repeat_count) {

@@ -28,17 +28,27 @@ StrTokenData {
     Str:val
 }
 
+@extends TokenData;
+GroupTokenData {
+    Tokens:sub
+}
+
 // Token IDs:
+
 // <256 is a raw byte value
+
 // 300 - identifier
 // 301 - int
 // 302 - float
 // 303 - byte
 // 304 - string
 
+// 400 - parenthesis group
+// 401 - square bracket group
+// 402 - curly bracket group
+
 Tokens {
     [W]:ids,
-    [W]:start_indexes,
     [W]:end_indexes,
     [:TokenData?]:data
 }
@@ -192,7 +202,7 @@ TokenDataResult#parse_float_token [Str:txt] {
 }
 
 TokenizationResult#tokenize [Str:input] {
-    Tokens:tokens = Tokens [[W] [], [W] [], [W] [], [:TokenData?] []];
+    Tokens:tokens = Tokens [[W] [], [W] [], [:TokenData?] []];
     [TokenizationError]:errors = [TokenizationError] [];
 
     /*
@@ -251,7 +261,6 @@ TokenizationResult#tokenize [Str:input] {
                 };
                 if !is_comment {
                     [tokens.ids].append[byte];
-                    [tokens.start_indexes].append[index];
                     [tokens.end_indexes].append[index];
                     [tokens.data].append[null];
                 };
@@ -260,7 +269,6 @@ TokenizationResult#tokenize [Str:input] {
         (1) {
             if byte == '"' {
                 [tokens.ids].append[304];
-                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index];
                 TokenDataResult:data_result = parse_string_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -283,7 +291,6 @@ TokenizationResult#tokenize [Str:input] {
         (3) {
             if byte == '\'' {
                 [tokens.ids].append[303];
-                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index];
                 TokenDataResult:data_result = parse_byte_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -327,7 +334,6 @@ TokenizationResult#tokenize [Str:input] {
             };
             if is_num_end {
                 [tokens.ids].append[301];
-                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index+1];
                 TokenDataResult:data_result = parse_int_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -348,7 +354,6 @@ TokenizationResult#tokenize [Str:input] {
             };
             if is_num_end {
                 [tokens.ids].append[302];
-                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index+1];
                 TokenDataResult:data_result = parse_float_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -369,7 +374,6 @@ TokenizationResult#tokenize [Str:input] {
             };
             if is_identifier_end {
                 [tokens.ids].append[300];
-                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index+1];
                 [tokens.data].append[IdentifierTokenData [so_far]];
             };
