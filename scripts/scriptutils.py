@@ -27,6 +27,8 @@ except ImportError:
 
 LOCAL_LLVM_INSTALL_DIR = "LLVM"
 
+EPSL_SOURCE_DIRS = ["LLVMIRBuilder", "EPSL-JSON", "EEWriter", "EPSL-Console-Styles", "EPSL-IR-Gen"]
+
 
 def _show_cmd_args(*args):
     if "-x" in sys.argv:
@@ -171,9 +173,14 @@ def download_file(remote_url, local_path):
         abort()
 
 
+def dev_null() -> str:
+    return "NUL" if is_windows() else "/dev/null"
+
+
 __all__ = [
     "Path", "sys", "os", "chdir", "run_cmd", "has_cmd", "get_user_shell_name",
     "run_powershell_script", "add_to_windows_path", "is_windows", "is_macos",
-    "get_project_root", "cd_to_proj_root", "is_root", "abort",
-    "cmd_options_prompt", "download_file", "shutil", "LOCAL_LLVM_INSTALL_DIR"
+    "get_project_root", "cd_to_proj_root", "is_root", "abort", "dev_null",
+    "cmd_options_prompt", "download_file", "shutil", "LOCAL_LLVM_INSTALL_DIR",
+    "EPSL_SOURCE_DIRS"
 ]

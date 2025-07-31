@@ -289,14 +289,6 @@ public class Builder {
                 cache.LastOutputType = settings.Output_Type;
                 cache.ToFile();
                 Log.Info("Saved updated EPSLCACHE");
-            } else {
-                Log.Status("Deleting unwanted files in user dir");
-                foreach (FileTree file in files.Values) {
-                    if (file.IRIsInUserDir)
-                        Utils.TryDelete(file.IR);
-                    if (file.ObjIsInUserDir)
-                        Utils.TryDelete(file.Obj);
-                }
             }
 
             BuildInfo buildInfo = new(
@@ -330,6 +322,9 @@ public class Builder {
             default:
                 throw new InvalidOperationException();
             }
+
+            Log.Status("Deleting unwanted files in user dir");
+            DeleteUnwantedIntermediaries();
         });
     }
 
@@ -750,20 +745,6 @@ public class Builder {
         }
     }
 
-    IEnumerable<string> MakeIntermediateCopiesInTemp(BuildSettings settings, string name, IEnumerable<IntermediateFile> intermediates) {
-        int i = 0;
-        foreach (IntermediateFile intermediate in intermediates) {
-            if (!doesSaveCache(settings) && intermediate.IsInUserDir) {
-                string extension = Utils.GetExtension(intermediate.Path);
-                string newPath = Utils.JoinPaths(Utils.TempDir(), $"{name}{i++}.{extension}");
-                File.Copy(intermediate.Path, newPath, overwrite: true);
-                yield return newPath;
-            } else {
-                yield return intermediate.Path;
-            }
-        }
-    }
-
     string CombineAndOptimizeLLVM(IEnumerable<IntermediateFile> files) {
         string irLinkedPath = Utils.JoinPaths(Utils.TempDir(), "linked.bc");
         CmdUtils.LinkLLVM(files.Select(intermediate => intermediate.Path), irLinkedPath);
@@ -838,17 +819,28 @@ public class Builder {
             sources.Add(CombineAndOptimizeLLVM(
                 grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)));
         } else if (settings.OptLevel <= OptimizationLevel.MIN) {
-            sources.AddRange(MakeIntermediateCopiesInTemp(
-                settings, "ir-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)));
+            sources.AddRange(grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)
+                .Select(intermediate => intermediate.Path));
         } else {
             sources.AddRange(OptimizeLLVMIndividually(
                 grouped.GetOrEmpty(IntermediateFile.IntermediateType.IR)));
         }
 
-        sources.AddRange(MakeIntermediateCopiesInTemp(
-            settings, "obj-", grouped.GetOrEmpty(IntermediateFile.IntermediateType.Obj)));
+        sources.AddRange(grouped.GetOrEmpty(IntermediateFile.IntermediateType.Obj)
+            .Select(intermediate => intermediate.Path));
 
         return sources;
+    }
+
+    void DeleteUnwantedIntermediaries() {
+        foreach (FileTree file in files.Values) {
+            if (file.GeneratedEPSLSPEC == null) {
+                if (file.IRIsInUserDir)
+                    Utils.TryDelete(file.IR);
+                if (file.ObjIsInUserDir)
+                    Utils.TryDelete(file.Obj);
+            }
+        }
     }
 
     void ShowCompilationError(SyntaxErrorException e, string text, string file) {
