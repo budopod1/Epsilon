@@ -27,7 +27,7 @@ except ImportError:
 
 LOCAL_LLVM_INSTALL_DIR = "LLVM"
 
-EPSL_SOURCE_DIRS = ["LLVMIRBuilder", "EPSL-JSON", "EEWriter", "EPSL-Console-Styles", "EPSL-IR-Gen"]
+EPSL_SOURCE_DIRS = ["EPSL-Console-Styles", "EPSL-JSON", "EPSL-IR-Gen", "EEWriter", "LLVMIRBuilder"]
 
 
 def _show_cmd_args(*args):
