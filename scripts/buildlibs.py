@@ -26,7 +26,7 @@ def build_libs():
         for file in ("globalfreebuiltins.bc", "globalfreebuiltins.o", "PICglobals.bc", "notPICglobals.o"):
             os.unlink(file)
 
-        build_c_file("fs.c")
+        build_c_file("fileio.c")
         build_c_file("math_.c")
         build_c_file("conversion.c")
         build_c_file("time_.c")

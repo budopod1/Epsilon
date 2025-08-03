@@ -2,7 +2,7 @@
 #import eewriter;
 #import instructions;
 #import conversion;
-#import fs;
+#import fileio;
 
 ScopeVar {
     Str:name,

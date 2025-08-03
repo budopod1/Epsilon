@@ -1,4 +1,4 @@
-#import fs;
+#import fileio;
 
 Z#main {
     File?:maybe_file = open_file["tests/test.txt"][FILE_READ_MODE];
