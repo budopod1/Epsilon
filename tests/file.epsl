@@ -10,5 +10,6 @@ Z#main {
     if ([text].is_null) {
         abort "Cannot read file";
     };
-    return [[text].unwrap].len;
+    Str:txt = [text].unwrap;
+    return [txt].len - [txt].count['\r'];
 }
