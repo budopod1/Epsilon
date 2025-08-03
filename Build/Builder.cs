@@ -357,7 +357,8 @@ public class Builder {
     }
 
     void CleanupSPEC(string path, ShapedJSON obj) {
-        string source = obj["source"].GetString();
+        string source = obj["source"].GetStringOrNull();
+        if (source == null) return;
         foreach (string field in new List<string> {"ir", "obj"}) {
             string fieldPath = obj[field].GetStringOrNull();
             if (fieldPath == null) continue;

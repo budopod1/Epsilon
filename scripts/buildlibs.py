@@ -30,6 +30,7 @@ def build_libs():
         build_c_file("math_.c")
         build_c_file("conversion.c")
         build_c_file("time_.c")
+        build_c_file("dllib.c")
 
     print("Libraries built")
 

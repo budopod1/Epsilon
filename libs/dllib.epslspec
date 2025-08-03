@@ -1,0 +1,44 @@
+{"functions": [
+    {"id": "dllib_load_dl", "callee": "dllib_load_dl", "return_type_": "DynamicLibrary?", "template": [
+        {"type": "name", "name": "load_dynamic_library"}, {"type": "argument", "name": "name", "type_": "Str"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "dllib_get_function", "callee": "dllib_get_function", "return_type_": "LibraryFunction?", "template": [
+        {"type": "argument", "name": "library", "type_": "DynamicLibrary"}, {"type": "text", "text": "."}, {"type": "name", "name": "get_function"}, {"type": "argument", "name": "name", "type_": "Str"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "dllib_call_function", "callee": "dllib_call_function", "return_type_": "Struct", "template": [
+        {"type": "argument", "name": "function", "type_": "LibraryFunction"}, {"type": "text", "text": "."}, {"type": "name", "name": "call_with"}, {"type": "argument", "name": "parameter", "type_": "Struct"}
+    ], "takes_ownership": false, "result_in_params": true, "source": "Library"},
+
+    {"id": "dllib_get_global", "callee": "dllib_get_global", "return_type_": "LibraryGlobal?", "template": [
+        {"type": "argument", "name": "library", "type_": "DynamicLibrary"}, {"type": "text", "text": "."}, {"type": "name", "name": "get_global"}, {"type": "argument", "name": "name", "type_": "Str"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "dllib_get_global_value", "callee": "dllib_get_global_value", "return_type_": "Struct", "template": [
+        {"type": "argument", "name": "global", "type_": "LibraryGlobal"}, {"type": "text", "text": "."}, {"type": "name", "name": "get"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "dllib_set_global_value", "callee": "dllib_set_global_value", "return_type_": null, "template": [
+        {"type": "argument", "name": "global", "type_": "LibraryGlobal"}, {"type": "text", "text": "."}, {"type": "name", "name": "set_to"}, {"type": "argument", "name": "value", "type_": "Struct"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "dllib_close_dl", "callee": "dllib_close_dl", "return_type_": null, "template": [
+        {"type": "argument", "name": "library", "type_": "DynamicLibrary"}, {"type": "text", "text": "."}, {"type": "name", "name": "close"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"}
+], "types_": [
+    {"given_name": "Byte", "name": "Byte", "bits": null, "generics": []},
+    {"given_name": "Str", "name": "Array", "bits": null, "generics": ["Byte"]},
+    {"given_name": "DynamicLibrary", "name": "DynamicLibrary", "bits": null, "generics": []},
+    {"given_name": "DynamicLibrary?", "name": "Optional", "bits": null, "generics": ["DynamicLibrary"]},
+    {"given_name": "LibraryFunction", "name": "LibraryFunction", "bits": null, "generics": []},
+    {"given_name": "LibraryFunction?", "name": "Optional", "bits": null, "generics": ["LibraryFunction"]},
+    {"given_name": "LibraryGlobal", "name": "LibraryGlobal", "bits": null, "generics": []},
+    {"given_name": "LibraryGlobal?", "name": "Optional", "bits": null, "generics": ["LibraryGlobal"]},
+    {"given_name": "Internal", "name": "Internal", "bits": null, "generics": []},
+    {"given_name": "Struct", "name": "Struct", "bits": null, "generics": []}
+], "structs": [
+    {"name": "DynamicLibrary", "fields": [{"name": "handle", "type_": "Internal"}], "symbol": "dllib_DynamicLibrary", "destructor": null, "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null},
+    {"name": "LibraryFunction", "fields": [{"name": "lib", "type_": "DynamicLibrary"}, {"name": "addr", "type_": "Internal"}], "symbol": "dllib_LibraryFunction", "destructor": null, "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null},
+    {"name": "LibraryGlobal", "fields": [{"name": "lib", "type_": "DynamicLibrary"}, {"name": "addr", "type_": "Internal"}], "symbol": "dllib_LibraryGlobal", "destructor": null, "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null}
+], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "object_gen_configs": [], "imports": [], "ir": "dllib.bc", "obj": "dllib.o", "source": null, "source_type": "Library", "id_path": "libs/dllib"}
