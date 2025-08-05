@@ -510,7 +510,7 @@ public static class BuiltinsList {
             ], "builtin35", (List<Type_> types_) => {
                 if (!types_[1].IsConvertibleTo(types_[0].GetGeneric(0)) && !types_[0].Equals(types_[1]))
                     throw new FunctionCallTypes_Exception($"Cannot check index of element or array of type {types_[1]} in array of type {types_[0]}", 1);
-                return new Type_("Z", 64);
+                return new Type_("W", 64).OptionalOf();
             }, FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(

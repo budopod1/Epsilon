@@ -293,12 +293,12 @@ ScopeVar#get var [W:id] {
 
 #pop special ref [Val:val] {
     [Val]:refs = get func state.special_refs;
-    Z64:ref_idx = [refs].index_of[val];
-    if (ref_idx == -1) {
+    given ([refs].index_of[val] as L:ref_idx) {
+        [refs].pop[ref_idx];
+        [val].decr_ref;
+    } else {
         abort "{} is not listed as a special ref, thus it cannot be popped from the list of special refs";
     };
-    [refs].pop[(L)ref_idx];
-    [val].decr_ref;
 }
 
 #cleanup var list [[ScopeVar]:var_list] {
