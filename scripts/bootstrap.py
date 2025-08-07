@@ -4,9 +4,13 @@ from mapLLVMcmd import run_LLVM_cmd
 
 
 def bootstrap():
+    c_files = []
+    for dir_name in EPSL_SOURCE_DIRS:
+        c_files.extend(Path(dir_name).glob("*.c"))
+
     run_LLVM_cmd("clang", "--rtlib=compiler-rt", "-lm", "-Wno-override-module",
         "LLVMIRBuilder/bootstrap.bc", "libs/builtins.bc", "libs/fs.bc",
-        "libs/conversion.bc", "-o", "LLVMIRBuilder/result")
+        "libs/conversion.bc", *c_files, "-o", "LLVMIRBuilder/result")
 
     print("Bootstrapped backend")
 
