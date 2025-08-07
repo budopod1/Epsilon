@@ -60,7 +60,10 @@ static wchar_t *windows_str_from_epsl_str(struct Array *epsl_str) {
         wstr, // dest buffer
         wstr_size // dest buffer size
     );
-    if (status == 0) return NULL;
+    if (status == 0) {
+        free(wstr);
+        return NULL;
+    }
     return wstr;
 }
 #endif
