@@ -1,5 +1,5 @@
 #ifdef _WIN32
-#include <syncapi.h>
+#include <windows.h>
 #include <sysinfoapi.h>
 #include <profileapi.h>
 #else
@@ -36,7 +36,7 @@ double time_get_unix_timestamp() {
 #ifdef _WIN32
     FILETIME filetime;
     GetSystemTimePreciseAsFileTime(&filetime);
-    uint64_t ticks = filetime.dwLowDateTime + (filetime.dwHighDateTime << 32);
+    uint64_t ticks = filetime.dwLowDateTime + ((uint64_t)filetime.dwHighDateTime << 32);
     // constant is sourced from:
     // https://github.com/python/cpython/blob/4b540313238de9d53bd9d9866eb481e954ad508f/Python/pytime.c#L916
     uint64_t ticks_since_epoch = ticks - 116444736000000000;

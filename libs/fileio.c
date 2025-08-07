@@ -23,7 +23,7 @@ struct File {
 #define _FILE_TEXT_MODE 8
 
 // returns File?
-struct File *fs_open_file(struct Array *file_path, uint32_t mode) {
+struct File *fileio_open_file(struct Array *file_path, uint32_t mode) {
     char mode_str[4];
     uint32_t i = 0;
 
@@ -66,23 +66,23 @@ struct File *fs_open_file(struct Array *file_path, uint32_t mode) {
     return file;
 }
 
-extern inline uint32_t fs_file_read_mode() {
+extern inline uint32_t fileio_file_read_mode() {
     return _FILE_READ_MODE;
 }
 
-extern inline uint32_t fs_file_write_mode() {
+extern inline uint32_t fileio_file_write_mode() {
     return _FILE_WRITE_MODE;
 }
 
-extern inline uint32_t fs_file_append_mode() {
+extern inline uint32_t fileio_file_append_mode() {
     return _FILE_APPEND_MODE;
 }
 
-extern inline uint32_t fs_file_text_mode() {
+extern inline uint32_t fileio_file_text_mode() {
     return _FILE_TEXT_MODE;
 }
 
-void fs_close_file(struct File *file) {
+void fileio_close_file(struct File *file) {
     if (!file->open) return;
     fclose(file->file);
     file->open = false;
@@ -98,7 +98,7 @@ static int64_t _file_binary_len(const struct File *file) {
     return length;
 }
 
-int64_t fs_file_length(const struct File *file) {
+int64_t fileio_file_length(const struct File *file) {
     if (file->mode&_FILE_TEXT_MODE) {
         return -1;
     } else {
@@ -106,17 +106,17 @@ int64_t fs_file_length(const struct File *file) {
     }
 }
 
-int64_t fs_file_pos(const struct File *file) {
+int64_t fileio_file_pos(const struct File *file) {
     if (!file->open) return -1;
     return (uint64_t)ftell(file->file);
 }
 
 // returns: Str?
-struct Array *fs_read_all_file(const struct File *file) {
+struct Array *fileio_read_all_file(const struct File *file) {
     uint64_t max_remaining = _file_binary_len(file);
     if (max_remaining == -1) return NULL;
 
-    uint64_t cur_pos = fs_file_pos(file);
+    uint64_t cur_pos = fileio_file_pos(file);
     if (cur_pos == -1) return NULL;
     max_remaining -= cur_pos;
 
@@ -161,7 +161,7 @@ struct Array *fs_read_all_file(const struct File *file) {
 }
 
 // returns: Str?
-struct Array *fs_read_some_file(const struct File *file, uint64_t amount) {
+struct Array *fileio_read_some_file(const struct File *file, uint64_t amount) {
     if (!file->open) return NULL;
     uint64_t capacity = amount;
     if (capacity == 0) capacity = 1;
@@ -180,17 +180,17 @@ struct Array *fs_read_some_file(const struct File *file, uint64_t amount) {
     return result;
 }
 
-bool fs_set_file_pos(const struct File *file, uint64_t pos) {
+bool fileio_set_file_pos(const struct File *file, uint64_t pos) {
     if (!file->open) return false;
     return fseek(file->file, (long)pos, SEEK_SET) == 0;
 }
 
-bool fs_jump_file_pos(const struct File *file, uint64_t amount) {
+bool fileio_jump_file_pos(const struct File *file, uint64_t amount) {
     if (!file->open) return false;
     return fseek(file->file, (long)amount, SEEK_CUR) == 0;
 }
 
-static int64_t _fs_read_line(char **line, size_t *cap, FILE *file) {
+static int64_t _fileio_read_line(char **line, size_t *cap, FILE *file) {
     if (*line == NULL) {
         *cap = 0;
     }
@@ -211,12 +211,12 @@ static int64_t _fs_read_line(char **line, size_t *cap, FILE *file) {
 static bool read_line_EOF = false;
 
 // returns: Str?
-struct Array *fs_read_file_line(const struct File *file) {
+struct Array *fileio_read_file_line(const struct File *file) {
     read_line_EOF = false;
     if (!file->open) return NULL;
     char *content = NULL;
     size_t capacity = 0;
-    int64_t len = (int64_t)_fs_read_line(&content, &capacity, file->file);
+    int64_t len = (int64_t)_fileio_read_line(&content, &capacity, file->file);
     if (len == -1) {
         free(content);
         read_line_EOF = true;
@@ -231,15 +231,15 @@ struct Array *fs_read_file_line(const struct File *file) {
     return result;
 }
 
-bool fs_read_line_reached_EOF() {
+bool fileio_read_line_reached_EOF() {
     return read_line_EOF;
 }
 
 // returns [Str]?
-struct Array *fs_read_file_lines(const struct File *file) {
+struct Array *fileio_read_file_lines(const struct File *file) {
     struct Array *result = epsl_blank_array(sizeof(struct Array));
     while (1) {
-        struct Array *line = fs_read_file_line(file);
+        struct Array *line = fileio_read_file_line(file);
         if (read_line_EOF) {
             return result;
         }
@@ -260,15 +260,15 @@ struct Array *fs_read_file_lines(const struct File *file) {
     }
 }
 
-bool fs_write_to_file(const struct File *file, const struct Array *text) {
+bool fileio_write_to_file(const struct File *file, const struct Array *text) {
     if (!file->open) return false;
     uint64_t len = text->length;
     return fwrite(text->content, len, 1, file->file) == 1;
 }
 
-void fs_free_file(struct File *file) {
+void fileio_free_file(struct File *file) {
     // We don't need a check for if the file is already closed, becauuse
     // close_file contains one itself
-    fs_close_file(file);
+    fileio_close_file(file);
     free(file);
 }
