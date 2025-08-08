@@ -3,28 +3,52 @@ find -type f -name "*.epsl" | xargs cat > Frontend/all.cepsl
 */
 
 #import tokenizer;
+#import grouper;
 #import time;
-#import fs;
+#import fileio;
 
 #do parse perf test on [Str:content] {
     L:line_count = [content].count['\n'];
     L:token_count = 0;
 
+    TokenizationResult?:result1 = null;
+    TokenizationResult?:result2 = null;
+
     W:repeat_count = 200;
 
     Q:start = read perf counter;
+
+    println["Timing tokenization..."];
     for (L:i to repeat_count) {
-        TokenizationResult:result = tokenize [content];
-        token_count = [result.tokens.ids].len;
+        TokenizationResult:initially_tokenized = tokenize [content];
+        result1 = initially_tokenized;
+        token_count = [initially_tokenized.tokens.ids].len;
     };
-    Q:end = read perf counter;
+    Q:tokenized = read perf counter;
 
-    Q:duration = (end - start) / repeat_count;
+    println["Timing grouping..."];
+    given (result1 as TokenizationResult:initially_tokenized) {
+        for (L:i to repeat_count) {
+            result2 = group tokens [initially_tokenized.tokens];
+        };
+    };
+    Q:grouped = read perf counter;
 
-    println["Average duration: {}" % duration];
+    Q:tokenization_duration = (tokenized - start) / repeat_count;
+    Q:group_duration = (grouped - tokenized) / repeat_count;
+    Q:total_duration = (grouped - start) / repeat_count;
+
     println["Token count: {}" % token_count];
     println["Line count: {}" % line_count];
-    println["Lines per second: {}" % (line_count / duration)];
+
+    println["Average tokenization duration: {}" % tokenization_duration];
+    println["Lines tokenized per second: {}" % (line_count / tokenization_duration)];
+
+    println["Average group duration: {}" % group_duration];
+    println["Lines grouped per second: {}" % (line_count / group_duration)];
+
+    println["Average total duration: {}" % total_duration];
+    println["Total lines per second: {}" % (line_count / total_duration)];
 }
 
 Z#main {

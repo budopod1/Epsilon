@@ -48,6 +48,7 @@ GroupTokenData {
 // 402 - curly bracket group
 
 Tokens {
+    W:start_index,
     [W]:ids,
     [W]:end_indexes,
     [:TokenData?]:data
@@ -202,7 +203,7 @@ TokenDataResult#parse_float_token [Str:txt] {
 }
 
 TokenizationResult#tokenize [Str:input] {
-    Tokens:tokens = Tokens [[W] [], [W] [], [:TokenData?] []];
+    Tokens:tokens = Tokens [0, [W] [], [W] [], [:TokenData?] []];
     [TokenizationError]:errors = [TokenizationError] [];
 
     /*
