@@ -492,17 +492,27 @@ end fn;
     return func ret;
 }
 
-Val#index of elem [Val:outer_elem] in [Val:outer_arr] {
+Val#index of elem [Val:outer_elem] in [Val:outer_arr] last: [Bool:last] {
     Type_:elem_type_ = outer_arr.type_.generics[0];
     outer_elem = cast [outer_elem] to [elem_type_];
 
+    Str:name = "first_index_of_elem";
+    if (last) {
+        name = "last_index_of_elem";
+    };
+
     add func attrs [[Str] ["nofree", "willreturn", "memory(read, inaccessiblemem: none)"]];
-if (specialized fn [Optional_ [L_]] ["index_of_elem"] [[Val] [outer_arr, outer_elem]]) {
+if (specialized fn [Optional_ [L_]] [name] [[Val] [outer_arr, outer_elem]]) {
     Val:arr = func arg [0];
     Val:target = func arg [1];
 
     Val:arr_len = load [[arr].length];
-    Val:i = var [c L_ [0]];
+
+    Val:initial_i = c L_ [0];
+    if (last) {
+        initial_i = [arr_len] - [c L_ [1]] bound: [false];
+    };
+    Val:i = var [initial_i];
 
 Label:check_label = new label:;
     Val:cur_i = load [i];
@@ -511,7 +521,11 @@ Label:check_label = new label:;
         if_ [[elem] eq [target]];
             ret [cast [cur_i] to [Optional_ [L_]]];
         end block;
-        [i] = [[cur_i] + [c L_ [1]] bound: [true]];
+        if (last) {
+            [i] = [[cur_i] - [c L_ [1]] bound: [false]];
+        } else {
+            [i] = [[cur_i] + [c L_ [1]] bound: [true]];
+        };
     end block;
 
     ret [c null_ [Optional_ [L_]]];
@@ -521,9 +535,14 @@ end fn;
     return func ret;
 }
 
-Val#index of subarray [Val:outer_subarray] in [Val:outer_arr] {
+Val#index of subarray [Val:outer_subarray] in [Val:outer_arr] last: [Bool:last] {
+    Str:name = "first_index_of_subarray";
+    if (last) {
+        name = "last_index_of_subarray";
+    };
+
     add func attrs [[Str] ["nofree", "willreturn", "memory(read, inaccessiblemem: none)"]];
-if (specialized fn [Optional_ [L_]] ["index_of_subarray"] [[Val] [outer_arr, outer_subarray]]) {
+if (specialized fn [Optional_ [L_]] [name] [[Val] [outer_arr, outer_subarray]]) {
     Val:arr = func arg [0];
     Val:subarray = func arg [1];
 
@@ -536,8 +555,13 @@ if (specialized fn [Optional_ [L_]] ["index_of_subarray"] [[Val] [outer_arr, out
         ret [c null_ [Optional_ [L_]]];
     end block;
 
-    Val:i = var [c L_ [0]];
     Val:i_to = [arr_len] - [subarray_len] bound: [true];
+
+    Val:initial_i = c L_ [0];
+    if (last) {
+        initial_i = [i_to] - [c L_ [1]] bound: [false];
+    };
+    Val:i = var [initial_i];
 
 Label:check_label = new label:;
     Val:cur_i = load [i];
@@ -546,7 +570,11 @@ Label:check_label = new label:;
         if_ [buffer eq [arr_buffer] to [subarray_content] of len [subarray_len]];
             ret [cast [cur_i] to [Optional_ [L_]]];
         end block;
-        [i] = [[cur_i] + [c L_ [1]] bound: [true]];
+        if (last) {
+            [i] = [[cur_i] - [c L_ [1]] bound: [false]];
+        } else {
+            [i] = [[cur_i] + [c L_ [1]] bound: [true]];
+        };
     end block;
 
     ret [c null_ [Optional_ [L_]]];

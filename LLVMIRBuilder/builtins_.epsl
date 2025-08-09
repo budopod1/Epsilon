@@ -260,11 +260,11 @@ BuiltinResult#builtin join with [[Val]:args] {
     return make builtin result [cast [func ret] to [result_type_]];
 }
 
-BuiltinResult#builtin index of with [[Val]:args] {
+BuiltinResult#builtin index of with [[Val]:args] last: [Bool:last] {
     if ([args[0].type_] == [args[1].type_]) {
-        return make builtin result [index of subarray [args[1]] in [args[0]]];
+        return make builtin result [index of subarray [args[1]] in [args[0]] last: [last]];
     } else {
-        return make builtin result [index of elem [args[1]] in [args[0]]];
+        return make builtin result [index of elem [args[1]] in [args[0]] last: [last]];
     };
 }
 
@@ -555,7 +555,7 @@ BuiltinResult#dispatch builtin [Str:func_id] with args [[Val]:args] to [Type_?:r
     } elif ([func_id] equals ["builtin34"]) {
         return builtin join with [args];
     } elif ([func_id] equals ["builtin35"]) {
-        return builtin index of with [args];
+        return builtin index of with [args] last: [false];
     } elif ([func_id] equals ["builtin36"]) {
         return builtin parse int with [args];
     } elif ([func_id] equals ["builtin38"]) {
@@ -624,6 +624,8 @@ BuiltinResult#dispatch builtin [Str:func_id] with args [[Val]:args] to [Type_?:r
         return builtin postfix concat with [args];
     } elif ([func_id] equals ["builtin69"]) {
         return builtin slice from with [args];
+    } elif ([func_id] equals ["builtin70"]) {
+        return builtin index of with [args] last: [true];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
