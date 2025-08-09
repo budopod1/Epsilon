@@ -379,7 +379,7 @@ TESTS = [
         "func": "main",
         "sig": (c_int32,),
         "tests": [
-            {"arguments": [], "compare": "exact", "expect": 498}
+            {"arguments": [], "compare": "exact", "expect": 507}
         ]
     },
     {

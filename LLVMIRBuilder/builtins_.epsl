@@ -476,6 +476,15 @@ BuiltinResult#builtin postfix concat with [[Val]:args] {
     return make builtin result [cast [func ret] to [result_type_]];
 }
 
+BuiltinResult#builtin slice from with [[Val]:args] {
+    Val:arr = args[0];
+    Val:start = cast [args[1]] to [L_];
+    Val:elem = make elem generic int [arr.type_];
+    extern fn [Internal_] ["epsl_slice_array_from"] [[Type_] [Internal_, L_, L_]]
+        [[Val] [cast [arr] to [Internal_], start, elem]];
+    return make builtin result [cast [func ret] to [arr.type_]];
+}
+
 BuiltinResult#dispatch builtin [Str:func_id] with args [[Val]:args] to [Type_?:result_type_] {
     if ([func_id] equals ["builtin1"]) {
         return builtin length with [args];
@@ -613,6 +622,8 @@ BuiltinResult#dispatch builtin [Str:func_id] with args [[Val]:args] to [Type_?:r
         return builtin prefix concat with [args];
     } elif ([func_id] equals ["builtin68"]) {
         return builtin postfix concat with [args];
+    } elif ([func_id] equals ["builtin69"]) {
+        return builtin slice from with [args];
     } else {
         abort "Builtin {} does not exist or is not implemented" % func_id;
     };
