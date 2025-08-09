@@ -113,6 +113,8 @@ extern inline char *epsl_format_Z64();
 
 struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem);
 
+struct Array *epsl_slice_array_from(const struct Array *array, uint64_t start, uint64_t elem);
+
 struct Array *epsl_nest_array(const struct Array *arr, uint64_t elem);
 
 struct Array *epsl_join_array(const struct Array *arr, const struct Array *sep, uint64_t elem);

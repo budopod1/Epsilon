@@ -930,6 +930,18 @@ public static class BuiltinsList {
                     throw new FunctionCallTypes_Exception($"Cannot postfix elements of type {types_[0].GetGeneric(0)} with an array of type {types_[1]}", 1);
                 return types_[1];
             }, FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "slice_from"),
+                    new FuncArgPatternSegment(),
+                ], new SlotPatternProcessor([0, 3])
+            ), [
+                new("arr", Type_.Any().ArrayOf()),
+                new("start", new Type_("W", 64)),
+            ], "builtin69", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         )
     ];
 }

@@ -304,15 +304,7 @@ extern inline char *epsl_format_Z64() {
     return result;
 }
 
-struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
-    if (__builtin_expect(start > end, 0)) {
-        epsl_panicf(ERR_START "Slice start index can't be after slice end index");
-    }
-
-    if (__builtin_expect(end > array->length, 0)) {
-        epsl_panicf(ERR_START "Slice end index out of range");
-    }
-
+static struct Array *epsl_unchecked_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
     struct Array *slice = epsl_malloc(sizeof(struct Array));
     slice->ref_counter = 0;
     uint64_t len = end - start;
@@ -325,6 +317,26 @@ struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64
     memcpy(content, ((char*)array->content)+(start*elem_size), size);
     epsl_increment_array_ref_counts(slice, elem);
     return slice;
+}
+
+struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem) {
+    if (__builtin_expect(start > end, 0)) {
+        epsl_panicf(ERR_START "Slice start index can't be after slice end index");
+    }
+
+    if (__builtin_expect(end > array->length, 0)) {
+        epsl_panicf(ERR_START "Slice end index out of range");
+    }
+
+    return epsl_unchecked_slice_array(array, start, end, elem);
+}
+
+struct Array *epsl_slice_array_from(const struct Array *array, uint64_t start, uint64_t elem) {
+    if (__builtin_expect(start > array->length, 0)) {
+        epsl_panicf(ERR_START "Slice start index can't be greater than array length");
+    }
+
+    return epsl_unchecked_slice_array(array, start, array->length, elem);
 }
 
 struct Array *epsl_nest_array(const struct Array *arr, uint64_t elem) {
