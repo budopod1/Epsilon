@@ -119,7 +119,7 @@ ParsedStrEscape#parse_escape [Str:txt] at [W:index] {
         };
         Str:hex = [txt].slice[index+1][index+3];
         W:val = [hex].parse_as_W32_in_base[16];
-        if (val > 255) {
+        if val > 255 {
             return ParsedStrEscape [0, "", TokenizationError [
                 index, "Expected two hex characters after '\\x'"
             ]];
@@ -143,13 +143,13 @@ TokenDataResult#parse_string_token [Str:txt] {
         if was_backslash {
             was_backslash = false;
             ParsedStrEscape:escape = parse_escape [txt] at [i];
-            given (escape.error as TokenizationError:error) {
+            given escape.error as TokenizationError:error {
                 return TokenDataResult [null, error];
             };
             [parsed].extend[escape.parsed];
             i += escape.src_len;
         } else {
-            if (byte == '\\') {
+            if byte == '\\' {
                 was_backslash = true;
             } else {
                 [parsed].append[byte];
@@ -193,7 +193,7 @@ TokenDataResult#parse_int_token [Str:txt] {
 }
 
 TokenDataResult#parse_float_token [Str:txt] {
-    given (parse_float [txt] as Q:val) {
+    given parse_float [txt] as Q:val {
         return TokenDataResult [FloatTokenData [val], null];
     } else {
         return TokenDataResult [null, TokenizationError [

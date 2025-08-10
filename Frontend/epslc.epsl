@@ -19,7 +19,7 @@ find -type f -name "*.epsl" | xargs cat > Frontend/all.cepsl
     Q:start = read perf counter;
 
     println["Timing tokenization..."];
-    for (L:i to repeat_count) {
+    for L:i to repeat_count {
         TokenizationResult:initially_tokenized = tokenize [content];
         result1 = initially_tokenized;
         token_count = [initially_tokenized.tokens.ids].len;
@@ -27,8 +27,8 @@ find -type f -name "*.epsl" | xargs cat > Frontend/all.cepsl
     Q:tokenized = read perf counter;
 
     println["Timing grouping..."];
-    given (result1 as TokenizationResult:initially_tokenized) {
-        for (L:i to repeat_count) {
+    given result1 as TokenizationResult:initially_tokenized {
+        for L:i to repeat_count {
             result2 = group tokens [initially_tokenized.tokens];
         };
     };
