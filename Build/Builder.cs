@@ -1049,6 +1049,9 @@ public class Builder {
 
     IEnumerable<Package> GetDefaultPackages() {
         return [
+            new Package("paths", Utils.JoinPaths(
+                Utils.ProjectAbsolutePath(), "EPSL-Paths"
+            ), null, []),
             new Package("consolestyles", Utils.JoinPaths(
                 Utils.ProjectAbsolutePath(), "EPSL-Console-Styles"
             ), null, []),
