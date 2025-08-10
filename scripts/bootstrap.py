@@ -11,6 +11,7 @@ def bootstrap():
     run_LLVM_cmd("clang", "--rtlib=compiler-rt", "-Wno-override-module",
         "LLVMIRBuilder/bootstrap.bc", "libs/builtins.bc", "libs/fileio.bc",
         "libs/conversion.bc", *c_files, "-o", "LLVMIRBuilder/result",
+        "-I"+str(Path("libs").absolute()),
         *(["-lm"]*(not is_windows())))
 
     print("Bootstrapped backend")

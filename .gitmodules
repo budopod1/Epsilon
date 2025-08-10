@@ -19,3 +19,6 @@
 [submodule "EPSL-Console-Styles"]
 	path = EPSL-Console-Styles
 	url = https://github.com/budopod1/EPSL-Console-Styles.git
+[submodule "EPSL-Paths"]
+	path = EPSL-Paths
+	url = https://github.com/budopod1/EPSL-Paths.git
