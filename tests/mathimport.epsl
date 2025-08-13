@@ -1,4 +1,4 @@
-#import math;
+$import math;
 
 @id testee;
 Q#foo[Z:a] {

@@ -1,4 +1,4 @@
-#import circular2;
+$import circular2;
 
 Z#main {
     return foo;

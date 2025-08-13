@@ -1,8 +1,8 @@
-#import json;
-#import eewriter;
-#import instructions;
-#import conversion;
-#import fileio;
+$import json;
+$import eewriter;
+$import instructions;
+$import conversion;
+$import fileio;
 
 ScopeVar {
     Str:name,
@@ -39,7 +39,7 @@ State {
     FuncState?:func_state,
 }
 
-#global State?:state;
+$global State?:state;
 
 State#get state {
     return [state].unwrap;

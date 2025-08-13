@@ -2,7 +2,7 @@ Foo {
     Z:a
 }
 
-#global Foo?:global_foo;
+$global Foo?:global_foo;
 
 #sub1 {
     Foo:foo = [global_foo].unwrap;

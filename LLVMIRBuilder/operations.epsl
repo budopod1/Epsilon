@@ -1,8 +1,8 @@
-#import entry;
-#import eewriter;
-#import json;
-#import builtins_;
-#import stringify;
+$import entry;
+$import eewriter;
+$import json;
+$import builtins_;
+$import stringify;
 
 [Val]#cast [[Val]:vals] to [Type_:type_] {
     [Val]:result = [Val] [];

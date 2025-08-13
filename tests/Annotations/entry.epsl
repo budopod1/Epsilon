@@ -1,4 +1,4 @@
-#import cfile;
+$import cfile;
 
 @id frwd_test;
 Z#frwd_test[Z:arg] {

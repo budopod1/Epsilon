@@ -9,7 +9,7 @@ public class GlobalsMatcher : IMatcher {
                 if (stext == "\n") {
                     wasNL = true;
                     continue;
-                } else if (wasNL && stext == "#") {
+                } else if (wasNL && stext == "$") {
                     wasNL = false;
                     if (tokens[i + 1] is not Name nntoken
                         || nntoken.GetValue() != "global") continue;

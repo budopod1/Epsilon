@@ -1,4 +1,4 @@
-#import cfile;
+$import cfile;
 
 Z#main {
     Internal:ptr = get_ptr;

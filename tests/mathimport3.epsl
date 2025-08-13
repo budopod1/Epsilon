@@ -1,4 +1,4 @@
-#import math;
+$import math;
 
 @id testee;
 Q#do_test[Q:a] {

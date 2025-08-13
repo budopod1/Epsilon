@@ -1,9 +1,9 @@
-#import operations;
-#import stringify;
-#import eewriter;
-#import equality;
-#import json;
-#import entry;
+$import operations;
+$import stringify;
+$import eewriter;
+$import equality;
+$import json;
+$import entry;
 
 Val#build constant value [:JSON:instruction_json] to [Type_:type_] {
     return make constant [[instruction_json].get["constant"]] of type_ [type_];
