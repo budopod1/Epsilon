@@ -1,4 +1,4 @@
-#import circular1;
+$import circular1;
 
 Z#foo {
     return bar + 1;
