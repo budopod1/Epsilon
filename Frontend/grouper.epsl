@@ -1,8 +1,8 @@
-#import tokenizer;
+$import tokenizer;
 
 TokenizationResult#group tokens [Tokens:src_tokens] {
     [TokenizationError]:errors = [TokenizationError] [];
-    Tokens:toplevel_tokens = Tokens [0, [W] [], [W] [], [:TokenData?] []];
+    Tokens:toplevel_tokens = new_Tokens_at[0];
     [Tokens]:group_stack = [Tokens] [toplevel_tokens];
     [Byte]:end_chr_stack = Str ['\0'];
     Tokens:current_tokens = toplevel_tokens;
@@ -20,7 +20,7 @@ TokenizationResult#group tokens [Tokens:src_tokens] {
                 end_chr = '}';
             };
             [end_chr_stack].append[end_chr];
-            current_tokens = Tokens [start_index, [W] [], [W] [], [:TokenData?] []];
+            current_tokens = new_Tokens_at[start_index];
             [group_stack].append[current_tokens];
         } elif id == ')' || id == ']' || id == '}' {
             if [end_chr_stack].len <= 1 {
@@ -37,11 +37,11 @@ TokenizationResult#group tokens [Tokens:src_tokens] {
             current_tokens = [group_stack].at[-1];
             W:group_id = 0;
             if id == ')' {
-                group_id = 400;
+                group_id = T_PAREN_GROUP;
             } elif id == ']' {
-                group_id = 401;
+                group_id = T_SQUARE_GROUP;
             } elif id == '}' {
-                group_id = 402;
+                group_id = T_CURLY_GROUP;
             };
             [current_tokens.ids].append[group_id];
             [current_tokens.end_indexes].append[end_index];

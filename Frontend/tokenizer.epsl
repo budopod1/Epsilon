@@ -1,4 +1,4 @@
-#import conversion;
+$import conversion;
 
 @super;
 TokenData {}
@@ -35,17 +35,17 @@ GroupTokenData {
 
 // Token IDs:
 
-// <256 is a raw byte value
+// <128 is a raw byte value
 
-// 300 - identifier
-// 301 - int
-// 302 - float
-// 303 - byte
-// 304 - string
+W#T_IDENT {return 300;}
+W#T_INT {return 301;}
+W#T_FLOAT {return 302;}
+W#T_BYTE {return 303;}
+W#T_STR {return 304;}
 
-// 400 - parenthesis group
-// 401 - square bracket group
-// 402 - curly bracket group
+W#T_PAREN_GROUP {return 400;}
+W#T_SQUARE_GROUP {return 401;}
+W#T_CURLY_GROUP {return 402;}
 
 Tokens {
     W:start_index,
@@ -203,7 +203,7 @@ TokenDataResult#parse_float_token [Str:txt] {
 }
 
 TokenizationResult#tokenize [Str:input] {
-    Tokens:tokens = Tokens [0, [W] [], [W] [], [:TokenData?] []];
+    Tokens:tokens = new_Tokens_at[0];
     [TokenizationError]:errors = [TokenizationError] [];
 
     /*
@@ -269,7 +269,7 @@ TokenizationResult#tokenize [Str:input] {
         }
         (1) {
             if byte == '"' {
-                [tokens.ids].append[304];
+                [tokens.ids].append[T_STR];
                 [tokens.end_indexes].append[index];
                 TokenDataResult:data_result = parse_string_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -291,7 +291,7 @@ TokenizationResult#tokenize [Str:input] {
         }
         (3) {
             if byte == '\'' {
-                [tokens.ids].append[303];
+                [tokens.ids].append[T_BYTE];
                 [tokens.end_indexes].append[index];
                 TokenDataResult:data_result = parse_byte_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -334,7 +334,7 @@ TokenizationResult#tokenize [Str:input] {
                 index--;
             };
             if is_num_end {
-                [tokens.ids].append[301];
+                [tokens.ids].append[T_INT];
                 [tokens.end_indexes].append[index+1];
                 TokenDataResult:data_result = parse_int_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -354,7 +354,7 @@ TokenizationResult#tokenize [Str:input] {
                 index--;
             };
             if is_num_end {
-                [tokens.ids].append[302];
+                [tokens.ids].append[T_FLOAT];
                 [tokens.end_indexes].append[index+1];
                 TokenDataResult:data_result = parse_float_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -374,8 +374,8 @@ TokenizationResult#tokenize [Str:input] {
                 index--;
             };
             if is_identifier_end {
-                [tokens.ids].append[300];
-                [tokens.end_indexes].append[index+1];
+                [tokens.ids].append[T_IDENT];
+                [tokens.end_indexes].append[index];
                 [tokens.data].append[IdentifierTokenData [so_far]];
             };
         }
@@ -395,4 +395,85 @@ TokenizationResult#tokenize [Str:input] {
     };
 
     return TokenizationResult [tokens, errors];
+}
+
+Tokens#new_Tokens_at[L:start_index] {
+    return Tokens [start_index, [W] [], [W] [], [:TokenData?] []];
+}
+
+W#[Tokens:tokens].get_start_index[L:i] {
+    if i == 0 {
+        return tokens.start_index;
+    } else {
+        return tokens.end_indexes[i-1] + 1;
+    };
+}
+
+#[Tokens:dest].add_from[Tokens:src][L:i] {
+    [dest.ids].append[src.ids[i]];
+    [dest.end_indexes].append[src.end_indexes[i]];
+    [dest.data].append[src.data[i]];
+}
+
+Str#[:TokenData?:data].read_identifier {
+    given data as IdentifierTokenData:identifier_data {
+        return identifier_data.val;
+    } else {
+        abort "The given token data is not identifier data";
+    };
+}
+
+Str#[:TokenData?:data].read_string {
+    given data as StrTokenData:string_data {
+        return string_data.val;
+    } else {
+        abort "The given token data is not string data";
+    };
+}
+
+Tokens#[:TokenData?:data].read_group {
+    given data as GroupTokenData:group_data {
+        return group_data.sub;
+    } else {
+        abort "The given token data is not group data";
+    };
+}
+
+Str#token_id_to_name[W:id] {
+    if id < 32 || id == 127 {
+        return "unprintable ASCII character (code {})" % id;
+    } elif id < 127 {
+        return "'{}'" % (Byte)id;
+    };
+    switch id
+    (300) {return "identifier";}
+    (301) {return "integer literal";}
+    (302) {return "float literal";}
+    (303) {return "byte literal";}
+    (304) {return "string literal";}
+    (400) {return "parenthesis group";}
+    (401) {return "square bracket group";}
+    (402) {return "curly bracket group";}
+    {
+        abort "Invalid token ID {}" % id;
+    };
+}
+
+Str#[Tokens:tokens].stringify {
+    Str:result = ["Tokens("].clone;
+    for (L:i enumerating tokens.ids) {
+        W:id = tokens.ids[i];
+        :TokenData?:data = tokens.data[i];
+        if id < 128 {
+            [result].append[(Byte)id];
+        } elif id == T_IDENT {
+            [result].extend[" {} " % [data].read_identifier];
+        } elif id == T_PAREN_GROUP || id == T_SQUARE_GROUP || id == T_CURLY_GROUP {
+            [result].extend["[{}]({})" % token_id_to_name[id] % [[data].read_group].stringify];
+        } else {
+            [result].extend["[{}]" % token_id_to_name[id]];
+        };
+    };
+    [result].append[')'];
+    return result;
 }

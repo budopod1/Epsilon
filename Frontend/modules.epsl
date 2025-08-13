@@ -1,0 +1,12 @@
+Module {
+    :ModuleContent:content
+}
+
+@super;
+ModuleContent {
+    [Import]:imports
+}
+
+Import {
+    [Str]:path
+}

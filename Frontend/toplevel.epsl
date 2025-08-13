@@ -1,0 +1,332 @@
+$import tokenizer;
+$import modules;
+$import parsing;
+
+@super;
+@extends NodeWSpan;
+ToplevelItem {}
+
+@extends NodeWSpan;
+RawAnnotation {
+    Str:name,
+    Tokens:content
+}
+
+@extends ToplevelItem;
+ImportDeclaration {
+    Import:import
+}
+
+@super;
+@extends ToplevelItem;
+AnnotatableNode {
+    [RawAnnotation]:annotations
+}
+
+@extends AnnotatableNode;
+RawGlobal {
+    Tokens:tokens
+}
+
+@extends AnnotatableNode;
+RawFunction {
+    Tokens:ret_type_,
+    Tokens:template,
+    Tokens:body
+}
+
+@extends AnnotatableNode;
+RawStruct {
+    Str:name,
+    Tokens:body
+}
+
+@extends ModuleContent;
+RawEPSLModuleContent {
+    [RawGlobal]:raw_globals,
+    [RawFunction]:raw_functions,
+    [RawStruct]:raw_structs
+}
+
+RawEPSLModconResult {
+    RawEPSLModuleContent:modcon,
+    [ParseError]:errors
+}
+
+RawEPSLModconResult#parse_toplevel[Tokens:tokens] {
+    RawEPSLModuleContent:modcon = RawEPSLModuleContent [
+        [Import] [], [RawGlobal] [], [RawFunction] [], [RawStruct] []
+    ];
+    [RawAnnotation]:annotations = [RawAnnotation] [];
+    ParseState:state = ParseState [tokens, 0, [ParseError] []];
+    while ![state].is_at_end {
+        W:id = [state].cur_id;
+        :ToplevelItem?:item = null;
+        if id == '@' {
+            given (parse_annotation[state] as RawAnnotation:annotation) {
+                [annotations].append[annotation];
+            };
+            continue;
+        } elif id == '$' {
+            item = parse_toplevel_dollar_item[state];
+        } else {
+            item = parse_struct_or_func[state];
+        };
+        given (item as :ToplevelItem:new_item) {
+            [modcon].add_item[new_item][annotations] state: [state];
+            annotations = [RawAnnotation] [];
+        };
+    };
+    return RawEPSLModconResult [modcon, state.errors];
+}
+
+#[RawEPSLModuleContent:modcon].add_item[:ToplevelItem:item][[RawAnnotation]:annotations] state: [ParseState:state] {
+    given item as ImportDeclaration:import_declaration {
+        if (annotations) {
+            [state].error_at[item] msg: ["Imports cannot recieve annotations"];
+        };
+        [modcon.imports].append[import_declaration.import];
+    } given item as RawGlobal:raw_global {
+        raw_global.annotations = annotations;
+        [modcon.raw_globals].append[raw_global];
+    } given item as RawFunction:raw_function {
+        raw_function.annotations = annotations;
+        [modcon.raw_functions].append[raw_function];
+    } given item as RawStruct:raw_struct {
+        raw_struct.annotations = annotations;
+        [modcon.raw_structs].append[raw_struct];
+    } else {
+        abort;
+    };
+}
+
+RawAnnotation?#parse_annotation[ParseState:state] {
+    W:start_index = [state].cur_start;
+    [state].consume; // consume the @
+    Bool:valid = [state].consume[T_IDENT] name: ["annotation name"];
+    if valid {
+        Str:annotation_name = [[state].last_data].read_identifier;
+        Tokens:annotation_content = [state].new_section;
+        while true {
+            if ![state].require_more why: ["Expected ';' to terminate annotation"] {
+                return null;
+            };
+            if [state].cur_id == ';' {
+                break;
+            };
+            [state].move_token_to[annotation_content];
+        };
+        [state].consume;
+        W:end_index = [state].last_end;
+        return RawAnnotation [start_index, end_index, annotation_name, annotation_content];
+    } else {
+        [state].move_past_semicolon why: ["to terminate annotation"];
+        return null;
+    };
+}
+
+:ToplevelItem?#parse_toplevel_dollar_item[ParseState:state] {
+    W:start_index = [state].cur_start;
+    [state].consume; // consume the $
+    Bool:valid = [state].consume[T_IDENT] name: ["'import' or 'global'"];
+    if valid {
+        Str:item_name = [[state].last_data].read_identifier;
+        switch item_name
+        ("import") {
+            return parse_import[state] start: [start_index];
+        }
+        ("global") {
+            return parse_global[state] start: [start_index];
+        }
+        {
+            [state].error_at_previous
+                msg: ["Expected 'import' or 'global', got '{}'" % item_name];
+        };
+    };
+    [state].move_past_semicolon why: ["to terminate toplevel item"];
+    return null;
+}
+
+ImportDeclaration?#parse_import[ParseState:state] start: [W:start_index] {
+    [Str]:parts = [Str] [];
+    Bool:was_dot = true;
+    while ![state].is_at_end {
+        W:token_id = [state].cur_id;
+        if token_id == ';' {
+            [state].consume;
+            W:end_index = [state].last_end;
+            return ImportDeclaration [start_index, end_index, Import [parts]];
+        } elif token_id == '.' {
+            if was_dot {
+                [parts].append[".."];
+            };
+            was_dot = true;
+        } elif was_dot && token_id == T_IDENT {
+            [parts].append[[[state].cur_data].read_identifier];
+            was_dot = false;
+        } elif was_dot && token_id == T_STR {
+            [parts].append[[[state].cur_data].read_string];
+            was_dot = false;
+        } else {
+            Str?:msg_template = null;
+            if was_dot {
+                msg_template = "Expected '.' or path segment in import declaration, found {}";
+            } else {
+                msg_template = "Expected '.' in import declaration, found {}";
+            };
+            [state].error_at_current msg: [[msg_template].unwrap % token_id_to_name[token_id]];
+            // this might move past more than it should, but the
+            // only result would be producing less errors than it could
+            [state].move_past_semicolon why: ["to terminate import declaration"];
+            return null;
+        };
+        [state].consume; // move past the token
+    };
+    [state].error_at_end msg: ["Expected ';' to terminate import"];
+    return null;
+}
+
+RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
+    Tokens:global_content = [state].new_section;
+    while ![state].is_at_end {
+        if [state].cur_id == ';' {
+            [state].consume;
+            W:end_index = [state].last_end;
+            return RawGlobal [
+                start_index, end_index, [RawAnnotation] [], global_content
+            ];
+        };
+        [state].move_token_to[global_content];
+    };
+    [state].error_at_end msg: ["Expected ';' to terminate global"];
+    return null;
+}
+
+:ToplevelItem?#parse_struct_or_func[ParseState:state] {
+    W:start_index = [state].cur_start;
+    if [state].cur_id == T_IDENT {
+        [state].consume;
+        :TokenData?:ident_data = [state].last_data;
+        if [state].is_at_end {
+            [state].error_at_end msg: ["Expected braces"];
+            return null;
+        };
+        if [state].cur_id == T_CURLY_GROUP {
+            [state].consume;
+            W:end_index = [state].last_end;
+            Str:struct_name = [ident_data].read_identifier;
+            Tokens:tokens = [[state].last_data].read_group;
+            return RawStruct [
+                start_index, end_index, [RawAnnotation] [], struct_name, tokens
+            ];
+        } else {
+            [state].unconsume;
+        };
+    };
+
+    Tokens:ret_type_ = [state].new_section;
+    while true {
+        if [state].is_at_end {
+            [state].error_at_end msg: ["Expected braces"];
+            return null;
+        };
+        W:id = [state].cur_id;
+        if id == '#' {
+            [state].consume;
+            break;
+        } elif id == ';' {
+            [state].error_at_current
+                msg: ["Unexpected ';' character in function return type"];
+            [state].consume;
+            return null;
+        } elif id == T_CURLY_GROUP {
+            [state].error_after[state.index-1]
+                msg: ["Unexpected braces: this is not valid syntax for a struct, and functions signatures require a '#'"];
+            [state].consume;
+            return null;
+        };
+        [state].move_token_to[ret_type_];
+    };
+
+    Tokens:template = [state].new_section;
+    Tokens?:body = null;
+    while true {
+        if [state].is_at_end {
+            [state].error_at_end msg: ["Expected braces"];
+            return null;
+        };
+        W:id = [state].cur_id;
+        if id == '#' {
+            [state].error_at_current
+                msg: ["Unexpected second '#' character in function template"];
+            // don't consume this hashtag. another function will be parsed starting here
+            // so we can report any errors in the rest of the template
+            return null;
+        } elif id == ';' {
+            [state].error_at_current
+                msg: ["Unexpected ';' character in function template"];
+            [state].consume;
+            return null;
+        } elif id == T_CURLY_GROUP {
+            [state].consume;
+            body = [[state].last_data].read_group;
+            break;
+        };
+        [state].move_token_to[template];
+    };
+
+    W:end_index = [state].last_end;
+    return RawFunction [
+        start_index, end_index, [RawAnnotation] [], ret_type_, template, [body].unwrap
+    ];
+}
+
+Str#[RawGlobal:raw_global].stringify {
+    return "RawGlobal({})" % [raw_global.tokens].stringify;
+}
+
+Str#[RawFunction:raw_function].stringify {
+    return "RawFunction({}#{}, {})"
+        % [raw_function.ret_type_].stringify
+        % [raw_function.template].stringify
+        % [raw_function.body].stringify;
+}
+
+Str#[RawStruct:raw_struct].stringify {
+    return "RawStruct({}, {})"
+        % raw_struct.name
+        % [raw_struct.body].stringify;
+}
+
+Str#[RawEPSLModuleContent:modcon].stringify {
+    Str:globals_str = Str [];
+    for (RawGlobal:raw_global in modcon.raw_globals) {
+        if (globals_str) {
+            [globals_str].extend[", "];
+        };
+        [globals_str].extend[[raw_global].stringify];
+    };
+
+    Str:functions_str = Str [];
+    for (RawFunction:raw_function in modcon.raw_functions) {
+        if (functions_str) {
+            [functions_str].extend[", "];
+        };
+        [functions_str].extend[[raw_function].stringify];
+    };
+
+    Str:structs_str = Str [];
+    for (RawStruct:raw_struct in modcon.raw_structs) {
+        if (structs_str) {
+            [structs_str].extend[", "];
+        };
+        [structs_str].extend[[raw_struct].stringify];
+    };
+
+    return "RawEPSLModuleContent(
+imports: {}
+raw_globals: {}
+raw_functions: {}
+raw_structs: {}
+)" % [modcon.imports].stringify % globals_str % functions_str % structs_str;
+}
