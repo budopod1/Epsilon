@@ -6,10 +6,30 @@ $import parsing;
 @extends NodeWSpan;
 ToplevelItem {}
 
+@super;
 @extends NodeWSpan;
-RawAnnotation {
-    Str:name,
-    Tokens:content
+Annotation {}
+
+@extends Annotation;
+PrivateAnnotation {}
+
+@extends Annotation;
+IDAnnotation {
+    Str:id
+}
+
+@extends Annotation;
+ValueAnnotation {}
+
+@extends Annotation;
+SuperAnnotation {}
+
+@extends Annotation;
+ConcreteAnnotation {}
+
+@extends Annotation;
+ExtendsAnnotation {
+    Str:extendee
 }
 
 @extends ToplevelItem;
@@ -20,7 +40,7 @@ ImportDeclaration {
 @super;
 @extends ToplevelItem;
 AnnotatableNode {
-    [RawAnnotation]:annotations
+    [:Annotation]:annotations
 }
 
 @extends AnnotatableNode;
@@ -57,13 +77,13 @@ RawEPSLModconResult#parse_toplevel[Tokens:tokens] {
     RawEPSLModuleContent:modcon = RawEPSLModuleContent [
         [Import] [], [RawGlobal] [], [RawFunction] [], [RawStruct] []
     ];
-    [RawAnnotation]:annotations = [RawAnnotation] [];
+    [:Annotation]:annotations = [:Annotation] [];
     ParseState:state = ParseState [tokens, 0, [ParseError] []];
     while ![state].is_at_end {
         W:id = [state].cur_id;
         :ToplevelItem?:item = null;
         if id == '@' {
-            given (parse_annotation[state] as RawAnnotation:annotation) {
+            given (parse_annotation[state] as :Annotation:annotation) {
                 [annotations].append[annotation];
             };
             continue;
@@ -74,13 +94,13 @@ RawEPSLModconResult#parse_toplevel[Tokens:tokens] {
         };
         given (item as :ToplevelItem:new_item) {
             [modcon].add_item[new_item][annotations] state: [state];
-            annotations = [RawAnnotation] [];
+            annotations = [:Annotation] [];
         };
     };
     return RawEPSLModconResult [modcon, state.errors];
 }
 
-#[RawEPSLModuleContent:modcon].add_item[:ToplevelItem:item][[RawAnnotation]:annotations] state: [ParseState:state] {
+#[RawEPSLModuleContent:modcon].add_item[:ToplevelItem:item][[:Annotation]:annotations] state: [ParseState:state] {
     given item as ImportDeclaration:import_declaration {
         if (annotations) {
             [state].error_at[item] msg: ["Imports cannot recieve annotations"];
@@ -100,29 +120,56 @@ RawEPSLModconResult#parse_toplevel[Tokens:tokens] {
     };
 }
 
-RawAnnotation?#parse_annotation[ParseState:state] {
+:Annotation?#parse_annotation[ParseState:state] {
     W:start_index = [state].cur_start;
     [state].consume; // consume the @
     Bool:valid = [state].consume[T_IDENT] name: ["annotation name"];
     if valid {
-        Str:annotation_name = [[state].last_data].read_identifier;
-        Tokens:annotation_content = [state].new_section;
-        while true {
-            if ![state].require_more why: ["Expected ';' to terminate annotation"] {
-                return null;
+        Str:annotation_type = [[state].last_data].read_identifier;
+        switch annotation_type
+        ("private") {
+            if [state].consume[';'] name: ["';', as private annotation take no arguments"] {
+                return PrivateAnnotation [start_index, [state].last_end];
             };
-            if [state].cur_id == ';' {
-                break;
+        }
+        ("id") {
+            if [state].consume[T_IDENT] name: ["id"] {
+                Str:id = [[state].last_data].read_identifier;
+                if [state].consume[';'] {
+                    return IDAnnotation [start_index, [state].last_end, id];
+                };
             };
-            [state].move_token_to[annotation_content];
+        }
+        ("value") {
+            if [state].consume[';'] name: ["';', as value annotation take no arguments"] {
+                return ValueAnnotation [start_index, [state].last_end];
+            };
+        }
+        ("super") {
+            if [state].consume[';'] name: ["';', as super annotation take no arguments"] {
+                return SuperAnnotation [start_index, [state].last_end];
+            };
+        }
+        ("concrete") {
+            if [state].consume[';'] name: ["';', as concrete annotation take no arguments"] {
+                return ConcreteAnnotation [start_index, [state].last_end];
+            };
+        }
+        ("extends") {
+            if [state].consume[T_IDENT] name: ["extendee name"] {
+                Str:extendee_name = [[state].last_data].read_identifier;
+                if [state].consume[';'] {
+                    return ExtendsAnnotation [start_index, [state].last_end, extendee_name];
+                };
+            };
+        }
+        {
+            [state].error_at_previous
+                msg: ["Invalid annotation type '{}'" % annotation_type];
         };
-        [state].consume;
-        W:end_index = [state].last_end;
-        return RawAnnotation [start_index, end_index, annotation_name, annotation_content];
-    } else {
-        [state].move_past_semicolon why: ["to terminate annotation"];
-        return null;
     };
+    [state].move_past_semicolon why: ["to terminate annotation"];
+    return null;
 }
 
 :ToplevelItem?#parse_toplevel_dollar_item[ParseState:state] {
@@ -193,7 +240,7 @@ RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
             [state].consume;
             W:end_index = [state].last_end;
             return RawGlobal [
-                start_index, end_index, [RawAnnotation] [], global_content
+                start_index, end_index, [:Annotation] [], global_content
             ];
         };
         [state].move_token_to[global_content];
@@ -217,7 +264,7 @@ RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
             Str:struct_name = [ident_data].read_identifier;
             Tokens:tokens = [[state].last_data].read_group;
             return RawStruct [
-                start_index, end_index, [RawAnnotation] [], struct_name, tokens
+                start_index, end_index, [:Annotation] [], struct_name, tokens
             ];
         } else {
             [state].unconsume;
@@ -277,7 +324,7 @@ RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
 
     W:end_index = [state].last_end;
     return RawFunction [
-        start_index, end_index, [RawAnnotation] [], ret_type_, template, [body].unwrap
+        start_index, end_index, [:Annotation] [], ret_type_, template, [body].unwrap
     ];
 }
 
