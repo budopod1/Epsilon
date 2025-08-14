@@ -9,14 +9,11 @@ public class CharConstant : IIntConstant {
     }
 
     public CharConstant(char value) {
-        if (value >= 128) {
-            throw new OverflowException("Character constants' codepoints must not exceed 127");
-        }
         this.value = Convert.ToByte(value);
     }
 
     public static CharConstant FromString(string value) {
-        return new CharConstant(JSONTools.FromLiteralChar(value));
+        return new CharConstant(JSONTools.FromLiteral(value)[0]);
     }
 
     public Type_ GetType_() {
