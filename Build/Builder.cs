@@ -6,7 +6,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Epsilon;
 public class Builder {
-    static readonly Dictionary<string, Func<BuildSettings, string, IFileCompiler>> dispatchers = [];
+    static readonly Dictionary<string, Func<BuildSettings, string, string, IFileCompiler>> dispatchers = [];
     public static IJSONShape EPSLPROJShape;
 
     bool shouldCache = false;
@@ -17,7 +17,7 @@ public class Builder {
     static readonly List<string> EXTENSIONS = ["epslspec"];
     static readonly List<string> PREFIXES = ["", "."];
 
-    public static void RegisterDispatcher(Func<BuildSettings, string, IFileCompiler> dispatcher, params string[] extensions) {
+    public static void RegisterDispatcher(Func<BuildSettings, string, string, IFileCompiler> dispatcher, params string[] extensions) {
         EXTENSIONS.AddRange(extensions);
         foreach (string extension in extensions) {
             dispatchers[extension] = dispatcher;
@@ -461,8 +461,10 @@ public class Builder {
             return DispatchEPSLSPEC(settings, path);
         } else if (dispatchers.ContainsKey(extension)) {
             currentFile = path;
+            string fileText = JSONTools.ReadFileText(new StreamReader(path));
+            currentText = fileText;
             return new DispatchedFile(
-                dispatchers[extension](settings, path),
+                dispatchers[extension](settings, path, fileText),
                 path, oldCompilerPath, oldCompiler
             );
         } else {

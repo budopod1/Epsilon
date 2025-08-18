@@ -1,3 +1,5 @@
+using CsJSONTools;
+
 namespace Epsilon;
 public static class InitialTokenizer {
     enum ParseState {
@@ -56,7 +58,14 @@ public static class InitialTokenizer {
                 if (!isEscaped && chr == '"') {
                     string rawTxt = str.Substring(constantStart, i - constantStart + 1);
 
-                    ConstantValue token = new(StringConstant.FromString(rawTxt));
+                    ConstantValue token;
+                    try {
+                        token = new(StringConstant.FromString(rawTxt));
+                    } catch (LiteralDecodeException e) {
+                        throw new SyntaxErrorException(
+                            e.Message, new CodeSpan(constantStart, i)
+                        );
+                    }
                     token.span = new CodeSpan(constantStart, i);
                     result.Add(token);
 
@@ -67,7 +76,16 @@ public static class InitialTokenizer {
                 if (!isEscaped && chr == '\'') {
                     string rawTxt = str.Substring(constantStart, i - constantStart + 1);
 
-                    ConstantValue token = new(CharConstant.FromString(rawTxt));
+                    ConstantValue token;
+                    try {
+                        token = new(CharConstant.FromString(rawTxt));
+                    } catch (Exception e) when (
+                        e is LiteralDecodeException || e is ArgumentException
+                    ) {
+                        throw new SyntaxErrorException(
+                            e.Message, new CodeSpan(constantStart, i)
+                        );
+                    }
                     token.span = new CodeSpan(constantStart, i);
                     result.Add(token);
 

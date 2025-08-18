@@ -9,11 +9,17 @@ public class CharConstant : IIntConstant {
     }
 
     public CharConstant(char value) {
-        this.value = Convert.ToByte(value);
+        this.value = (byte)value;
     }
 
     public static CharConstant FromString(string value) {
-        return new CharConstant(JSONTools.FromLiteral(value)[0]);
+        string parsed = JSONTools.FromLiteral(value);
+        if (parsed.Length != 1) {
+            throw new ArgumentException(
+                "Character constants must contain exactly one byte"
+            );
+        };
+        return new CharConstant(parsed[0]);
     }
 
     public Type_ GetType_() {
