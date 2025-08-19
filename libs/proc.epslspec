@@ -1,0 +1,14 @@
+{"functions": [
+    {"id": "proc_exit", "callee": "proc_exit", "return_type_": null, "template": [
+        {"type": "name", "name": "exit"}, {"type": "name", "name": "with"}, {"type": "name", "name": "status"}, {"type": "argument", "name": "status", "type_": "Z32"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "proc_get_argv", "callee": "proc_get_argv", "return_type_": "[Str]", "template": [
+        {"type": "name", "name": "get"}, {"type": "name", "name": "argv"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"}
+], "types_": [
+    {"given_name": "Z32", "name": "Z", "bits": 32, "generics": []},
+    {"given_name": "Byte", "name": "Byte", "bits": null, "generics": []},
+    {"given_name": "Str", "name": "Array", "bits": null, "generics": ["Byte"]},
+    {"given_name": "[Str]", "name": "Array", "bits": null, "generics": ["Str"]}
+], "structs": [], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "object_gen_configs": [], "imports": [], "ir": "proc.bc", "obj": "proc.o", "source": null, "source_type": "Library", "id_path": "libs/proc"}

@@ -20,4 +20,4 @@ On Windows, installation of a C standard library may also be required. MSVC or M
 
 ## epslc
 
-`epslc` is the Epsilon compiler. Use `epslc init` to create a new Epsilon project, and then run `epslc compile` to compile it. More command usage information is avaliable with `epslc --help` and `epslc compile --help`.
+`epslc` is the Epsilon compiler. Use `epslc init` to create a new Epsilon project, and then run `epslc compile` to compile it. More command usage information is available with `epslc --help` and `epslc compile --help`.

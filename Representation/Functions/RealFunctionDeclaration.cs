@@ -50,7 +50,7 @@ public abstract class RealFunctionDeclaration : FunctionDeclaration, IEquatable<
     }
 
     public bool IsMain() {
-        return GetCallee() == "main";
+        return GetCallee() == "epsl_main";
     }
 
     public bool IsPrivate() {

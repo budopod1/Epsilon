@@ -281,7 +281,7 @@ public class Builder {
             string fileWithMain = GetFileWithMain();
 
             Log.Status("Producing final sources");
-            List<string> sources = ProduceFinalSources(settings);
+            List<string> sources = ProduceFinalSources(settings, fileWithMain != null);
 
             if (doesSaveCache(settings)) {
                 cache.CompileStartTime = buildStartTime;
@@ -785,7 +785,7 @@ public class Builder {
         }
     }
 
-    List<string> ProduceFinalSources(BuildSettings settings) {
+    List<string> ProduceFinalSources(BuildSettings settings, bool includeMain) {
         IEnumerable<IntermediateFile> intermediates = files.Values
             .Select(file => file.Intermediate)
             .Where(intermediate => intermediate != null);
@@ -806,6 +806,24 @@ public class Builder {
             }
 
             intermediates = intermediates.Concat([builtinsIntermediate]);
+        }
+
+        if (includeMain) {
+            IntermediateFile mainProxyIntermediate;
+
+            if (shouldGetIR(settings)) {
+                mainProxyIntermediate = new IntermediateFile(
+                    IntermediateFile.IntermediateType.IR,
+                    Utils.JoinPaths(Utils.EPSLLIBS(), "main.bc"), false
+                );
+            } else {
+                mainProxyIntermediate = new IntermediateFile(
+                    IntermediateFile.IntermediateType.IR,
+                    Utils.JoinPaths(Utils.EPSLLIBS(), "main.o"), false
+                );
+            }
+
+            intermediates = intermediates.Concat([mainProxyIntermediate]);
         }
 
         var grouped = intermediates
