@@ -29,7 +29,7 @@ LOCAL_LLVM_INSTALL_DIR = "LLVM"
 
 EPSL_SOURCE_DIRS = [
     "EPSL-Paths", "EPSL-Console-Styles", "EPSL-JSON", "EPSL-IR-Gen",
-    "EEWriter", "LLVMIRBuilder"
+    "EPSL-Command-Config", "EEWriter", "LLVMIRBuilder"
 ]
 
 

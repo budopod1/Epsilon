@@ -83,7 +83,7 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
             }
             if (!valType_.IsConvertibleTo(requiredType_)) {
                 throw new SyntaxErrorException(
-                    $"The {clauseName} clause expects all value convertible to {requiredType_}, found value of type {valType_}", clause
+                    $"The {clauseName} clause expects a value convertible to {requiredType_}, found value of type {valType_}", clause
                 );
             }
         }

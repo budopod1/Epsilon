@@ -8,8 +8,7 @@ public class EPSLFileCompiler : IFileCompiler {
     string IR;
 
     public static void Setup() {
-        Builder.RegisterDispatcher((BuildSettings buildSettings, string path) => {
-            string fileText = JSONTools.ReadFileText(new StreamReader(path));
+        Builder.RegisterDispatcher((BuildSettings buildSettings, string path, string fileText) => {
             string idPath = buildSettings.GetIDPath(path);
             return new EPSLFileCompiler(path, idPath, fileText, buildSettings);
         }, "epsl");

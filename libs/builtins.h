@@ -42,8 +42,8 @@ struct VTableBase {
 #define ERROR_STACK_SIZE 4096
 
 extern const char *epsl_error_stack[ERROR_STACK_SIZE];
-
 extern const char **epsl_error_stack_top;
+extern char **epsl_argv;
 
 void epsl_panic(const char *message, uint64_t message_len);
 
@@ -73,7 +73,7 @@ void epsl_increment_length(struct Array *array, uint64_t elem_size);
 
 void epsl_require_capacity(struct Array *array, uint64_t required, uint64_t elem_size);
 
-void epsl_increace_capacity(struct Array *array, uint64_t required, uint64_t elem_size);
+void epsl_increase_capacity(struct Array *array, uint64_t required, uint64_t elem_size);
 
 void epsl_shrink_mem(struct Array *array, uint64_t elem_size);
 

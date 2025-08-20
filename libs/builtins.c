@@ -16,12 +16,9 @@ void epsl_panic(const char *message, uint64_t message_len) {
     fflush(stdout);
     const char **error_stack_frame = epsl_error_stack;
     if (epsl_error_stack_top == error_stack_frame) {
-        fputs("No traceback avaliable\n", stderr);
+        fputs("No traceback available\n", stderr);
     } else {
-        // 'last most call recent' has no meaning
-        // I just couldn't figure out what Python's 'most recent call last'
-        // meant until I asked ChatGPT
-        fputs("Traceback (last most call recent):\n", stderr);
+        fputs("Traceback:\n", stderr);
         do {
             fputs(*++error_stack_frame, stderr);
             fputc('\n', stderr);
@@ -136,7 +133,7 @@ void epsl_require_capacity(struct Array *array, uint64_t required, uint64_t elem
 }
 
 // Will grow capacity and then apply growth factor
-void epsl_increace_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
+void epsl_increase_capacity(struct Array *array, uint64_t required, uint64_t elem_size) {
     uint64_t capacity = array->capacity;
     if (capacity == 0) epsl_nonresizable_array_fail();
     if (capacity < required) {
@@ -219,7 +216,7 @@ void epsl_extend_array(struct Array *array1, const struct Array *array2, uint64_
     uint64_t len2 = array2->length;
     uint64_t new_len = len1 + len2;
     uint64_t elem_size = elem >> 2;
-    epsl_increace_capacity(array1, new_len, elem_size);
+    epsl_increase_capacity(array1, new_len, elem_size);
     array1->length = new_len;
     epsl_increment_array_ref_counts(array2, elem);
     memcpy(array1->content+len1*elem_size, array2->content, len2*elem_size);

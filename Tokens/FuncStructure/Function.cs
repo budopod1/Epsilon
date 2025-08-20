@@ -61,7 +61,7 @@ public class Function : RealFunctionDeclaration, IParentToken, ITopLevel, IVerif
             }
         }
         if (Enumerable.SequenceEqual(mainPattern, this.pattern.GetSegments()) && !customCallee) {
-            callee = "main";
+            callee = "epsl_main";
             customCallee = true;
         }
     }

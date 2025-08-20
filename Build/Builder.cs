@@ -6,7 +6,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Epsilon;
 public class Builder {
-    static readonly Dictionary<string, Func<BuildSettings, string, IFileCompiler>> dispatchers = [];
+    static readonly Dictionary<string, Func<BuildSettings, string, string, IFileCompiler>> dispatchers = [];
     public static IJSONShape EPSLPROJShape;
 
     bool shouldCache = false;
@@ -17,7 +17,7 @@ public class Builder {
     static readonly List<string> EXTENSIONS = ["epslspec"];
     static readonly List<string> PREFIXES = ["", "."];
 
-    public static void RegisterDispatcher(Func<BuildSettings, string, IFileCompiler> dispatcher, params string[] extensions) {
+    public static void RegisterDispatcher(Func<BuildSettings, string, string, IFileCompiler> dispatcher, params string[] extensions) {
         EXTENSIONS.AddRange(extensions);
         foreach (string extension in extensions) {
             dispatchers[extension] = dispatcher;
@@ -281,7 +281,7 @@ public class Builder {
             string fileWithMain = GetFileWithMain();
 
             Log.Status("Producing final sources");
-            List<string> sources = ProduceFinalSources(settings);
+            List<string> sources = ProduceFinalSources(settings, fileWithMain != null);
 
             if (doesSaveCache(settings)) {
                 cache.CompileStartTime = buildStartTime;
@@ -461,8 +461,10 @@ public class Builder {
             return DispatchEPSLSPEC(settings, path);
         } else if (dispatchers.ContainsKey(extension)) {
             currentFile = path;
+            string fileText = JSONTools.ReadFileText(new StreamReader(path));
+            currentText = fileText;
             return new DispatchedFile(
-                dispatchers[extension](settings, path),
+                dispatchers[extension](settings, path, fileText),
                 path, oldCompilerPath, oldCompiler
             );
         } else {
@@ -783,7 +785,7 @@ public class Builder {
         }
     }
 
-    List<string> ProduceFinalSources(BuildSettings settings) {
+    List<string> ProduceFinalSources(BuildSettings settings, bool includeMain) {
         IEnumerable<IntermediateFile> intermediates = files.Values
             .Select(file => file.Intermediate)
             .Where(intermediate => intermediate != null);
@@ -804,6 +806,24 @@ public class Builder {
             }
 
             intermediates = intermediates.Concat([builtinsIntermediate]);
+        }
+
+        if (includeMain) {
+            IntermediateFile mainProxyIntermediate;
+
+            if (shouldGetIR(settings)) {
+                mainProxyIntermediate = new IntermediateFile(
+                    IntermediateFile.IntermediateType.IR,
+                    Utils.JoinPaths(Utils.EPSLLIBS(), "main.bc"), false
+                );
+            } else {
+                mainProxyIntermediate = new IntermediateFile(
+                    IntermediateFile.IntermediateType.IR,
+                    Utils.JoinPaths(Utils.EPSLLIBS(), "main.o"), false
+                );
+            }
+
+            intermediates = intermediates.Concat([mainProxyIntermediate]);
         }
 
         var grouped = intermediates
@@ -1064,6 +1084,9 @@ public class Builder {
             new Package("eewriter", Utils.JoinPaths(
                 Utils.ProjectAbsolutePath(), "EEWriter"
             ), null, ["irgen"]),
+            new Package("commandconfig", Utils.JoinPaths(
+                Utils.ProjectAbsolutePath(), "EPSL-Command-Config"
+            ), null, ["json"]),
         ];
     }
 
