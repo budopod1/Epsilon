@@ -22,3 +22,6 @@
 [submodule "EPSL-Paths"]
 	path = EPSL-Paths
 	url = https://github.com/budopod1/EPSL-Paths.git
+[submodule "EPSL-Command-Config"]
+	path = EPSL-Command-Config
+	url = https://github.com/budopod1/EPSL-Command-Config.git

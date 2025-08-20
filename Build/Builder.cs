@@ -1084,6 +1084,9 @@ public class Builder {
             new Package("eewriter", Utils.JoinPaths(
                 Utils.ProjectAbsolutePath(), "EEWriter"
             ), null, ["irgen"]),
+            new Package("commandconfig", Utils.JoinPaths(
+                Utils.ProjectAbsolutePath(), "EPSL-Command-Config"
+            ), null, ["json"]),
         ];
     }
 
