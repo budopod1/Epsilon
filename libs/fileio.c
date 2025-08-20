@@ -66,19 +66,19 @@ struct File *fileio_open_file(struct Array *file_path, uint32_t mode) {
     return file;
 }
 
-extern inline uint32_t fileio_file_read_mode() {
+extern inline uint32_t fileio_file_read_mode(void) {
     return _FILE_READ_MODE;
 }
 
-extern inline uint32_t fileio_file_write_mode() {
+extern inline uint32_t fileio_file_write_mode(void) {
     return _FILE_WRITE_MODE;
 }
 
-extern inline uint32_t fileio_file_append_mode() {
+extern inline uint32_t fileio_file_append_mode(void) {
     return _FILE_APPEND_MODE;
 }
 
-extern inline uint32_t fileio_file_text_mode() {
+extern inline uint32_t fileio_file_text_mode(void) {
     return _FILE_TEXT_MODE;
 }
 
@@ -231,7 +231,7 @@ struct Array *fileio_read_file_line(const struct File *file) {
     return result;
 }
 
-bool fileio_read_line_reached_EOF() {
+bool fileio_read_line_reached_EOF(void) {
     return read_line_EOF;
 }
 

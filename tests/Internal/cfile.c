@@ -4,7 +4,7 @@
 #define EPSL_COMMON_PREFIX "C_"
 
 #ifdef EPSL_PROJECT
-void *C_get_ptr() {
+void *C_get_ptr(void) {
     uint32_t *data = malloc(sizeof(uint32_t));
     *data = 12;
     return data;

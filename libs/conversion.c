@@ -25,7 +25,7 @@ struct ByteArray {
     char *content;
 };
 
-static bool is_network_byte_order() {
+static bool is_network_byte_order(void) {
     union {
         uint16_t num;
         char arr[2];

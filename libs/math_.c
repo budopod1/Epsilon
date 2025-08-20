@@ -171,7 +171,7 @@ uint32_t math_array_LCM(struct UIntArray *nums) {
     return math_uprod(nums) / GCD;
 }
 
-double math_get_e() {
+double math_get_e(void) {
     return M_E;
 }
 
