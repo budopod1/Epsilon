@@ -267,7 +267,7 @@ bool fileio_write_to_file(const struct File *file, const struct Array *text) {
 }
 
 void fileio_free_file(struct File *file) {
-    // We don't need a check for if the file is already closed, becauuse
+    // We don't need a check for if the file is already closed, because
     // close_file contains one itself
     fileio_close_file(file);
     free(file);
