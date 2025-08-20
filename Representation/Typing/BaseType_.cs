@@ -6,7 +6,7 @@ public class BaseType_ : IEquatable<BaseType_> {
         "Byte", // equivalent to W8
         "W", // whole numbers (unsigned ints)
         "Z", // integers (signed ints)
-        "Q", // floats
+        "R", // floats
         "Array",
         "Optional",
         "Null",
@@ -16,11 +16,11 @@ public class BaseType_ : IEquatable<BaseType_> {
     ];
 
     public static readonly List<string> NumberTypes_ = [
-        "Byte", "W", "Z", "Q", "Bool"
+        "Byte", "W", "Z", "R", "Bool"
     ];
 
     public static readonly Dictionary<string, int> BitTypes_ = new() {
-        {"W", 32}, {"Z", 32}, {"Q", 64}
+        {"W", 32}, {"Z", 32}, {"R", 64}
     };
 
     public static readonly List<string> IntTypes_ = [
@@ -28,11 +28,11 @@ public class BaseType_ : IEquatable<BaseType_> {
     ];
 
     public static readonly List<string> FloatTypes_ = [
-        "Q"
+        "R"
     ];
 
     public static readonly List<string> BitMeaningfulTypes_ = [
-        "W", "Z", "Q", "Bool", "Byte"
+        "W", "Z", "R", "Bool", "Byte"
     ];
 
     public static readonly Dictionary<string, int> SpecialPresetBits = new() {
@@ -47,10 +47,10 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static readonly Dictionary<string, List<string>> ConvertibleTo = new() {
-        {"Bool", new List<string> {"Byte", "W", "Z", "Q"}},
-        {"Byte", new List<string> {"W", "Z", "Q"}},
-        {"W", new List<string> {"Z", "Q"}},
-        {"Z", new List<string> {"Q"}},
+        {"Bool", new List<string> {"Byte", "W", "Z", "R"}},
+        {"Byte", new List<string> {"W", "Z", "R"}},
+        {"W", new List<string> {"Z", "R"}},
+        {"Z", new List<string> {"R"}},
     };
 
     public static readonly Dictionary<string, List<string>> EquivalentToBesidesBits = new() {
@@ -60,15 +60,15 @@ public class BaseType_ : IEquatable<BaseType_> {
     };
 
     public static readonly Dictionary<string, List<string>> CastableTo = new() {
-        {"Bool", new List<string> {"Byte", "W", "Z", "Q"}},
-        {"Byte", new List<string> {"Bool", "W", "Z", "Q"}},
-        {"W", new List<string> {"Bool", "Byte", "Z", "Q"}},
-        {"Z", new List<string> {"Bool", "Byte", "W", "Q"}},
-        {"Q", new List<string> {"Bool", "Byte", "W", "Z"}},
+        {"Bool", new List<string> {"Byte", "W", "Z", "R"}},
+        {"Byte", new List<string> {"Bool", "W", "Z", "R"}},
+        {"W", new List<string> {"Bool", "Byte", "Z", "R"}},
+        {"Z", new List<string> {"Bool", "Byte", "W", "R"}},
+        {"R", new List<string> {"Bool", "Byte", "W", "Z"}},
     };
 
     public static readonly List<string> ValueTypes_ = [
-        "Bool", "Byte", "W", "Z", "Q", "Null", "Internal"
+        "Bool", "Byte", "W", "Z", "R", "Null", "Internal"
     ];
 
     readonly string name;

@@ -56,10 +56,10 @@ if (specialized fn [null] ["stringify"] [[Val] [outer_val, outer_result]]) {
         if ([type_].is_float) {
             Str:specifier_txt = "";
             if (bits <= 32) {
-                new_type_ = Q_ [32];
+                new_type_ = R_ [32];
                 specifier_txt = "%f\0";
             } else {
-                new_type_ = Q_ [64];
+                new_type_ = R_ [64];
                 specifier_txt = "%lf\0";
             };
             specifier_optional = const str [specifier_txt];

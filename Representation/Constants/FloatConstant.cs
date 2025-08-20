@@ -12,7 +12,7 @@ public class FloatConstant(double value) : INumberConstant {
     }
 
     public Type_ GetType_() {
-        return new Type_("Q");
+        return new Type_("R");
     }
 
     public double GetDoubleValue() {
