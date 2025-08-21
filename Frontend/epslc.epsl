@@ -1,0 +1,181 @@
+$import fileio;
+$import commandconfig;
+
+Z#main {
+    ConfigProps:config = ConfigProps [[:ConfigProp] [
+        StringProp ["file"],
+        StringProp ["package-name"],
+        StringProp ["url"],
+
+        EnumProp ["cache-mode", [Str] ["dont-use", "dont-load", "auto", "always"]],
+        EnumProp ["optimization-level", [Str] ["0", "min", "1", "normal", "2", "max"]],
+        BoolProp ["generate-error-frames"],
+        BoolProp ["link-builtins"],
+        StringsProp ["clang-parse-options"],
+        StringsProp ["linking-options"],
+        StringsProp ["object-gen-options"],
+        StringsProp ["packages"],
+        StringProp ["output-location"],
+        EnumProp ["output-type", [Str] [
+            "executable", "llvm-ll", "llvm-bc", "package-both", "package-obj",
+            "object", "shared-obejct"
+        ]],
+
+        BoolProp ["all-packages"]
+    ]];
+
+    ConfigValues:default_values = ConfigValues [[:ConfigValue] [
+        EnumConfigValue ["cache-mode", "auto"],
+        EnumConfigValue ["optimization-level", "min"],
+        BoolConfigValue ["generate-error-frames", true],
+        BoolConfigValue ["link-builtins", true],
+        EnumConfigValue ["output-type", "executable"],
+
+        BoolConfigValue ["all-packages", false]
+    ]];
+
+    ArgumentBranch:root_branch = make root branch;
+    [root_branch].flag[[Str] ["help", "h"]] [CmdShowHelp []]
+        help: ["Show this help"];
+
+    ArgumentBranch:compile_branch = [root_branch].add_branch["compile"];
+    compile_branch.help = "Compile an Epsilon file or project";
+    [compile_branch].positional[StringInputSource ["file"]] optional: [true]
+        help: ["The file or project to compile"];
+
+    [compile_branch].flag[[Str] ["cache-mode", "H"]] [StringInputSource ["cache-mode"]]
+        help: ["The mode to use when loading and saving parital compilation files."];
+    [compile_branch].flag[[Str] ["opt", "O"]] [StringInputSource ["optimization-level"]]
+        help: ["The optimization level"];
+
+    [compile_branch].flag[[Str] ["no-generate-error-frames", "F"]]
+        [CmdApplyConstant [BoolConfigValue ["generate-error-frames", false]]]
+        help: ["Don't generate error frames"];
+
+    [compile_branch].flag[[Str] ["no-link-builtins"]]
+        [CmdApplyConstant [BoolConfigValue ["link-builtins", false]]]
+        help: ["Don't link to Epsilon's builtins"];
+
+    [compile_branch].flag[[Str] ["clang-parse-options", "C"]]
+        [MultiStringInputSource ["clang-parse-options", "END"]]
+        help: ["Additional options to send to clang when parsing C or C++ code"];
+    [compile_branch].flag[[Str] ["clang-parse-option", "c"]]
+        [StringInputSource ["clang-parse-options"]]
+        help: ["An option to send to clang when parsing C or C++ code"];
+
+    [compile_branch].flag[[Str] ["linking-options", "Z"]]
+        [MultiStringInputSource ["linking-options", "END"]]
+        help: ["Additional options to send to clang or ld when linking"];
+    [compile_branch].flag[[Str] ["linking-option", "z"]]
+        [StringInputSource ["linking-options"]]
+        help: ["An option to send to clang or ld when linking"];
+
+    [compile_branch].flag[[Str] ["object-gen-options", "G"]]
+        [MultiStringInputSource ["object-gen-options", "END"]]
+        help: ["Additional options to send to llc or clang when generating object files"];
+    [compile_branch].flag[[Str] ["object-gen-option", "G"]]
+        [StringInputSource ["object-gen-options"]]
+        help: ["An option to send to send to llc or clang when generating object files"];
+
+    [compile_branch].flag[[Str] ["package", "p"]] [StringInputSource ["packages"]]
+        help: ["A package to include during compilation"];
+
+    [compile_branch].flag[[Str] ["output", "o"]] [StringInputSource ["output-location"]]
+        help: ["The location to place the output in"];
+
+    [compile_branch].flag[[Str] ["output-type", "t"]] [StringInputSource ["output-type"]]
+        help: ["The type of output to produce"];
+
+    ArgumentBranch:clean_branch = [root_branch].add_branch["clean"];
+    clean_branch.help = "Remove a project's temporary files";
+    [clean_branch].positional[StringInputSource ["file"]] optional: [true]
+        help: ["The project to clean"];
+
+    ArgumentBranch:init_branch = [root_branch].add_branch["init"];
+    init_branch.help = "Create a new Epsilon project";
+    [init_branch].positional[StringInputSource ["file"]] optional: [true]
+        help: ["The location of the new project entry"];
+
+    ArgumentBranch:package_branch = [root_branch].add_branch["package"];
+    package_branch.help = "Manage Epsilon packages";
+
+    ArgumentBranch:package_add_branch = [package_branch].add_branch["add"];
+    package_add_branch.help = "Add a package to a project";
+    [package_add_branch].positional[StringInputSource ["package-name"]]
+        optional: [false] help: ["The name of the package to add"];
+
+    [package_add_branch].flag[[Str] ["project", "P"]][StringInputSource ["file"]]
+        help: ["The project to add the package to"];
+
+    ArgumentBranch:package_remove_branch = [package_branch].add_branch["remove"];
+    package_remove_branch.help = "Remove a package from a project";
+    [package_remove_branch].positional[StringInputSource ["package-name"]]
+        optional: [false] help: ["The name of the package to remove"];
+
+    [package_remove_branch].flag[[Str] ["project", "P"]][StringInputSource ["file"]]
+        help: ["The project to remove the package from"];
+
+    ArgumentBranch:package_list_branch = [package_branch].add_branch["list"];
+    package_list_branch.help = "List packages";
+    [package_list_branch].positional[StringInputSource ["file"]] optional: [true]
+        help: ["The project to list the packages of"];
+
+    [package_list_branch].flag[[Str] ["all", "a"]]
+        [CmdApplyConstant [BoolConfigValue ["all-packages", true]]]
+        help: ["List all packages"];
+
+    ArgumentBranch:package_register_branch = [package_branch].add_branch["register"];
+    package_register_branch.help = "Register a project as a package";
+    [package_register_branch].positional[StringInputSource ["file"]] optional: [true]
+        help: ["The project to register as a package"];
+
+    ArgumentBranch:package_install_branch = [package_branch].add_branch["install"];
+    package_install_branch.help = "Install a package from the specified URL";
+    [package_install_branch].positional[StringInputSource ["url"]] optional: [false]
+        help: ["The URL to install the package from"];
+
+    [package_install_branch].flag[[Str] ["project", "P"]][StringInputSource ["file"]]
+        help: ["The project to add the package to"];
+
+    ArgumentBranch:package_uninstall_branch = [package_branch].add_branch["uninstall"];
+    package_uninstall_branch.help = "Uninstall a package";
+    [package_uninstall_branch].positional[StringInputSource ["package-name"]]
+        optional: [false] help: ["The name of the package to uninstall"];
+
+    [package_uninstall_branch].flag[[Str] ["project", "P"]][StringInputSource ["file"]]
+        help: ["The project to remove the package from"];
+
+    CommandSpec:spec = CommandSpec [
+        config,
+        "epslc",
+        "A compiler for the Epsilon programming language",
+        null,
+        root_branch,
+        default help style
+    ];
+
+    CommandParsingResult:result = [spec].parse_command_args;
+    [Str]:branch = result.branch_path;
+
+    abort "Not implemented";
+    /*
+    if [branch] deep equals [[Str] ["compile"]] {
+        File:file = [open_file["entry.epslproj"][FILE_READ_MODE]]
+            .expect["Cannot find entry.epslproj"];
+
+        Str:json_txt = [[file].read_all]
+            .expect["Cannot read entry.epslproj"];
+
+        JSONConfigResult:config_result = [config].from_json[json_txt];
+
+        ConfigValues:json_config_values = [config_result.values]
+            .expect["Cannot parse entry.epslproj"];
+
+        ConfigChain:chain = ConfigChain [[ConfigValues] [
+            result.values, json_config_values, default_values
+        ]];
+    };
+    */
+
+    return 0;
+}
