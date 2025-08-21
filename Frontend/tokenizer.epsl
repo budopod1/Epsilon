@@ -15,7 +15,7 @@ IntTokenData {
 
 @extends TokenData;
 FloatTokenData {
-    Q:val
+    R:val
 }
 
 @extends TokenData;
@@ -193,7 +193,7 @@ TokenDataResult#parse_int_token [Str:txt] {
 }
 
 TokenDataResult#parse_float_token [Str:txt] {
-    given parse_float [txt] as Q:val {
+    given parse_float [txt] as R:val {
         return TokenDataResult [FloatTokenData [val], null];
     } else {
         return TokenDataResult [null, TokenizationError [

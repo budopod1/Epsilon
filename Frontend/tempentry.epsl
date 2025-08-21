@@ -17,7 +17,7 @@ $import toplevel;
 
     W:repeat_count = 200;
 
-    Q:start = read perf counter;
+    R:start = read perf counter;
 
     println["Timing tokenization..."];
     for L:i to repeat_count {
@@ -25,7 +25,7 @@ $import toplevel;
         result1 = initially_tokenized;
         token_count = [initially_tokenized.tokens.ids].len;
     };
-    Q:tokenized = read perf counter;
+    R:tokenized = read perf counter;
 
     println["Timing grouping..."];
     given result1 as TokenizationResult:initially_tokenized {
@@ -33,11 +33,11 @@ $import toplevel;
             result2 = group tokens [initially_tokenized.tokens];
         };
     };
-    Q:grouped = read perf counter;
+    R:grouped = read perf counter;
 
-    Q:tokenization_duration = (tokenized - start) / repeat_count;
-    Q:group_duration = (grouped - tokenized) / repeat_count;
-    Q:total_duration = (grouped - start) / repeat_count;
+    R:tokenization_duration = (tokenized - start) / repeat_count;
+    R:group_duration = (grouped - tokenized) / repeat_count;
+    R:total_duration = (grouped - start) / repeat_count;
 
     println["Token count: {}" % token_count];
     println["Line count: {}" % line_count];
