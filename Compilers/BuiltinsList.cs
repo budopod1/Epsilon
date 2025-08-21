@@ -213,9 +213,9 @@ public static class BuiltinsList {
                     new TextPatternSegment("|")
                 ], new SlotPatternProcessor([1])
             ), [
-                new("value", new Type_("Q", 64))
+                new("value", new Type_("R", 64))
             ], "builtin15", (List<Type_> types_) => new Type_(
-                "Q", types_[0].GetBaseType_().GetBits()
+                "R", types_[0].GetBaseType_().GetBits()
             ), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -529,7 +529,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([1])
             ), [
                 new("str", Type_.String()),
-            ], "builtin38", new Type_("Q", 64).OptionalOf(), FunctionSource.Builtin
+            ], "builtin38", new Type_("R", 64).OptionalOf(), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -537,7 +537,7 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment(),
                 ], new SlotPatternProcessor([1])
             ), [
-                new("val", new Type_("Q", 64)),
+                new("val", new Type_("R", 64)),
             ], "builtin39", new Type_("Bool"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -663,7 +663,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "floor")
                 ], new SlotPatternProcessor([0])
             ), [
-                new("value", new Type_("Q"))
+                new("value", new Type_("R"))
             ], "builtin49", new Type_("Z"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -673,7 +673,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "ceil")
                 ], new SlotPatternProcessor([0])
             ), [
-                new("value", new Type_("Q"))
+                new("value", new Type_("R"))
             ], "builtin50", new Type_("Z"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -683,7 +683,7 @@ public static class BuiltinsList {
                     new UnitPatternSegment<string>(typeof(Name), "round")
                 ], new SlotPatternProcessor([0])
             ), [
-                new("value", new Type_("Q"))
+                new("value", new Type_("R"))
             ], "builtin51", new Type_("Z"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(

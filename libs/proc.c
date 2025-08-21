@@ -23,7 +23,7 @@ void proc_exit(int32_t code) {
     exit((int)code);
 }
 
-struct Array *proc_get_argv() {
+struct Array *proc_get_argv(void) {
     if (epsl_argv == NULL) {
         epsl_panicf(ERR_START "argv is not available");
     }

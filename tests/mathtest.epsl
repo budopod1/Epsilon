@@ -1,4 +1,4 @@
 @id testee;
-Q#math[Q:v] {
+R#math[R:v] {
     return v ** pi + 4;
 }

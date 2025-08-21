@@ -1,6 +1,6 @@
 $import math;
 
 @id testee;
-Q#do_test[Q:a] {
+R#do_test[R:a] {
     return cmplx [a] ** [0.5].imag;
 }

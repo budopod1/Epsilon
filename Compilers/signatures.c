@@ -14,7 +14,7 @@ enum EPSLBuiltinType_ {
     EPSLType_Byte,
     EPSLType_W,
     EPSLType_Z,
-    EPSLType_Q,
+    EPSLType_R,
     EPSLType_Array,
     EPSLType_Optional,
     EPSLType_Internal
@@ -86,7 +86,7 @@ const char *const builtin_type__names[] = {
     "Byte",
     "W",
     "Z",
-    "Q",
+    "R",
     "Array",
     "Optional",
     "Internal"
@@ -528,7 +528,7 @@ void CXType_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *out) {
     case CXType_Double:
     case CXType_Float128:
         out->base_type_.is_builtin = true;
-        out->base_type_.name.builtin = EPSLType_Q;
+        out->base_type_.name.builtin = EPSLType_R;
         out->base_type_.bits = clang_Type_getSizeOf(in) * 8;
         out->generic_count = 0;
         out->generics = NULL;

@@ -59,7 +59,7 @@ int32_t epsl_snprintf(char *buffer, uint64_t bufsz, const char *format, ...);
 
 void epsl_exit(uint32_t status);
 
-void epsl_out_of_memory_fail();
+void epsl_out_of_memory_fail(void);
 
 void *epsl_malloc(uint64_t size);
 
@@ -67,7 +67,7 @@ void *epsl_calloc(uint64_t num, uint64_t size);
 
 void *epsl_realloc(void *ptr, uint64_t new_size);
 
-void epsl_nonresizable_array_fail();
+void epsl_nonresizable_array_fail(void);
 
 void epsl_increment_length(struct Array *array, uint64_t elem_size);
 
@@ -95,21 +95,21 @@ void epsl_print(const struct Array *string);
 
 void epsl_println(const struct Array *string);
 
-extern inline char *epsl_format_W8();
+extern inline char *epsl_format_W8(void);
 
-extern inline char *epsl_format_W16();
+extern inline char *epsl_format_W16(void);
 
-extern inline char *epsl_format_W32();
+extern inline char *epsl_format_W32(void);
 
-extern inline char *epsl_format_W64();
+extern inline char *epsl_format_W64(void);
 
-extern inline char *epsl_format_Z8();
+extern inline char *epsl_format_Z8(void);
 
-extern inline char *epsl_format_Z16();
+extern inline char *epsl_format_Z16(void);
 
-extern inline char *epsl_format_Z32();
+extern inline char *epsl_format_Z32(void);
 
-extern inline char *epsl_format_Z64();
+extern inline char *epsl_format_Z64(void);
 
 struct Array *epsl_slice_array(const struct Array *array, uint64_t start, uint64_t end, uint64_t elem);
 
@@ -127,11 +127,11 @@ uint64_t epsl_parse_int(const struct Array *str);
 
 double epsl_parse_float(const struct Array *str);
 
-struct Array *epsl_read_input_line();
+struct Array *epsl_read_input_line(void);
 
 void epsl_abort(const struct Array *string);
 
-void epsl_abort_void();
+void epsl_abort_void(void);
 
 struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size);
 
@@ -139,16 +139,16 @@ void epsl_sort_array(struct Array *array, uint64_t elem_size, int32_t (*compar)(
 
 struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint64_t elem);
 
-void epsl_null_value_fail();
+void epsl_null_value_fail(void);
 
 struct Array *epsl_format_string(struct Array *template_, struct Array *values[], uint32_t value_count);
 
 bool epsl_check_vtable_extends(struct VTableBase *vtable, uint64_t id);
 
-void epsl_array_idx_fail();
+void epsl_array_idx_fail(void);
 
-void epsl_div_0_fail();
+void epsl_div_0_fail(void);
 
-void epsl_array_empty_fail();
+void epsl_array_empty_fail(void);
 
 #endif

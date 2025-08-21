@@ -128,7 +128,7 @@ Val#make constant [:JSON:constant_json] of type_ [Type_:type_] {
     } elif ([constant_type] equals ["float-standard"]) {
         return c [[val_json].get_double] [type_];
     } elif ([constant_type] equals ["float-special"]) {
-        Q:val = NaN;
+        R:val = NaN;
         Str:val_str = [val_json].get_str;
         if ([val_str] equals ["+Infinity"]) {
             val = infinity;

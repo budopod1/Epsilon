@@ -6,7 +6,7 @@ from epslc import epslc
 def build_backend(args=None):
     if args is None:
         args = []
-    for proj in EPSL_SOURCE_DIRS:
+    for proj in BACKEND_SOURCE_DIRS:
         if epslc(["compile", proj+"/", *args]) != 0:
             return
     print("Compiled backend")

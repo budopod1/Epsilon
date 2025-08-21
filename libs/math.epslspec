@@ -1,7 +1,7 @@
 {"functions": [
-    {"id": "math_natural_log", "callee": "llvm.log.f64", "return_type_": "Q64", "template": [{"type": "name", "name": "ln"}, {"type": "argument", "name": "argument", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_natural_log", "callee": "llvm.log.f64", "return_type_": "R64", "template": [{"type": "name", "name": "ln"}, {"type": "argument", "name": "argument", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_varBase_log", "callee": "math_varBase_log", "return_type_": "Q64", "template": [{"type": "name", "name": "log"}, {"type": "argument", "name": "argument", "type_": "Q64"}, {"type": "argument", "name": "base", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_varBase_log", "callee": "math_varBase_log", "return_type_": "R64", "template": [{"type": "name", "name": "log"}, {"type": "argument", "name": "argument", "type_": "R64"}, {"type": "argument", "name": "base", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
     {"id": "math_add_C", "callee": "math_add_C", "return_type_": "C", "template": [{"type": "argument", "name": "a", "type_": "C"}, {"type": "text", "text": "+"}, {"type": "argument", "name": "b", "type_": "C"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
@@ -13,11 +13,11 @@
     
     {"id": "math_exp_C", "callee": "math_exp_C", "return_type_": "C", "template": [{"type": "name", "name": "exp"}, {"type": "argument", "name": "val", "type_": "C"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_exponent_to_cmplx", "callee": "math_exponent_to_cmplx", "return_type_": "C", "template": [{"type": "name", "name": "cmplx"}, {"type": "argument", "name": "base", "type_": "Q64"}, {"type": "text", "text": "*"}, {"type": "text", "text": "*"}, {"type": "argument", "name": "exponent", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_exponent_to_cmplx", "callee": "math_exponent_to_cmplx", "return_type_": "C", "template": [{"type": "name", "name": "cmplx"}, {"type": "argument", "name": "base", "type_": "R64"}, {"type": "text", "text": "*"}, {"type": "text", "text": "*"}, {"type": "argument", "name": "exponent", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_cmplx_to_exponent", "callee": "math_cmplx_to_exponent", "return_type_": "C", "template": [{"type": "argument", "name": "base", "type_": "C"}, {"type": "text", "text": "*"}, {"type": "text", "text": "*"}, {"type": "argument", "name": "exponent", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_cmplx_to_exponent", "callee": "math_cmplx_to_exponent", "return_type_": "C", "template": [{"type": "argument", "name": "base", "type_": "C"}, {"type": "text", "text": "*"}, {"type": "text", "text": "*"}, {"type": "argument", "name": "exponent", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_exp", "callee": "exp", "return_type_": "Q64", "template": [{"type": "name", "name": "exp"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_exp", "callee": "exp", "return_type_": "R64", "template": [{"type": "name", "name": "exp"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
     {"id": "math_sum", "callee": "math_sum", "return_type_": "Z", "template": [{"type": "name", "name": "sum"}, {"type": "argument", "name": "nums", "type_": "Array<Z>"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
@@ -35,52 +35,52 @@
     
     {"id": "math_array_LCM", "callee": "math_array_LCM", "return_type_": "W", "template": [{"type": "name", "name": "LCM"}, {"type": "argument", "name": "nums", "type_": "Array<W>"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_get_e", "callee": "math_get_e", "return_type_": "Q64", "template": [{"type": "name", "name": "e"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_get_e", "callee": "math_get_e", "return_type_": "R64", "template": [{"type": "name", "name": "e"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_is_finite_32", "callee": "math_is_finite_32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_finite"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_is_finite_32", "callee": "math_is_finite_32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_finite"}, {"type": "argument", "name": "val", "type_": "R32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_is_finite_64", "callee": "math_is_finite_64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_finite"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_is_finite_64", "callee": "math_is_finite_64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_finite"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_is_infinite_32", "callee": "math_is_infinite_32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_infinite"}, {"type": "argument", "name": "val", "type_": "Q32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_is_infinite_32", "callee": "math_is_infinite_32", "return_type_": "Bool", "template": [{"type": "name", "name": "is_infinite"}, {"type": "argument", "name": "val", "type_": "R32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_is_infinite_64", "callee": "math_is_infinite_64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_infinite"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_is_infinite_64", "callee": "math_is_infinite_64", "return_type_": "Bool", "template": [{"type": "name", "name": "is_infinite"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_sin", "callee": "llvm.sin.f64", "return_type_": "Q64", "template": [{"type": "name", "name": "sin"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_sin", "callee": "llvm.sin.f64", "return_type_": "R64", "template": [{"type": "name", "name": "sin"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_cos", "callee": "llvm.cos.f64", "return_type_": "Q64", "template": [{"type": "name", "name": "cos"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_cos", "callee": "llvm.cos.f64", "return_type_": "R64", "template": [{"type": "name", "name": "cos"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_tan", "callee": "tan", "return_type_": "Q64", "template": [{"type": "name", "name": "tan"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_tan", "callee": "tan", "return_type_": "R64", "template": [{"type": "name", "name": "tan"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_asin", "callee": "asin", "return_type_": "Q64", "template": [{"type": "name", "name": "asin"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_asin", "callee": "asin", "return_type_": "R64", "template": [{"type": "name", "name": "asin"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_acos", "callee": "acos", "return_type_": "Q64", "template": [{"type": "name", "name": "acos"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_acos", "callee": "acos", "return_type_": "R64", "template": [{"type": "name", "name": "acos"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_atan", "callee": "atan", "return_type_": "Q64", "template": [{"type": "name", "name": "atan"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_atan", "callee": "atan", "return_type_": "R64", "template": [{"type": "name", "name": "atan"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_atan2", "callee": "atan2", "return_type_": "Q64", "template": [{"type": "name", "name": "atan"}, {"type": "argument", "name": "y", "type_": "Q64"}, {"type": "argument", "name": "x", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_atan2", "callee": "atan2", "return_type_": "R64", "template": [{"type": "name", "name": "atan"}, {"type": "argument", "name": "y", "type_": "R64"}, {"type": "argument", "name": "x", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_fsign", "callee": "math_fsign", "return_type_": "Z", "template": [{"type": "argument", "name": "sign", "type_": "Q64"}, {"type": "text", "text": "."}, {"type": "name", "name": "sign"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_fsign", "callee": "math_fsign", "return_type_": "Z", "template": [{"type": "argument", "name": "sign", "type_": "R64"}, {"type": "text", "text": "."}, {"type": "name", "name": "sign"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
     {"id": "math_isign", "callee": "math_isign", "return_type_": "Z", "template": [{"type": "argument", "name": "sign", "type_": "Z"}, {"type": "text", "text": "."}, {"type": "name", "name": "sign"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_copysign", "callee": "llvm.copysign.f64", "return_type_": "Q64", "template": [{"type": "argument", "name": "magnitude", "type_": "Q64"}, {"type": "text", "text": "."}, {"type": "name", "name": "copysign"}, {"type": "argument", "name": "direction", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_copysign", "callee": "llvm.copysign.f64", "return_type_": "R64", "template": [{"type": "argument", "name": "magnitude", "type_": "R64"}, {"type": "text", "text": "."}, {"type": "name", "name": "copysign"}, {"type": "argument", "name": "direction", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
     {"id": "math_icopysign", "callee": "math_icopysign", "return_type_": "Z", "template": [{"type": "argument", "name": "magnitude", "type_": "Z"}, {"type": "text", "text": "."}, {"type": "name", "name": "copysign"}, {"type": "argument", "name": "direction", "type_": "Z"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_sinh", "callee": "sinh", "return_type_": "Q64", "template": [{"type": "name", "name": "sinh"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_sinh", "callee": "sinh", "return_type_": "R64", "template": [{"type": "name", "name": "sinh"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_cosh", "callee": "cosh", "return_type_": "Q64", "template": [{"type": "name", "name": "cosh"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_cosh", "callee": "cosh", "return_type_": "R64", "template": [{"type": "name", "name": "cosh"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_tanh", "callee": "tanh", "return_type_": "Q64", "template": [{"type": "name", "name": "tanh"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_tanh", "callee": "tanh", "return_type_": "R64", "template": [{"type": "name", "name": "tanh"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_asinh", "callee": "asinh", "return_type_": "Q64", "template": [{"type": "name", "name": "asinh"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_asinh", "callee": "asinh", "return_type_": "R64", "template": [{"type": "name", "name": "asinh"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_acosh", "callee": "acosh", "return_type_": "Q64", "template": [{"type": "name", "name": "acosh"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_acosh", "callee": "acosh", "return_type_": "R64", "template": [{"type": "name", "name": "acosh"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "math_atanh", "callee": "atanh", "return_type_": "Q64", "template": [{"type": "name", "name": "atanh"}, {"type": "argument", "name": "val", "type_": "Q64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"}
+    {"id": "math_atanh", "callee": "atanh", "return_type_": "R64", "template": [{"type": "name", "name": "atanh"}, {"type": "argument", "name": "val", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"}
 ], "types_": [
-    {"given_name": "Q64", "name": "Q", "bits": 64, "generics": []},
-    {"given_name": "Q32", "name": "Q", "bits": 32, "generics": []},
+    {"given_name": "R64", "name": "R", "bits": 64, "generics": []},
+    {"given_name": "R32", "name": "R", "bits": 32, "generics": []},
     {"given_name": "Z", "name": "Z", "bits": 32, "generics": []},
     {"given_name": "W", "name": "W", "bits": 32, "generics": []},
     {"given_name": "C", "name": "C", "bits": null, "generics": []},
@@ -88,5 +88,5 @@
     {"given_name": "Array<W>", "name": "Array", "bits": null, "generics": ["W"]},
     {"given_name": "Bool", "name": "Bool", "bits": null, "generics": []}
 ], "structs": [
-    {"name": "C", "fields": [{"name": "real", "type_": "Q64"}, {"name": "imag", "type_": "Q64"}], "symbol": "math_C", "destructor": null, "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null}
+    {"name": "C", "fields": [{"name": "real", "type_": "R64"}, {"name": "imag", "type_": "R64"}], "symbol": "math_C", "destructor": null, "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null}
 ], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "object_gen_configs": [], "imports": [], "ir": "math_.bc", "obj": "math_.o", "source": null, "source_type": "Library", "id_path": "libs/math"}

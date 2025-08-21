@@ -73,7 +73,7 @@ void epsl_exit(uint32_t status) {
     exit(status);
 }
 
-void epsl_out_of_memory_fail() {
+void epsl_out_of_memory_fail(void) {
     epsl_panicf(ERR_START "Out of memory");
 }
 
@@ -101,7 +101,7 @@ void *epsl_realloc(void *ptr, uint64_t new_size) {
     return result;
 }
 
-void epsl_nonresizable_array_fail() {
+void epsl_nonresizable_array_fail(void) {
     epsl_panicf(ERR_START "The specified array can't be resized");
 }
 
@@ -261,42 +261,42 @@ void epsl_println(const struct Array *string) {
     putc('\n', stdout);
 }
 
-extern inline char *epsl_format_W8() {
+extern inline char *epsl_format_W8(void) {
     static char *result = "%"PRIu8;
     return result;
 }
 
-extern inline char *epsl_format_W16() {
+extern inline char *epsl_format_W16(void) {
     static char *result = "%"PRIu16;
     return result;
 }
 
-extern inline char *epsl_format_W32() {
+extern inline char *epsl_format_W32(void) {
     static char *result = "%"PRIu32;
     return result;
 }
 
-extern inline char *epsl_format_W64() {
+extern inline char *epsl_format_W64(void) {
     static char *result = "%"PRIu64;
     return result;
 }
 
-extern inline char *epsl_format_Z8() {
+extern inline char *epsl_format_Z8(void) {
     static char *result = "%"PRId8;
     return result;
 }
 
-extern inline char *epsl_format_Z16() {
+extern inline char *epsl_format_Z16(void) {
     static char *result = "%"PRId16;
     return result;
 }
 
-extern inline char *epsl_format_Z32() {
+extern inline char *epsl_format_Z32(void) {
     static char *result = "%"PRId32;
     return result;
 }
 
-extern inline char *epsl_format_Z64() {
+extern inline char *epsl_format_Z64(void) {
     static char *result = "%"PRId64;
     return result;
 }
@@ -493,7 +493,7 @@ parse_error:
     return NAN;
 }
 
-struct Array *epsl_read_input_line() {
+struct Array *epsl_read_input_line(void) {
     // Maybe replace with a real readline solution like GNU readline?
     struct Array *result = epsl_blank_array(sizeof(char));
     while (true) {
@@ -509,7 +509,7 @@ void epsl_abort(const struct Array *string) {
     epsl_panic(string->content, string->length);
 }
 
-void epsl_abort_void() {
+void epsl_abort_void(void) {
     epsl_panicf("abort");
 }
 
@@ -557,7 +557,7 @@ struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint6
     return result;
 }
 
-void epsl_null_value_fail() {
+void epsl_null_value_fail(void) {
     epsl_panicf(ERR_START "Expected non-null value, found null");
 }
 
@@ -620,14 +620,14 @@ bool epsl_check_vtable_extends(struct VTableBase *vtable, uint64_t id) {
     return false;
 }
 
-void epsl_array_idx_fail() {
+void epsl_array_idx_fail(void) {
     epsl_panicf(ERR_START "Specified array index is greater or equal to array length");
 }
 
-void epsl_div_0_fail() {
+void epsl_div_0_fail(void) {
     epsl_panicf(ERR_START "Cannot divide an integer by 0");
 }
 
-void epsl_array_empty_fail() {
+void epsl_array_empty_fail(void) {
     epsl_panicf(ERR_START "Expected an array with a nonzero length");
 }

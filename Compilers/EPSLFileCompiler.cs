@@ -1290,7 +1290,7 @@ Please clarify between the functions that take the types:
                     new PatternMatcher(
                         [
                             new AndPatternSegment(
-                                new Type_PatternSegment(new Type_("Q")),
+                                new Type_PatternSegment(new Type_("R")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             ),
                             new TextPatternSegment("+"),
@@ -1302,7 +1302,7 @@ Please clarify between the functions that take the types:
                     new PatternMatcher(
                         [
                             new AndPatternSegment(
-                                new Type_PatternSegment(new Type_("Q")),
+                                new Type_PatternSegment(new Type_("R")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             ),
                             new TextPatternSegment("-"),
@@ -1316,7 +1316,7 @@ Please clarify between the functions that take the types:
                             new TextPatternSegment("+"),
                             new TextPatternSegment("+"),
                             new AndPatternSegment(
-                                new Type_PatternSegment(new Type_("Q")),
+                                new Type_PatternSegment(new Type_("R")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             )
                         ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
@@ -1328,7 +1328,7 @@ Please clarify between the functions that take the types:
                             new TextPatternSegment("-"),
                             new TextPatternSegment("-"),
                             new AndPatternSegment(
-                                new Type_PatternSegment(new Type_("Q")),
+                                new Type_PatternSegment(new Type_("R")),
                                 new TypePatternSegment(typeof(IAssignableValue))
                             )
                         ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
@@ -1338,10 +1338,10 @@ Please clarify between the functions that take the types:
                 ]),
                 new PatternMatcher(
                     [
-                        new Type_PatternSegment(new Type_("Q")),
+                        new Type_PatternSegment(new Type_("R")),
                         new TextPatternSegment("*"),
                         new TextPatternSegment("*"),
-                        new Type_PatternSegment(new Type_("Q"))
+                        new Type_PatternSegment(new Type_("R"))
                     ], new Wrapper2PatternProcessor(
                         new SlotPatternProcessor([0, 3]),
                         typeof(Exponentiation)
@@ -1350,7 +1350,7 @@ Please clarify between the functions that take the types:
                 new PatternMatcher(
                     [
                         new TextPatternSegment("-"),
-                        new Type_PatternSegment(new Type_("Q"))
+                        new Type_PatternSegment(new Type_("R"))
                     ], new Wrapper2PatternProcessor(
                         new SlotPatternProcessor([1]),
                         typeof(Negation)
@@ -1379,9 +1379,9 @@ Please clarify between the functions that take the types:
                 new CombinedMatchersMatcher([
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment("*"),
-                            new Type_PatternSegment(new Type_("Q"))
+                            new Type_PatternSegment(new Type_("R"))
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 2]),
                             typeof(Multiplication)
@@ -1389,9 +1389,9 @@ Please clarify between the functions that take the types:
                     ),
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment("/"),
-                            new Type_PatternSegment(new Type_("Q"))
+                            new Type_PatternSegment(new Type_("R"))
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 2]),
                             typeof(Division)
@@ -1410,9 +1410,9 @@ Please clarify between the functions that take the types:
                     ),
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment("%"),
-                            new Type_PatternSegment(new Type_("Q"))
+                            new Type_PatternSegment(new Type_("R"))
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 2]),
                             typeof(Modulo)
@@ -1422,9 +1422,9 @@ Please clarify between the functions that take the types:
                 new CombinedMatchersMatcher([
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment("+"),
-                            new Type_PatternSegment(new Type_("Q"))
+                            new Type_PatternSegment(new Type_("R"))
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 2]),
                             typeof(Addition)
@@ -1432,9 +1432,9 @@ Please clarify between the functions that take the types:
                     ),
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment("-"),
-                            new Type_PatternSegment(new Type_("Q"))
+                            new Type_PatternSegment(new Type_("R"))
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 2]),
                             typeof(Subtraction)
@@ -1442,7 +1442,7 @@ Please clarify between the functions that take the types:
                     ),
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TypePatternSegment(typeof(Negation))
                         ], new FuncPatternProcessor<List<IToken>>(tokens => [
                             new Subtraction(
@@ -1454,9 +1454,9 @@ Please clarify between the functions that take the types:
                 new CombinedMatchersMatcher([
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment(">"),
-                            new Type_PatternSegment(new Type_("Q"))
+                            new Type_PatternSegment(new Type_("R"))
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 2]),
                             typeof(Greater)
@@ -1464,9 +1464,9 @@ Please clarify between the functions that take the types:
                     ),
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment("<"),
-                            new Type_PatternSegment(new Type_("Q"))
+                            new Type_PatternSegment(new Type_("R"))
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 2]),
                             typeof(Less)
@@ -1474,10 +1474,10 @@ Please clarify between the functions that take the types:
                     ),
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment(">"),
                             new TextPatternSegment("="),
-                            new Type_PatternSegment(new Type_("Q"))
+                            new Type_PatternSegment(new Type_("R"))
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 3]),
                             typeof(GreaterEqual)
@@ -1485,10 +1485,10 @@ Please clarify between the functions that take the types:
                     ),
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                             new TextPatternSegment("<"),
                             new TextPatternSegment("="),
-                            new Type_PatternSegment(new Type_("Q")),
+                            new Type_PatternSegment(new Type_("R")),
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 3]),
                             typeof(LessEqual)
@@ -1587,7 +1587,7 @@ Please clarify between the functions that take the types:
                             [..FloatCompoundableOperators.Keys]
                         ),
                         new TextPatternSegment("="),
-                        new Type_PatternSegment(new Type_("Q"))
+                        new Type_PatternSegment(new Type_("R"))
                     ], new FuncPatternProcessor<List<IToken>>(TransformCompoundAssignments)
                 )
             ],

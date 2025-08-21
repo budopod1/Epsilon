@@ -137,7 +137,7 @@ BuiltinResult#builtin int abs with [[Val]:args] {
 
 BuiltinResult#builtin float abs with [[Val]:args] {
     W:bits = (W)args[0].type_.bits;
-    Type_:type_ = Q_ [bits];
+    Type_:type_ = R_ [bits];
     extern fn [type_] ["llvm.fabs.f{}" % bits] [[Type_] [type_]]
         [[Val] [cast [args[0]] to [type_]]];
     return make builtin result [func ret];
@@ -281,12 +281,12 @@ BuiltinResult#builtin parse int with [[Val]:args] {
 }
 
 BuiltinResult#builtin parse float with [[Val]:args] {
-    extern fn [Q_] ["epsl_parse_float"] [[Type_] [Str_]] [args];
+    extern fn [R_] ["epsl_parse_float"] [[Type_] [Str_]] [args];
     Val:fn_ret = func ret;
-    PHINode:result_phi = new PHI [Optional_ [Q_]];
-    [result_phi].add_incoming[cast [fn_ret] to [Optional_ [Q_]]];
+    PHINode:result_phi = new PHI [Optional_ [R_]];
+    [result_phi].add_incoming[cast [fn_ret] to [Optional_ [R_]]];
     if_ [is_NaN[fn_ret]];
-        [result_phi].add_incoming[c null_ [Optional_ [Q_]]];
+        [result_phi].add_incoming[c null_ [Optional_ [R_]]];
     end block;
     return make builtin result [[result_phi].place_here];
 }
@@ -343,17 +343,17 @@ BuiltinResult#builtin truthy with [[Val]:args] {
 }
 
 BuiltinResult#builtin floor with [[Val]:args] {
-    extern fn [Q_] ["llvm.floor.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
+    extern fn [R_] ["llvm.floor.f64"] [[Type_] [R_]] [[Val] [cast [args[0]] to [R_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 
 BuiltinResult#builtin ceil with [[Val]:args] {
-    extern fn [Q_] ["llvm.ceil.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
+    extern fn [R_] ["llvm.ceil.f64"] [[Type_] [R_]] [[Val] [cast [args[0]] to [R_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 
 BuiltinResult#builtin round with [[Val]:args] {
-    extern fn [Q_] ["llvm.round.f64"] [[Type_] [Q_]] [[Val] [cast [args[0]] to [Q_]]];
+    extern fn [R_] ["llvm.round.f64"] [[Type_] [R_]] [[Val] [cast [args[0]] to [R_]]];
     return make builtin result [cast [func ret] to [Z_]];
 }
 

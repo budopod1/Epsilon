@@ -8,7 +8,7 @@ def build_bootstrap():
     build_backend(["-H", "always", "-t", "llvm-ll", "-o", dev_null()])
 
     llvm_files = []
-    for dir_name in EPSL_SOURCE_DIRS:
+    for dir_name in BACKEND_SOURCE_DIRS:
         directory = Path(dir_name)
         for ext in [".ll", ".bc"]:
             llvm_files.extend(directory.glob(".*"+ext))

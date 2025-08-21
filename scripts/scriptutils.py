@@ -27,9 +27,9 @@ except ImportError:
 
 LOCAL_LLVM_INSTALL_DIR = "LLVM"
 
-EPSL_SOURCE_DIRS = [
-    "EPSL-Paths", "EPSL-Console-Styles", "EPSL-JSON", "EPSL-IR-Gen",
-    "EPSL-Command-Config", "EEWriter", "LLVMIRBuilder"
+BACKEND_SOURCE_DIRS = [
+    "EPSL-Console-Styles", "EPSL-JSON", "EPSL-IR-Gen",
+    "EEWriter", "LLVMIRBuilder"
 ]
 
 
@@ -185,5 +185,5 @@ __all__ = [
     "run_powershell_script", "add_to_windows_path", "is_windows", "is_macos",
     "get_project_root", "cd_to_proj_root", "is_root", "abort", "dev_null",
     "cmd_options_prompt", "download_file", "shutil", "LOCAL_LLVM_INSTALL_DIR",
-    "EPSL_SOURCE_DIRS"
+    "BACKEND_SOURCE_DIRS"
 ]

@@ -7,5 +7,3 @@ TODO:
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * fix scoping rules: don't allow access to variables before their first definition
 * add support for a @private annotation
-* rename `Q` to `R`
-* make all C functions that take no arguments explicitly declare it

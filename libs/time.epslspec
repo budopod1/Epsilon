@@ -1,15 +1,15 @@
 {"functions": [
     {"id": "time_sleep_for_seconds", "callee": "time_sleep_for_seconds", "return_type_": null, "template": [
-        {"type": "name", "name": "sleep"}, {"type": "argument", "name": "duration", "type_": "Q64"}, {"type": "name", "name": "seconds"}
+        {"type": "name", "name": "sleep"}, {"type": "argument", "name": "duration", "type_": "R64"}, {"type": "name", "name": "seconds"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "time_get_unix_timestamp", "callee": "time_get_unix_timestamp", "return_type_": "Q64", "template": [
+    {"id": "time_get_unix_timestamp", "callee": "time_get_unix_timestamp", "return_type_": "R64", "template": [
         {"type": "name", "name": "get"}, {"type": "name", "name": "unix"}, {"type": "name", "name": "timestamp"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "time_get_perf_counter", "callee": "time_get_perf_counter", "return_type_": "Q64", "template": [
+    {"id": "time_get_perf_counter", "callee": "time_get_perf_counter", "return_type_": "R64", "template": [
         {"type": "name", "name": "read"}, {"type": "name", "name": "perf"}, {"type": "name", "name": "counter"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"}
 ], "types_": [
-    {"given_name": "Q64", "name": "Q", "bits": 64, "generics": []}
+    {"given_name": "R64", "name": "R", "bits": 64, "generics": []}
 ], "structs": [], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "object_gen_configs": [], "imports": [], "ir": "time_.bc", "obj": "time_.o", "source": null, "source_type": "Library", "id_path": "libs/time"}

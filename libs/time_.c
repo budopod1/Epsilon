@@ -32,7 +32,7 @@ void time_sleep_for_seconds(double duration) {
 #endif
 }
 
-double time_get_unix_timestamp() {
+double time_get_unix_timestamp(void) {
 #ifdef _WIN32
     FILETIME filetime;
     GetSystemTimePreciseAsFileTime(&filetime);
@@ -52,7 +52,7 @@ double time_get_unix_timestamp() {
 static LARGE_INTEGER perf_frequency = {0};
 #endif
 
-double time_get_perf_counter() {
+double time_get_perf_counter(void) {
 #ifdef _WIN32
     if (perf_frequency.QuadPart == 0) {
         QueryPerformanceFrequency(&perf_frequency);

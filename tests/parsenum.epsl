@@ -1,7 +1,7 @@
 @id testee;
-Q#test {
+R#test {
     Z:a = [parse_int["123"]].unwrap;
-    Q:b = [parse_float["456.789"]].unwrap;
+    R:b = [parse_float["456.789"]].unwrap;
     // all booleans should be true
     Bool:c = [parse_int["1b3"]].is_null;
     Bool:d = [parse_float["4e6.7h9"]].is_null;

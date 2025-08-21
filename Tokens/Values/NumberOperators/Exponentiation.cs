@@ -8,7 +8,7 @@ public class Exponentiation(IValueToken o1, IValueToken o2) : BinaryOperation<IV
         if (expo.GetBaseType_().GetName() == "W") {
             return base_;
         }
-        return Type_.CommonSpecificNonNull(this, base_, expo, "Q");
+        return Type_.CommonSpecificNonNull(this, base_, expo, "R");
     }
 
     public override int UncachedSerialize(SerializationContext context) {
