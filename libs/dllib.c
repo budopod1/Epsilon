@@ -51,7 +51,7 @@ static wchar_t *windows_str_from_epsl_str(struct Array *epsl_str) {
         0 // dest buffer size (0 indicated do not write, just calc size)
     );
     if (wstr_size == 0) return NULL;
-    wchar_t *wstr = malloc(wstr_size * sizeof(wchar_t));
+    wchar_t *wstr = epsl_malloc(wstr_size * sizeof(wchar_t));
     int status = MultiByteToWideChar(
         CP_UTF8, // source encoding
         MB_ERR_INVALID_CHARS, // flags

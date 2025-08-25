@@ -5,6 +5,10 @@
 
     {"id": "proc_get_argv", "callee": "proc_get_argv", "return_type_": "[Str]", "template": [
         {"type": "name", "name": "get"}, {"type": "name", "name": "argv"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "proc_get_executable_path", "callee": "proc_get_executable_path", "return_type_": "Str", "template": [
+        {"type": "name", "name": "get"}, {"type": "name", "name": "executable"}, {"type": "name", "name": "path"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"}
 ], "types_": [
     {"given_name": "Z32", "name": "Z", "bits": 32, "generics": []},
