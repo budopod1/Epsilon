@@ -14,16 +14,16 @@ def build_c_file(file):
 
 def build_libs():
     with chdir("libs"):
-        run_LLVM_cmd("clang", "-c", "-O3", "-emit-llvm", "builtins.c", "-o", "globalfreebuiltins.bc")
+        run_LLVM_cmd("clang", "-c", "-O3", "-emit-llvm", "epsilon.c", "-o", "globalfreeepsilon.bc")
 
-        run_LLVM_cmd("clang", "-c", "globalfreebuiltins.bc", "-o", "globalfreebuiltins.o", "-O1")
+        run_LLVM_cmd("clang", "-c", "globalfreeepsilon.bc", "-o", "globalfreeepsilon.o", "-O1")
         run_LLVM_cmd("clang", "-O0", "-c", "globals.c", "-o", "notPICglobals.o")
-        link_objects(("globalfreebuiltins.o", "notPICglobals.o"), "builtins.o")
+        link_objects(("globalfreeepsilon.o", "notPICglobals.o"), "epsilon.o")
 
         run_LLVM_cmd("clang", "-c", "-emit-llvm", *(["-fPIC"]*(not is_windows())), "globals.c", "-o", "PICglobals.bc")
-        run_LLVM_cmd("llvm-link", "globalfreebuiltins.bc", "PICglobals.bc", "-o", "builtins.bc")
+        run_LLVM_cmd("llvm-link", "globalfreeepsilon.bc", "PICglobals.bc", "-o", "epsilon.bc")
 
-        for file in ("globalfreebuiltins.bc", "globalfreebuiltins.o", "PICglobals.bc", "notPICglobals.o"):
+        for file in ("globalfreeepsilon.bc", "globalfreeepsilon.o", "PICglobals.bc", "notPICglobals.o"):
             os.unlink(file)
 
         build_c_file("fileio.c")
