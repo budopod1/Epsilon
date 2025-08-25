@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
-#include "builtins.h"
+#include "epsilon.h"
 
 void epsl_panic(const char *message, uint64_t message_len) {
     fflush(stdout);

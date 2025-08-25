@@ -796,12 +796,12 @@ public class Builder {
             if (shouldGetIR(settings)) {
                 builtinsIntermediate = new IntermediateFile(
                     IntermediateFile.IntermediateType.IR,
-                    Utils.JoinPaths(Utils.EPSLLIBS(), "builtins.bc"), false
+                    Utils.JoinPaths(Utils.EPSLLIBS(), "epsilon.bc"), false
                 );
             } else {
                 builtinsIntermediate = new IntermediateFile(
                     IntermediateFile.IntermediateType.Obj,
-                    Utils.JoinPaths(Utils.EPSLLIBS(), "builtins.o"), false
+                    Utils.JoinPaths(Utils.EPSLLIBS(), "epsilon.o"), false
                 );
             }
 

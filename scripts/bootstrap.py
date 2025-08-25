@@ -9,7 +9,7 @@ def bootstrap():
         c_files.extend(Path(dir_name).glob("*.c"))
 
     run_LLVM_cmd("clang", "--rtlib=compiler-rt", "-Wno-override-module",
-        "LLVMIRBuilder/bootstrap.bc", "libs/builtins.bc", "libs/fileio.bc",
+        "LLVMIRBuilder/bootstrap.bc", "libs/epsilon.bc", "libs/fileio.bc",
         "libs/conversion.bc", "libs/main.bc", *c_files, "-o", "LLVMIRBuilder/result",
         "-I"+str(Path("libs").absolute()),
         *(["-lm"]*(not is_windows())))

@@ -1,6 +1,6 @@
-#ifndef EPSL_BUILTINS_H
+#ifndef EPSILON_H
 
-#define EPSL_BUILTINS_H
+#define EPSILON_H
 
 #include <stdint.h>
 #include <stdbool.h>
