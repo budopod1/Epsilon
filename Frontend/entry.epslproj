@@ -1,1 +1,5 @@
-{"file": "tempentry", "output-location": "epslc"}
+{
+        "file": "tempentry",
+        "output-location": "epslc",
+        "packages": ["paths", "json"]
+}

@@ -7,6 +7,7 @@ $import grouper;
 $import time;
 $import fileio;
 $import toplevel;
+$import builder;
 
 #do parse perf test on [Str:content] {
     L:line_count = [content].count['\n'];
@@ -52,37 +53,10 @@ $import toplevel;
     println["Total lines per second: {}" % (line_count / total_duration)];
 }
 
-#do parse test on [Str:content] {
-    TokenizationResult:tokenized = tokenize [content];
-    if (tokenized.errors) {
-        println["tokenization errors"];
-        return;
-    };
-    TokenizationResult:grouped = group tokens [tokenized.tokens];
-    if (grouped.errors) {
-        println["grouping errors"];
-        return;
-    };
-    RawEPSLModconResult:raw_modcon_result = parse_toplevel[grouped.tokens];
-    if (raw_modcon_result.errors) {
-        println["modcon errors"];
-        println[raw_modcon_result.errors];
-        return;
-    };
-    println[[raw_modcon_result.modcon].stringify];
-    println["success!"];
-}
-
 Z#main {
-    given open_file["all.cepsl"][FILE_READ_MODE] as File:file {
-        given [file].read_all as Str:content {
-            do parse test on [content];
-        } else {
-            abort "Failed to read file";
-        };
-    } else {
-        abort "Failed to open file";
-    };
+    build with settings [BuildSettings [
+        "tempentry.epsl", ""
+    ]];
 
     return 0;
 }

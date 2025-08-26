@@ -20,6 +20,7 @@ Z#main {
             "executable", "llvm-ll", "llvm-bc", "package-both", "package-obj",
             "object", "shared-obejct"
         ]],
+        BoolProp ["run-result"],
 
         BoolProp ["all-packages"]
     ]];
@@ -30,6 +31,7 @@ Z#main {
         BoolConfigValue ["generate-error-frames", true],
         BoolConfigValue ["link-builtins", true],
         EnumConfigValue ["output-type", "executable"],
+        BoolConfigValue ["run-result", false],
 
         BoolConfigValue ["all-packages", false]
     ]];
@@ -85,6 +87,10 @@ Z#main {
 
     [compile_branch].flag[[Str] ["output-type", "t"]] [StringInputSource ["output-type"]]
         help: ["The type of output to produce"];
+
+    [compile_branch].flag[[Str], ["run", "r"]]
+        [CmdApplyConstant [BoolConfigValue ["run-result", true]]]
+        help: ["Run the executable after compilation"];
 
     ArgumentBranch:clean_branch = [root_branch].add_branch["clean"];
     clean_branch.help = "Remove a project's temporary files";

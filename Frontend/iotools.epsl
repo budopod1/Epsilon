@@ -1,0 +1,35 @@
+$import fileio;
+$import errors;
+$import paths;
+$import proc;
+
+FileReadResult {
+    Str?:txt,
+    :ErrorBundle?:errors
+}
+
+:ErrorBundle#IO error msg: [Str:msg] path: [Path?:maybe_path] {
+    given maybe_path as Path:path {
+        msg = "{}: {}" % [path].stringify % msg;
+    };
+    return bundle [[IOError] [IOError [
+        msg, maybe_path
+    ]]];
+}
+
+FileReadResult#read file [Path:path] {
+    given open_file[[path].stringify][FILE_READ_MODE] as File:file {
+        given [file].read_all as Str:file_text {
+            return FileReadResult [file_text, null];
+        };
+    };
+    return FileReadResult [null, IO error msg: ["Cannot read file"] path: [path]];
+}
+
+Path#epsilon directory {
+    Path:dir = [Path_from [get executable path]].parent;
+    if ([[dir].name] equals ["executables"]) || ([[dir].name] equals ["Frontend"]) {
+        return [dir].parent;
+    };
+    abort "Cannot determine Epsilon's root directory. The Epsilon executable is placed in an invalid location";
+}

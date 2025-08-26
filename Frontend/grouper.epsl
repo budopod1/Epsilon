@@ -1,4 +1,5 @@
 $import tokenizer;
+$import errors;
 
 TokenizationResult#group tokens [Tokens:src_tokens] {
     [TokenizationError]:errors = [TokenizationError] [];
@@ -25,13 +26,14 @@ TokenizationResult#group tokens [Tokens:src_tokens] {
         } elif id == ')' || id == ']' || id == '}' {
             if [end_chr_stack].len <= 1 {
                 [errors].append[TokenizationError [
-                    start_index, "Unexpected closing delimiter"
+                    "Unexpected closing delimiter", start_index
                 ]];
             };
             Tokens:group_ended = [group_stack].pop_end;
             if [end_chr_stack].pop_end != id {
                 [errors].append[TokenizationError [
-                    group_ended.start_index, "Opening delimiter not matched by closing delimiter '{}'" % (Byte)id
+                    "Opening delimiter not matched by closing delimiter '{}'" % (Byte)id,
+                    group_ended.start_index
                 ]];
             };
             current_tokens = [group_stack].at[-1];
@@ -55,7 +57,7 @@ TokenizationResult#group tokens [Tokens:src_tokens] {
     };
     while [end_chr_stack].len > 1 {
         [errors].append[TokenizationError [
-            start_index, "Unclosed group, expected '{}'" % [end_chr_stack].pop_end
+            "Unclosed group, expected '{}'" % [end_chr_stack].pop_end, start_index
         ]];
     };
     return TokenizationResult [toplevel_tokens, errors];

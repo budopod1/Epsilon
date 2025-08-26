@@ -1,0 +1,69 @@
+$import tokenizer;
+$import parsing;
+$import toplevel;
+$import modules;
+$import errors;
+$import epslmodules;
+
+S1ModconResult#cook epsl struct declarations [Module:module] {
+    [ParseError]:errors = [ParseError] [];
+    S0EPSLModuleContent:raw_modcon = [(S0EPSLModuleContent?)module.content]
+        .expect["Expected S0EPSLModuleContent"];
+    [:StructDeclaration]:struct_decls = [:StructDeclaration] [];
+    [S1EPSLStruct]:s1_structs = [S1EPSLStruct] [];
+    for RawStruct:raw_struct in raw_modcon.raw_structs {
+        Bool:is_public = true;
+        Str:name = raw_struct.name;
+        Bool:is_value = false;
+        Bool:is_super = false;
+        Bool:is_concrete = false;
+        StructRef?:extendee = null;
+        for :Annotation:annotation in raw_struct.annotations {
+            given annotation as PrivateAnnotation:private_annotation {
+                is_public = false;
+            } given annotation as ValueAnnotation:value_annotation {
+                is_value = true;
+            } given annotation as SuperAnnotation:super_annotation {
+                is_super = true;
+            } given annotation as ConcreteAnnotation:concrete_annotation {
+                is_concrete = true;
+            } given annotation as ExtendsAnnotation:extends_annotation {
+                extendee = StructRef [extends_annotation.extendee, module, null];
+            } else {
+                [errors].append[ParseError [
+                    "Structs cannot receive this type of annotation",
+                    annotation.start_index, annotation.end_index
+                ]];
+                continue;
+            };
+        };
+        if is_value && (is_super || extendee) {
+            [errors].append[ParseError [
+                "Structs cannot both be marked @value and be marked @super or @extends",
+                raw_struct.start_index, raw_struct.end_index
+            ]];
+        };
+        if is_concrete && !is_super {
+            [errors].append[ParseError [
+                "The @concrete annotation is superfluous, as the struct is not annotated with @super",
+                raw_struct.start_index, raw_struct.end_index
+            ]];
+        };
+        Bool:is_abstract = is_super && !is_concrete;
+        StructDeclaration:struct_decl = StructDeclaration [
+            is_public, name, is_value, is_abstract, is_super, extendee
+        ];
+        [struct_decls].append[struct_decl];
+        [s1_structs].append[S1EPSLStruct [
+            raw_struct.start_index, raw_struct.end_index,
+            struct_decl, raw_struct.body
+        ]];
+    };
+    :ErrorBundle:error_bundle = bundle [errors]
+        txt: [raw_modcon.file_text] path: [raw_modcon.absolute_path];
+    return S1ModconResult [S1EPSLModuleContent [
+        raw_modcon.absolute_path, raw_modcon.imports, struct_decls,
+        raw_modcon.file_text, s1_structs, raw_modcon.raw_globals,
+        raw_modcon.raw_functions
+    ], error_bundle];
+}

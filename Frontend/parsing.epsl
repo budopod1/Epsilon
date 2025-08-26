@@ -1,16 +1,6 @@
 $import tokenizer;
-
-@super;
-NodeWSpan {
-    W:start_index,
-    W:end_index
-}
-
-ParseError {
-    W:start_index,
-    W:end_index,
-    Str:message
-}
+$import errors;
+$import epslmodules;
 
 ParseState {
     Tokens:tokens,
@@ -24,25 +14,25 @@ Bool#[ParseState:state].is_at_end {
 
 #[ParseState:state].error_at[W:i] msg: [Str:msg] {
     [state.errors].append[ParseError [
-        [state.tokens].get_start_index[i], state.tokens.end_indexes[i], msg
+        msg, [state.tokens].get_start_index[i], state.tokens.end_indexes[i]
     ]];
 }
 
 #[ParseState:state].error_at[[W]:is] msg: [Str:msg] {
     [state.errors].append[ParseError [
-        [state.tokens].get_start_index[is[0]], state.tokens.end_indexes[[is].at[-1]], msg
+        msg, [state.tokens].get_start_index[is[0]], state.tokens.end_indexes[[is].at[-1]]
     ]];
 }
 
 #[ParseState:state].error_at[:NodeWSpan:node] msg: [Str:msg] {
     [state.errors].append[ParseError [
-        node.start_index, node.end_index, msg
+        msg, node.start_index, node.end_index,
     ]];
 }
 
 #[ParseState:state].error_after[W:i] msg: [Str:msg] {
     [state.errors].append[ParseError [
-        state.tokens.end_indexes[i]+1, state.tokens.end_indexes[i]+1, msg
+        msg, state.tokens.end_indexes[i]+1, state.tokens.end_indexes[i]+1
     ]];
 }
 

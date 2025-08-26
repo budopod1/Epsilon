@@ -1,13 +1,74 @@
+$import types_;
+$import errors;
+$import paths;
+
 Module {
     [Str]:path,
-    :ModuleContent:content
+    :S0ModuleContent:content
 }
 
 @super;
-ModuleContent {
+S0ModuleContent {
+    Path:absolute_path,
     [Import]:imports
+}
+
+S0ModconResult {
+    :S0ModuleContent?:modcon,
+    :ErrorBundle?:errors
+}
+
+@super;
+@extends S0ModuleContent;
+S1ModuleContent {
+    [:StructDeclaration]:struct_decls
+}
+
+S1ModconResult {
+    :S1ModuleContent?:modcon,
+    :ErrorBundle?:errors
+}
+
+@super;
+@extends S1ModuleContent;
+S2ModuleContent {
+    [Global]:globals,
+    [Struct_]:structs,
+    [:FunctionDeclaration]:function_decls
 }
 
 Import {
     [Str]:path
+}
+
+Global {}
+
+@super;
+FunctionDeclaration {}
+
+@super;
+@concrete;
+StructDeclaration {
+    Bool:is_public,
+    Str:name,
+    Bool:is_value,
+    Bool:is_abstract,
+    Bool:is_super,
+    StructRef?:extendee
+}
+
+@extends StructDeclaration;
+Struct_ {
+    [Field]:fields
+}
+
+Field {
+    Type_:type_,
+    Str:name
+}
+
+StructRef {
+    Str:name,
+    Module:module,
+    Struct_?:struct_
 }

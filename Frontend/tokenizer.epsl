@@ -1,4 +1,5 @@
 $import conversion;
+$import errors;
 
 @super;
 TokenData {}
@@ -59,11 +60,6 @@ TokenizationResult {
     [TokenizationError]:errors
 }
 
-TokenizationError {
-    W:index,
-    Str:message
-}
-
 TokenDataResult {
     :TokenData?:data,
     TokenizationError?:error
@@ -114,21 +110,21 @@ ParsedStrEscape#parse_escape [Str:txt] at [W:index] {
         src_len = 3;
         if index + src_len > [txt].len {
             return ParsedStrEscape [0, "", TokenizationError [
-                index, "Expected two hex characters after '\\x'"
+                "Expected two hex characters after '\\x'", index
             ]];
         };
         Str:hex = [txt].slice[index+1][index+3];
         W:val = [hex].parse_as_W32_in_base[16];
         if val > 255 {
             return ParsedStrEscape [0, "", TokenizationError [
-                index, "Expected two hex characters after '\\x'"
+                "Expected two hex characters after '\\x'", index
             ]];
         };
         parsed = Str [(Byte)val];
     }
     {
         return ParsedStrEscape [0, "", TokenizationError [
-            index, "Invalid escape code '\\{}'" % txt[index]
+            "Invalid escape code '\\{}'" % txt[index], index
         ]];
     };
     return ParsedStrEscape [src_len, parsed, null];
@@ -164,7 +160,7 @@ TokenDataResult#parse_byte_token [Str:txt] {
     Byte:byte = '\0';
     if [txt].len == 0 {
         return TokenDataResult [null, TokenizationError [
-            0, "Byte constants cannot be empty"
+            "Byte constants cannot be empty", 0
         ]];
     } elif txt[0] == '\\' {
         ParsedStrEscape:escape = parse_escape [txt] at [1];
@@ -173,13 +169,13 @@ TokenDataResult#parse_byte_token [Str:txt] {
         };
         if escape.src_len+1 != [txt].len || [escape.parsed].len > 1 {
             return TokenDataResult [null, TokenizationError [
-                0, "Byte constants must contain exactly one byte"
+                "Byte constants must contain exactly one byte", 0
             ]];
         };
         byte = escape.parsed[0];
     } elif [txt].len > 1 {
         return TokenDataResult [null, TokenizationError [
-            0, "Byte constants must contain exactly one byte"
+            "Byte constants must contain exactly one byte", 0
         ]];
     } else {
         byte = txt[0];
@@ -197,7 +193,7 @@ TokenDataResult#parse_float_token [Str:txt] {
         return TokenDataResult [FloatTokenData [val], null];
     } else {
         return TokenDataResult [null, TokenizationError [
-            0, "Invalid float"
+            "Invalid float", 0
         ]];
     };
 }
@@ -385,12 +381,12 @@ TokenizationResult#tokenize [Str:input] {
 
     if parse_state == 1 || parse_state == 2 {
         [errors].append[TokenizationError [
-            [input].len, "Unterminated string literal"
+            "Unterminated string literal", [input].len
         ]];
     };
     if parse_state == 3 || parse_state == 4 {
         [errors].append[TokenizationError [
-            [input].len, "Unterminated byte literal"
+            "Unterminated byte literal", [input].len
         ]];
     };
 

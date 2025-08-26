@@ -1,0 +1,171 @@
+$import modules;
+$import tokenizer;
+$import json;
+$import paths;
+
+@super;
+Error {
+    Str:message
+}
+
+@extends Error;
+MiscError {}
+
+@extends Error;
+TokenizationError {
+    W:index
+}
+
+@extends Error;
+ParseError {
+    W:start_index,
+    W:end_index
+}
+
+@extends Error;
+IOError {
+    Path?:path
+}
+
+@super;
+ErrorBundle {}
+
+@extends ErrorBundle;
+MiscErrorBundle {
+    [MiscError]:errors
+}
+
+@super;
+@extends ErrorBundle;
+FileTextErrorBundle {
+    Path:file_path,
+    Str:file_text,
+}
+
+@extends FileTextErrorBundle;
+TokenizationErrorBundle {
+    Tokens:tokens,
+    [TokenizationError]:errors
+}
+
+@extends FileTextErrorBundle;
+ParseErrorBundle {
+    [ParseError]:errors
+}
+
+@extends ErrorBundle;
+IOErrorBundle {
+    [IOError]:errors
+}
+
+Bool#[:ErrorBundle:bundle].any {
+    given bundle as MiscErrorBundle:misc_bundle {
+        return [misc_bundle.errors].len > 0;
+    } given bundle as TokenizationErrorBundle:tokenization_bundle {
+        return [tokenization_bundle.errors].len > 0;
+    } given bundle as ParseErrorBundle:parse_bundle {
+        return [parse_bundle.errors].len > 0;
+    } given bundle as IOErrorBundle:io_bundle {
+        return [io_bundle.errors].len > 0;
+    } else {
+        abort "Invalid ErrorBundle";
+    };
+}
+
+Bool#[[:ErrorBundle]:bundles].any {
+    for :ErrorBundle:bundle in bundles {
+        if [bundle].any {
+            return true;
+        };
+    };
+    return false;
+}
+
+#report error message [Str:msg] {
+    if [msg].ends_with["\n"] {
+        print[msg];
+    } else {
+        println[msg];
+    };
+}
+
+#report file text error bundle: [:FileTextErrorBundle:bundle] msg: [Str:message] from: [L:start_index] to: [L:end_index] {
+    JSONParsingError:json_error = JSONParsingError [start_index, end_index, message];
+    report error message [stringify error [json_error]
+        in file [[bundle.file_path].stringify]
+        with content [bundle.file_text]];
+}
+
+#report errors [MiscErrorBundle:bundle] {
+    for MiscError:error in bundle.errors {
+        report error message [error.message];
+    };
+}
+
+#report errors [TokenizationErrorBundle:bundle] {
+    for TokenizationError:error in bundle.errors {
+        report file text error bundle: [bundle]
+            msg: [error.message]
+            from: [[bundle.tokens].get_start_index[error.index]]
+            to: [bundle.tokens.end_indexes[error.index]];
+    };
+}
+
+#report errors [ParseErrorBundle:bundle] {
+    for ParseError:error in bundle.errors {
+        report file text error bundle: [bundle]
+            msg: [error.message]
+            from: [error.start_index]
+            to: [error.end_index];
+    };
+}
+
+#report errors [IOErrorBundle:bundle] {
+    for IOError:error in bundle.errors {
+        report error message [error.message];
+    };
+}
+
+Bool#report errors [:ErrorBundle:bundle] {
+    given bundle as MiscErrorBundle:misc_bundle {
+        report errors [misc_bundle];
+    } given bundle as TokenizationErrorBundle:tokenization_bundle {
+        report errors [tokenization_bundle];
+    } given bundle as ParseErrorBundle:parse_bundle {
+        report errors [parse_bundle];
+    } given bundle as IOErrorBundle:io_bundle {
+        report errors [io_bundle];
+    } else {
+        abort "Invalid ErrorBundle";
+    };
+    return [bundle].any;
+}
+
+Bool#report errors [[:ErrorBundle]:bundles] {
+    for :ErrorBundle:bundle in bundles {
+        if report errors [bundle] {
+            return true;
+        };
+    };
+    return false;
+}
+
+MiscErrorBundle#bundle [[MiscError]:errors] {
+    return MiscErrorBundle [errors];
+}
+
+TokenizationErrorBundle#bundle [TokenizationResult:result] txt: [Str:txt] path: [Path:path] {
+    return TokenizationErrorBundle [
+        path, txt, result.tokens, result.errors
+    ];
+}
+
+ParseErrorBundle#bundle [[ParseError]:errors] txt: [Str:txt] path: [Path:path] {
+    return ParseErrorBundle [
+        path, txt, errors
+    ];
+}
+
+IOErrorBundle#bundle [[IOError]:errors] {
+    return IOErrorBundle [errors];
+}

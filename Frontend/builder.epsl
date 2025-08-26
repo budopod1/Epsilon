@@ -1,0 +1,185 @@
+$import toplevel;
+$import modules;
+$import errors;
+$import paths;
+$import chef;
+$import epslmodules;
+$import specfile;
+$import iotools;
+
+EPSLCACHE {
+    Bool:is_from_file,
+    Path:path,
+    L?:compile_start_time,
+    [Path]:epslspec_paths
+}
+
+Build {
+    Path:root,
+    [Module]:modules
+}
+
+BuildSettings {
+    Str:entry_path,
+    Str:provided_output
+    // more stuff here
+}
+
+#build with settings [BuildSettings:settings] {
+    Path:entry_path = Path_from [settings.entry_path];
+    Path:root = [[entry_path].parent].resolve;
+    Import:entry_import = Import [[Str] [[entry_path].stem]];
+
+    [Module]?:maybe_modules = load modules from [entry_import] root: [root];
+    if (!maybe_modules) {
+        return;
+    };
+    [Module]:modules = [maybe_modules].unwrap;
+
+    Build:build = Build [root, modules];
+
+    if !try produce struct declarations [build] {
+        return;
+    };
+
+    // STEP:
+    // verify extendees
+
+    // STEP:
+    // cook structs, function templates, globals fully
+
+    // STEP:
+    // cook functions
+
+    // STEP:
+    // finish compilation, and send everything to LLVMIRBuilder
+
+    // STEP:
+    // create .epslspec and .o files as necessary to cache
+
+    // STEP:
+    // delete unused generated .epslspec
+    // (from now-deleted files that were previously cached)
+
+    // STEP:
+    // produce a list of final sources
+
+    // STEP:
+    // write the new .epslcache
+
+    // STEP:
+    // produce the final source
+
+    // STEP:
+    // delete unwanted intermediaries
+
+    // STEP:
+    // if wanted, run the result executable
+}
+
+[Module]?#load modules from [Import:entry_import] root: [Path:root] {
+    [Import]:import_stack = [Import] [entry_import];
+    [Module]:modules = [Module] [];
+    while import_stack {
+        Import:popped = [import_stack].pop_end;
+        Bool:already_loaded = false;
+        for Module:other_module in modules {
+            if [other_module.path] deep equals [popped.path] {
+                already_loaded = true;
+                break;
+            };
+        };
+        if already_loaded {
+            continue;
+        };
+        given load module [popped] root: [root] as Module:module {
+            [modules].append[module];
+            [import_stack].extend[module.content.imports];
+        } else {
+            return null;
+        };
+    };
+    return modules;
+}
+
+[Str]#possible module file extensions {
+    // [Str] [".epslspec", ".epsl", "h", "hpp", "hxx", ".c", ".cpp", ".cc", ".cxx", ".C", ".c++"]
+    return [Str] [".epsl"];
+}
+
+[Path]#module location candidates [Import:import] root: [Path:root] {
+    if !import.path {
+        abort "Imports must have at least one component";
+    };
+    [Str]:import_dir = [import.path].slice[0][[import.path].len - 1];
+    Str:import_name_base = [import.path].at[-1];
+    if !import_dir {
+        // HERE IS WHERE WE CHECK IF IT IS A PACKAGE
+        // (and potentially return early)
+    };
+    [Path]:candidates = [Path] [];
+    for Str:extension in possible module file extensions {
+        for Str:prefix in [Str] ["", "."] {
+            Str:filename = "{}{}{}" % prefix % import_name_base % extension;
+            [candidates].append[[root] / [filename]];
+        };
+    };
+    Path:libs_dir = [epsilon directory] / ["libs"];
+    [candidates].append[[libs_dir] / [[import_name_base] + [".epslspec"]]];
+    return candidates;
+}
+
+Module?#load module [Import:import] root: [Path:root] {
+    for Path:candidate in module location candidates [import] root: [root] {
+        if ![candidate].exists {
+            continue;
+        };
+        S0ModconResult:modcon_result = load module [import] from path [candidate];
+        given modcon_result.errors as :ErrorBundle:bundle {
+            if report errors [bundle] {
+                return null;
+            };
+        };
+        given modcon_result.modcon as :S0ModuleContent:modcon {
+            return Module [import.path, modcon];
+        };
+    };
+    report errors [bundle [[MiscError] [
+        MiscError ["Cannot find module '{}'" % [import.path].join["."]]
+    ]]];
+    return null;
+}
+
+S0ModconResult#load module [Import:import] from path [Path:path] {
+    Str:extension = [path].extension;
+    if [extension] equals [".epsl"] {
+        return load epsl file [path];
+    } else {
+        abort "Unexpected extension '{}'" % extension;
+    };
+}
+
+Bool#try produce struct declarations [Build:build] {
+    [:ErrorBundle]:bundles = [:ErrorBundle] [];
+    for Module:module in build.modules {
+        S1ModconResult:result = produce struct declarations [module];
+        given result.modcon as :S1ModuleContent:modcon {
+            module.content = modcon;
+        };
+        given result.errors as :ErrorBundle:bundle {
+            [bundles].append[bundle];
+        };
+    };
+    return !report errors [bundles];
+}
+
+S1ModconResult#produce struct declarations [Module:module] {
+    :S0ModuleContent:modcon = module.content;
+    given modcon as S0EPSLModuleContent:epsl_modcon {
+        return cook epsl struct declarations [module];
+    } given modcon as SPECModuleContent:spec_modcon {
+        return S1ModconResult [spec_modcon, null];
+    } else {
+        abort "Invalid S0 modcon";
+    };
+}
