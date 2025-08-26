@@ -1,6 +1,6 @@
 $import tokenizer;
 $import errors;
-$import epslmodules;
+$import epslfiles;
 
 ParseState {
     Tokens:tokens,

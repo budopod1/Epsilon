@@ -3,9 +3,11 @@ $import errors;
 $import paths;
 $import proc;
 
+$global Path?:cache_epsl_dir;
+
 FileReadResult {
     Str?:txt,
-    :ErrorBundle?:errors
+    :ErrorBundle:errors
 }
 
 :ErrorBundle#IO error msg: [Str:msg] path: [Path?:maybe_path] {
@@ -20,16 +22,21 @@ FileReadResult {
 FileReadResult#read file [Path:path] {
     given open_file[[path].stringify][FILE_READ_MODE] as File:file {
         given [file].read_all as Str:file_text {
-            return FileReadResult [file_text, null];
+            return FileReadResult [file_text, empty error bundle];
         };
     };
     return FileReadResult [null, IO error msg: ["Cannot read file"] path: [path]];
 }
 
 Path#epsilon directory {
+    given cache_epsl_dir as Path:epsl_dir {
+        return epsl_dir;
+    };
     Path:dir = [Path_from [get executable path]].parent;
     if ([[dir].name] equals ["executables"]) || ([[dir].name] equals ["Frontend"]) {
-        return [dir].parent;
+        Path:result = [dir].parent;
+        cache_epsl_dir = result;
+        return result;
     };
     abort "Cannot determine Epsilon's root directory. The Epsilon executable is placed in an invalid location";
 }

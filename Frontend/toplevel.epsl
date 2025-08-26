@@ -3,7 +3,7 @@ $import grouper;
 $import modules;
 $import parsing;
 $import iotools;
-$import epslmodules;
+$import epslfiles;
 $import errors;
 $import paths;
 
@@ -135,7 +135,7 @@ ImportDeclaration?#parse_import[ParseState:state] start: [W:start_index] {
         if token_id == ';' {
             [state].consume;
             W:end_index = [state].last_end;
-            return ImportDeclaration [start_index, end_index, Import [parts]];
+            return ImportDeclaration [start_index, end_index, Import [parts, null]];
         } elif token_id == '.' {
             if was_dot {
                 [parts].append[".."];
@@ -259,30 +259,4 @@ RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
     return RawFunction [
         start_index, end_index, [:Annotation] [], ret_type_, template, [body].unwrap
     ];
-}
-
-S0ModconResult#load epsl file [Path:path] {
-    FileReadResult:file_result = read file [path];
-    given file_result.errors as :ErrorBundle:errors {
-        return S0ModconResult [null, errors];
-    } given file_result.txt as Str:txt {
-        TokenizationResult:tokens_result = tokenize [txt];
-        if tokens_result.errors {
-            return S0ModconResult [
-                null, bundle [tokens_result] txt: [txt] path: [path]
-            ];
-        };
-        TokenizationResult:group_result = group tokens [tokens_result.tokens];
-        if group_result.errors {
-            return S0ModconResult [
-                null, bundle [group_result] txt: [txt] path: [path]
-            ];
-        };
-        S0EPSLModuleContent:modcon = S0EPSLModuleContent [
-            path, [Import] [], txt, [RawGlobal] [], [RawFunction] [], [RawStruct] []
-        ];
-        return parse_toplevel[group_result.tokens] onto: [modcon];
-    } else {
-        abort;
-    };
 }

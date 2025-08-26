@@ -1,11 +1,10 @@
-$import toplevel;
+$import epslfiles;
 $import modules;
 $import errors;
 $import paths;
-$import chef;
-$import epslmodules;
 $import specfile;
 $import iotools;
+$import structs;
 
 EPSLCACHE {
     Bool:is_from_file,
@@ -28,7 +27,7 @@ BuildSettings {
 #build with settings [BuildSettings:settings] {
     Path:entry_path = Path_from [settings.entry_path];
     Path:root = [[entry_path].parent].resolve;
-    Import:entry_import = Import [[Str] [[entry_path].stem]];
+    Import:entry_import = Import [[Str] [[entry_path].stem], null];
 
     [Module]?:maybe_modules = load modules from [entry_import] root: [root];
     if (!maybe_modules) {
@@ -38,15 +37,17 @@ BuildSettings {
 
     Build:build = Build [root, modules];
 
-    if !try produce struct declarations [build] {
+    if !produce struct declarations [build] {
         return;
     };
 
-    // STEP:
-    // verify extendees
+    if !cook exports [build] {
+        return;
+    };
 
-    // STEP:
-    // cook structs, function templates, globals fully
+    if !resolve struct_ connections [build] {
+        return;
+    };
 
     // STEP:
     // cook functions
@@ -135,17 +136,15 @@ Module?#load module [Import:import] root: [Path:root] {
             continue;
         };
         S0ModconResult:modcon_result = load module [import] from path [candidate];
-        given modcon_result.errors as :ErrorBundle:bundle {
-            if report errors [bundle] {
-                return null;
-            };
+        if report errors [modcon_result.errors] {
+            return null;
         };
         given modcon_result.modcon as :S0ModuleContent:modcon {
             return Module [import.path, modcon];
         };
     };
     report errors [bundle [[MiscError] [
-        MiscError ["Cannot find module '{}'" % [import.path].join["."]]
+        MiscError ["Cannot find module '{}'" % [import].stringify_path]
     ]]];
     return null;
 }
@@ -159,16 +158,14 @@ S0ModconResult#load module [Import:import] from path [Path:path] {
     };
 }
 
-Bool#try produce struct declarations [Build:build] {
+Bool#produce struct declarations [Build:build] {
     [:ErrorBundle]:bundles = [:ErrorBundle] [];
     for Module:module in build.modules {
         S1ModconResult:result = produce struct declarations [module];
         given result.modcon as :S1ModuleContent:modcon {
             module.content = modcon;
         };
-        given result.errors as :ErrorBundle:bundle {
-            [bundles].append[bundle];
-        };
+        [bundles].append[result.errors];
     };
     return !report errors [bundles];
 }
@@ -178,8 +175,36 @@ S1ModconResult#produce struct declarations [Module:module] {
     given modcon as S0EPSLModuleContent:epsl_modcon {
         return cook epsl struct declarations [module];
     } given modcon as SPECModuleContent:spec_modcon {
-        return S1ModconResult [spec_modcon, null];
+        return S1ModconResult [spec_modcon, empty error bundle];
     } else {
         abort "Invalid S0 modcon";
     };
+}
+
+Bool#cook exports [Build:build] {
+    // STEP:
+    // cook structs, function templates, globals fully
+    abort "not implemented";
+}
+
+Bool#resolve struct_ connections [Build:build] {
+    [FileError]:load_errors = load struct_ extendees [build];
+    if report errors [bundle [load_errors]] {
+        return false;
+    };
+    [FileError]:recurse_errors = verify no recursive extendees [build];
+    return !report errors [bundle [recurse_errors]];
+}
+
+Module#[Build:build].lookup_module[Import:import] {
+    given import.referenced as Module:module {
+        return module;
+    };
+    for Module:module in build.modules {
+        if [module.path] deep equals [import.path] {
+            import.referenced = module;
+            return module;
+        };
+    };
+    abort "Cannot find module '{}'" % [import].stringify_path;
 }

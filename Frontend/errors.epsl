@@ -12,6 +12,11 @@ Error {
 MiscError {}
 
 @extends Error;
+FileError {
+    Path:path
+}
+
+@extends Error;
 TokenizationError {
     W:index
 }
@@ -33,6 +38,11 @@ ErrorBundle {}
 @extends ErrorBundle;
 MiscErrorBundle {
     [MiscError]:errors
+}
+
+@extends ErrorBundle;
+FileErrorBundle {
+    [FileError]:errors
 }
 
 @super;
@@ -61,6 +71,8 @@ IOErrorBundle {
 Bool#[:ErrorBundle:bundle].any {
     given bundle as MiscErrorBundle:misc_bundle {
         return [misc_bundle.errors].len > 0;
+    } given bundle as FileErrorBundle:file_bundle {
+        return [file_bundle.errors].len > 0;
     } given bundle as TokenizationErrorBundle:tokenization_bundle {
         return [tokenization_bundle.errors].len > 0;
     } given bundle as ParseErrorBundle:parse_bundle {
@@ -96,13 +108,20 @@ Bool#[[:ErrorBundle]:bundles].any {
         with content [bundle.file_text]];
 }
 
-#report errors [MiscErrorBundle:bundle] {
+#do report errors [MiscErrorBundle:bundle] {
     for MiscError:error in bundle.errors {
         report error message [error.message];
     };
 }
 
-#report errors [TokenizationErrorBundle:bundle] {
+#do report errors [FileErrorBundle:bundle] {
+    for FileError:error in bundle.errors {
+        report error message ["In {}:\n{}" % [error.path].stringify
+            % error.message];
+    };
+}
+
+#do report errors [TokenizationErrorBundle:bundle] {
     for TokenizationError:error in bundle.errors {
         report file text error bundle: [bundle]
             msg: [error.message]
@@ -111,7 +130,7 @@ Bool#[[:ErrorBundle]:bundles].any {
     };
 }
 
-#report errors [ParseErrorBundle:bundle] {
+#do report errors [ParseErrorBundle:bundle] {
     for ParseError:error in bundle.errors {
         report file text error bundle: [bundle]
             msg: [error.message]
@@ -120,7 +139,7 @@ Bool#[[:ErrorBundle]:bundles].any {
     };
 }
 
-#report errors [IOErrorBundle:bundle] {
+#do report errors [IOErrorBundle:bundle] {
     for IOError:error in bundle.errors {
         report error message [error.message];
     };
@@ -128,13 +147,15 @@ Bool#[[:ErrorBundle]:bundles].any {
 
 Bool#report errors [:ErrorBundle:bundle] {
     given bundle as MiscErrorBundle:misc_bundle {
-        report errors [misc_bundle];
+        do report errors [misc_bundle];
+    } given bundle as FileErrorBundle:file_bundle {
+        do report errors [file_bundle];
     } given bundle as TokenizationErrorBundle:tokenization_bundle {
-        report errors [tokenization_bundle];
+        do report errors [tokenization_bundle];
     } given bundle as ParseErrorBundle:parse_bundle {
-        report errors [parse_bundle];
+        do report errors [parse_bundle];
     } given bundle as IOErrorBundle:io_bundle {
-        report errors [io_bundle];
+        do report errors [io_bundle];
     } else {
         abort "Invalid ErrorBundle";
     };
@@ -148,6 +169,10 @@ Bool#report errors [[:ErrorBundle]:bundles] {
         };
     };
     return false;
+}
+
+FileErrorBundle#bundle [[FileError]:errors] {
+    return FileErrorBundle [errors];
 }
 
 MiscErrorBundle#bundle [[MiscError]:errors] {
@@ -168,4 +193,8 @@ ParseErrorBundle#bundle [[ParseError]:errors] txt: [Str:txt] path: [Path:path] {
 
 IOErrorBundle#bundle [[IOError]:errors] {
     return IOErrorBundle [errors];
+}
+
+:ErrorBundle#empty error bundle {
+    return MiscErrorBundle [[MiscError] []];
 }

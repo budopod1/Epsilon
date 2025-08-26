@@ -1,0 +1,236 @@
+$import tokenizer;
+$import toplevel;
+$import grouper;
+$import modules;
+$import parsing;
+$import structs;
+$import iotools;
+$import errors;
+$import paths;
+
+@super;
+NodeWSpan {
+    W:start_index,
+    W:end_index
+}
+
+@super;
+@extends NodeWSpan;
+ToplevelItem {}
+
+@super;
+@extends NodeWSpan;
+Annotation {}
+
+@extends Annotation;
+PrivateAnnotation {}
+
+@extends Annotation;
+IDAnnotation {
+    Str:id
+}
+
+@extends Annotation;
+ValueAnnotation {}
+
+@extends Annotation;
+SuperAnnotation {}
+
+@extends Annotation;
+ConcreteAnnotation {}
+
+@extends Annotation;
+ExtendsAnnotation {
+    Str:extendee
+}
+
+@extends ToplevelItem;
+ImportDeclaration {
+    Import:import
+}
+
+@super;
+@extends ToplevelItem;
+AnnotatableNode {
+    [:Annotation]:annotations
+}
+
+@extends AnnotatableNode;
+RawGlobal {
+    Tokens:tokens
+}
+
+@extends AnnotatableNode;
+RawFunction {
+    Tokens:ret_type_,
+    Tokens:template,
+    Tokens:body
+}
+
+@extends AnnotatableNode;
+RawStruct {
+    Str:name,
+    Tokens:body
+}
+
+@extends S0ModuleContent;
+S0EPSLModuleContent {
+    Str:file_text,
+    [RawGlobal]:raw_globals,
+    [RawFunction]:raw_functions,
+    [RawStruct]:raw_structs
+}
+
+@extends NodeWSpan;
+S1EPSLStruct {
+    StructDeclaration:struct_decl,
+    Tokens:body
+}
+
+@extends S1ModuleContent;
+S1EPSLModuleContent {
+    Str:file_text,
+    [S1EPSLStruct]:s1_structs,
+    [RawGlobal]:raw_globals,
+    [RawFunction]:raw_functions
+}
+
+Str#[RawGlobal:raw_global].stringify {
+    return "RawGlobal({})" % [raw_global.tokens].stringify;
+}
+
+Str#[RawFunction:raw_function].stringify {
+    return "RawFunction({}#{}, {})"
+        % [raw_function.ret_type_].stringify
+        % [raw_function.template].stringify
+        % [raw_function.body].stringify;
+}
+
+Str#[RawStruct:raw_struct].stringify {
+    return "RawStruct({}, {})"
+        % raw_struct.name
+        % [raw_struct.body].stringify;
+}
+
+Str#[S0EPSLModuleContent:modcon].stringify {
+    Str:globals_str = Str [];
+    for (RawGlobal:raw_global in modcon.raw_globals) {
+        if (globals_str) {
+            [globals_str].extend[", "];
+        };
+        [globals_str].extend[[raw_global].stringify];
+    };
+
+    Str:functions_str = Str [];
+    for (RawFunction:raw_function in modcon.raw_functions) {
+        if (functions_str) {
+            [functions_str].extend[", "];
+        };
+        [functions_str].extend[[raw_function].stringify];
+    };
+
+    Str:structs_str = Str [];
+    for (RawStruct:raw_struct in modcon.raw_structs) {
+        if (structs_str) {
+            [structs_str].extend[", "];
+        };
+        [structs_str].extend[[raw_struct].stringify];
+    };
+
+    return "S0EPSLModuleContent(
+imports: {}
+raw_globals: {}
+raw_functions: {}
+raw_structs: {}
+)" % [modcon.imports].stringify % globals_str % functions_str % structs_str;
+}
+
+S0ModconResult#load epsl file [Path:path] {
+    FileReadResult:file_result = read file [path];
+    if [file_result.errors].any {
+        return S0ModconResult [null, file_result.errors];
+    };
+    given file_result.txt as Str:txt {
+        TokenizationResult:tokens_result = tokenize [txt];
+        if tokens_result.errors {
+            return S0ModconResult [
+                null, bundle [tokens_result] txt: [txt] path: [path]
+            ];
+        };
+        TokenizationResult:group_result = group tokens [tokens_result.tokens];
+        if group_result.errors {
+            return S0ModconResult [
+                null, bundle [group_result] txt: [txt] path: [path]
+            ];
+        };
+        S0EPSLModuleContent:modcon = S0EPSLModuleContent [
+            path, [Import] [], txt, [RawGlobal] [], [RawFunction] [], [RawStruct] []
+        ];
+        return parse_toplevel[group_result.tokens] onto: [modcon];
+    } else {
+        abort;
+    };
+}
+
+S1ModconResult#cook epsl struct declarations [Module:module] {
+    [ParseError]:errors = [ParseError] [];
+    S0EPSLModuleContent:raw_modcon = [(S0EPSLModuleContent?)module.content]
+        .expect["Expected S0EPSLModuleContent"];
+    [:StructDeclaration]:struct_decls = [:StructDeclaration] [];
+    [S1EPSLStruct]:s1_structs = [S1EPSLStruct] [];
+    for RawStruct:raw_struct in raw_modcon.raw_structs {
+        Bool:is_public = true;
+        Str:name = raw_struct.name;
+        Bool:is_value = false;
+        Bool:is_super = false;
+        Bool:is_concrete = false;
+        StructRef?:extendee = null;
+        for :Annotation:annotation in raw_struct.annotations {
+            given annotation as PrivateAnnotation:private_annotation {
+                is_public = false;
+            } given annotation as ValueAnnotation:value_annotation {
+                is_value = true;
+            } given annotation as SuperAnnotation:super_annotation {
+                is_super = true;
+            } given annotation as ConcreteAnnotation:concrete_annotation {
+                is_concrete = true;
+            } given annotation as ExtendsAnnotation:extends_annotation {
+                extendee = StructRef [extends_annotation.extendee, module, null];
+            } else {
+                [errors].append[ParseError [
+                    "Structs cannot receive this type of annotation",
+                    annotation.start_index, annotation.end_index
+                ]];
+                continue;
+            };
+        };
+        if is_value && (is_super || extendee) {
+            [errors].append[ParseError [
+                "Structs cannot both be marked @value and be marked @super or @extends",
+                raw_struct.start_index, raw_struct.end_index
+            ]];
+        };
+        if is_concrete && !is_super {
+            [errors].append[ParseError [
+                "The @concrete annotation is superfluous, as the struct is not annotated with @super",
+                raw_struct.start_index, raw_struct.end_index
+            ]];
+        };
+        Bool:is_abstract = is_super && !is_concrete;
+        StructDeclaration:struct_decl = StructDeclaration [
+            is_public, name, is_value, is_abstract, is_super, extendee
+        ];
+        [struct_decls].append[struct_decl];
+        [s1_structs].append[S1EPSLStruct [
+            raw_struct.start_index, raw_struct.end_index,
+            struct_decl, raw_struct.body
+        ]];
+    };
+    :ErrorBundle:error_bundle = bundle [errors]
+        txt: [raw_modcon.file_text] path: [raw_modcon.absolute_path];
+    return S1ModconResult [S1EPSLModuleContent [
+        raw_modcon.absolute_path, raw_modcon.imports, struct_decls,
+        raw_modcon.file_text, s1_structs, raw_modcon.raw_globals,
+        raw_modcon.raw_functions
+    ], error_bundle];
+}

@@ -1,0 +1,108 @@
+$import types_;
+$import modules;
+$import builder;
+$import errors;
+
+@super;
+@concrete;
+StructDeclaration {
+    Bool:is_public,
+    Str:name,
+    Bool:is_value,
+    Bool:is_abstract,
+    Bool:is_super,
+    StructRef?:extendee
+}
+
+@extends StructDeclaration;
+Struct_ {
+    [Field]:fields
+}
+
+Field {
+    Type_:type_,
+    Str:name
+}
+
+StructRef {
+    Str:name,
+    Module:src_mod,
+    Struct_?:struct_
+}
+
+[FileError]#load struct_ extendees [Build:build] {
+    [FileError]:errors = [FileError] [];
+    for Module:module in build.modules {
+        :S2ModuleContent:modcon = [(:S2ModuleContent?)module.content]
+            .expect["Expected :S2ModuleContent"];
+        for Struct_:struct in modcon.structs {
+            given load struct_ extendee [struct] build: [build] as FileError:error {
+                [errors].append[error];
+            };
+        };
+    };
+    return errors;
+}
+
+FileError?#load struct_ extendee [Struct_:this_struct] build: [Build:build] {
+    if !this_struct.extendee {
+        return null;
+    };
+    StructRef:ref = [this_struct.extendee].unwrap;
+    Module:module = ref.src_mod;
+    for Import:import in module.content.imports {
+        Module:imported = [build].lookup_module[import];
+        :S2ModuleContent:modcon = [(:S2ModuleContent?)imported.content]
+            .expect["Expected :S2ModuleContent"];
+        for Struct_:other_struct in modcon.structs {
+            if [other_struct.name] not equals [ref.name] {
+                continue;
+            };
+            if !other_struct.is_super {
+                return FileError [
+                    "Struct {} cannot extend non super struct {}"
+                        % this_struct.name % other_struct.name,
+                    module.content.absolute_path
+                ];
+            };
+            ref.struct_ = other_struct;
+            return null;
+        };
+    };
+    return FileError [
+        "Cannot find struct {} that {} extends" % ref.name % this_struct.name,
+        module.content.absolute_path
+    ];
+}
+
+[FileError]#verify no recursive extendees [Build:build] {
+    for Module:module in build.modules {
+        :S2ModuleContent:modcon = [(:S2ModuleContent?)module.content]
+            .expect["Expected :S2ModuleContent"];
+        for Struct_:struct in modcon.structs {
+            FileError?:maybe_error = verify no recursive extendees [struct]
+                seen: [[Struct_] []];
+            given maybe_error as FileError:error {
+                return [FileError] [error];
+            };
+        };
+    };
+    return [FileError] [];
+}
+
+FileError?#verify no recursive extendees [Struct_:struct] seen: [[Struct_]:seen] {
+    if !struct.extendee {
+        return null;
+    };
+    StructRef:ref = [struct.extendee].unwrap;
+    if [seen].index_of[struct] {
+        return FileError [
+            "Struct {} is not allowed to (directly or indirectly) extend itself" % struct.name,
+            ref.src_mod.content.absolute_path
+        ];
+    };
+    [seen].append[struct];
+    Struct_:extendee = [ref.struct_]
+        .expect["Structs should have their extendees loaded"];
+    return verify no recursive extendees [extendee] seen: [seen];
+}

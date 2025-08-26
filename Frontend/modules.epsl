@@ -1,6 +1,7 @@
 $import types_;
 $import errors;
 $import paths;
+$import structs;
 
 Module {
     [Str]:path,
@@ -15,7 +16,7 @@ S0ModuleContent {
 
 S0ModconResult {
     :S0ModuleContent?:modcon,
-    :ErrorBundle?:errors
+    :ErrorBundle:errors
 }
 
 @super;
@@ -26,7 +27,7 @@ S1ModuleContent {
 
 S1ModconResult {
     :S1ModuleContent?:modcon,
-    :ErrorBundle?:errors
+    :ErrorBundle:errors
 }
 
 @super;
@@ -38,7 +39,8 @@ S2ModuleContent {
 }
 
 Import {
-    [Str]:path
+    [Str]:path,
+    Module?:referenced
 }
 
 Global {}
@@ -46,29 +48,6 @@ Global {}
 @super;
 FunctionDeclaration {}
 
-@super;
-@concrete;
-StructDeclaration {
-    Bool:is_public,
-    Str:name,
-    Bool:is_value,
-    Bool:is_abstract,
-    Bool:is_super,
-    StructRef?:extendee
-}
-
-@extends StructDeclaration;
-Struct_ {
-    [Field]:fields
-}
-
-Field {
-    Type_:type_,
-    Str:name
-}
-
-StructRef {
-    Str:name,
-    Module:module,
-    Struct_?:struct_
+Str#[Import:import].stringify_path {
+    return [import.path].join["."];
 }
