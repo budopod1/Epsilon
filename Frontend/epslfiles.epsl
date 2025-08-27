@@ -218,9 +218,11 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
         };
         Bool:is_abstract = is_super && !is_concrete;
         StructDeclaration:struct_decl = StructDeclaration [
-            is_public, name, is_value, is_abstract, is_super, extendee
+            name, is_value, is_abstract, is_super, extendee
         ];
-        [struct_decls].append[struct_decl];
+        if is_public {
+            [struct_decls].append[struct_decl];
+        };
         [s1_structs].append[S1EPSLStruct [
             raw_struct.start_index, raw_struct.end_index,
             struct_decl, raw_struct.body

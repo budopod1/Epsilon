@@ -6,7 +6,6 @@ $import errors;
 @super;
 @concrete;
 StructDeclaration {
-    Bool:is_public,
     Str:name,
     Bool:is_value,
     Bool:is_abstract,
