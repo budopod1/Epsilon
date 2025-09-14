@@ -21,7 +21,7 @@ Z#f1 [Struct:struct] {
 }
 
 Z#f2 [Struct:struct] {
-    given (struct as %H1:h1) {
+    given (struct as $H1:h1) {
         return h1.a;
     } else {
         return 0;

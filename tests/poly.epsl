@@ -19,16 +19,16 @@ H {
 Z#main {
     H:h = H [1, 2, 3];
 
-    %F:sf = h;
+    $F:sf = h;
 
     Z:counter = 0;
     counter += sf.a;
 
-    given (sf as %H:sh) {
+    given (sf as $H:sh) {
         counter += 2;
     };
 
-    given (sf as %G:sg) {
+    given (sf as $G:sg) {
         counter += 4;
     };
 

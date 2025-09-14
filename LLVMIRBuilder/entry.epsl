@@ -1,8 +1,8 @@
-$import json;
-$import eewriter;
-$import instructions;
-$import conversion;
-$import fileio;
+%import json;
+%import eewriter;
+%import instructions;
+%import conversion;
+%import fileio;
 
 ScopeVar {
     Str:name,
@@ -32,14 +32,14 @@ FuncState {
 }
 
 State {
-    %JSON:json,
+    $JSON:json,
     [Struct_]?:structs,
     [ScopeVar]?:globals,
     [FuncProto]?:protos,
     FuncState?:func_state,
 }
 
-$global State?:state;
+%global State?:state;
 
 State#get state {
     return [state].unwrap;
@@ -49,38 +49,38 @@ FuncState#get func state {
     return [get state.func_state].unwrap;
 }
 
-Type_#read type_ [%JSON:json] {
+Type_#read type_ [$JSON:json] {
     [Type_]:generics = [Type_] [];
-    for (%JSON:generic_json in [[json].get["generics"]].get_list) {
+    for ($JSON:generic_json in [[json].get["generics"]].get_list) {
         [generics].append[read type_ [generic_json]];
     };
     Z:bits = -1;
-    %JSON:bits_json = [json].get["bits"];
+    $JSON:bits_json = [json].get["bits"];
     if (![bits_json].is_null) {
         bits = [bits_json].get_int;
     };
     return Type_ [[[json].get["name"]].get_str, bits, generics];
 }
 
-Type_?#read voidable type_ [%JSON:json] {
+Type_?#read voidable type_ [$JSON:json] {
     if ([json].is_null) {
         return null;
     };
     [Type_]:generics = [Type_] [];
-    for (%JSON:generic_json in [[json].get["generics"]].get_list) {
+    for ($JSON:generic_json in [[json].get["generics"]].get_list) {
         [generics].append[read type_ [generic_json]];
     };
     Z:bits = -1;
-    %JSON:bits_json = [json].get["bits"];
+    $JSON:bits_json = [json].get["bits"];
     if (![bits_json].is_null) {
         bits = [bits_json].get_int;
     };
     return Type_ [[[json].get["name"]].get_str, bits, generics];
 }
 
-FuncProto#read func proto [%JSON:json] {
+FuncProto#read func proto [$JSON:json] {
     [Type_]:arg_types_ = [Type_] [];
-    for (%JSON:arg_json in [[json].get["arguments"]].get_list) {
+    for ($JSON:arg_json in [[json].get["arguments"]].get_list) {
         [arg_types_].append[read type_ [[arg_json].get["type_"]]];
     };
     return FuncProto [
@@ -94,7 +94,7 @@ FuncProto#read func proto [%JSON:json] {
 }
 
 Z#main {
-    %JSON:json = read BinJSON_;
+    $JSON:json = read BinJSON_;
 
     state = State [json, null, null, null, null];
 
@@ -111,7 +111,7 @@ Z#main {
     return 0;
 }
 
-%JSON#read BinJSON_ {
+$JSON#read BinJSON_ {
     File?:maybe_file = open_file["temp/code.binjson"][FILE_READ_MODE];
     if ([maybe_file].is_null) {
         abort "Failed to open code.binjson";
@@ -126,9 +126,9 @@ Z#main {
 
 #load structs {
     [Struct_]:structs = [Struct_] [];
-    for (%JSON:struct_json in [[get state.json].get["structs"]].get_list) {
+    for ($JSON:struct_json in [[get state.json].get["structs"]].get_list) {
         [Field]:fields = [Field] [];
-        for (%JSON:field_json in [[struct_json].get["fields"]].get_list) {
+        for ($JSON:field_json in [[struct_json].get["fields"]].get_list) {
             [fields].append [Field [
                 [[field_json].get["name"]].get_str,
                 read type_ [[field_json].get["type_"]]
@@ -139,7 +139,7 @@ Z#main {
             destructor = [[struct_json].get["destructor"]].get_str;
         };
         [L]:extendee_ids = [L] [];
-        for (%JSON:id_json in [[struct_json].get["extendees"]].get_list) {
+        for ($JSON:id_json in [[struct_json].get["extendees"]].get_list) {
             [extendee_ids].append[[[id_json].get_str].parse_as_W64_in_base[16]];
         };
         Struct_:struct_ = Struct_ [
@@ -158,7 +158,7 @@ Z#main {
         [struct_].register;
     };
     get state.structs = structs;
-    for (%JSON:id_json in [[get state.json].get["structs_here"]].get_list) {
+    for ($JSON:id_json in [[get state.json].get["structs_here"]].get_list) {
         Struct_:struct_ = [get struct_ by id [[id_json].get_str]].unwrap;
         if (struct_.has_global_free_fn) {
             generate free fn for_ [struct_] private: [false];
@@ -169,8 +169,8 @@ Z#main {
 
 #generate globals {
     [ScopeVar]:globals = [ScopeVar] [];
-    [%JSON]:globals_json = [[get state.json].get["globals"]].get_list;
-    for (%JSON:global_json in globals_json) {
+    [$JSON]:globals_json = [[get state.json].get["globals"]].get_list;
+    for ($JSON:global_json in globals_json) {
         Str:name = [[global_json].get["name"]].get_str;
         Type_:type_ = read type_ [[global_json].get["type_"]];
         W:id = (W)[[global_json].get["id"]].get_int;
@@ -182,8 +182,8 @@ Z#main {
 
 #define func protos {
     [FuncProto]:protos = [FuncProto] [];
-    %JSON:json = get state.json;
-    for (%JSON:proto_json in [[[json].get["functions"]].get_list] + [[[json].get["extern_functions"]].get_list]) {
+    $JSON:json = get state.json;
+    for ($JSON:proto_json in [[[json].get["functions"]].get_list] + [[[json].get["extern_functions"]].get_list]) {
         FuncProto:proto = read func proto [proto_json];
         extern fn [proto.ret_type_] [proto.callee] [proto.arg_types_];
         [protos].append[proto];
@@ -202,19 +202,19 @@ FuncProto#get func proto [Str:id] {
 }
 
 #build funcs {
-    for (%JSON:func_json in [[get state.json].get["functions"]].get_list) {
+    for ($JSON:func_json in [[get state.json].get["functions"]].get_list) {
         build func [func_json];
     };
 }
 
-#build func [%JSON:func_json] {
+#build func [$JSON:func_json] {
     if ([[func_json].get["dllexport"]].get_bool) {
         add func specifier ["dllexport"];
     };
     FuncProto:proto = read func proto [func_json];
 if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     [ScopeVar]:vars = [ScopeVar] [];
-    for (%JSON:var_json in [[func_json].get["vars"]].get_list) {
+    for ($JSON:var_json in [[func_json].get["vars"]].get_list) {
         Type_:type_ = read type_ [[var_json].get["type_"]];
         Val:addr = &[var [type_]];
         Str:name = [[var_json].get["name"]].get_str;
@@ -224,9 +224,9 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     [vars].extend[[get state.globals].unwrap];
 
     [ScopeVar]:arg_vars = [ScopeVar] [];
-    [%JSON]:arg_list = [[func_json].get["arguments"]].get_list;
+    [$JSON]:arg_list = [[func_json].get["arguments"]].get_list;
     for (L:i enumerating arg_list) {
-        %JSON:arg_json = arg_list[i];
+        $JSON:arg_json = arg_list[i];
         Str:name = [[arg_json].get["name"]].get_str;
         W:id = (W)[[arg_json].get["variable"]].get_int;
 
@@ -249,7 +249,7 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     };
 
     [Val]:special_allocs = [Val] [];
-    for (%JSON:alloc_json in [[func_json].get["special_allocs"]].get_list) {
+    for ($JSON:alloc_json in [[func_json].get["special_allocs"]].get_list) {
         [special_allocs].append[&[var [read type_ [alloc_json]]]];
     };
 
@@ -257,7 +257,7 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
         proto, special_allocs, [Val] [], vars, arg_vars, [ScopeVar] [], [ScopeVar] [], null
     ];
 
-    %JSON:block_json = [func_json].get["block"];
+    $JSON:block_json = [func_json].get["block"];
     build block [block_json] toplevel: [true];
 end fn;
 } else {
@@ -278,9 +278,9 @@ ScopeVar#get var [W:id] {
     abort "Cannot find a var with ID {}" % id;
 }
 
-[ScopeVar]#get var list [%JSON:list_json] {
+[ScopeVar]#get var list [$JSON:list_json] {
     [ScopeVar]:result = [ScopeVar] [];
-    for (%JSON:id_json in [list_json].get_list) {
+    for ($JSON:id_json in [list_json].get_list) {
         [result].append[get var [(W)[id_json].get_int]];
     };
     return result;
@@ -333,11 +333,11 @@ Type_?#current func ret type_ {
     perpare for_ function termination returning [null];
 }
 
-[Val?]#build ir [%JSON:ir_json] {
+[Val?]#build ir [$JSON:ir_json] {
     [Val?]:results = [Val?] [];
-    for (%JSON:instruction_json in [ir_json].get_list) {
+    for ($JSON:instruction_json in [ir_json].get_list) {
         [Val]:operands = [Val] [];
-        for (%JSON:operand_json in [[instruction_json].get["operands"]].get_list) {
+        for ($JSON:operand_json in [[instruction_json].get["operands"]].get_list) {
             Val?:result = results[(W)[operand_json].get_int];
             if ([result].is_null) {
                 abort "Cannot use void instruction as operand";
@@ -349,7 +349,7 @@ Type_?#current func ret type_ {
     return results;
 }
 
-#build block [%JSON:block_json] toplevel: [Bool:toplevel] {
+#build block [$JSON:block_json] toplevel: [Bool:toplevel] {
     [ScopeVar]:old_block_vars = get func state.block_vars;
     [ScopeVar]:old_active_vars = get func state.active_vars;
     get func state.block_vars = get var list [[block_json].get["vars_here"]];
@@ -366,11 +366,11 @@ Type_?#current func ret type_ {
     get func state.active_vars = old_active_vars;
 }
 
-#build block [%JSON:block_json] {
+#build block [$JSON:block_json] {
     build block [block_json] toplevel: [false];
 }
 
-#toplevel block termination [%JSON:block_json] {
+#toplevel block termination [$JSON:block_json] {
     if ([[block_json].get["does_terminate_function"]].get_bool) {
         mark as unreachable;
     } else {
@@ -379,7 +379,7 @@ Type_?#current func ret type_ {
     };
 }
 
-Val#build seperated value [%JSON:val_json] {
+Val#build seperated value [$JSON:val_json] {
     [Val?]:results = build ir [[val_json].get["ir"]];
     Val?:result = results[(W)[[val_json].get["val"]].get_int];
     if (result) {

@@ -1,4 +1,4 @@
-$import cppfile;
+%import cppfile;
 
 Z#main {
     return cpp_func[CPPStruct [4, 2]];
