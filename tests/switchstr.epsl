@@ -7,8 +7,6 @@ Z#foo[Z:param] {
     }
     ("10") {
         return 8;
-    }
-    {
-        return 0;
     };
+    return 0;
 }
