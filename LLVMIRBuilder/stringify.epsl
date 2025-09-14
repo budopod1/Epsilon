@@ -1,5 +1,5 @@
-$import operations;
-$import eewriter;
+%import operations;
+%import eewriter;
 
 Val#make stringify of [Val:val] {
     Type_:type_ = val.type_;

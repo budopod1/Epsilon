@@ -1,4 +1,4 @@
-$import eewriter;
+%import eewriter;
 
 Val#do [Val:outer_a] equals [Val:outer_b] deep: [Bool:deep] invert: [Bool:invert] {
     assert type_ equality [outer_a], [outer_b];

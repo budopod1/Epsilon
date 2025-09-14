@@ -447,7 +447,7 @@ public class EPSLFileCompiler : IFileCompiler {
                 ),
                 new PatternMatcher(
                     [
-                        new TextPatternSegment("%"),
+                        new TextPatternSegment("$"),
                         new TypePatternSegment(typeof(Type_Token))
                     ], new FuncPatternProcessor<List<IToken>>(
                         tokens => type_Wrapper(tokens, () =>

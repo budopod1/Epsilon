@@ -1,4 +1,4 @@
-$import math;
+%import math;
 
 @id testee;
 R#do_test[R:a] {

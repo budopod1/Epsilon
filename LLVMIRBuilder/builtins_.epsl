@@ -1,7 +1,7 @@
-$import operations;
-$import stringify;
-$import eewriter;
-$import equality;
+%import operations;
+%import stringify;
+%import eewriter;
+%import equality;
 
 
 BuiltinResult {

@@ -1,11 +1,11 @@
-$import operations;
-$import stringify;
-$import eewriter;
-$import equality;
-$import json;
-$import entry;
+%import operations;
+%import stringify;
+%import eewriter;
+%import equality;
+%import json;
+%import entry;
 
-Val#build constant value [%JSON:instruction_json] to [Type_:type_] {
+Val#build constant value [$JSON:instruction_json] to [Type_:type_] {
     return make constant [[instruction_json].get["constant"]] of type_ [type_];
 }
 
@@ -38,7 +38,7 @@ Val#build negation using [[Val]:operands] to [Type_:type_] {
     return negate [cast [operands[0]] to [type_]];
 }
 
-Val#build exponentiation [%JSON:instruction_json] using [[Val]:operands] to [Type_:type_] {
+Val#build exponentiation [$JSON:instruction_json] using [[Val]:operands] to [Type_:type_] {
     Str:mode = [[instruction_json].get["mode"]].get_str;
     if ([mode] equals ["chain"]) {
         Val:base = cast [operands[0]] to [type_];
@@ -61,13 +61,13 @@ Val#build exponentiation [%JSON:instruction_json] using [[Val]:operands] to [Typ
     abort "Unknown exponentiation mode {}" % mode;
 }
 
-Val#build variable [%JSON:instruction_json] {
+Val#build variable [$JSON:instruction_json] {
     W:id = (W)[[instruction_json].get["variable"]].get_int;
     return load [*[get var [id].addr]];
 }
 
 
-Val#build comparison [%JSON:instruction_json] using [[Val]:operands] {
+Val#build comparison [$JSON:instruction_json] using [[Val]:operands] {
     Type_:common_type_ = read type_ [[instruction_json].get["common_type_"]];
     Val:o1 = cast [operands[0]] to [common_type_];
     Val:o2 = cast [operands[1]] to [common_type_];
@@ -96,7 +96,7 @@ Val#build sub one using [[Val]:operands] {
     return [operand] - [c [1] [operand.type_]] bound: [false];
 }
 
-Val#build string literal [%JSON:instruction_json] to [Type_:type_] {
+Val#build string literal [$JSON:instruction_json] to [Type_:type_] {
     Str:string = [[instruction_json].get["string"]].get_str;
     return make global Str_ [string];
 }
@@ -123,7 +123,7 @@ Val#build array access using [[Val]:operands] {
     return result;
 }
 
-Val#build equality [%JSON:instruction_json] using [[Val]:operands] inverted: [Bool:inverted] {
+Val#build equality [$JSON:instruction_json] using [[Val]:operands] inverted: [Bool:inverted] {
     Type_:common_type_ = read type_ [[instruction_json].get["common_type_"]];
     Val:o1 = cast [operands[0]] to [common_type_];
     Val:o2 = cast [operands[1]] to [common_type_];
@@ -134,7 +134,7 @@ Val#build equality [%JSON:instruction_json] using [[Val]:operands] inverted: [Bo
     };
 }
 
-Val#build instantiation [%JSON:instruction_json] using [[Val]:operands] to [Type_:type_] {
+Val#build instantiation [$JSON:instruction_json] using [[Val]:operands] to [Type_:type_] {
     Struct_:struct_ = [[type_].get_struct].unwrap;
     [Val]:casted_vals = [Val] [];
     for (L:i enumerating struct_.fields) {
@@ -145,7 +145,7 @@ Val#build instantiation [%JSON:instruction_json] using [[Val]:operands] to [Type
     return new ref struct_ [type_] [casted_vals];
 }
 
-Val#build member access [%JSON:instruction_json] using [[Val]:operands] {
+Val#build member access [$JSON:instruction_json] using [[Val]:operands] {
     Type_:struct_type_ = read type_ [[instruction_json].get["struct_type_"]];
     Val:struct_val = cast [operands[0]] to [struct_type_];
     Struct_:struct_ = [[struct_type_].get_struct].unwrap;
@@ -206,7 +206,7 @@ Val#build format chain using [[Val]:operands] {
     return result;
 }
 
-Val#build boolean operation [%JSON:instruction_json] using [[Val]:operands] {
+Val#build boolean operation [$JSON:instruction_json] using [[Val]:operands] {
     PHINode:result_phi = new PHI [Bool_];
 
     Val:o1 = operands[0];
@@ -245,7 +245,7 @@ Val#build null_ value {
     return c null_ [Null_];
 }
 
-Val#build function call [%JSON:instruction_json] using [[Val]:operands] to [Type_:result_type_] {
+Val#build function call [$JSON:instruction_json] using [[Val]:operands] to [Type_:result_type_] {
     Str:function_id = [[instruction_json].get["function"]].get_str;
     return [call function [function_id] with args [operands] to [result_type_]].unwrap;
 }
@@ -277,7 +277,7 @@ Val#build cast using [[Val]:operands] to [Type_:type_] {
     return cast [operands[0]] to [type_];
 }
 
-Val#build valued instruction [%JSON:instruction_json] using [[Val]:operands] {
+Val#build valued instruction [$JSON:instruction_json] using [[Val]:operands] {
     Str:type = [[instruction_json].get["type"]].get_str;
     Type_:type_ = read type_ [[instruction_json].get["type_"]];
     if ([type] equals ["constant_value"]) {
@@ -347,14 +347,14 @@ Val#build valued instruction [%JSON:instruction_json] using [[Val]:operands] {
     };
 }
 
-#build initial assignment [%JSON:instruction_json] using [[Val]:operands] {
+#build initial assignment [$JSON:instruction_json] using [[Val]:operands] {
     ScopeVar:var = get var [(W)[[instruction_json].get["variable"]].get_int];
     Val:operand = cast [operands[0]] to [read type_ [[instruction_json].get["var_type_"]]];
     [operand].incr_ref;
     [*[var.addr]] = [operand];
 }
 
-#build assignment [%JSON:instruction_json] using [[Val]:operands] {
+#build assignment [$JSON:instruction_json] using [[Val]:operands] {
     ScopeVar:var = get var [(W)[[instruction_json].get["variable"]].get_int];
     Val:operand = cast [operands[0]] to [read type_ [[instruction_json].get["var_type_"]]];
     [operand].incr_ref;
@@ -373,7 +373,7 @@ Val#build valued instruction [%JSON:instruction_json] using [[Val]:operands] {
     ret [returnee];
 }
 
-#build while_ [%JSON:instruction_json] {
+#build while_ [$JSON:instruction_json] {
     Block?:outer_loop = get loop block;
 Label:cond_label = new label:;
     Val:cond = build seperated value [[instruction_json].get["condition"]];
@@ -388,17 +388,17 @@ Label:cond_label = new label:;
     [operands[0]].check_ref;
 }
 
-#build conditional [%JSON:instruction_json] {
+#build conditional [$JSON:instruction_json] {
     Label:end_label = new label;
     Label:else_label = end_label;
-    %JSON:else_json = [instruction_json].get["else"];
+    $JSON:else_json = [instruction_json].get["else"];
     if (![else_json].is_null) {
         else_label = new label;
     };
 
-    [%JSON]:conditions_json = [[instruction_json].get["conditions"]].get_list;
+    [$JSON]:conditions_json = [[instruction_json].get["conditions"]].get_list;
     for (L:i enumerating conditions_json) {
-        %JSON:condition_json = conditions_json[i];
+        $JSON:condition_json = conditions_json[i];
         Label:otherwise = else_label;
         Label?:next_label = null;
         if (i != [conditions_json].len-1) {
@@ -441,7 +441,7 @@ Label:cond_label = new label:;
     [arr].check_ref;
 }
 
-#build member assignment [%JSON:instruction_json] using [[Val]:operands] {
+#build member assignment [$JSON:instruction_json] using [[Val]:operands] {
     Type_:struct_type_ = read type_ [[instruction_json].get["struct_type_"]];
     Val:struct_val = cast [operands[0]] to [struct_type_];
     Struct_:struct_ = [[struct_type_].get_struct].unwrap;
@@ -459,22 +459,22 @@ Label:cond_label = new label:;
     [struct_val].check_ref;
 }
 
-#build switch_ [%JSON:instruction_json] using [[Val]:operands] {
+#build switch_ [$JSON:instruction_json] using [[Val]:operands] {
     Val:operand = operands[0];
 
     Label:end_label = new label;
     Label:default_label = end_label;
-    %JSON:default_json = [instruction_json].get["default"];
+    $JSON:default_json = [instruction_json].get["default"];
     if (![default_json].is_null) {
         default_label = new label;
     };
 
-    [%JSON]:arms_json = [[instruction_json].get["arms"]].get_list;
+    [$JSON]:arms_json = [[instruction_json].get["arms"]].get_list;
     [Label]:block_labels = [Label] [];
 
     if ([operand.type_].is_numeric) {
         [Val]:block_targets = [Val] [];
-        for (%JSON:arm_json in arms_json) {
+        for ($JSON:arm_json in arms_json) {
             [block_targets].append[make constant [[arm_json].get["target"]]
                 of type_ [operand.type_]];
             [block_labels].append[new label];
@@ -483,7 +483,7 @@ Label:cond_label = new label:;
         switch_ on [operand] to [block_targets] [block_labels] otherwise [default_label];
     } else {
         for (L:i enumerating arms_json) {
-            %JSON:arm_json = arms_json[i];
+            $JSON:arm_json = arms_json[i];
             Label:otherwise = default_label;
             Label?:next_label = null;
             if (i != [arms_json].len-1) {
@@ -519,7 +519,7 @@ Label:cond_label = new label:;
 [end_label]:;
 }
 
-#build for_ [%JSON:instruction_json] using [[Val]:operands] {
+#build for_ [$JSON:instruction_json] using [[Val]:operands] {
     Label:check_label = new label;
     Label:loop_label = new label;
     Label:iter_label = new label;
@@ -543,9 +543,9 @@ Label:cond_label = new label:;
     Bool:is_in = false;
     Bool:is_enumerating = false;
 
-    [%JSON]:clause_name_jsons = [[instruction_json].get["clause_names"]].get_list;
+    [$JSON]:clause_name_jsons = [[instruction_json].get["clause_names"]].get_list;
     for (L:i enumerating clause_name_jsons) {
-        %JSON:clause_name_json = clause_name_jsons[i];
+        $JSON:clause_name_json = clause_name_jsons[i];
         Str:clause_name = [clause_name_json].get_str;
         Bool:is_in_clause = [clause_name] equals ["in"];
         Bool:is_enumerating_clause = [clause_name] equals ["enumerating"];
@@ -649,17 +649,17 @@ Label:cond_label = new label:;
     };
 }
 
-#build given_ [%JSON:instruction_json] {
+#build given_ [$JSON:instruction_json] {
     Label:end_label = new label;
     Label:else_label = end_label;
-    %JSON:else_json = [instruction_json].get["else"];
+    $JSON:else_json = [instruction_json].get["else"];
     if (![else_json].is_null) {
         else_label = new label;
     };
 
-    [%JSON]:parts_json = [[instruction_json].get["parts"]].get_list;
+    [$JSON]:parts_json = [[instruction_json].get["parts"]].get_list;
     for (L:i enumerating parts_json) {
-        %JSON:part_json = parts_json[i];
+        $JSON:part_json = parts_json[i];
         Label:otherwise = else_label;
         Label?:next_label = null;
         if (i != [parts_json].len-1) {
@@ -699,7 +699,7 @@ Label:cond_label = new label:;
 [end_label]:;
 }
 
-#build void function call [%JSON:instruction_json] using [[Val]:operands] {
+#build void function call [$JSON:instruction_json] using [[Val]:operands] {
     Str:function_id = [[instruction_json].get["function"]].get_str;
     call function [function_id] with args [operands] to [null];
 }
@@ -724,7 +724,7 @@ Label:cond_label = new label:;
     continue_ [[get loop block].unwrap];
 }
 
-#build void instruction [%JSON:instruction_json] using [[Val]:operands] {
+#build void instruction [$JSON:instruction_json] using [[Val]:operands] {
     Str:type = [[instruction_json].get["type"]].get_str;
     if ([type] equals ["initial_assignment"]) {
         build initial assignment [instruction_json] using [operands];
@@ -767,7 +767,7 @@ Label:cond_label = new label:;
     };
 }
 
-Val?#build instruction [%JSON:instruction_json] using [[Val]:operands] {
+Val?#build instruction [$JSON:instruction_json] using [[Val]:operands] {
     Val?:instruction_result = null;
     if ([instruction_json].contains_key["error_frame"]) {
         add error frame [[[instruction_json].get["error_frame"]].get_str];
