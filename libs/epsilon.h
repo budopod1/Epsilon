@@ -143,8 +143,6 @@ void epsl_null_value_fail(void);
 
 struct Array *epsl_format_string(struct Array *template_, struct Array *values[], uint32_t value_count);
 
-bool epsl_check_vtable_extends(struct VTableBase *vtable, uint64_t id);
-
 void epsl_array_idx_fail(void);
 
 void epsl_div_0_fail(void);
