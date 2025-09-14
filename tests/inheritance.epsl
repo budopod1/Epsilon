@@ -13,7 +13,7 @@ Z#main {
 
     A:a = A [1];
 
-    :A:sa = a;
+    %A:sa = a;
 
     B?:mb = (B?)sa; // will be null
     // the above satement wouldn't compile if it would always result in null
@@ -23,13 +23,13 @@ Z#main {
 
     sa = b;
 
-    :B:sb = b;
+    %B:sb = b;
 
-    :B?:msb = b; // will not be null
+    %B?:msb = b; // will not be null
 
     sa = sb;
 
-    :A?:msa = (A?)sb; // will be null
+    %A?:msa = (A?)sb; // will be null
 
     mb = (B?)msa; // will be null
 
