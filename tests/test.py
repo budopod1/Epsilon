@@ -551,12 +551,14 @@ def main():
             print("❗ Compilation of function failed:")
             print(f"Compliation did not complete within {TIMEOUT} seconds")
             failed += len(group["tests"])
+            test_idx += len(group["tests"])
             continue
 
         if not did_compile:
             print("❗ Compilation of function failed with error:")
             print(compile_message)
             failed += len(group["tests"])
+            test_idx += len(group["tests"])
             continue
 
         for test in group["tests"]:

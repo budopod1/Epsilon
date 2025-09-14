@@ -1255,7 +1255,7 @@ Please clarify between the functions that take the types:
                         new TypePatternSegment(typeof(IValueToken))
                     ], [
                         new TypePatternSegment(typeof(Group)),
-                        new TypePatternSegment(typeof(IValueToken))
+                        new TypePatternSegment(typeof(CodeBlock))
                     ], 1, -1, [],
                     new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
                         return [
