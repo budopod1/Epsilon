@@ -139,7 +139,7 @@ Module?#load module [Import:import] root: [Path:root] {
         if report errors [modcon_result.errors] {
             return null;
         };
-        given modcon_result.modcon as :S0ModuleContent:modcon {
+        given modcon_result.modcon as %S0ModuleContent:modcon {
             return Module [import.path, modcon];
         };
     };
@@ -159,10 +159,10 @@ S0ModconResult#load module [Import:import] from path [Path:path] {
 }
 
 Bool#produce struct declarations [Build:build] {
-    [:ErrorBundle]:bundles = [:ErrorBundle] [];
+    [%ErrorBundle]:bundles = [%ErrorBundle] [];
     for Module:module in build.modules {
         S1ModconResult:result = produce struct declarations [module];
-        given result.modcon as :S1ModuleContent:modcon {
+        given result.modcon as %S1ModuleContent:modcon {
             module.content = modcon;
         };
         [bundles].append[result.errors];
@@ -171,7 +171,7 @@ Bool#produce struct declarations [Build:build] {
 }
 
 S1ModconResult#produce struct declarations [Module:module] {
-    :S0ModuleContent:modcon = module.content;
+    %S0ModuleContent:modcon = module.content;
     given modcon as S0EPSLModuleContent:epsl_modcon {
         return cook epsl struct declarations [module];
     } given modcon as SPECModuleContent:spec_modcon {

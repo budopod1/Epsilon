@@ -8,13 +8,13 @@ $import errors;
 $import paths;
 
 S0ModconResult#parse_toplevel[Tokens:tokens] onto: [S0EPSLModuleContent:modcon] {
-    [:Annotation]:annotations = [:Annotation] [];
+    [%Annotation]:annotations = [%Annotation] [];
     ParseState:state = ParseState [tokens, 0, [ParseError] []];
     while ![state].is_at_end {
         W:id = [state].cur_id;
-        :ToplevelItem?:item = null;
+        %ToplevelItem?:item = null;
         if id == '@' {
-            given (parse_annotation[state] as :Annotation:annotation) {
+            given (parse_annotation[state] as %Annotation:annotation) {
                 [annotations].append[annotation];
             };
             continue;
@@ -23,17 +23,17 @@ S0ModconResult#parse_toplevel[Tokens:tokens] onto: [S0EPSLModuleContent:modcon] 
         } else {
             item = parse_struct_or_func[state];
         };
-        given (item as :ToplevelItem:new_item) {
+        given (item as %ToplevelItem:new_item) {
             [modcon].add_item[new_item][annotations] state: [state];
-            annotations = [:Annotation] [];
+            annotations = [%Annotation] [];
         };
     };
-    :ErrorBundle:bundle = bundle [state.errors] txt: [modcon.file_text]
+    %ErrorBundle:bundle = bundle [state.errors] txt: [modcon.file_text]
         path: [modcon.absolute_path];
     return S0ModconResult [modcon, bundle];
 }
 
-#[S0EPSLModuleContent:modcon].add_item[:ToplevelItem:item][[:Annotation]:annotations] state: [ParseState:state] {
+#[S0EPSLModuleContent:modcon].add_item[%ToplevelItem:item][[%Annotation]:annotations] state: [ParseState:state] {
     given item as ImportDeclaration:import_declaration {
         if (annotations) {
             [state].error_at[item] msg: ["Imports cannot receive annotations"];
@@ -53,7 +53,7 @@ S0ModconResult#parse_toplevel[Tokens:tokens] onto: [S0EPSLModuleContent:modcon] 
     };
 }
 
-:Annotation?#parse_annotation[ParseState:state] {
+%Annotation?#parse_annotation[ParseState:state] {
     W:start_index = [state].cur_start;
     [state].consume; // consume the @
     Bool:valid = [state].consume[T_IDENT] name: ["annotation name"];
@@ -105,7 +105,7 @@ S0ModconResult#parse_toplevel[Tokens:tokens] onto: [S0EPSLModuleContent:modcon] 
     return null;
 }
 
-:ToplevelItem?#parse_toplevel_dollar_item[ParseState:state] {
+%ToplevelItem?#parse_toplevel_dollar_item[ParseState:state] {
     W:start_index = [state].cur_start;
     [state].consume; // consume the $
     Bool:valid = [state].consume[T_IDENT] name: ["'import' or 'global'"];
@@ -148,13 +148,13 @@ ImportDeclaration?#parse_import[ParseState:state] start: [W:start_index] {
             [parts].append[[[state].cur_data].read_string];
             was_dot = false;
         } else {
-            Str?:msg_template = null;
+            Str?:msg = null;
             if was_dot {
-                msg_template = "Expected '.' or path segment in import declaration, found {}";
+                msg = "Expected '.' or path segment in import declaration";
             } else {
-                msg_template = "Expected '.' in import declaration, found {}";
+                msg = "Expected '.' in import declaration";
             };
-            [state].error_at_current msg: [[msg_template].unwrap % token_id_to_name[token_id]];
+            [state].error_about_current msg: [[msg].unwrap];
             // this might move past more than it should, but the
             // only result would be producing less errors than it could
             [state].move_past_semicolon why: ["to terminate import declaration"];
@@ -173,7 +173,7 @@ RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
             [state].consume;
             W:end_index = [state].last_end;
             return RawGlobal [
-                start_index, end_index, [:Annotation] [], global_content
+                start_index, end_index, [%Annotation] [], global_content
             ];
         };
         [state].move_token_to[global_content];
@@ -182,11 +182,11 @@ RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
     return null;
 }
 
-:ToplevelItem?#parse_struct_or_func[ParseState:state] {
+%ToplevelItem?#parse_struct_or_func[ParseState:state] {
     W:start_index = [state].cur_start;
     if [state].cur_id == T_IDENT {
         [state].consume;
-        :TokenData?:ident_data = [state].last_data;
+        %TokenData?:ident_data = [state].last_data;
         if [state].is_at_end {
             [state].error_at_end msg: ["Expected braces"];
             return null;
@@ -197,7 +197,7 @@ RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
             Str:struct_name = [ident_data].read_identifier;
             Tokens:tokens = [[state].last_data].read_group;
             return RawStruct [
-                start_index, end_index, [:Annotation] [], struct_name, tokens
+                start_index, end_index, [%Annotation] [], struct_name, tokens
             ];
         } else {
             [state].unconsume;
@@ -257,6 +257,6 @@ RawGlobal?#parse_global[ParseState:state] start: [W:start_index] {
 
     W:end_index = [state].last_end;
     return RawFunction [
-        start_index, end_index, [:Annotation] [], ret_type_, template, [body].unwrap
+        start_index, end_index, [%Annotation] [], ret_type_, template, [body].unwrap
     ];
 }

@@ -52,7 +52,7 @@ Tokens {
     W:start_index,
     [W]:ids,
     [W]:end_indexes,
-    [:TokenData?]:data
+    [%TokenData?]:data
 }
 
 TokenizationResult {
@@ -61,7 +61,7 @@ TokenizationResult {
 }
 
 TokenDataResult {
-    :TokenData?:data,
+    %TokenData?:data,
     TokenizationError?:error
 }
 
@@ -394,7 +394,7 @@ TokenizationResult#tokenize [Str:input] {
 }
 
 Tokens#new_Tokens_at[L:start_index] {
-    return Tokens [start_index, [W] [], [W] [], [:TokenData?] []];
+    return Tokens [start_index, [W] [], [W] [], [%TokenData?] []];
 }
 
 W#[Tokens:tokens].get_start_index[L:i] {
@@ -411,7 +411,7 @@ W#[Tokens:tokens].get_start_index[L:i] {
     [dest.data].append[src.data[i]];
 }
 
-Str#[:TokenData?:data].read_identifier {
+Str#[%TokenData?:data].read_identifier {
     given data as IdentifierTokenData:identifier_data {
         return identifier_data.val;
     } else {
@@ -419,7 +419,7 @@ Str#[:TokenData?:data].read_identifier {
     };
 }
 
-Str#[:TokenData?:data].read_string {
+Str#[%TokenData?:data].read_string {
     given data as StrTokenData:string_data {
         return string_data.val;
     } else {
@@ -427,7 +427,7 @@ Str#[:TokenData?:data].read_string {
     };
 }
 
-Tokens#[:TokenData?:data].read_group {
+Tokens#[%TokenData?:data].read_group {
     given data as GroupTokenData:group_data {
         return group_data.sub;
     } else {
@@ -459,7 +459,7 @@ Str#[Tokens:tokens].stringify {
     Str:result = ["Tokens("].clone;
     for (L:i enumerating tokens.ids) {
         W:id = tokens.ids[i];
-        :TokenData?:data = tokens.data[i];
+        %TokenData?:data = tokens.data[i];
         if id < 128 {
             [result].append[(Byte)id];
         } elif id == T_IDENT {

@@ -7,10 +7,10 @@ $global Path?:cache_epsl_dir;
 
 FileReadResult {
     Str?:txt,
-    :ErrorBundle:errors
+    %ErrorBundle:errors
 }
 
-:ErrorBundle#IO error msg: [Str:msg] path: [Path?:maybe_path] {
+%ErrorBundle#IO error msg: [Str:msg] path: [Path?:maybe_path] {
     given maybe_path as Path:path {
         msg = "{}: {}" % [path].stringify % msg;
     };

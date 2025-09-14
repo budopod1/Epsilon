@@ -1,1 +1,336 @@
+$import parsing;
+$import tokenizer;
+$import structs;
+
+@super;
 Type_ {}
+
+@extends Type_;
+StructType_ {
+    %StructDeclaration:struct_decl
+}
+
+@extends Type_;
+NullType_ {}
+
+@extends Type_;
+NeverType_ {}
+
+@extends Type_;
+OptionalType_ {
+    %Type_:sub
+}
+
+@extends Type_;
+PolyType_ {
+    %Type_:sub
+}
+
+@extends Type_;
+GenericType_ {
+    Str:name,
+    [%Type_]:generics
+}
+
+@super;
+@extends Type_;
+NumericType_ {
+    W:bits
+}
+
+@super;
+@extends NumericType_;
+IntegerType_ {}
+
+@super;
+@extends IntegerType_;
+UnsignedIntegerType_ {}
+
+@extends UnsignedIntegerType_;
+BoolType_ {}
+
+@extends UnsignedIntegerType_;
+ByteType_ {}
+
+@extends UnsignedIntegerType_;
+WType_ {}
+
+@extends IntegerType_;
+ZType_ {}
+
+@extends NumericType_;
+RType_ {}
+
+@super;
+Type_Criteria {}
+
+@extends Type_Criteria;
+AnyType_Criteria {}
+
+@extends Type_Criteria;
+SpecificType_Criteria {
+    %Type_:type_
+}
+
+@extends Type_Criteria;
+ConvertibleToType_Criteria {
+    %Type_:type_
+}
+
+GenericType_Description {
+    Str:name,
+    [%Type_Criteria]:generic_criteria
+}
+
+Type_Context {
+    [%StructDeclaration]:struct_decls,
+    [GenericType_Description]:generic_types_
+}
+
+%Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
+    if ![state].require_more why: ["type"] {
+        return null;
+    };
+    [state].consume;
+    W:id = [state].last_id;
+    if id == T_IDENT {
+        Str:txt = [[state].last_data].read_identifier;
+        given parse type_ from name [txt] state: [state] ctx: [ctx] as %Type_:type_ {
+            return parse more type_ from: [type_] state: [state] ctx: [ctx];
+        };
+        return null;
+    } elif id == T_SQUARE_GROUP {
+        ParseState:substate = [state].last_substate;
+        %Type_?:maybe_subtype_ = parse type_ state: [substate] ctx: [ctx];
+        if !maybe_subtype_ {
+            return null;
+        };
+        if ![substate].require_finished why: ["']' before {}"] {
+            return null;
+        };
+        %Type_:type_ = GenericType_ ["Array", [%Type_] [[maybe_subtype_].unwrap]];
+        return parse more type_ from: [type_] state: [state] ctx: [ctx];
+    } elif id == '%' {
+        %Type_?:maybe_subtype_ = parse type_ state: [state] ctx: [ctx];
+        if !maybe_subtype_ {
+            return null;
+        };
+        %Type_:type_ = PolyType_ [[maybe_subtype_].unwrap];
+        return parse more type_ from: [type_] state: [state] ctx: [ctx];
+    } else {
+        [state].unconsume;
+        [state].error_about_current msg: ["Expected type"];
+        return null;
+    };
+}
+
+%Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Context:ctx] {
+    switch name
+    ("Null") {
+        return NullType_ [];
+    }
+    ("Never") {
+        return NeverType_ [];
+    }
+    ("Bool") {
+        return BoolType_ [1];
+    }
+    ("Byte") {
+        return ByteType_ [8];
+    };
+    [Str]:bit_names = [Str] ["W", "Z", "R"];
+    for Str:bit_name in bit_names {
+        if ![name].starts_with[bit_name] {
+            continue;
+        };
+        W?:bits = null;
+        if [name].len > [bit_name].len {
+            Str:after = [name].slice_from[[bit_name].len];
+            Z?:maybe_val = parse_int[after];
+            if !maybe_val {
+                continue;
+            };
+            Z:val = [maybe_val].unwrap;
+            if val < 0 {
+                [state].error_at_previous
+                    msg: ["The bit count cannot be negative"];
+                return null;
+            };
+            bits = (W)val;
+        };
+        switch bit_name
+        ("W") {
+            return WType_ [[bits] || [32]];
+        }
+        ("Z") {
+            return ZType_ [[bits] || [32]];
+        }
+        ("R") {
+            return RType_ [[bits] || [64]];
+        }
+        {abort;};
+    };
+    for %StructDeclaration:struct_decl in ctx.struct_decls {
+        if [name] equals [struct_decl.name] {
+            return StructType_ [struct_decl];
+        };
+    };
+    GenericType_Description?:maybe_generic_type_ = null;
+    for GenericType_Description:canidate_type_ in ctx.generic_types_ {
+        if [name] equals [canidate_type_.name] {
+            maybe_generic_type_ = canidate_type_;
+            break;
+        };
+    };
+    if !maybe_generic_type_ {
+        [state].error_at_previous msg: ["Invalid type name '{}'" % name];
+        return null;
+    };
+    GenericType_Description:generic_type_ = [maybe_generic_type_].unwrap;
+    L:expected_generic_count = [generic_type_.generic_criteria].len;
+    if expected_generic_count == 0 {
+        return GenericType_ [name, [%Type_] []];
+    };
+    W:start_index = state.index;
+    if ![state].consume['<'] {
+        return null;
+    };
+    [%Type_]:generics = [%Type_] [];
+    [W]:generic_starts = [W] [];
+    [W]:generic_ends = [W] [];
+    while true {
+        [generic_starts].append[state.index];
+        %Type_?:maybe_generic = parse type_ state: [state] ctx: [ctx];
+        [generic_ends].append[state.index - 1];
+        given maybe_generic as Type_:generic {
+            [generics].append[generic];
+        } else {
+            return null;
+        };
+        if ![state].require_more why: ["Expected '>'"] {
+            return null;
+        };
+        [state].consume;
+        W:id = [state].last_id;
+        if id == '>' {
+            break;
+        } elif id == ',' {
+
+        } else {
+            [state].error_about_current msg: ["Expected ',' or '>'"];
+            return null;
+        };
+    };
+    if [generics].len != expected_generic_count {
+        Str:msg = "Expected {} generics, got {} generics"
+            % expected_generic_count % [generics].len;
+        [state].error_at[[W] [start_index, state.index]] msg: [msg];
+        return null;
+    };
+    for L:i to expected_generic_count {
+        %Type_Criteria:criteria = generic_type_.generic_criteria[i];
+        if ![generics[i]].satisfies[criteria] {
+            [state].error_at[[W] [generic_starts[i], generic_ends[i]]]
+                msg: ["Expected {}" % [criteria].englisch];
+        };
+    };
+    return GenericType_ [name, generics];
+}
+
+%Type_#parse more type_ from: [%Type_:type_] state: [ParseState:state] ctx: [Type_Context:ctx] {
+    if [state].is_at_end {
+        return type_;
+    } elif [state].cur_id == '?' {
+        [state].consume;
+        return parse more type_ from: [OptionalType_ [type_]]
+            state: [state] ctx: [ctx];
+    } else {
+        return type_;
+    };
+}
+
+Bool#are types_ [%Type_:a] and [%Type_:b] compatible {
+    abort "not implemented";
+}
+
+%Type_?#common type_ between [%Type_:a] and [%Type_:b] {
+    abort "not implemented";
+}
+
+Bool#[%Type_:a] is convertible to [%Type_:b] {
+    abort "not implemented";
+}
+
+Bool#[%Type_:a] is castable to [%Type_:b] {
+    abort "not implemented";
+}
+
+Bool#[%Type_:a] is equal to [%Type_:b] {
+    abort "not implemented";
+}
+
+Bool#[%Type_:a] is greater than [%Type_:b] {
+    abort "not implemented";
+}
+
+Bool#[%Type_:type_].satisfies[%Type_Criteria:criteria] {
+    given criteria as AnyType_Criteria:any_criteria {
+        return true;
+    } given criteria as SpecificType_Criteria:specific_criteria {
+        return [type_] is equal to [specific_criteria.type_];
+    } given criteria as ConvertibleToType_Criteria:convertible_criteria {
+        return [type_] is convertible to [convertible_criteria.type_];
+    } else {
+        abort "Invalid Type_Criteria";
+    };
+}
+
+Str#[%Type_:type_].stringify {
+    given type_ as StructType_:struct_type_ {
+        return struct_type_.struct_decl.name;
+    } given type_ as NullType_:null_type_ {
+        return "Null";
+    } given type_ as NeverType_:never_type_ {
+        return "Never";
+    } given type_ as OptionalType_:optional_type_ {
+        return "{}?" % [optional_type_.sub].stringify;
+    } given type_ as PolyType_:poly_type_ {
+        return "%{}" % [poly_type_.sub].stringify;
+    } given type_ as GenericType_:generic_type_ {
+        if [generic_type_.generics].len == 0 {
+            return generic_type_.name;
+        };
+        Str:generics_txt = Str [];
+        for %Type_:type_ in generic_type_.generics {
+            if generics_txt {
+                [generics_txt].extend[", "];
+            };
+            [generics_txt].extend[[type_].stringify];
+        };
+        return "{}<{}>" % generic_type_.name % generics_txt;
+    } given type_ as BoolType_:bool_type_ {
+        return "Bool";
+    } given type_ as ByteType_:byte_type_ {
+        return "Byte";
+    } given type_ as WType_:W_type_ {
+        return "W{}" % W_type_.bits;
+    } given type_ as ZType_:Z_type_ {
+        return "Z{}" % Z_type_.bits;
+    } given type_ as RType_:R_type_ {
+        return "R{}" % R_type_.bits;
+    } else {
+        abort "Invalid Type_";
+    };
+}
+
+Str#[%Type_Criteria:criteria].englisch {
+    given criteria as AnyType_Criteria:any_criteria {
+        return "any type";
+    } given criteria as SpecificType_Criteria:specific_criteria {
+        return "the type {}" % [specific_criteria.type_].stringify;
+    } given criteria as ConvertibleToType_Criteria:convertible_criteria {
+        return "a type convertible to {}" % [convertible_criteria.type_].stringify;
+    } else {
+        abort "Invalid Type_Criteria";
+    };
+}

@@ -3,5 +3,5 @@ $import json;
 
 @extends S2ModuleContent;
 SPECModuleContent {
-    :JSON:json
+    %JSON:json
 }
