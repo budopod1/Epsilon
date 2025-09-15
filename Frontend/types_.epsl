@@ -102,6 +102,16 @@ $StructDeclaration?#get struct named [Str:name] from [Type_Context:ctx] {
     return null;
 }
 
+Type_Node?#parse type_ node state: [ParseState:state] ctx: [Type_Context:ctx] {
+    W:start = [state].cur_start;
+    given parse type_ state: [state] ctx: [ctx] as $Type_:type_ {
+        W:end = [state].last_end;
+        return Type_Node [start, end, type_];
+    } else {
+        return null;
+    };
+}
+
 $Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
     if ![state].require_more why: ["type"] {
         return null;
@@ -221,15 +231,11 @@ Perhaps you meant '%{}'?" % name % name];
     if ![state].consume['<'] {
         return null;
     };
-    [$Type_]:generics = [$Type_] [];
-    [W]:generic_starts = [W] [];
-    [W]:generic_ends = [W] [];
+    [Type_Node]:generic_nodes = [Type_Node] [];
     while true {
-        [generic_starts].append[state.index];
-        $Type_?:maybe_generic = parse type_ state: [state] ctx: [ctx];
-        [generic_ends].append[state.index - 1];
-        given maybe_generic as Type_:generic {
-            [generics].append[generic];
+        Type_Node?:maybe_generic = parse type_ node state: [state] ctx: [ctx];
+        given maybe_generic as Type_Node:generic_node {
+            [generic_nodes].append[generic_node];
         } else {
             return null;
         };
@@ -247,18 +253,22 @@ Perhaps you meant '%{}'?" % name % name];
             return null;
         };
     };
-    if [generics].len != expected_generic_count {
+    if [generic_nodes].len != expected_generic_count {
         Str:msg = "Expected {} generics, got {} generics"
-            % expected_generic_count % [generics].len;
+            % expected_generic_count % [generic_nodes].len;
         [state].error_at[[W] [start_index, state.index]] msg: [msg];
         return null;
     };
+    [$Type_]:generics = [$Type_] [];
     for L:i to expected_generic_count {
         $Type_Criteria:criteria = generic_type_.generic_criteria[i];
-        if ![generics[i]].satisfies[criteria] {
-            [state].error_at[[W] [generic_starts[i], generic_ends[i]]]
+        Type_Node:generic_node = generic_nodes[i];
+        if ![generic_node.type_].satisfies[criteria] {
+            [state].error_at[generic_node]
                 msg: ["Expected {}" % [criteria].englisch];
+            return null;
         };
+        [generics].append[generic_node.type_];
     };
     return GenericType_ [name, generics];
 }
