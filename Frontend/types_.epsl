@@ -1,13 +1,19 @@
-$import parsing;
-$import tokenizer;
-$import structs;
+%import parsing;
+%import tokenizer;
+%import structs;
+%import epslfiles;
+
+@extends NodeWSpan;
+Type_Node {
+    $Type_:type_
+}
 
 @super;
 Type_ {}
 
 @extends Type_;
 StructType_ {
-    %StructDeclaration:struct_decl
+    $StructDeclaration:struct_decl
 }
 
 @extends Type_;
@@ -18,18 +24,18 @@ NeverType_ {}
 
 @extends Type_;
 OptionalType_ {
-    %Type_:sub
+    $Type_:sub
 }
 
 @extends Type_;
 PolyType_ {
-    %Type_:sub
+    $StructDeclaration:struct_decl
 }
 
 @extends Type_;
 GenericType_ {
     Str:name,
-    [%Type_]:generics
+    [$Type_]:generics
 }
 
 @super;
@@ -69,25 +75,34 @@ AnyType_Criteria {}
 
 @extends Type_Criteria;
 SpecificType_Criteria {
-    %Type_:type_
+    $Type_:type_
 }
 
 @extends Type_Criteria;
 ConvertibleToType_Criteria {
-    %Type_:type_
+    $Type_:type_
 }
 
 GenericType_Description {
     Str:name,
-    [%Type_Criteria]:generic_criteria
+    [$Type_Criteria]:generic_criteria
 }
 
 Type_Context {
-    [%StructDeclaration]:struct_decls,
+    [$StructDeclaration]:struct_decls,
     [GenericType_Description]:generic_types_
 }
 
-%Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
+$StructDeclaration?#get struct named [Str:name] from [Type_Context:ctx] {
+    for $StructDeclaration:struct_decl in ctx.struct_decls {
+        if [name] equals [struct_decl.name] {
+            return struct_decl;
+        };
+    };
+    return null;
+}
+
+$Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
     if ![state].require_more why: ["type"] {
         return null;
     };
@@ -95,28 +110,36 @@ Type_Context {
     W:id = [state].last_id;
     if id == T_IDENT {
         Str:txt = [[state].last_data].read_identifier;
-        given parse type_ from name [txt] state: [state] ctx: [ctx] as %Type_:type_ {
+        given parse type_ from name [txt] state: [state] ctx: [ctx] as $Type_:type_ {
             return parse more type_ from: [type_] state: [state] ctx: [ctx];
         };
         return null;
     } elif id == T_SQUARE_GROUP {
         ParseState:substate = [state].last_substate;
-        %Type_?:maybe_subtype_ = parse type_ state: [substate] ctx: [ctx];
+        $Type_?:maybe_subtype_ = parse type_ state: [substate] ctx: [ctx];
         if !maybe_subtype_ {
             return null;
         };
         if ![substate].require_finished why: ["']' before {}"] {
             return null;
         };
-        %Type_:type_ = GenericType_ ["Array", [%Type_] [[maybe_subtype_].unwrap]];
+        $Type_:type_ = GenericType_ ["Array", [$Type_] [[maybe_subtype_].unwrap]];
         return parse more type_ from: [type_] state: [state] ctx: [ctx];
-    } elif id == '%' {
-        %Type_?:maybe_subtype_ = parse type_ state: [state] ctx: [ctx];
-        if !maybe_subtype_ {
+    } elif id == '$' {
+        if ![state].consume[T_IDENT] name: ["struct name"] {
             return null;
         };
-        %Type_:type_ = PolyType_ [[maybe_subtype_].unwrap];
-        return parse more type_ from: [type_] state: [state] ctx: [ctx];
+        Str:name = [[state].last_data].read_identifier;
+        given get struct named [name] from [ctx] as $StructDeclaration:struct {
+            if !struct.is_super {
+                [state].error_at_previous
+                    msg: ["The struct '{}' is not a super type, and thus cannot be used polymorphically." % name];
+            };
+            $Type_:type_ = PolyType_ [struct];
+            return parse more type_ from: [type_] state: [state] ctx: [ctx];
+        } else {
+            return null;
+        };
     } else {
         [state].unconsume;
         [state].error_about_current msg: ["Expected type"];
@@ -124,7 +147,7 @@ Type_Context {
     };
 }
 
-%Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Context:ctx] {
+$Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Context:ctx] {
     switch name
     ("Null") {
         return NullType_ [];
@@ -170,10 +193,13 @@ Type_Context {
         }
         {abort;};
     };
-    for %StructDeclaration:struct_decl in ctx.struct_decls {
-        if [name] equals [struct_decl.name] {
-            return StructType_ [struct_decl];
+    given get struct named [name] from [ctx] as $StructDeclaration:struct {
+        if struct.is_abstract {
+            [state].error_at_previous
+                msg: ["The struct '{}' is abstract, and thus must be used polymorphically.
+Perhaps you meant '%{}'?" % name % name];
         };
+        return StructType_ [struct];
     };
     GenericType_Description?:maybe_generic_type_ = null;
     for GenericType_Description:canidate_type_ in ctx.generic_types_ {
@@ -189,18 +215,18 @@ Type_Context {
     GenericType_Description:generic_type_ = [maybe_generic_type_].unwrap;
     L:expected_generic_count = [generic_type_.generic_criteria].len;
     if expected_generic_count == 0 {
-        return GenericType_ [name, [%Type_] []];
+        return GenericType_ [name, [$Type_] []];
     };
     W:start_index = state.index;
     if ![state].consume['<'] {
         return null;
     };
-    [%Type_]:generics = [%Type_] [];
+    [$Type_]:generics = [$Type_] [];
     [W]:generic_starts = [W] [];
     [W]:generic_ends = [W] [];
     while true {
         [generic_starts].append[state.index];
-        %Type_?:maybe_generic = parse type_ state: [state] ctx: [ctx];
+        $Type_?:maybe_generic = parse type_ state: [state] ctx: [ctx];
         [generic_ends].append[state.index - 1];
         given maybe_generic as Type_:generic {
             [generics].append[generic];
@@ -228,7 +254,7 @@ Type_Context {
         return null;
     };
     for L:i to expected_generic_count {
-        %Type_Criteria:criteria = generic_type_.generic_criteria[i];
+        $Type_Criteria:criteria = generic_type_.generic_criteria[i];
         if ![generics[i]].satisfies[criteria] {
             [state].error_at[[W] [generic_starts[i], generic_ends[i]]]
                 msg: ["Expected {}" % [criteria].englisch];
@@ -237,7 +263,7 @@ Type_Context {
     return GenericType_ [name, generics];
 }
 
-%Type_#parse more type_ from: [%Type_:type_] state: [ParseState:state] ctx: [Type_Context:ctx] {
+$Type_#parse more type_ from: [$Type_:type_] state: [ParseState:state] ctx: [Type_Context:ctx] {
     if [state].is_at_end {
         return type_;
     } elif [state].cur_id == '?' {
@@ -249,31 +275,31 @@ Type_Context {
     };
 }
 
-Bool#are types_ [%Type_:a] and [%Type_:b] compatible {
+Bool#are types_ [$Type_:a] and [$Type_:b] compatible {
     abort "not implemented";
 }
 
-%Type_?#common type_ between [%Type_:a] and [%Type_:b] {
+$Type_?#common type_ between [$Type_:a] and [$Type_:b] {
     abort "not implemented";
 }
 
-Bool#[%Type_:a] is convertible to [%Type_:b] {
+Bool#[$Type_:a] is convertible to [$Type_:b] {
     abort "not implemented";
 }
 
-Bool#[%Type_:a] is castable to [%Type_:b] {
+Bool#[$Type_:a] is castable to [$Type_:b] {
     abort "not implemented";
 }
 
-Bool#[%Type_:a] is equal to [%Type_:b] {
+Bool#[$Type_:a] is equal to [$Type_:b] {
     abort "not implemented";
 }
 
-Bool#[%Type_:a] is greater than [%Type_:b] {
+Bool#[$Type_:a] is greater than [$Type_:b] {
     abort "not implemented";
 }
 
-Bool#[%Type_:type_].satisfies[%Type_Criteria:criteria] {
+Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
     given criteria as AnyType_Criteria:any_criteria {
         return true;
     } given criteria as SpecificType_Criteria:specific_criteria {
@@ -285,7 +311,7 @@ Bool#[%Type_:type_].satisfies[%Type_Criteria:criteria] {
     };
 }
 
-Str#[%Type_:type_].stringify {
+Str#[$Type_:type_].stringify {
     given type_ as StructType_:struct_type_ {
         return struct_type_.struct_decl.name;
     } given type_ as NullType_:null_type_ {
@@ -295,13 +321,13 @@ Str#[%Type_:type_].stringify {
     } given type_ as OptionalType_:optional_type_ {
         return "{}?" % [optional_type_.sub].stringify;
     } given type_ as PolyType_:poly_type_ {
-        return "%{}" % [poly_type_.sub].stringify;
+        return "${}" % poly_type_.struct_decl.name;
     } given type_ as GenericType_:generic_type_ {
         if [generic_type_.generics].len == 0 {
             return generic_type_.name;
         };
         Str:generics_txt = Str [];
-        for %Type_:type_ in generic_type_.generics {
+        for $Type_:type_ in generic_type_.generics {
             if generics_txt {
                 [generics_txt].extend[", "];
             };
@@ -323,7 +349,7 @@ Str#[%Type_:type_].stringify {
     };
 }
 
-Str#[%Type_Criteria:criteria].englisch {
+Str#[$Type_Criteria:criteria].englisch {
     given criteria as AnyType_Criteria:any_criteria {
         return "any type";
     } given criteria as SpecificType_Criteria:specific_criteria {

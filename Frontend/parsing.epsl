@@ -1,6 +1,6 @@
-$import tokenizer;
-$import errors;
-$import epslfiles;
+%import tokenizer;
+%import errors;
+%import epslfiles;
 
 ParseState {
     Tokens:tokens,
@@ -24,7 +24,7 @@ Bool#[ParseState:state].is_at_end {
     ]];
 }
 
-#[ParseState:state].error_at[%NodeWSpan:node] msg: [Str:msg] {
+#[ParseState:state].error_at[$NodeWSpan:node] msg: [Str:msg] {
     [state.errors].append[ParseError [
         msg, node.start_index, node.end_index,
     ]];
@@ -125,7 +125,7 @@ W#[ParseState:state].cur_id {
     return state.tokens.ids[state.index];
 }
 
-%TokenData?#[ParseState:state].cur_data {
+$TokenData?#[ParseState:state].cur_data {
     if [state].is_at_end {
         abort "Cannot get token data when none remain";
     };
@@ -140,7 +140,7 @@ W#[ParseState:state].last_id {
     return state.tokens.ids[state.index - 1];
 }
 
-%TokenData?#[ParseState:state].last_data {
+$TokenData?#[ParseState:state].last_data {
     return state.tokens.data[state.index - 1];
 }
 

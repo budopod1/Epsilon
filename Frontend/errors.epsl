@@ -1,7 +1,7 @@
-$import modules;
-$import tokenizer;
-$import json;
-$import paths;
+%import modules;
+%import tokenizer;
+%import json;
+%import paths;
 
 @super;
 Error {
@@ -68,7 +68,7 @@ IOErrorBundle {
     [IOError]:errors
 }
 
-Bool#[%ErrorBundle:bundle].any {
+Bool#[$ErrorBundle:bundle].any {
     given bundle as MiscErrorBundle:misc_bundle {
         return [misc_bundle.errors].len > 0;
     } given bundle as FileErrorBundle:file_bundle {
@@ -84,8 +84,8 @@ Bool#[%ErrorBundle:bundle].any {
     };
 }
 
-Bool#[[%ErrorBundle]:bundles].any {
-    for %ErrorBundle:bundle in bundles {
+Bool#[[$ErrorBundle]:bundles].any {
+    for $ErrorBundle:bundle in bundles {
         if [bundle].any {
             return true;
         };
@@ -101,7 +101,7 @@ Bool#[[%ErrorBundle]:bundles].any {
     };
 }
 
-#report file text error bundle: [%FileTextErrorBundle:bundle] msg: [Str:message] from: [L:start_index] to: [L:end_index] {
+#report file text error bundle: [$FileTextErrorBundle:bundle] msg: [Str:message] from: [L:start_index] to: [L:end_index] {
     JSONParsingError:json_error = JSONParsingError [start_index, end_index, message];
     report error message [stringify error [json_error]
         in file [[bundle.file_path].stringify]
@@ -145,7 +145,7 @@ Bool#[[%ErrorBundle]:bundles].any {
     };
 }
 
-Bool#report errors [%ErrorBundle:bundle] {
+Bool#report errors [$ErrorBundle:bundle] {
     given bundle as MiscErrorBundle:misc_bundle {
         do report errors [misc_bundle];
     } given bundle as FileErrorBundle:file_bundle {
@@ -162,8 +162,8 @@ Bool#report errors [%ErrorBundle:bundle] {
     return [bundle].any;
 }
 
-Bool#report errors [[%ErrorBundle]:bundles] {
-    for %ErrorBundle:bundle in bundles {
+Bool#report errors [[$ErrorBundle]:bundles] {
+    for $ErrorBundle:bundle in bundles {
         if report errors [bundle] {
             return true;
         };
@@ -195,6 +195,6 @@ IOErrorBundle#bundle [[IOError]:errors] {
     return IOErrorBundle [errors];
 }
 
-%ErrorBundle#empty error bundle {
+$ErrorBundle#empty error bundle {
     return MiscErrorBundle [[MiscError] []];
 }

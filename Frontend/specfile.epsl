@@ -1,7 +1,7 @@
-$import modules;
-$import json;
+%import modules;
+%import json;
 
 @extends S2ModuleContent;
 SPECModuleContent {
-    %JSON:json
+    $JSON:json
 }

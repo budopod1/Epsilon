@@ -1,12 +1,12 @@
-$import tokenizer;
-$import toplevel;
-$import grouper;
-$import modules;
-$import parsing;
-$import structs;
-$import iotools;
-$import errors;
-$import paths;
+%import tokenizer;
+%import toplevel;
+%import grouper;
+%import modules;
+%import parsing;
+%import structs;
+%import iotools;
+%import errors;
+%import paths;
 
 @super;
 NodeWSpan {
@@ -52,7 +52,7 @@ ImportDeclaration {
 @super;
 @extends ToplevelItem;
 AnnotatableNode {
-    [%Annotation]:annotations
+    [$Annotation]:annotations
 }
 
 @extends AnnotatableNode;
@@ -176,7 +176,7 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
     [ParseError]:errors = [ParseError] [];
     S0EPSLModuleContent:raw_modcon = [(S0EPSLModuleContent?)module.content]
         .expect["Expected S0EPSLModuleContent"];
-    [%StructDeclaration]:struct_decls = [%StructDeclaration] [];
+    [$StructDeclaration]:struct_decls = [$StructDeclaration] [];
     [S1EPSLStruct]:s1_structs = [S1EPSLStruct] [];
     for RawStruct:raw_struct in raw_modcon.raw_structs {
         Bool:is_public = true;
@@ -185,7 +185,7 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
         Bool:is_super = false;
         Bool:is_concrete = false;
         StructRef?:extendee = null;
-        for %Annotation:annotation in raw_struct.annotations {
+        for $Annotation:annotation in raw_struct.annotations {
             given annotation as PrivateAnnotation:private_annotation {
                 is_public = false;
             } given annotation as ValueAnnotation:value_annotation {
@@ -228,7 +228,7 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
             struct_decl, raw_struct.body
         ]];
     };
-    %ErrorBundle:error_bundle = bundle [errors]
+    $ErrorBundle:error_bundle = bundle [errors]
         txt: [raw_modcon.file_text] path: [raw_modcon.absolute_path];
     return S1ModconResult [S1EPSLModuleContent [
         raw_modcon.absolute_path, raw_modcon.imports, struct_decls,

@@ -1,11 +1,11 @@
-$import types_;
-$import errors;
-$import paths;
-$import structs;
+%import types_;
+%import errors;
+%import paths;
+%import structs;
 
 Module {
     [Str]:path,
-    %S0ModuleContent:content
+    $S0ModuleContent:content
 }
 
 @super;
@@ -15,19 +15,19 @@ S0ModuleContent {
 }
 
 S0ModconResult {
-    %S0ModuleContent?:modcon,
-    %ErrorBundle:errors
+    $S0ModuleContent?:modcon,
+    $ErrorBundle:errors
 }
 
 @super;
 @extends S0ModuleContent;
 S1ModuleContent {
-    [%StructDeclaration]:struct_decls
+    [$StructDeclaration]:struct_decls
 }
 
 S1ModconResult {
-    %S1ModuleContent?:modcon,
-    %ErrorBundle:errors
+    $S1ModuleContent?:modcon,
+    $ErrorBundle:errors
 }
 
 @super;
@@ -35,7 +35,7 @@ S1ModconResult {
 S2ModuleContent {
     [Global]:globals,
     [Struct_]:structs,
-    [%FunctionDeclaration]:function_decls
+    [$FunctionDeclaration]:function_decls
 }
 
 Import {

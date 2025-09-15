@@ -1,8 +1,8 @@
-$import fileio;
-$import commandconfig;
+%import fileio;
+%import commandconfig;
 
 Z#main {
-    ConfigProps:config = ConfigProps [[%ConfigProp] [
+    ConfigProps:config = ConfigProps [[$ConfigProp] [
         StringProp ["file"],
         StringProp ["package-name"],
         StringProp ["url"],
@@ -25,7 +25,7 @@ Z#main {
         BoolProp ["all-packages"]
     ]];
 
-    ConfigValues:default_values = ConfigValues [[%ConfigValue] [
+    ConfigValues:default_values = ConfigValues [[$ConfigValue] [
         EnumConfigValue ["cache-mode", "auto"],
         EnumConfigValue ["optimization-level", "min"],
         BoolConfigValue ["generate-error-frames", true],

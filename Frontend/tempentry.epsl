@@ -2,12 +2,12 @@
 find -type f -name "*.epsl" | xargs cat > Frontend/all.cepsl
 */
 
-$import tokenizer;
-$import grouper;
-$import time;
-$import fileio;
-$import toplevel;
-$import builder;
+%import tokenizer;
+%import grouper;
+%import time;
+%import fileio;
+%import toplevel;
+%import builder;
 
 #do parse perf test on [Str:content] {
     L:line_count = [content].count['\n'];
