@@ -17,6 +17,7 @@ def get_libclang_required_flags():
     elif is_macos():
         LLVM_locations = [
             Path.home() / "Cellar/llvm",
+            Path.home() / "homebrew/Cellar/llvm",
             Path("/opt/homebew/Cellar/llvm"),
             Path("/usr/local/Cellar/llvm")
         ]
