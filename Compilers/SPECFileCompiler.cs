@@ -22,15 +22,16 @@ public class SPECFileCompiler(string path, string fileText, ShapedJSON obj) : IF
 
     public SubconfigCollection GetSubconfigs() {
         return new SubconfigCollection(
-            obj["clang_parse_subconfigs"].IterList().Select(ParseSubconfigFromJSON),
-            obj["linking_configs"].IterList().Select(ParseSubconfigFromJSON),
-            obj["object_gen_configs"].IterList().Select(ParseSubconfigFromJSON)
+            [..obj["clang_parse_subconfigs"].IterList().Select(ParseSubconfigFromJSON)],
+            [..obj["linking_configs"].IterList().Select(ParseSubconfigFromJSON)],
+            [..obj["object_gen_configs"].IterList().Select(ParseSubconfigFromJSON)]
         );
     }
 
     public static ISubconfig ParseSubconfigFromJSON(ShapedJSON obj) {
         return obj["type"].GetString() switch {
             "constant" => new ConstantSubconfig(obj),
+            "os" => new OSSubconfig(obj),
             _ => throw new InvalidJSONException(
                 "Invalid type of subconfig", obj.GetJSON()
             ),

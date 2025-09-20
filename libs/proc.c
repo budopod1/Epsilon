@@ -129,11 +129,10 @@ struct Array *proc_get_executable_path(void) {
         return C_str_to_epsl_str(0, path);
     }
     path = epsl_realloc(path, path_size);
-    if (_NSGetExecutablePath(path, &path_size) == 0) {
-        return C_str_to_epsl_str(0, path);
-    } else {
+    if (_NSGetExecutablePath(path, &path_size) != 0) {
         epsl_panicf(ERR_START "Cannot determine executable path");
     }
+    return C_str_to_epsl_str(0, path);
 #elif _WIN32
     DWORD wpath_size = 1024;
     wchar_t *wpath = NULL;

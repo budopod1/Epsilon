@@ -25,6 +25,6 @@ public class IntermediateFile(IntermediateFile.IntermediateType fileType, string
                 return new IntermediateFile(IRType, file.IR, file.IRIsInUserDir);
             }
         }
-        throw new InvalidOperationException("IFileCompiler does not have an intermediate");
+        return null;
     }
 }

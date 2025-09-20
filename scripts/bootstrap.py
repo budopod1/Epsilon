@@ -12,7 +12,8 @@ def bootstrap():
         "LLVMIRBuilder/bootstrap.bc", "libs/epsilon.bc", "libs/fileio.bc",
         "libs/conversion.bc", "libs/main.bc", *c_files, "-o", "LLVMIRBuilder/result",
         "-I"+str(Path("libs").absolute()),
-        *(["-lm"]*(not is_windows())))
+        *(["-lm"]*(not is_windows())),
+        *(["-liconv"]*is_macos()))
 
     print("Bootstrapped backend")
 
