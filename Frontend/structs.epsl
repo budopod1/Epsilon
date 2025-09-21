@@ -35,8 +35,11 @@ StructRef {
     for Module:module in build.modules {
         $S2ModuleContent:modcon = [($S2ModuleContent?)module.content]
             .expect["Expected $S2ModuleContent"];
+        [Struct_]:local_structs = [modcon.scoped_structs].clone;
+        load foreign structs for_ [module] build: [build];
         for Struct_:struct in modcon.structs {
-            given load struct_ extendee [struct] build: [build] as FileError:error {
+            given load struct_ extendee [struct]
+                local_structs: [local_structs] as FileError:error {
                 [errors].append[error];
             };
         };
@@ -44,49 +47,56 @@ StructRef {
     return errors;
 }
 
-FileError?#load struct_ extendee [Struct_:this_struct] build: [Build:build] {
+#load foreign structs for_ [Module:module] build: [Build:build] {
+    $S2ModuleContent:modcon = [($S2ModuleContent?)module.content]
+        .expect["Expected $S2ModuleContent"];
+    for Import:import in modcon.imports {
+        Module:other_module = [build].lookup_module[import];
+        $S2ModuleContent:other_modcon = [($S2ModuleContent?)other_module.content]
+            .expect["Expected $S2ModuleContent"];
+        [modcon.scoped_structs].extend[other_modcon.structs];
+    };
+}
+
+FileError?#load struct_ extendee [Struct_:this_struct] local_structs: [[Struct_]:local_structs] {
     if !this_struct.extendee {
         return null;
     };
     StructRef:ref = [this_struct.extendee].unwrap;
     Module:this_module = ref.src_mod;
-    for Module:other_module in [build].scoped_modules_for[this_module] {
-        $S2ModuleContent:modcon = [($S2ModuleContent?)other_module.content]
-            .expect["Expected $S2ModuleContent"];
-        for Struct_:other_struct in modcon.structs {
-            if [other_struct.name] not equals [ref.name] {
-                continue;
-            };
-            given verify extendee from [this_struct] in [this_module]
-                to [other_struct] in [other_module] as FileError:error {
-                return error;
-            };
-            ref.struct_ = other_struct;
-            return null;
+    if [this_struct.name] equals [ref.name] {
+        return FileError [
+            "The struct {} cannot extend itself" % ref.name,
+            this_module.content.absolute_path
+        ];
+    };
+    $S2ModuleContent:modcon = [($S2ModuleContent?)this_module.content]
+        .expect["Expected $S2ModuleContent"];
+    for Struct_:other_struct in modcon.scoped_structs {
+        if [other_struct.name] not equals [ref.name] {
+            continue;
         };
+        if !other_struct.is_super {
+            return FileError [
+                "Struct {} cannot extend non super struct {}"
+                    % this_struct.name % other_struct.name,
+                this_module.content.absolute_path
+            ];
+        };
+        if other_struct.is_sealed && ![local_structs].index_of[other_struct] {
+            return FileError [
+                "Struct {} cannot extend sealed struct {} located in a different module"
+                    % this_struct.name % other_struct.name,
+                this_module.content.absolute_path
+            ];
+        };
+        ref.struct_ = other_struct;
+        return null;
     };
     return FileError [
         "Cannot find struct {} that {} extends" % ref.name % this_struct.name,
         this_module.content.absolute_path
     ];
-}
-
-FileError?#verify extendee from [Struct_:this_struct] in [Module:this_module] to [Struct_:other_struct] in [Module:other_module] {
-    if !other_struct.is_super {
-        return FileError [
-            "Struct {} cannot extend non super struct {}"
-                % this_struct.name % other_struct.name,
-            this_module.content.absolute_path
-        ];
-    };
-    if other_struct.is_sealed && (this_module != other_module) {
-        return FileError [
-            "Struct {} cannot extend sealed struct {} located in a different file"
-                % this_struct.name % other_struct.name,
-            this_module.content.absolute_path
-        ];
-    };
-    return null;
 }
 
 [FileError]#verify no recursive extendees [Build:build] {

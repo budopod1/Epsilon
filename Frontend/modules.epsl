@@ -35,6 +35,7 @@ S1ModconResult {
 S2ModuleContent {
     [Global]:globals,
     [Struct_]:structs,
+    [Struct_]:scoped_structs,
     [$FunctionDeclaration]:function_decls
 }
 
