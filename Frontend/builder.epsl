@@ -208,3 +208,11 @@ Module#[Build:build].lookup_module[Import:import] {
     };
     abort "Cannot find module '{}'" % [import].stringify_path;
 }
+
+[Module]#[Build:build].scoped_modules_for[Module:module] {
+    [Module]:modules = [Module] [module];
+    for Import:import in module.content.imports {
+        [modules].append[[build].lookup_module[import]];
+    };
+    return modules;
+}

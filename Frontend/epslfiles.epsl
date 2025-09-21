@@ -40,6 +40,9 @@ SuperAnnotation {}
 ConcreteAnnotation {}
 
 @extends Annotation;
+SealedAnnotation {}
+
+@extends Annotation;
 ExtendsAnnotation {
     Str:extendee
 }
@@ -184,6 +187,7 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
         Bool:is_value = false;
         Bool:is_super = false;
         Bool:is_concrete = false;
+        Bool:is_sealed = false;
         StructRef?:extendee = null;
         for $Annotation:annotation in raw_struct.annotations {
             given annotation as PrivateAnnotation:private_annotation {
@@ -194,6 +198,8 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
                 is_super = true;
             } given annotation as ConcreteAnnotation:concrete_annotation {
                 is_concrete = true;
+            } given annotation as SealedAnnotation:sealed_annotation {
+                is_sealed = true;
             } given annotation as ExtendsAnnotation:extends_annotation {
                 extendee = StructRef [extends_annotation.extendee, module, null];
             } else {
@@ -216,9 +222,15 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
                 raw_struct.start_index, raw_struct.end_index
             ]];
         };
+        if is_sealed && !is_super {
+            [errors].append[ParseError [
+                "The @sealed annotation is superfluous, as the struct is not annotated with @super",
+                raw_struct.start_index, raw_struct.end_index
+            ]];
+        };
         Bool:is_abstract = is_super && !is_concrete;
         StructDeclaration:struct_decl = StructDeclaration [
-            name, is_value, is_abstract, is_super, extendee
+            name, is_value, is_abstract, is_super, is_sealed, extendee
         ];
         if is_public {
             [struct_decls].append[struct_decl];
