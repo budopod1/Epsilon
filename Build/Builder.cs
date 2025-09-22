@@ -1036,8 +1036,8 @@ public class Builder {
     }
 
     public void WriteEPSLPROJ(string path, IJSONValue json) {
-        PrettyPrintConfig printConfig = new(8, 80);
-        string epslprojStr = json.PrettyPrint(printConfig);
+        PrettyPrintConfig printConfig = new(4, 80);
+        string epslprojStr = json.PrettyPrint(printConfig)+"\n";
         File.WriteAllText(Utils.SetExtension(path, "epslproj"), epslprojStr);
     }
 
