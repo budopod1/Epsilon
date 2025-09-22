@@ -285,6 +285,20 @@ $Type_#parse more type_ from: [$Type_:type_] state: [ParseState:state] ctx: [Typ
     };
 }
 
+Field?#parse field state: [ParseState:state] ctx: [Type_Context:ctx] {
+    if ![state].consume[T_IDENT] name: ["field"] {
+        return null;
+    };
+    Str:name = [[state].last_data].read_identifier;
+    if ![state].consume[':'] {
+        return null;
+    };
+    given parse type_ state: [state] ctx: [ctx] as $Type_:type_ {
+        return Field [name, type_];
+    };
+    return null;
+}
+
 Bool#are types_ [$Type_:a] and [$Type_:b] compatible {
     abort "not implemented";
 }
@@ -302,7 +316,67 @@ Bool#[$Type_:a] is castable to [$Type_:b] {
 }
 
 Bool#[$Type_:a] is equal to [$Type_:b] {
-    abort "not implemented";
+    given a as StructType_:struct_a {
+        given b as StructType_:struct_b {
+            return struct_a.struct_decl == struct_b.struct_decl;
+        };
+        return false;
+    } given a as NullType_:null_a {
+        return !!(NullType_?)b;
+    } given a as NeverType_:never_a {
+        return !!(NeverType_?)b;
+    } given a as OptionalType_:optional_a {
+        given b as OptionalType_:optional_b {
+            return [optional_a.sub] is equal to [optional_b.sub];
+        };
+        return false;
+    } given a as PolyType_:poly_a {
+        given b as PolyType_:poly_b {
+            return poly_a.struct_decl == poly_b.struct_decl;
+        };
+        return false;
+    } given a as GenericType_:generic_a {
+        given b as GenericType_:generic_b {
+            if [generic_a.name] not equals [generic_b.name] {
+                return false;
+            };
+            return [generic_a.generics] equals [generic_b.generics];
+        };
+        return false;
+    } given a as BoolType_:bool_a {
+        return !!(BoolType_?)b;
+    } given a as ByteType_:byte_a {
+        return !!(ByteType_?)b;
+    } given a as WType_:W_a {
+        given b as WType_:W_b {
+            return W_a.bits == W_b.bits;
+        };
+        return false;
+    } given a as ZType_:Z_a {
+        given b as ZType_:Z_b {
+            return Z_a.bits == Z_b.bits;
+        };
+        return false;
+    } given a as RType_:R_a {
+        given b as RType_:R_b {
+            return R_a.bits == R_b.bits;
+        };
+        return false;
+    } else {
+        abort "Invalid Type_";
+    };
+}
+
+Bool#[[$Type_]:a] equals [[$Type_]:b] {
+    if [a].len != [b].len {
+        return false;
+    };
+    for L:i enumerating a {
+        if ![a[i]] is equal to [b[i]] {
+            return false;
+        };
+    };
+    return true;
 }
 
 Bool#[$Type_:a] is greater than [$Type_:b] {
