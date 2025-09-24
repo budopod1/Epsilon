@@ -142,7 +142,7 @@ Val#build instantiation [$JSON:instruction_json] using [[Val]:operands] to [Type
         [casted_val].incr_ref;
         [casted_vals].append[casted_val];
     };
-    return new ref struct_ [type_] [casted_vals];
+    return new struct_ [type_] [casted_vals];
 }
 
 Val#build member access [$JSON:instruction_json] using [[Val]:operands] {
