@@ -151,7 +151,7 @@ $JSON#read BinJSON_ {
             [[struct_json].get["global_free_fn"]].get_bool,
             [[struct_json].get["is_super"]].get_bool,
             extendee_ids,
-            true, // is a refrence type
+            ![[[struct_json].get["name"]].get_str].index_of["VALUE_STRUCT_MARKER_TEMP"],
             fields
         ];
         [structs].append[struct_];
