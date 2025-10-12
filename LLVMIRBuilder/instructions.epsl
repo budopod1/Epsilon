@@ -247,7 +247,7 @@ Val#build null_ value {
 
 Val#build function call [$JSON:instruction_json] using [[Val]:operands] to [Type_:result_type_] {
     Str:function_id = [[instruction_json].get["function"]].get_str;
-    return [call function [function_id] with args [operands] to [result_type_]].unwrap;
+    return call function [function_id] with args [operands] to [result_type_];
 }
 
 Val#build optional array access using [[Val]:operands] to [Type_:result_type_] {
@@ -368,7 +368,7 @@ Val#build valued instruction [$JSON:instruction_json] using [[Val]:operands] {
 }
 
 #build return_ using [[Val]:operands] {
-    Val:returnee = cast [operands[0]] to [[current func ret type_].unwrap];
+    Val:returnee = cast [operands[0]] to [current func ret type_];
     perpare for_ function termination returning [returnee];
     ret [returnee];
 }
@@ -701,16 +701,16 @@ Label:cond_label = new label:;
 
 #build void function call [$JSON:instruction_json] using [[Val]:operands] {
     Str:function_id = [[instruction_json].get["function"]].get_str;
-    call function [function_id] with args [operands] to [null];
+    call function [function_id] with args [operands] to [Null_];
 }
 
 #build abort_ void {
-    extern fn [null] ["epsl_abort_void"] [[Type_] []] [[Val] []];
+    extern fn [Null_] ["epsl_abort_void"] [[Type_] []] [[Val] []];
     mark as unreachable;
 }
 
 #build abort_ using [[Val]:operands] {
-    extern fn [null] ["epsl_abort"] [[Type_] [Str_]] [[Val] [operands[0]]];
+    extern fn [Null_] ["epsl_abort"] [[Type_] [Str_]] [[Val] [operands[0]]];
     mark as unreachable;
 }
 

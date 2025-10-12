@@ -40,6 +40,11 @@ public class GivenPart : BinaryAction<IValueToken, CodeBlock>, IVerifier {
     public void Verify() {
         Type_ optionalType_ = toType_.OptionalOf();
         Type_ valType_ = o1.GetType_();
+        if (valType_.Equals(toType_)) {
+            throw new SyntaxErrorException(
+                "Invalid NOOP given, the specified value already is the target type", o1
+            );
+        }
         if (!valType_.IsCastableTo(optionalType_)) {
             throw new SyntaxErrorException(
                 $"Cannot cast value of type {valType_} to type {optionalType_}", o1

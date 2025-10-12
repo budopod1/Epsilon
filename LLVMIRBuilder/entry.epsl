@@ -13,7 +13,7 @@ ScopeVar {
 
 FuncProto {
     Str:id,
-    Type_?:ret_type_,
+    Type_:ret_type_,
     Str:callee,
     [Type_]:arg_types_,
     Bool:takes_ownership,
@@ -62,20 +62,11 @@ Type_#read type_ [$JSON:json] {
     return Type_ [[[json].get["name"]].get_str, bits, generics];
 }
 
-Type_?#read voidable type_ [$JSON:json] {
+Type_#read voidable type_ [$JSON:json] {
     if ([json].is_null) {
-        return null;
+        return Null_;
     };
-    [Type_]:generics = [Type_] [];
-    for ($JSON:generic_json in [[json].get["generics"]].get_list) {
-        [generics].append[read type_ [generic_json]];
-    };
-    Z:bits = -1;
-    $JSON:bits_json = [json].get["bits"];
-    if (![bits_json].is_null) {
-        bits = [bits_json].get_int;
-    };
-    return Type_ [[[json].get["name"]].get_str, bits, generics];
+    return read type_ [json];
 }
 
 FuncProto#read func proto [$JSON:json] {
@@ -311,7 +302,7 @@ ScopeVar#get var [W:id] {
     cleanup var list [get func state.block_vars];
 }
 
-Type_?#current func ret type_ {
+Type_#current func ret type_ {
     return get func state.proto.ret_type_;
 }
 

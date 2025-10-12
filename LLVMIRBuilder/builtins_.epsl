@@ -39,7 +39,7 @@ BuiltinResult#builtin append with [[Val]:args] {
     Type_:generic = arr.type_.generics[0];
     Val:appendee = cast [args[1]] to [generic];
     Val:len = load [[arr].length];
-    extern fn [null] ["epsl_increment_length"] [[Type_] [Internal_, L_]]
+    extern fn [Null_] ["epsl_increment_length"] [[Type_] [Internal_, L_]]
         [[Val] [cast [arr] to [Internal_], make elem int [generic]]];
     [[load [[arr].content]].idx[len]] = [appendee];
     [appendee].incr_ref;
@@ -49,14 +49,14 @@ BuiltinResult#builtin append with [[Val]:args] {
 BuiltinResult#builtin require capacity with [[Val]:args] {
     Val:arr = args[0];
     Val:required_cap = cast [args[1]] to [L_];
-    extern fn [null] ["epsl_require_capacity"] [[Type_] [Internal_, L_, L_]]
+    extern fn [Null_] ["epsl_require_capacity"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], required_cap, sizeof elem [arr.type_]]];
     return make empty builtin result;
 }
 
 BuiltinResult#builtin shrink mem with [[Val]:args] {
     Val:arr = args[0];
-    extern fn [null] ["epsl_shrink_mem"] [[Type_] [Internal_, L_]]
+    extern fn [Null_] ["epsl_shrink_mem"] [[Type_] [Internal_, L_]]
         [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_]]];
     return make empty builtin result;
 }
@@ -67,7 +67,7 @@ BuiltinResult#builtin pop with [[Val]:args] {
     verify idx [idx] in array [arr];
     Val:elem = load [[arr].idx[idx]];
     [elem].checkless_decr_ref;
-    extern fn [null] ["epsl_remove_at"] [[Type_] [Internal_, L_, L_]]
+    extern fn [Null_] ["epsl_remove_at"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], idx, sizeof [elem.type_]]];
     // result is not in params when builtin finishes
     return make builtin result [elem];
@@ -78,7 +78,7 @@ BuiltinResult#builtin insert with [[Val]:args] {
     Val:idx = cast [args[1]] to [L_];
     Type_:generic = arr.type_.generics[0];
     Val:elem = cast [args[2]] to [generic];
-    extern fn [null] ["epsl_insert_space"] [[Type_] [Internal_, L_, L_]]
+    extern fn [Null_] ["epsl_insert_space"] [[Type_] [Internal_, L_, L_]]
         [[Val] [cast [arr] to [Internal_], idx, sizeof [generic]]];
     [elem].incr_ref;
     [[arr].idx[idx]] = [elem];
@@ -93,7 +93,7 @@ BuiltinResult#builtin extend with [[Val]:args] {
     Val:arr1 = cast [args[0]] to [Internal_];
     Val:arr2 = cast [args[1]] to [Internal_];
     assert type_ equality [args[0]], [args[1]];
-    extern fn [null] ["epsl_extend_array"] [[Type_] [Internal_, Internal_, L_]]
+    extern fn [Null_] ["epsl_extend_array"] [[Type_] [Internal_, Internal_, L_]]
         [[Val] [arr1, arr2, make elem generic int [args[0].type_]]];
     return make empty builtin result;
 }
@@ -451,7 +451,7 @@ BuiltinResult#builtin at assign with [[Val]:args] {
 
 BuiltinResult#builtin expect with [[Val]:args] {
     if_ [expect [[args[0]] == null_] to be [false]];
-        extern fn [null] ["epsl_abort"] [[Type_] [Str_]] [[Val] [args[1]]];
+        extern fn [Null_] ["epsl_abort"] [[Type_] [Str_]] [[Val] [args[1]]];
         mark as unreachable;
     end block;
     Val:result = unwrap nullability [args[0]];
@@ -631,7 +631,7 @@ BuiltinResult#dispatch builtin [Str:func_id] with args [[Val]:args] to [Type_?:r
     };
 }
 
-Val?#call builtin [Str:func_id] with args [[Val]:args] to [Type_?:result_type_] {
+Val#call builtin [Str:func_id] with args [[Val]:args] to [Type_?:result_type_] {
     BuiltinResult:result = dispatch builtin [func_id] with args [args] to [result_type_];
 
     if (!result.result_is_params) {
@@ -646,5 +646,5 @@ Val?#call builtin [Str:func_id] with args [[Val]:args] to [Type_?:result_type_] 
         };
     };
 
-    return result.result;
+    return [result.result] || [c null_ [Null_]];
 }
