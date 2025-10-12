@@ -22,7 +22,8 @@ S0ModconResult {
 @super;
 @extends S0ModuleContent;
 S1ModuleContent {
-    [$StructDeclaration]:struct_decls
+    [Struct_]:structs,
+    [Struct_]:scoped_structs,
 }
 
 S1ModconResult {
@@ -34,9 +35,12 @@ S1ModconResult {
 @extends S1ModuleContent;
 S2ModuleContent {
     [Global]:globals,
-    [Struct_]:structs,
-    [Struct_]:scoped_structs,
-    [$FunctionDeclaration]:function_decls
+    [FunctionDeclaration]:func_decls
+}
+
+S2ModconResult {
+    $S2ModuleContent?:modcon,
+    $ErrorBundle:errors
 }
 
 Import {
@@ -44,11 +48,48 @@ Import {
     Module?:referenced
 }
 
-Global {}
+Global {
+    Field:field
+}
 
 @super;
-FunctionDeclaration {}
+TemplateSegment {}
+
+@extends TemplateSegment;
+IdentifierTemplateSegment {
+    Str:text
+}
+
+@extends TemplateSegment;
+ArgumentTemplateSegment {}
+
+@extends TemplateSegment;
+SymbolTemplateSegment {
+    Byte:symbol
+}
+
+FunctionDeclaration {
+    [$TemplateSegment]:template,
+    [Field]:arguments,
+    W:source,
+    $Type_:ret_type_,
+    Str:callee,
+    Bool:takes_ownership,
+    Bool:result_in_params
+}
 
 Str#[Import:import].stringify_path {
     return [import.path].join["."];
+}
+
+W#FUNC_SOURCE_BUILTIN {
+    return 0;
+}
+
+W#FUNC_SOURCE_FOREIGN {
+    return 1;
+}
+
+W#FUNC_SOURCE_LOCAL {
+    return 2;
 }

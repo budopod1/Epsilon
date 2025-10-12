@@ -3,25 +3,14 @@
 %import builder;
 %import errors;
 
-@super;
-@concrete;
-StructDeclaration {
+Struct_ {
     Str:name,
     Bool:is_value,
     Bool:is_abstract,
     Bool:is_super,
     Bool:is_sealed,
-    StructRef?:extendee
-}
-
-@extends StructDeclaration;
-Struct_ {
-    [Field]:fields
-}
-
-Field {
-    Str:name,
-    $Type_:type_
+    StructRef?:extendee,
+    [Field]?:fields
 }
 
 StructRef {
@@ -33,8 +22,8 @@ StructRef {
 [FileError]#load struct_ extendees [Build:build] {
     [FileError]:errors = [FileError] [];
     for Module:module in build.modules {
-        $S2ModuleContent:modcon = [($S2ModuleContent?)module.content]
-            .expect["Expected $S2ModuleContent"];
+        $S1ModuleContent:modcon = [($S1ModuleContent?)module.content]
+            .expect["Expected $S1ModuleContent"];
         [Struct_]:local_structs = [modcon.scoped_structs].clone;
         load foreign structs for_ [module] build: [build];
         for Struct_:struct in modcon.structs {
@@ -48,12 +37,12 @@ StructRef {
 }
 
 #load foreign structs for_ [Module:module] build: [Build:build] {
-    $S2ModuleContent:modcon = [($S2ModuleContent?)module.content]
-        .expect["Expected $S2ModuleContent"];
+    $S1ModuleContent:modcon = [($S1ModuleContent?)module.content]
+        .expect["Expected $S1ModuleContent"];
     for Import:import in modcon.imports {
         Module:other_module = [build].lookup_module[import];
-        $S2ModuleContent:other_modcon = [($S2ModuleContent?)other_module.content]
-            .expect["Expected $S2ModuleContent"];
+        $S1ModuleContent:other_modcon = [($S1ModuleContent?)other_module.content]
+            .expect["Expected $S1ModuleContent"];
         [modcon.scoped_structs].extend[other_modcon.structs];
     };
 }
@@ -70,8 +59,8 @@ FileError?#load struct_ extendee [Struct_:this_struct] local_structs: [[Struct_]
             this_module.content.absolute_path
         ];
     };
-    $S2ModuleContent:modcon = [($S2ModuleContent?)this_module.content]
-        .expect["Expected $S2ModuleContent"];
+    $S1ModuleContent:modcon = [($S1ModuleContent?)this_module.content]
+        .expect["Expected $S1ModuleContent"];
     for Struct_:other_struct in modcon.scoped_structs {
         if [other_struct.name] not equals [ref.name] {
             continue;
@@ -101,8 +90,8 @@ FileError?#load struct_ extendee [Struct_:this_struct] local_structs: [[Struct_]
 
 [FileError]#verify no recursive extendees [Build:build] {
     for Module:module in build.modules {
-        $S2ModuleContent:modcon = [($S2ModuleContent?)module.content]
-            .expect["Expected $S2ModuleContent"];
+        $S1ModuleContent:modcon = [($S1ModuleContent?)module.content]
+            .expect["Expected $S1ModuleContent"];
         for Struct_:struct in modcon.structs {
             FileError?:maybe_error = verify no recursive extendees [struct]
                 seen: [[Struct_] []];

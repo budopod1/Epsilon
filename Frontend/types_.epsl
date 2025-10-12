@@ -2,6 +2,7 @@
 %import tokenizer;
 %import structs;
 %import epslfiles;
+%import modules;
 
 @extends NodeWSpan;
 Type_Node {
@@ -13,7 +14,7 @@ Type_ {}
 
 @extends Type_;
 StructType_ {
-    $StructDeclaration:struct_decl
+    Struct_:struct_
 }
 
 @extends Type_;
@@ -29,7 +30,7 @@ OptionalType_ {
 
 @extends Type_;
 PolyType_ {
-    $StructDeclaration:struct_decl
+    Struct_:struct_
 }
 
 @extends Type_;
@@ -89,14 +90,25 @@ GenericType_Description {
 }
 
 Type_Context {
-    [$StructDeclaration]:struct_decls,
+    [Struct_]:structs,
     [GenericType_Description]:generic_types_
 }
 
-$StructDeclaration?#get struct named [Str:name] from [Type_Context:ctx] {
-    for $StructDeclaration:struct_decl in ctx.struct_decls {
-        if [name] equals [struct_decl.name] {
-            return struct_decl;
+Field {
+    Str:name,
+    $Type_:type_
+}
+
+Type_Context#type_ context of [$S0ModuleContent:s0_modcon] {
+    $S1ModuleContent:modcon = [($S1ModuleContent?)s0_modcon]
+        .expect["Expected $S1ModuleContent"];
+    return Type_Context [modcon.scoped_structs, [GenericType_Description] []];
+}
+
+Struct_?#get struct named [Str:name] from [Type_Context:ctx] {
+    for Struct_:struct_ in ctx.structs {
+        if [name] equals [struct_.name] {
+            return struct_;
         };
     };
     return null;
@@ -140,14 +152,15 @@ $Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
             return null;
         };
         Str:name = [[state].last_data].read_identifier;
-        given get struct named [name] from [ctx] as $StructDeclaration:struct {
-            if !struct.is_super {
+        given get struct named [name] from [ctx] as Struct_:struct_ {
+            if !struct_.is_super {
                 [state].error_at_previous
                     msg: ["The struct '{}' is not a super type, and thus cannot be used polymorphically." % name];
             };
-            $Type_:type_ = PolyType_ [struct];
+            $Type_:type_ = PolyType_ [struct_];
             return parse more type_ from: [type_] state: [state] ctx: [ctx];
         } else {
+            [state].error_at_previous msg: ["No such struct '{}'" % name];
             return null;
         };
     } else {
@@ -203,13 +216,13 @@ $Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Co
         }
         {abort;};
     };
-    given get struct named [name] from [ctx] as $StructDeclaration:struct {
-        if struct.is_abstract {
+    given get struct named [name] from [ctx] as Struct_:struct_ {
+        if struct_.is_abstract {
             [state].error_at_previous
                 msg: ["The struct '{}' is abstract, and thus must be used polymorphically.
-Perhaps you meant '%{}'?" % name % name];
+Perhaps you meant '${}'?" % name % name];
         };
-        return StructType_ [struct];
+        return StructType_ [struct_];
     };
     GenericType_Description?:maybe_generic_type_ = null;
     for GenericType_Description:canidate_type_ in ctx.generic_types_ {
@@ -286,7 +299,7 @@ $Type_#parse more type_ from: [$Type_:type_] state: [ParseState:state] ctx: [Typ
 }
 
 Field?#parse field state: [ParseState:state] ctx: [Type_Context:ctx] {
-    if ![state].consume[T_IDENT] name: ["field"] {
+    if ![state].consume[T_IDENT] name: ["field name"] {
         return null;
     };
     Str:name = [[state].last_data].read_identifier;
@@ -318,7 +331,7 @@ Bool#[$Type_:a] is castable to [$Type_:b] {
 Bool#[$Type_:a] is equal to [$Type_:b] {
     given a as StructType_:struct_a {
         given b as StructType_:struct_b {
-            return struct_a.struct_decl == struct_b.struct_decl;
+            return struct_a.struct_ == struct_b.struct_;
         };
         return false;
     } given a as NullType_:null_a {
@@ -332,7 +345,7 @@ Bool#[$Type_:a] is equal to [$Type_:b] {
         return false;
     } given a as PolyType_:poly_a {
         given b as PolyType_:poly_b {
-            return poly_a.struct_decl == poly_b.struct_decl;
+            return poly_a.struct_ == poly_b.struct_;
         };
         return false;
     } given a as GenericType_:generic_a {
@@ -397,7 +410,7 @@ Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
 
 Str#[$Type_:type_].stringify {
     given type_ as StructType_:struct_type_ {
-        return struct_type_.struct_decl.name;
+        return struct_type_.struct_.name;
     } given type_ as NullType_:null_type_ {
         return "Null";
     } given type_ as NeverType_:never_type_ {
@@ -405,7 +418,7 @@ Str#[$Type_:type_].stringify {
     } given type_ as OptionalType_:optional_type_ {
         return "{}?" % [optional_type_.sub].stringify;
     } given type_ as PolyType_:poly_type_ {
-        return "${}" % poly_type_.struct_decl.name;
+        return "${}" % poly_type_.struct_.name;
     } given type_ as GenericType_:generic_type_ {
         if [generic_type_.generics].len == 0 {
             return generic_type_.name;

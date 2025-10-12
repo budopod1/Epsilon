@@ -1,0 +1,8 @@
+%import entry;
+
+@super;
+A {}
+
+@super;
+@extends B;
+C {}

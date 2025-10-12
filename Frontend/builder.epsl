@@ -41,11 +41,11 @@ BuildSettings {
         return;
     };
 
-    if !cook exports [build] {
+    if !resolve struct_ connections [build] {
         return;
     };
 
-    if !resolve struct_ connections [build] {
+    if !cook exports [build] {
         return;
     };
 
@@ -181,12 +181,6 @@ S1ModconResult#produce struct declarations [Module:module] {
     };
 }
 
-Bool#cook exports [Build:build] {
-    // STEP:
-    // cook structs, function templates, globals fully
-    abort "not implemented";
-}
-
 Bool#resolve struct_ connections [Build:build] {
     [FileError]:load_errors = load struct_ extendees [build];
     if report errors [bundle [load_errors]] {
@@ -194,6 +188,31 @@ Bool#resolve struct_ connections [Build:build] {
     };
     [FileError]:recurse_errors = verify no recursive extendees [build];
     return !report errors [bundle [recurse_errors]];
+}
+
+Bool#cook exports [Build:build] {
+    // STEP:
+    // cook structs, function templates, globals fully
+    [$ErrorBundle]:bundles = [$ErrorBundle] [];
+    for Module:module in build.modules {
+        S2ModconResult:result = produce exports [module];
+        given result.modcon as $S2ModuleContent:modcon {
+            module.content = modcon;
+        };
+        [bundles].append[result.errors];
+    };
+    return !report errors [bundles];
+}
+
+S2ModconResult#produce exports [Module:module] {
+    $S0ModuleContent:modcon = module.content;
+    given modcon as S1EPSLModuleContent:epsl_modcon {
+        return cook exports [module];
+    } given modcon as SPECModuleContent:spec_modcon {
+        return S2ModconResult [spec_modcon, empty error bundle];
+    } else {
+        abort "Invalid S1 modcon";
+    };
 }
 
 Module#[Build:build].lookup_module[Import:import] {

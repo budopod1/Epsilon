@@ -5,6 +5,7 @@
 %import parsing;
 %import structs;
 %import iotools;
+%import types_;
 %import errors;
 %import paths;
 
@@ -70,6 +71,13 @@ RawFunction {
     Tokens:body
 }
 
+@extends NodeWSpan;
+S1EPSLFunction {
+    Bool:is_public,
+    FunctionDeclaration:func_decl,
+    Tokens:body
+}
+
 @extends AnnotatableNode;
 RawStruct {
     Str:name,
@@ -86,7 +94,8 @@ S0EPSLModuleContent {
 
 @extends NodeWSpan;
 S1EPSLStruct {
-    StructDeclaration:struct_decl,
+    Bool:is_public,
+    Struct_:struct_,
     Tokens:body
 }
 
@@ -96,6 +105,17 @@ S1EPSLModuleContent {
     [S1EPSLStruct]:s1_structs,
     [RawGlobal]:raw_globals,
     [RawFunction]:raw_functions
+}
+
+@extends NodeWSpan;
+EPSLStruct {
+    Struct_:struct
+}
+
+@extends S2ModuleContent;
+S2EPSLModuleContent {
+    Str:file_text,
+    [S1EPSLFunction]:s1_functions
 }
 
 Str#[RawGlobal:raw_global].stringify {
@@ -179,7 +199,8 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
     [ParseError]:errors = [ParseError] [];
     S0EPSLModuleContent:raw_modcon = [(S0EPSLModuleContent?)module.content]
         .expect["Expected S0EPSLModuleContent"];
-    [$StructDeclaration]:struct_decls = [$StructDeclaration] [];
+    [Struct_]:public_structs = [Struct_] [];
+    [Struct_]:all_structs = [Struct_] [];
     [S1EPSLStruct]:s1_structs = [S1EPSLStruct] [];
     for RawStruct:raw_struct in raw_modcon.raw_structs {
         Bool:is_public = true;
@@ -229,22 +250,181 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
             ]];
         };
         Bool:is_abstract = is_super && !is_concrete;
-        StructDeclaration:struct_decl = StructDeclaration [
-            name, is_value, is_abstract, is_super, is_sealed, extendee
+        Struct_:struct_decl = Struct_ [
+            name, is_value, is_abstract, is_super, is_sealed, extendee, null
         ];
         if is_public {
-            [struct_decls].append[struct_decl];
+            [public_structs].append[struct_decl];
         };
+        [all_structs].append[struct_decl];
         [s1_structs].append[S1EPSLStruct [
             raw_struct.start_index, raw_struct.end_index,
-            struct_decl, raw_struct.body
+            is_public, struct_decl, raw_struct.body
         ]];
     };
     $ErrorBundle:error_bundle = bundle [errors]
         txt: [raw_modcon.file_text] path: [raw_modcon.absolute_path];
     return S1ModconResult [S1EPSLModuleContent [
-        raw_modcon.absolute_path, raw_modcon.imports, struct_decls,
-        raw_modcon.file_text, s1_structs, raw_modcon.raw_globals,
+        raw_modcon.absolute_path, raw_modcon.imports, public_structs,
+        all_structs, raw_modcon.file_text, s1_structs, raw_modcon.raw_globals,
         raw_modcon.raw_functions
+    ], error_bundle];
+}
+
+Global?#parse global from [RawGlobal:raw_global] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {
+    ParseState:state = ParseState [raw_global.tokens, 0, errors];
+    given parse field state: [state] ctx: [ctx] as Field:field {
+        if ![state].require_finished why: ["';'"] {
+            return null;
+        };
+        return Global [field];
+    };
+    return null;
+}
+
+#parse struct [S1EPSLStruct:epsl_struct] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {
+    ParseState:state = ParseState [epsl_struct.body, 0, errors];
+    [Field]:fields = [Field] [];
+    epsl_struct.struct_.fields = fields;
+    while ![state].is_at_end {
+        given parse field state: [state] ctx: [ctx] as Field:field {
+            [fields].append[field];
+        } else {
+            return;
+        };
+        if [state].is_at_end {
+            return;
+        };
+        if ![state].consume[','] name: ["',' after field"] {
+            return;
+        };
+    };
+}
+
+Bool#parse function template [Tokens:tokens] to [[$TemplateSegment]:segments] args: [[Field]:args] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {
+    ParseState:state = ParseState [tokens, 0, errors];
+    while ![state].is_at_end {
+        W:id = [state].cur_id;
+        [state].consume;
+        if id == T_IDENT {
+            Str:name = [[state].last_data].read_identifier;
+            [segments].append[IdentifierTemplateSegment [name]];
+        } elif id == T_SQUARE_GROUP {
+            ParseState:arg_state = [state].last_substate;
+            given parse field state: [arg_state] ctx: [ctx] as Field:field {
+                [args].append[field];
+            } else {
+                return false;
+            };
+            if ![arg_state].is_at_end {
+                [arg_state].error_about_current msg: ["Expected ']'"];
+                return false;
+            };
+            [segments].append[ArgumentTemplateSegment []];
+        } elif id < 32 || id >= 127 {
+            [state].error_about_current msg: ["Invalid syntax"];
+            return false;
+        } else {
+            [segments].append[SymbolTemplateSegment [(Byte)id]];
+        };
+    };
+    return true;
+}
+
+Str#make symbol from segments [[$TemplateSegment]:segments] {
+    Str:result = Str [];
+    for $TemplateSegment:segment in segments {
+        if result {
+            [result].append['_'];
+        };
+        given segment as IdentifierTemplateSegment:identifier_segment {
+            [result].extend[identifier_segment.text];
+        } given segment as ArgumentTemplateSegment:argument_segment {
+            [result].extend["[]"];
+        } given segment as SymbolTemplateSegment:symbol_segment {
+            [result].append[symbol_segment.symbol];
+        } else {
+            abort "Invalid TemplateSegment";
+        };
+    };
+    return result;
+}
+
+S1EPSLFunction?#parse function [RawFunction:raw_function] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] prefix: [Str:prefix] {
+    ParseState:ret_state = ParseState [raw_function.ret_type_, 0, errors];
+    $Type_?:maybe_ret_type_ = parse type_ state: [ret_state] ctx: [ctx];
+    if !maybe_ret_type_ {
+        return null;
+    };
+    $Type_:ret_type_ = [maybe_ret_type_].unwrap;
+
+    [$TemplateSegment]:template = [$TemplateSegment] [];
+    [Field]:arguments = [Field] [];
+    if !parse function template [raw_function.template] to [template] args: [arguments] errors: [errors] ctx: [ctx] {
+        return null;
+    };
+
+    Str?:callee = null;
+    Bool:is_public = true;
+    for $Annotation:annotation in raw_function.annotations {
+        given annotation as PrivateAnnotation:private_annotation {
+            is_public = false;
+        } given annotation as IDAnnotation:id_annotation {
+            callee = id_annotation.id;
+        } else {
+            [errors].append[ParseError [
+                "Functions cannot receive this type of annotation",
+                annotation.start_index, annotation.end_index
+            ]];
+        };
+    };
+    if !callee {
+        callee = "{}:{}" % prefix % make symbol from segments [template];
+    };
+
+    FunctionDeclaration:func_decl = FunctionDeclaration [
+        template, arguments, FUNC_SOURCE_LOCAL, ret_type_, [callee].unwrap,
+        true, // takes ownership
+        true // result (may be) in params
+    ];
+
+    return S1EPSLFunction [
+        raw_function.start_index, raw_function.end_index,
+        is_public, func_decl, raw_function.body
+    ];
+}
+
+S2ModconResult#cook exports [Module:module] {
+    [ParseError]:errors = [ParseError] [];
+    S1EPSLModuleContent:s1_modcon = [(S1EPSLModuleContent?)module.content]
+        .expect["Expected S1EPSLModuleContent"];
+    Type_Context:ctx = type_ context of [s1_modcon];
+    [Global]:globals = [Global] [];
+    for RawGlobal:raw_global in s1_modcon.raw_globals {
+        given parse global from [raw_global] errors: [errors] ctx: [ctx]
+        as Global:global {
+            [globals].append[global];
+        };
+    };
+    for S1EPSLStruct:s1_struct in s1_modcon.s1_structs {
+        parse struct [s1_struct] errors: [errors] ctx: [ctx];
+    };
+    [S1EPSLFunction]:s1_functions = [S1EPSLFunction] [];
+    [FunctionDeclaration]:func_decls = [FunctionDeclaration] [];
+    for L:i enumerating s1_modcon.raw_functions {
+        Str:prefix = "{}:{}" % s1_modcon.absolute_path % i;
+        RawFunction:raw_function = s1_modcon.raw_functions[i];
+        given parse function [raw_function] errors: [errors] ctx: [ctx] prefix: [prefix]
+        as S1EPSLFunction:s1_function {
+            [s1_functions].append[s1_function];
+            [func_decls].append[s1_function.func_decl];
+        };
+    };
+    $ErrorBundle:error_bundle = bundle [errors]
+        txt: [s1_modcon.file_text] path: [s1_modcon.absolute_path];
+    return S2ModconResult [S2EPSLModuleContent [
+        s1_modcon.absolute_path, s1_modcon.imports, s1_modcon.structs,
+        s1_modcon.scoped_structs, globals, func_decls, s1_modcon.file_text,
+        s1_functions
     ], error_bundle];
 }

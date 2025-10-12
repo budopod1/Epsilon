@@ -1,0 +1,9 @@
+%import other;
+
+@super;
+@extends A;
+B {}
+
+Z#main [a:Z] + [bar:C] {
+    println["Hello, world!"];
+}

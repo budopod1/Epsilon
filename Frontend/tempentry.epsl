@@ -55,7 +55,7 @@ find -type f -name "*.epsl" | xargs cat > Frontend/all.cepsl
 
 Z#main {
     build with settings [BuildSettings [
-        "tempentry.epsl", ""
+        "../newtom/entry.epsl", ""
     ]];
 
     return 0;
