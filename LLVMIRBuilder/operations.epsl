@@ -13,7 +13,7 @@
 }
 
 #div zero error {
-    extern fn [null] ["epsl_div_0_fail"] [[Type_] []] [[Val] []];
+    extern fn [Null_] ["epsl_div_0_fail"] [[Type_] []] [[Val] []];
 }
 
 Val#safe [Val:a] / [Val:b] {
@@ -88,14 +88,14 @@ Val#consume truth [Val:val] {
 
 #verify idx [Val:idx] in array [Val:arr] {
     if_ [expect [[cast [idx] to [L_]] ge [[arr].length]] to be [false]];
-        extern fn [null] ["epsl_array_idx_fail"] [[Type_] []] [[Val] []];
+        extern fn [Null_] ["epsl_array_idx_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
 }
 
 #verify [Val:arr] is resizable {
     if_ [expect [[[arr].capacity] eq [c L_ [0]]] to be [false]];
-        extern fn [null] ["epsl_nonresizable_array_fail"] [[Type_] []] [[Val] []];
+        extern fn [Null_] ["epsl_nonresizable_array_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
 }
@@ -160,7 +160,7 @@ Bool#is builtin func id [Str:func_id] {
     return [func_id].starts_with["builtin"];
 }
 
-Val?#call nonbuiltin function [Str:func_id] with args [[Val]:args] {
+Val#call nonbuiltin function [Str:func_id] with args [[Val]:args] {
     FuncProto:proto = get func proto [func_id];
 
     [Val]:casted_args = [Val] [];
@@ -168,32 +168,29 @@ Val?#call nonbuiltin function [Str:func_id] with args [[Val]:args] {
         [casted_args].append[cast [args[i]] to [proto.arg_types_[i]]];
     };
 
-    Type_?:ret_type_ = proto.ret_type_;
+    Type_:ret_type_ = proto.ret_type_;
     extern fn [ret_type_] [proto.callee] [proto.arg_types_] [casted_args];
 
-    Val?:return_val = null;
-    if (ret_type_) {
-        return_val = func ret;
-    };
+    Val:return_val = func ret;
 
     if (!proto.takes_ownership) {
-        if (proto.result_in_params && ![return_val].is_null) {
-            [[return_val].unwrap].incr_ref;
+        if (proto.result_in_params) {
+            [return_val].incr_ref;
         };
 
         for (Val:arg in args) {
             [arg].check_ref;
         };
 
-        if (proto.result_in_params && ![return_val].is_null) {
-            [[return_val].unwrap].checkless_decr_ref;
+        if (proto.result_in_params) {
+            [return_val].checkless_decr_ref;
         };
     };
 
     return return_val;
 }
 
-Val?#call function [Str:func_id] with args [[Val]:args] to [Type_?:result_type_] {
+Val#call function [Str:func_id] with args [[Val]:args] to [Type_:result_type_] {
     if (is builtin func id [func_id]) {
         return call builtin [func_id] with args [args] to [result_type_];
     } else {
@@ -203,7 +200,7 @@ Val?#call function [Str:func_id] with args [[Val]:args] to [Type_?:result_type_]
 
 #verify array [Val:arr] non empty {
     if_ [expect [[c L_ [0]] eq [[arr].length]] to be [false]];
-        extern fn [null] ["epsl_array_empty_fail"] [[Type_] []] [[Val] []];
+        extern fn [Null_] ["epsl_array_empty_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
 }
@@ -213,7 +210,7 @@ Val?#call function [Str:func_id] with args [[Val]:args] to [Type_?:result_type_]
     if (needs_stringification) {
         arg = make stringify of [arg];
     };
-    extern fn [null] [fn_name] [[Type_] [Str_]] [[Val] [arg]];
+    extern fn [Null_] [fn_name] [[Type_] [Str_]] [[Val] [arg]];
     if (needs_stringification) {
         free[[arg].content];
         free[arg];
@@ -226,7 +223,7 @@ Val?#call function [Str:func_id] with args [[Val]:args] to [Type_?:result_type_]
         name = "pad_left";
     };
 
-if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
+if (specialized fn [Null_] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
     Val:arr = func arg [0];
 
     verify [arr] is resizable;
@@ -238,7 +235,7 @@ if (specialized fn [null] [name] [[Val] [outer_arr, outer_len, outer_val]]) {
     Val:cur_len = load [[arr].length];
 
     if_ [[cur_len] lt [len]];
-        extern fn [null] ["epsl_require_capacity"] [[Type_] [Internal_, L_, L_]]
+        extern fn [Null_] ["epsl_require_capacity"] [[Type_] [Internal_, L_, L_]]
             [[Val] [cast [arr] to [Internal_], len, sizeof elem [arr.type_]]];
 
         Val:content = load [[arr].content];
@@ -430,11 +427,11 @@ end fn;
     memcpy [part_len] [[arr_content] shifted by [part_start]] to [part_content];
     [[part].content] = [part_content];
 
-    extern fn [null] ["epsl_increment_array_ref_counts"] [[Type_] [Internal_, L_]]
+    extern fn [Null_] ["epsl_increment_array_ref_counts"] [[Type_] [Internal_, L_]]
         [[Val] [cast [part] to [Internal_], make elem int [generic]]];
 
     Val:part_idx = load [[result].length];
-    extern fn [null] ["epsl_increment_length"] [[Type_] [Internal_, L_]]
+    extern fn [Null_] ["epsl_increment_length"] [[Type_] [Internal_, L_]]
         [[Val] [cast [result] to [Internal_], make elem int [arr_type_]]];
     [[result].idx[part_idx]] = [part];
 }
@@ -586,7 +583,7 @@ end fn;
 
 #verify [Val:val] is not null_ {
     if_ [expect [[val] == null_] to be [false]];
-        extern fn [null] ["epsl_null_value_fail"] [[Type_] []] [[Val] []];
+        extern fn [Null_] ["epsl_null_value_fail"] [[Type_] []] [[Val] []];
         mark as unreachable;
     end block;
 }
@@ -612,13 +609,13 @@ Val#sort array [Val:arr] invert: [Bool:invert] {
     Type_:compar_type_ = FuncPtr [Z_] [[Type_] [Internal_, Internal_]];
     Val:compar = make compare func of [arr.type_.generics[0]] invert: [invert];
     compar = cast [compar] to [compar_type_];
-    extern fn [null] ["epsl_sort_array"] [[Type_] [Internal_, L_, compar_type_]]
+    extern fn [Null_] ["epsl_sort_array"] [[Type_] [Internal_, L_, compar_type_]]
         [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_], compar]];
     return func ret;
 }
 
 #deduplicate adjacent values in [Val:outer_arr] {
-if (specialized fn [null] ["dedup"] [[Val] [outer_arr]]) {
+if (specialized fn [Null_] ["dedup"] [[Val] [outer_arr]]) {
     Val:arr = func arg [0];
 
     verify [arr] is resizable;
