@@ -5,6 +5,8 @@
 
 Struct_ {
     Str:name,
+    Bool:has_rc,
+    Bool:is_readonly,
     Bool:is_value,
     Bool:is_abstract,
     Bool:is_super,

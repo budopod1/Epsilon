@@ -32,6 +32,12 @@ IDAnnotation {
 }
 
 @extends Annotation;
+NoRCAnnotation {}
+
+@extends Annotation;
+ReadOnlyAnnotation {}
+
+@extends Annotation;
 ValueAnnotation {}
 
 @extends Annotation;
@@ -205,6 +211,8 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
     for RawStruct:raw_struct in raw_modcon.raw_structs {
         Bool:is_public = true;
         Str:name = raw_struct.name;
+        Bool:has_rc = true;
+        Bool:is_readonly = false;
         Bool:is_value = false;
         Bool:is_super = false;
         Bool:is_concrete = false;
@@ -213,6 +221,10 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
         for $Annotation:annotation in raw_struct.annotations {
             given annotation as PrivateAnnotation:private_annotation {
                 is_public = false;
+            } given annotation as NoRCAnnotation:norc_annotation {
+                has_rc = false;
+            } given annotation as ReadOnlyAnnotation:readonly_annotation {
+                is_readonly = true;
             } given annotation as ValueAnnotation:value_annotation {
                 is_value = true;
             } given annotation as SuperAnnotation:super_annotation {
@@ -249,9 +261,17 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
                 raw_struct.start_index, raw_struct.end_index
             ]];
         };
+        if is_value && !has_rc {
+            [errors].append[ParseError [
+                "The @norc annotation is invalid, as @value structs already have no reference counter",
+                raw_struct.start_index, raw_struct.end_index
+            ]];
+        };
+        has_rc = has_rc && !is_value;
         Bool:is_abstract = is_super && !is_concrete;
         Struct_:struct_decl = Struct_ [
-            name, is_value, is_abstract, is_super, is_sealed, extendee, null
+            name, has_rc, is_readonly, is_value, is_abstract, is_super,
+            is_sealed, extendee, null
         ];
         if is_public {
             [public_structs].append[struct_decl];

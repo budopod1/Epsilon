@@ -73,6 +73,16 @@ $Annotation?#parse_annotation[ParseState:state] {
                 };
             };
         }
+        ("norc") {
+            if [state].consume[';'] name: ["';', as norc annotations take no arguments"] {
+                return NoRCAnnotation [start_index, [state].last_end];
+            };
+        }
+        ("readonly") {
+            if [state].consume[';'] name: ["';', as readonly annotations take no arguments"] {
+                return ReadOnlyAnnotation [start_index, [state].last_end];
+            };
+        }
         ("value") {
             if [state].consume[';'] name: ["';', as value annotations take no arguments"] {
                 return ValueAnnotation [start_index, [state].last_end];

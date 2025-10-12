@@ -4,6 +4,13 @@
 @extends A;
 B {}
 
-Z#main [a:Z] + [bar:C] {
+@value;
+@norc;
+@readonly;
+Q {
+
+}
+
+Z#main [a:Z] + [bar:$C] {
     println["Hello, world!"];
 }
