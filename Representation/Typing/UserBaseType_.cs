@@ -6,18 +6,13 @@ public class UserBaseType_(string name, int? bits = null) {
         "Str", "L"
     ];
 
-    public readonly static List<string> NonUserType_Names = [
-        "Null"
-    ];
-
     public static UserBaseType_ ParseString(string content, HashSet<LocatedID> structIds) {
         foreach (LocatedID structId in structIds) {
             if (content == structId.Name) return new UserBaseType_(structId.GetID());
         }
 
-        if ((BaseType_.BuiltInTypes_.Contains(content)
-            || SpecialFullBaseType_Names.Contains(content)
-            ) && !NonUserType_Names.Contains(content)) {
+        if (BaseType_.BuiltInTypes_.Contains(content)
+            || SpecialFullBaseType_Names.Contains(content)) {
             return new UserBaseType_(content);
         }
 
