@@ -7,6 +7,76 @@
 %import errors;
 %import paths;
 
+
+
+@super;
+@extends NodeWSpan;
+ToplevelItem {}
+
+@super;
+@extends NodeWSpan;
+Annotation {}
+
+@extends Annotation;
+PrivateAnnotation {}
+
+@extends Annotation;
+IDAnnotation {
+    Str:id
+}
+
+@extends Annotation;
+NoRCAnnotation {}
+
+@extends Annotation;
+ReadOnlyAnnotation {}
+
+@extends Annotation;
+ValueAnnotation {}
+
+@extends Annotation;
+SuperAnnotation {}
+
+@extends Annotation;
+ConcreteAnnotation {}
+
+@extends Annotation;
+SealedAnnotation {}
+
+@extends Annotation;
+ExtendsAnnotation {
+    Str:extendee
+}
+
+@extends ToplevelItem;
+ImportDeclaration {
+    Import:import
+}
+
+@super;
+@extends ToplevelItem;
+AnnotatableNode {
+    [$Annotation]:annotations
+}
+
+@extends AnnotatableNode;
+RawGlobal {
+    Tokens:tokens
+}
+
+@extends AnnotatableNode;
+RawFunction {
+    Tokens:ret_type_,
+    Tokens:template,
+    Tokens:body
+}
+
+@extends AnnotatableNode;
+RawStruct {
+    Str:name,
+    Tokens:body
+}
+
 S0ModconResult#parse_toplevel[Tokens:tokens] onto: [S0EPSLModuleContent:modcon] {
     [$Annotation]:annotations = [$Annotation] [];
     ParseState:state = ParseState [tokens, 0, [ParseError] []];

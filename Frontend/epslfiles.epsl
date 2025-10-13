@@ -15,78 +15,10 @@ NodeWSpan {
     W:end_index
 }
 
-@super;
-@extends NodeWSpan;
-ToplevelItem {}
-
-@super;
-@extends NodeWSpan;
-Annotation {}
-
-@extends Annotation;
-PrivateAnnotation {}
-
-@extends Annotation;
-IDAnnotation {
-    Str:id
-}
-
-@extends Annotation;
-NoRCAnnotation {}
-
-@extends Annotation;
-ReadOnlyAnnotation {}
-
-@extends Annotation;
-ValueAnnotation {}
-
-@extends Annotation;
-SuperAnnotation {}
-
-@extends Annotation;
-ConcreteAnnotation {}
-
-@extends Annotation;
-SealedAnnotation {}
-
-@extends Annotation;
-ExtendsAnnotation {
-    Str:extendee
-}
-
-@extends ToplevelItem;
-ImportDeclaration {
-    Import:import
-}
-
-@super;
-@extends ToplevelItem;
-AnnotatableNode {
-    [$Annotation]:annotations
-}
-
-@extends AnnotatableNode;
-RawGlobal {
-    Tokens:tokens
-}
-
-@extends AnnotatableNode;
-RawFunction {
-    Tokens:ret_type_,
-    Tokens:template,
-    Tokens:body
-}
-
 @extends NodeWSpan;
 S1EPSLFunction {
     Bool:is_public,
     FunctionDeclaration:func_decl,
-    Tokens:body
-}
-
-@extends AnnotatableNode;
-RawStruct {
-    Str:name,
     Tokens:body
 }
 
@@ -300,25 +232,6 @@ Global?#parse global from [RawGlobal:raw_global] errors: [[ParseError]:errors] c
         return Global [field];
     };
     return null;
-}
-
-#parse struct [S1EPSLStruct:epsl_struct] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {
-    ParseState:state = ParseState [epsl_struct.body, 0, errors];
-    [Field]:fields = [Field] [];
-    epsl_struct.struct_.fields = fields;
-    while ![state].is_at_end {
-        given parse field state: [state] ctx: [ctx] as Field:field {
-            [fields].append[field];
-        } else {
-            return;
-        };
-        if [state].is_at_end {
-            return;
-        };
-        if ![state].consume[','] name: ["',' after field"] {
-            return;
-        };
-    };
 }
 
 Bool#parse function template [Tokens:tokens] to [[$TemplateSegment]:segments] args: [[Field]:args] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {

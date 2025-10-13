@@ -8,3 +8,4 @@ TODO:
   * add support for a @private annotation
   * add ability to load compiler modules at runtime, enabling:
     * packages that contain `Matrix` and `Map` types
+* token start and end positions should be stored seperately for each token because of whitespace

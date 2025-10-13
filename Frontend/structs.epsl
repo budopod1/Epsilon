@@ -1,7 +1,9 @@
-%import types_;
+%import epslfiles;
 %import modules;
+%import parsing;
 %import builder;
 %import errors;
+%import types_;
 
 Struct_ {
     Str:name,
@@ -120,4 +122,23 @@ FileError?#verify no recursive extendees [Struct_:struct] seen: [[Struct_]:seen]
     Struct_:extendee = [ref.struct_]
         .expect["Structs should have their extendees loaded"];
     return verify no recursive extendees [extendee] seen: [seen];
+}
+
+#parse struct [S1EPSLStruct:epsl_struct] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {
+    ParseState:state = ParseState [epsl_struct.body, 0, errors];
+    [Field]:fields = [Field] [];
+    epsl_struct.struct_.fields = fields;
+    while ![state].is_at_end {
+        given parse field state: [state] ctx: [ctx] as Field:field {
+            [fields].append[field];
+        } else {
+            return;
+        };
+        if [state].is_at_end {
+            return;
+        };
+        if ![state].consume[','] name: ["',' after field"] {
+            return;
+        };
+    };
 }
