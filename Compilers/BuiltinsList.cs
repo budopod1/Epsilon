@@ -690,7 +690,7 @@ public static class BuiltinsList {
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "inner")
+                    new UnitPatternSegment<string>(typeof(Name), "unsafe_unwrap")
                 ], new SlotPatternProcessor([0])
             ), [
                 new("optional", Type_.Any().OptionalOf(), exactType_Match: true),

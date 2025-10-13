@@ -357,7 +357,7 @@ BuiltinResult#builtin round with [[Val]:args] {
     return make builtin result [cast [func ret] to [Z_]];
 }
 
-BuiltinResult#builtin inner with [[Val]:args] {
+BuiltinResult#builtin unsafe_unwrap with [[Val]:args] {
     assume [[args[0]] != null_];
     Val:result = unwrap nullability [args[0]];
     return make builtin result [result] is params;
@@ -589,7 +589,7 @@ BuiltinResult#dispatch builtin [Str:func_id] with args [[Val]:args] to [Type_?:r
     } elif ([func_id] equals ["builtin51"]) {
         return builtin round with [args];
     } elif ([func_id] equals ["builtin52"]) {
-        return builtin inner with [args];
+        return builtin unsafe_unwrap with [args];
     } elif ([func_id] equals ["builtin53"]) {
         return builtin nullable or with [args];
     } elif ([func_id] equals ["builtin54"]) {
