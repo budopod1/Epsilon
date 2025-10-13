@@ -4,13 +4,10 @@ Z#main {
     Str???:n2 = n1;
     given (n2 as Str??:u2) {
         given (u2 as Str?:u1) {
-            given (u1 as Str?:u0) {
-                given (u0 as Str:um1) {
-                    return 4;
-                };
-                return 3;
+            given (u1 as Str:u0) {
+                return 4;
             };
-            return 2;
+            return 3;
         };
         return 1;
     };
