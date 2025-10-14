@@ -1,0 +1,39 @@
+%import types_;
+
+@super;
+TemplateSegment {}
+
+@extends TemplateSegment;
+IdentifierTemplateSegment {
+    Str:text
+}
+
+@extends TemplateSegment;
+ArgumentTemplateSegment {}
+
+@extends TemplateSegment;
+SymbolTemplateSegment {
+    Byte:symbol
+}
+
+FunctionDeclaration {
+    [$TemplateSegment]:template,
+    [Field]:arguments,
+    W:source,
+    $Type_:ret_type_,
+    Str:callee,
+    Bool:takes_ownership,
+    Bool:result_in_params
+}
+
+W#FUNC_SOURCE_BUILTIN {
+    return 0;
+}
+
+W#FUNC_SOURCE_FOREIGN {
+    return 1;
+}
+
+W#FUNC_SOURCE_LOCAL {
+    return 2;
+}

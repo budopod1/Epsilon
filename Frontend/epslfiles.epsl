@@ -1,4 +1,5 @@
 %import tokenizer;
+%import functions;
 %import toplevel;
 %import grouper;
 %import modules;
