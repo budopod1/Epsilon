@@ -105,12 +105,12 @@ Z#main {
 $JSON#read BinJSON_ {
     File?:maybe_file = open_file["temp/code.binjson"][FILE_READ_MODE];
     if ([maybe_file].is_null) {
-        abort "Failed to open code.binjson";
+        abort ["Failed to open code.binjson"];
     };
     File:file = [maybe_file].unwrap;
     Str?:bytes = [file].read_all;
     if ([bytes].is_null) {
-        abort "Failed to read code.binjson";
+        abort ["Failed to read code.binjson"];
     };
     return parse_BinJSON[[bytes].unwrap];
 }
@@ -189,7 +189,7 @@ FuncProto#get func proto [Str:id] {
         };
     };
 
-    abort "Cannot find function prototype with id {}" % id;
+    abort ["Cannot find function prototype with id {}" % id];
 }
 
 #build funcs {
@@ -228,7 +228,7 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
             };
         };
         if ([maybe_var].is_null) {
-            abort "Argument {}'s variable (id {}) does not exist" % name % id;
+            abort ["Argument {}'s variable (id {}) does not exist" % name % id];
         };
         ScopeVar:var = [maybe_var].unwrap;
 
@@ -252,7 +252,7 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     build block [block_json] toplevel: [true];
 end fn;
 } else {
-    abort "Duplicate function callee {}" % proto.callee;
+    abort ["Duplicate function callee {}" % proto.callee];
 };
 }
 
@@ -266,7 +266,7 @@ ScopeVar#get var [W:id] {
             return var;
         };
     };
-    abort "Cannot find a var with ID {}" % id;
+    abort ["Cannot find a var with ID {}" % id];
 }
 
 [ScopeVar]#get var list [$JSON:list_json] {
@@ -288,7 +288,7 @@ ScopeVar#get var [W:id] {
         [refs].pop[ref_idx];
         [val].decr_ref;
     } else {
-        abort "{} is not listed as a special ref, thus it cannot be popped from the list of special refs";
+        abort ["{} is not listed as a special ref, thus it cannot be popped from the list of special refs"];
     };
 }
 
@@ -331,7 +331,7 @@ Type_#current func ret type_ {
         for ($JSON:operand_json in [[instruction_json].get["operands"]].get_list) {
             Val?:result = results[(W)[operand_json].get_int];
             if ([result].is_null) {
-                abort "Cannot use void instruction as operand";
+                abort ["Cannot use void instruction as operand"];
             };
             [operands].append[[result].unwrap];
         };
@@ -376,7 +376,7 @@ Val#build seperated value [$JSON:val_json] {
     if (result) {
         return [result].unwrap;
     } else {
-        abort "Seperated value references non-value instruction";
+        abort ["Seperated value references non-value instruction"];
     };
 }
 
@@ -391,10 +391,10 @@ Block?#get loop block {
 #write result [Str:result] {
     File?:maybe_file = open_file["temp/code.ll"][FILE_WRITE_MODE];
     if ([maybe_file].is_null) {
-        abort "Failed to open code.ll";
+        abort ["Failed to open code.ll"];
     };
     File:file = [maybe_file].unwrap;
     if (![file].write[result]) {
-        abort "Failed to write to code.ll";
+        abort ["Failed to write to code.ll"];
     };
 }

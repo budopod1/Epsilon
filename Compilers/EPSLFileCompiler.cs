@@ -1614,7 +1614,7 @@ Please clarify between the functions that take the types:
                 new PatternMatcher(
                     [
                         new TypePatternSegment(typeof(AbortKeyword)),
-                        new Type_PatternSegment(Type_.String())
+                        new TypePatternSegment(typeof(ValueList))
                     ], new Wrapper2PatternProcessor(
                         new SlotPatternProcessor([1]),
                         typeof(Abort)

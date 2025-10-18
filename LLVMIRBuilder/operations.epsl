@@ -113,7 +113,7 @@ Val#make elem int [Type_:type_] {
 
 Val#make elem generic int [Type_:type_] {
     if ([type_.generics].len == 0) {
-        abort "Cannot make elem generic int of type_ {}, as it has no generics" % [type_].stringify;
+        abort ["Cannot make elem generic int of type_ {}, as it has no generics" % [type_].stringify];
     };
     return make elem int [type_.generics[0]];
 }
@@ -137,13 +137,13 @@ Val#make constant [$JSON:constant_json] of type_ [Type_:type_] {
         } elif ([val_str] equals ["NaN"]) {
             val = NaN;
         } else {
-            abort "Unknown special float type {}" % val_str;
+            abort ["Unknown special float type {}" % val_str];
         };
         return c [val] [type_];
     } elif ([constant_type] equals ["string"]) {
-        abort "String constants cannot be created as standard constants";
+        abort ["String constants cannot be created as standard constants"];
     };
-    abort "Unknown constant type {}" % constant_type;
+    abort ["Unknown constant type {}" % constant_type];
 }
 
 Val#[Val:val].clone {
@@ -153,7 +153,7 @@ Val#[Val:val].clone {
             [[Val] [cast [val] to [Internal_], make elem generic int [type_]]];
         return cast [func ret] to [type_];
     };
-    abort "Clone operation not yet implemented on type_ {}" % [type_].stringify;
+    abort ["Clone operation not yet implemented on type_ {}" % [type_].stringify];
 }
 
 Bool#is builtin func id [Str:func_id] {
