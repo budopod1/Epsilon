@@ -627,7 +627,7 @@ BuiltinResult#dispatch builtin [Str:func_id] with args [[Val]:args] to [Type_?:r
     } elif ([func_id] equals ["builtin70"]) {
         return builtin index of with [args] last: [true];
     } else {
-        abort "Builtin {} does not exist or is not implemented" % func_id;
+        abort ["Builtin {} does not exist or is not implemented" % func_id];
     };
 }
 

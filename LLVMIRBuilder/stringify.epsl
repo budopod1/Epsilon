@@ -191,7 +191,7 @@ if (specialized fn [Null_] ["stringify"] [[Val] [outer_val, outer_result]]) {
     } else {
         Struct_?:maybe_struct = [type_].get_struct;
         if ([maybe_struct].is_null) {
-            abort "Don't know how to stringify type_ {}" % [type_].stringify;
+            abort ["Don't know how to stringify type_ {}" % [type_].stringify];
         };
         Struct_:struct_ = [maybe_struct].unwrap;
 

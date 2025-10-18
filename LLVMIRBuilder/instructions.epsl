@@ -58,7 +58,7 @@ Val#build exponentiation [$JSON:instruction_json] using [[Val]:operands] to [Typ
             return integer [operands[0]] to the [operands[1]];
         };
     };
-    abort "Unknown exponentiation mode {}" % mode;
+    abort ["Unknown exponentiation mode {}" % mode];
 }
 
 Val#build variable [$JSON:instruction_json] {
@@ -82,7 +82,7 @@ Val#build comparison [$JSON:instruction_json] using [[Val]:operands] {
     } elif ([comparison_operator] equals ["less_equal"]) {
         return [o1] le [o2];
     } else {
-        abort "Unknown comparison operator {}" % comparison_operator;
+        abort ["Unknown comparison operator {}" % comparison_operator];
     };
 }
 
@@ -159,7 +159,7 @@ Val#build member access [$JSON:instruction_json] using [[Val]:operands] {
             return result;
         };
     };
-    abort "Struct {} does not have requested field {}" % struct_.name % member_name;
+    abort ["Struct {} does not have requested field {}" % struct_.name % member_name];
 }
 
 Val#build zeroed array creation using [[Val]:operands] to [Type_:type_] {
@@ -225,7 +225,7 @@ Val#build boolean operation [$JSON:instruction_json] using [[Val]:operands] {
     } elif ([instruction_type] equals ["or"]) {
         o2_is_result = NOT [o1_truth];
     } else {
-        abort "Invalid boolean operation type {}" % instruction_type;
+        abort ["Invalid boolean operation type {}" % instruction_type];
     };
 
     goto_ [[o2_is_result].unwrap] ? [compute_o2] : [end];
@@ -343,7 +343,7 @@ Val#build valued instruction [$JSON:instruction_json] using [[Val]:operands] {
     } elif ([type] equals ["cast"]) {
         return build cast using [operands] to [type_];
     } else {
-        abort "Unknown valued instruction type {}" % type;
+        abort ["Unknown valued instruction type {}" % type];
     };
 }
 
@@ -763,7 +763,7 @@ Label:cond_label = new label:;
     } elif ([type] equals ["continue"]) {
         build continue_;
     } else {
-        abort "Unknown void instruction type {}" % type;
+        abort ["Unknown void instruction type {}" % type];
     };
 }
 
@@ -775,12 +775,12 @@ Val?#build instruction [$JSON:instruction_json] using [[Val]:operands] {
     if ([instruction_json].contains_key["type_"]) {
         Val:result = build valued instruction [instruction_json] using [operands];
         if (result.assignable) {
-            abort "Instructions cannot have an AssignableVal result";
+            abort ["Instructions cannot have an AssignableVal result"];
         };
         Type_:expected_type_ = read type_ [[instruction_json].get["type_"]];
         if (![result.type_] == [expected_type_]) {
-            abort "Expected type_ {} from instruction {}, got type_ {}" % [expected_type_].stringify
-                % [[instruction_json].get["type"]].get_str % [result.type_].stringify;
+            abort ["Expected type_ {} from instruction {}, got type_ {}" % [expected_type_].stringify
+                % [[instruction_json].get["type"]].get_str % [result.type_].stringify];
         };
         instruction_result = result;
     } else {
