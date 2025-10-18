@@ -44,6 +44,15 @@ S2ModconResult {
     $ErrorBundle:errors
 }
 
+@super;
+@extends S2ModuleContent;
+S3ModuleContent {}
+
+S3ModconResult {
+    $S3ModuleContent?:modcon,
+    $ErrorBundle:errors
+}
+
 Import {
     [Str]:path,
     Module?:referenced

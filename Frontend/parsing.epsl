@@ -24,7 +24,7 @@ Bool#[ParseState:state].is_at_end {
     ]];
 }
 
-#[ParseState:state].error_at[$NodeWSpan:node] msg: [Str:msg] {
+#[ParseState:state].error_at[$Node:node] msg: [Str:msg] {
     [state.errors].append[ParseError [
         msg, node.start_index, node.end_index,
     ]];

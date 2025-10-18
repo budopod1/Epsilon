@@ -4,7 +4,7 @@
 %import epslfiles;
 %import modules;
 
-@extends NodeWSpan;
+@extends Node;
 Type_Node {
     $Type_:type_
 }

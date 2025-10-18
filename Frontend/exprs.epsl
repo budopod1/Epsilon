@@ -1,0 +1,19 @@
+%import epslfiles;
+%import parsing;
+%import types_;
+
+@super;
+@extends Node;
+Expression {
+    $Type_:type_
+}
+
+@extends Node;
+Block {
+    $Type_:type_,
+    [Expression]:lines
+}
+
+Block?#parse block [ParseState:state] {
+    abort ["parse block not implemented"];
+}

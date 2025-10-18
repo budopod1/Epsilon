@@ -8,18 +8,19 @@
 %import iotools;
 %import types_;
 %import errors;
+%import exprs;
 %import paths;
 
 @super;
-NodeWSpan {
+Node {
     W:start_index,
     W:end_index
 }
 
-@extends NodeWSpan;
-S1EPSLFunction {
+@extends Node;
+S2EPSLFunction {
     Bool:is_public,
-    FunctionDeclaration:func_decl,
+    FunctionDeclaration:decl,
     Tokens:body
 }
 
@@ -31,7 +32,7 @@ S0EPSLModuleContent {
     [RawStruct]:raw_structs
 }
 
-@extends NodeWSpan;
+@extends Node;
 S1EPSLStruct {
     Bool:is_public,
     Struct_:struct_,
@@ -46,7 +47,7 @@ S1EPSLModuleContent {
     [RawFunction]:raw_functions
 }
 
-@extends NodeWSpan;
+@extends Node;
 EPSLStruct {
     Struct_:struct
 }
@@ -54,7 +55,20 @@ EPSLStruct {
 @extends S2ModuleContent;
 S2EPSLModuleContent {
     Str:file_text,
-    [S1EPSLFunction]:s1_functions
+    [S2EPSLFunction]:s2_functions
+}
+
+@extends Node;
+S3EPSLFunction {
+    Bool:is_public,
+    FunctionDeclaration:decl,
+    Block:block
+}
+
+@extends S3ModuleContent;
+S3EPSLModuleContent {
+    Str:file_text,
+    [S3EPSLFunction]:functions
 }
 
 Str#[RawGlobal:raw_global].stringify {
@@ -284,7 +298,7 @@ Str#make symbol from segments [[$TemplateSegment]:segments] {
     return result;
 }
 
-S1EPSLFunction?#parse function [RawFunction:raw_function] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] prefix: [Str:prefix] {
+S2EPSLFunction?#parse function [RawFunction:raw_function] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] prefix: [Str:prefix] {
     ParseState:ret_state = ParseState [raw_function.ret_type_, 0, errors];
     $Type_?:maybe_ret_type_ = parse type_ state: [ret_state] ctx: [ctx];
     if !maybe_ret_type_ {
@@ -322,7 +336,7 @@ S1EPSLFunction?#parse function [RawFunction:raw_function] errors: [[ParseError]:
         true // result (may be) in params
     ];
 
-    return S1EPSLFunction [
+    return S2EPSLFunction [
         raw_function.start_index, raw_function.end_index,
         is_public, func_decl, raw_function.body
     ];
@@ -343,15 +357,15 @@ S2ModconResult#cook exports [Module:module] {
     for S1EPSLStruct:s1_struct in s1_modcon.s1_structs {
         parse struct [s1_struct] errors: [errors] ctx: [ctx];
     };
-    [S1EPSLFunction]:s1_functions = [S1EPSLFunction] [];
+    [S2EPSLFunction]:s2_functions = [S2EPSLFunction] [];
     [FunctionDeclaration]:func_decls = [FunctionDeclaration] [];
     for L:i enumerating s1_modcon.raw_functions {
         Str:prefix = "{}:{}" % s1_modcon.absolute_path % i;
         RawFunction:raw_function = s1_modcon.raw_functions[i];
         given parse function [raw_function] errors: [errors] ctx: [ctx] prefix: [prefix]
-        as S1EPSLFunction:s1_function {
-            [s1_functions].append[s1_function];
-            [func_decls].append[s1_function.func_decl];
+        as S2EPSLFunction:s2_function {
+            [s2_functions].append[s2_function];
+            [func_decls].append[s2_function.decl];
         };
     };
     $ErrorBundle:error_bundle = bundle [errors]
@@ -359,6 +373,26 @@ S2ModconResult#cook exports [Module:module] {
     return S2ModconResult [S2EPSLModuleContent [
         s1_modcon.absolute_path, s1_modcon.imports, s1_modcon.structs,
         s1_modcon.scoped_structs, globals, func_decls, s1_modcon.file_text,
-        s1_functions
+        s2_functions
+    ], error_bundle];
+}
+
+S3ModconResult#cook epsl functions [Module:module] {
+    [ParseError]:errors = [ParseError] [];
+    S2EPSLModuleContent:s2_modcon = [(S2EPSLModuleContent?)module.content]
+        .expect["Expected S2EPSLModuleContent"];
+    [S3EPSLFunction]:s3_functions = [S3EPSLFunction] [];
+    for S2EPSLFunction:s2_function in s2_modcon.s2_functions {
+        given parse function [s2_function] errors: [errors]
+        as S3EPSLFunction:s3_function {
+            [s3_functions].append[s3_function];
+        };
+    };
+    $ErrorBundle:error_bundle = bundle [errors]
+        txt: [s2_modcon.file_text] path: [s2_modcon.absolute_path];
+    return S3ModconResult [S3EPSLModuleContent [
+        s2_modcon.absolute_path, s2_modcon.imports, s2_modcon.structs,
+        s2_modcon.scoped_structs, s2_modcon.globals, s2_modcon.func_decls,
+        s2_modcon.file_text, s3_functions
     ], error_bundle];
 }

@@ -7,14 +7,12 @@
 %import errors;
 %import paths;
 
-
-
 @super;
-@extends NodeWSpan;
+@extends Node;
 ToplevelItem {}
 
 @super;
-@extends NodeWSpan;
+@extends Node;
 Annotation {}
 
 @extends Annotation;

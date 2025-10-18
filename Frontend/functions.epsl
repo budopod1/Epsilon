@@ -1,4 +1,8 @@
+%import epslfiles;
+%import parsing;
 %import types_;
+%import errors;
+%import exprs;
 
 @super;
 TemplateSegment {}
@@ -36,4 +40,14 @@ W#FUNC_SOURCE_FOREIGN {
 
 W#FUNC_SOURCE_LOCAL {
     return 2;
+}
+
+S3EPSLFunction?#parse function [S2EPSLFunction:func] errors: [[ParseError]:errors] {
+    ParseState:state = ParseState [func.body, 0, errors];
+    given parse block [state] as Block:block {
+        return S3EPSLFunction [func.start_index, func.end_index,
+            func.is_public, func.decl, block];
+    } else {
+        return null;
+    };
 }

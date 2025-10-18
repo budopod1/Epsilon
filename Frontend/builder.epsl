@@ -49,8 +49,9 @@ BuildSettings {
         return;
     };
 
-    // STEP:
-    // cook functions
+    if !cook functions [build] {
+        return;
+    };
 
     // STEP:
     // finish compilation, and send everything to LLVMIRBuilder
@@ -212,6 +213,31 @@ S2ModconResult#produce exports [Module:module] {
         return S2ModconResult [spec_modcon, empty error bundle];
     } else {
         abort ["Invalid S1 modcon"];
+    };
+}
+
+Bool#cook functions [Build:build] {
+    // STEP:
+    // cook functions
+    [$ErrorBundle]:bundles = [$ErrorBundle] [];
+    for Module:module in build.modules {
+        S3ModconResult:result = cook functions [module];
+        given result.modcon as $S3ModuleContent:modcon {
+            module.content = modcon;
+        };
+        [bundles].append[result.errors];
+    };
+    return !report errors [bundles];
+}
+
+S3ModconResult#cook functions [Module:module] {
+    $S0ModuleContent:modcon = module.content;
+    given modcon as S2EPSLModuleContent:epsl_modcon {
+        return cook epsl functions [module];
+    } given modcon as SPECModuleContent:spec_modcon {
+        return S3ModconResult [spec_modcon, empty error bundle];
+    } else {
+        abort ["Invalid S2 modcon"];
     };
 }
 
