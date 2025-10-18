@@ -80,7 +80,7 @@ Bool#[$ErrorBundle:bundle].any {
     } given bundle as IOErrorBundle:io_bundle {
         return [io_bundle.errors].len > 0;
     } else {
-        abort "Invalid ErrorBundle";
+        abort ["Invalid ErrorBundle"];
     };
 }
 
@@ -157,7 +157,7 @@ Bool#report errors [$ErrorBundle:bundle] {
     } given bundle as IOErrorBundle:io_bundle {
         do report errors [io_bundle];
     } else {
-        abort "Invalid ErrorBundle";
+        abort ["Invalid ErrorBundle"];
     };
     return [bundle].any;
 }

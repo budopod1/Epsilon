@@ -38,5 +38,5 @@ Path#epsilon directory {
         cache_epsl_dir = result;
         return result;
     };
-    abort "Cannot determine Epsilon's root directory. The Epsilon executable is placed in an invalid location";
+    abort ["Cannot determine Epsilon's root directory. The Epsilon executable is placed in an invalid location"];
 }

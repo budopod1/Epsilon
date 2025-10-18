@@ -163,7 +163,7 @@ Z#main {
     CommandParsingResult:result = [spec].parse_command_args;
     [Str]:branch = result.branch_path;
 
-    abort "Not implemented";
+    abort ["Not implemented"];
     /*
     if [branch] deep equals [[Str] ["compile"]] {
         File:file = [open_file["entry.epslproj"][FILE_READ_MODE]]

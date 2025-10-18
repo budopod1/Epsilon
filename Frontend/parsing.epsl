@@ -95,14 +95,14 @@ Bool#[ParseState:state].require_finished why: [Str:why] {
 
 #[ParseState:state].consume {
     if [state].is_at_end {
-        abort "Cannot consume token when none remain";
+        abort ["Cannot consume token when none remain"];
     };
     state.index++;
 }
 
 #[ParseState:state].unconsume {
     if state.index == 0 {
-        abort "Cannot unconsume token when none have been consumed";
+        abort ["Cannot unconsume token when none have been consumed"];
     };
     state.index--;
 }
@@ -113,21 +113,21 @@ Tokens#[ParseState:state].new_section {
 
 #[ParseState:state].move_token_to[Tokens:dest] {
     if [state].is_at_end {
-        abort "Cannot move token when none remain";
+        abort ["Cannot move token when none remain"];
     };
     [dest].add_from[state.tokens][state.index++];
 }
 
 W#[ParseState:state].cur_id {
     if [state].is_at_end {
-        abort "Cannot get token ID when none remain";
+        abort ["Cannot get token ID when none remain"];
     };
     return state.tokens.ids[state.index];
 }
 
 $TokenData?#[ParseState:state].cur_data {
     if [state].is_at_end {
-        abort "Cannot get token data when none remain";
+        abort ["Cannot get token data when none remain"];
     };
     return state.tokens.data[state.index];
 }
@@ -152,7 +152,7 @@ ParseState#[ParseState:state].last_substate {
     given [state].last_data as GroupTokenData:group {
         return ParseState [group.sub, 0, state.errors];
     } else {
-        abort "Non group tokens cannot have substates";
+        abort ["Non group tokens cannot have substates"];
     };
 }
 

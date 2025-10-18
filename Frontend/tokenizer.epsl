@@ -415,7 +415,7 @@ Str#[$TokenData?:data].read_identifier {
     given data as IdentifierTokenData:identifier_data {
         return identifier_data.val;
     } else {
-        abort "The given token data is not identifier data";
+        abort ["The given token data is not identifier data"];
     };
 }
 
@@ -423,7 +423,7 @@ Str#[$TokenData?:data].read_string {
     given data as StrTokenData:string_data {
         return string_data.val;
     } else {
-        abort "The given token data is not string data";
+        abort ["The given token data is not string data"];
     };
 }
 
@@ -431,7 +431,7 @@ Tokens#[$TokenData?:data].read_group {
     given data as GroupTokenData:group_data {
         return group_data.sub;
     } else {
-        abort "The given token data is not group data";
+        abort ["The given token data is not group data"];
     };
 }
 
@@ -451,7 +451,7 @@ Str#token_id_to_name[W:id] {
     (401) {return "square bracket group";}
     (402) {return "curly bracket group";}
     {
-        abort "Invalid token ID {}" % id;
+        abort ["Invalid token ID {}" % id];
     };
 }
 

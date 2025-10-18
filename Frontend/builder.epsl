@@ -110,7 +110,7 @@ BuildSettings {
 
 [Path]#module location candidates [Import:import] root: [Path:root] {
     if !import.path {
-        abort "Imports must have at least one component";
+        abort ["Imports must have at least one component"];
     };
     [Str]:import_dir = [import.path].slice[0][[import.path].len - 1];
     Str:import_name_base = [import.path].at[-1];
@@ -154,7 +154,7 @@ S0ModconResult#load module [Import:import] from path [Path:path] {
     if [extension] equals [".epsl"] {
         return load epsl file [path];
     } else {
-        abort "Unexpected extension '{}'" % extension;
+        abort ["Unexpected extension '{}'" % extension];
     };
 }
 
@@ -177,7 +177,7 @@ S1ModconResult#produce struct declarations [Module:module] {
     } given modcon as SPECModuleContent:spec_modcon {
         return S1ModconResult [spec_modcon, empty error bundle];
     } else {
-        abort "Invalid S0 modcon";
+        abort ["Invalid S0 modcon"];
     };
 }
 
@@ -211,7 +211,7 @@ S2ModconResult#produce exports [Module:module] {
     } given modcon as SPECModuleContent:spec_modcon {
         return S2ModconResult [spec_modcon, empty error bundle];
     } else {
-        abort "Invalid S1 modcon";
+        abort ["Invalid S1 modcon"];
     };
 }
 
@@ -225,5 +225,5 @@ Module#[Build:build].lookup_module[Import:import] {
             return module;
         };
     };
-    abort "Cannot find module '{}'" % [import].stringify_path;
+    abort ["Cannot find module '{}'" % [import].stringify_path];
 }

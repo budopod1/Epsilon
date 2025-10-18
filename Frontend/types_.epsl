@@ -313,19 +313,19 @@ Field?#parse field state: [ParseState:state] ctx: [Type_Context:ctx] {
 }
 
 Bool#are types_ [$Type_:a] and [$Type_:b] compatible {
-    abort "not implemented";
+    abort ["not implemented"];
 }
 
 $Type_?#common type_ between [$Type_:a] and [$Type_:b] {
-    abort "not implemented";
+    abort ["not implemented"];
 }
 
 Bool#[$Type_:a] is convertible to [$Type_:b] {
-    abort "not implemented";
+    abort ["not implemented"];
 }
 
 Bool#[$Type_:a] is castable to [$Type_:b] {
-    abort "not implemented";
+    abort ["not implemented"];
 }
 
 Bool#[$Type_:a] is equal to [$Type_:b] {
@@ -376,7 +376,7 @@ Bool#[$Type_:a] is equal to [$Type_:b] {
         };
         return false;
     } else {
-        abort "Invalid Type_";
+        abort ["Invalid Type_"];
     };
 }
 
@@ -393,7 +393,7 @@ Bool#[[$Type_]:a] equals [[$Type_]:b] {
 }
 
 Bool#[$Type_:a] is greater than [$Type_:b] {
-    abort "not implemented";
+    abort ["not implemented"];
 }
 
 Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
@@ -404,7 +404,7 @@ Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
     } given criteria as ConvertibleToType_Criteria:convertible_criteria {
         return [type_] is convertible to [convertible_criteria.type_];
     } else {
-        abort "Invalid Type_Criteria";
+        abort ["Invalid Type_Criteria"];
     };
 }
 
@@ -442,7 +442,7 @@ Str#[$Type_:type_].stringify {
     } given type_ as RType_:R_type_ {
         return "R{}" % R_type_.bits;
     } else {
-        abort "Invalid Type_";
+        abort ["Invalid Type_"];
     };
 }
 
@@ -454,6 +454,6 @@ Str#[$Type_Criteria:criteria].englisch {
     } given criteria as ConvertibleToType_Criteria:convertible_criteria {
         return "a type convertible to {}" % [convertible_criteria.type_].stringify;
     } else {
-        abort "Invalid Type_Criteria";
+        abort ["Invalid Type_Criteria"];
     };
 }

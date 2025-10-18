@@ -278,7 +278,7 @@ Str#make symbol from segments [[$TemplateSegment]:segments] {
         } given segment as SymbolTemplateSegment:symbol_segment {
             [result].append[symbol_segment.symbol];
         } else {
-            abort "Invalid TemplateSegment";
+            abort ["Invalid TemplateSegment"];
         };
     };
     return result;
