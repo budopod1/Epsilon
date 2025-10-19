@@ -51,6 +51,7 @@ W#T_CURLY_GROUP {return 402;}
 Tokens {
     W:start_index,
     [W]:ids,
+    [W]:start_indexes,
     [W]:end_indexes,
     [$TokenData?]:data
 }
@@ -258,6 +259,7 @@ TokenizationResult#tokenize [Str:input] {
                 };
                 if !is_comment {
                     [tokens.ids].append[byte];
+                    [tokens.start_indexes].append[token_start];
                     [tokens.end_indexes].append[index];
                     [tokens.data].append[null];
                 };
@@ -266,6 +268,7 @@ TokenizationResult#tokenize [Str:input] {
         (1) {
             if byte == '"' {
                 [tokens.ids].append[T_STR];
+                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index];
                 TokenDataResult:data_result = parse_string_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -288,6 +291,7 @@ TokenizationResult#tokenize [Str:input] {
         (3) {
             if byte == '\'' {
                 [tokens.ids].append[T_BYTE];
+                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index];
                 TokenDataResult:data_result = parse_byte_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -331,6 +335,7 @@ TokenizationResult#tokenize [Str:input] {
             };
             if is_num_end {
                 [tokens.ids].append[T_INT];
+                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index+1];
                 TokenDataResult:data_result = parse_int_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -351,6 +356,7 @@ TokenizationResult#tokenize [Str:input] {
             };
             if is_num_end {
                 [tokens.ids].append[T_FLOAT];
+                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index+1];
                 TokenDataResult:data_result = parse_float_token [so_far];
                 given data_result.error as TokenizationError:error {
@@ -371,6 +377,7 @@ TokenizationResult#tokenize [Str:input] {
             };
             if is_identifier_end {
                 [tokens.ids].append[T_IDENT];
+                [tokens.start_indexes].append[token_start];
                 [tokens.end_indexes].append[index];
                 [tokens.data].append[IdentifierTokenData [so_far]];
             };
@@ -394,19 +401,12 @@ TokenizationResult#tokenize [Str:input] {
 }
 
 Tokens#new_Tokens_at[L:start_index] {
-    return Tokens [start_index, [W] [], [W] [], [$TokenData?] []];
-}
-
-W#[Tokens:tokens].get_start_index[L:i] {
-    if i == 0 {
-        return tokens.start_index;
-    } else {
-        return tokens.end_indexes[i-1] + 1;
-    };
+    return Tokens [start_index, [W] [], [W] [], [W] [], [$TokenData?] []];
 }
 
 #[Tokens:dest].add_from[Tokens:src][L:i] {
     [dest.ids].append[src.ids[i]];
+    [dest.start_indexes].append[src.start_indexes[i]];
     [dest.end_indexes].append[src.end_indexes[i]];
     [dest.data].append[src.data[i]];
 }

@@ -14,13 +14,13 @@ Bool#[ParseState:state].is_at_end {
 
 #[ParseState:state].error_at[W:i] msg: [Str:msg] {
     [state.errors].append[ParseError [
-        msg, [state.tokens].get_start_index[i], state.tokens.end_indexes[i]
+        msg, state.tokens.start_indexes[i], state.tokens.end_indexes[i]
     ]];
 }
 
 #[ParseState:state].error_at[[W]:is] msg: [Str:msg] {
     [state.errors].append[ParseError [
-        msg, [state.tokens].get_start_index[is[0]], state.tokens.end_indexes[[is].at[-1]]
+        msg, state.tokens.start_indexes[is[0]], state.tokens.end_indexes[[is].at[-1]]
     ]];
 }
 
@@ -108,7 +108,7 @@ Bool#[ParseState:state].require_finished why: [Str:why] {
 }
 
 Tokens#[ParseState:state].new_section {
-    return new_Tokens_at[[state.tokens].get_start_index[state.index]];
+    return new_Tokens_at[state.tokens.start_indexes[state.index]];
 }
 
 #[ParseState:state].move_token_to[Tokens:dest] {
@@ -133,7 +133,7 @@ $TokenData?#[ParseState:state].cur_data {
 }
 
 W#[ParseState:state].cur_start {
-    return [state.tokens].get_start_index[state.index];
+    return state.tokens.start_indexes[state.index];
 }
 
 W#[ParseState:state].last_id {
