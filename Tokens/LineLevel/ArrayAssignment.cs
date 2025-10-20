@@ -4,7 +4,7 @@ public class ArrayAssignment : TrinaryAction<IValueToken, IValueToken, IValueTok
     public ArrayAssignment(ArrayAccess access, IValueToken value) : base(access.GetArray(), access.GetIndex(), value) {}
 
     public void Verify() {
-        if (!o2.GetType_().IsConvertibleTo(new Type_("Z"))) {
+        if (!o2.GetType_().GetBaseType_().IsInt()) {
             throw new SyntaxErrorException(
                 $"Arrays can only be indexed with integers, not {o2.GetType_()}", this
             );

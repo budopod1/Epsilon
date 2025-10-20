@@ -2,7 +2,7 @@ Z#main {
     [Z]:arr = [Z] [1, 2, 3];
     Z:result = 0;
     arr = [arr].repeat[3];
-    for (L:i enumerating arr) {
+    for (W:i enumerating arr) {
         result += arr[i] * i;
     };
     return result;

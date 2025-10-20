@@ -100,7 +100,7 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
 
         Struct_:struct_ = [maybe_struct].unwrap;
 
-        for (L:i enumerating struct_.fields) {
+        for (W:i enumerating struct_.fields) {
             Val:a_elem = load [[a].[i]];
             Val:b_elem = load [[b].[i]];
             Val?:exit = null;

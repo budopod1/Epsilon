@@ -26,6 +26,9 @@ public class BaseType_ : IEquatable<BaseType_> {
     public static readonly List<string> IntTypes_ = [
         "W", "Z", "Bool", "Byte"
     ];
+    public static readonly List<string> UnsignedIntTypes_ = [
+        "W", "Bool", "Byte"
+    ];
 
     public static readonly List<string> FloatTypes_ = [
         "R"
@@ -74,6 +77,23 @@ public class BaseType_ : IEquatable<BaseType_> {
     readonly string name;
     readonly int? bits;
 
+    public static BaseType_ CommonOrNull(BaseType_ a, BaseType_ b) {
+        string aName = a.GetName();
+        string bName = b.GetName();
+        string commonName;
+        if (aName == bName) {
+            commonName = aName;
+        } else if (ConvertibleTo[aName].Contains(bName)) {
+            commonName = bName;
+        } else if (ConvertibleTo[bName].Contains(aName)) {
+            commonName = aName;
+        } else {
+            return null;
+        }
+        int bits = Math.Max(a.GetBitsOrDefault(), b.GetBitsOrDefault());
+        return new BaseType_(commonName, bits);
+    }
+
     public BaseType_(string name, int? bits = null) {
         if (BitTypes_.TryGetValue(name, out int value)) {
             bits ??= value;
@@ -94,7 +114,7 @@ public class BaseType_ : IEquatable<BaseType_> {
         return bits;
     }
 
-    public int? GetBitsOrDefault() {
+    public int GetBitsOrDefault() {
         int defaultBits = 0;
         if (SpecialPresetBits.TryGetValue(name, out int preset)) {
             defaultBits = preset;
@@ -127,6 +147,7 @@ public class BaseType_ : IEquatable<BaseType_> {
     }
 
     public bool IsConvertibleTo(BaseType_ other) {
+        if (other.GetBits() < bits && other.IsInt()) return false;
         string oName = other.GetName();
         if (IsAny() || other.IsAny()) return true;
         if (name == oName) return true;
@@ -168,6 +189,10 @@ public class BaseType_ : IEquatable<BaseType_> {
 
     public bool IsInt() {
         return IntTypes_.Contains(name);
+    }
+
+    public bool IsUnsignedInt() {
+        return UnsignedIntTypes_.Contains(name);
     }
 
     public bool IsFloat() {

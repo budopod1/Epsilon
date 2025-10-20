@@ -207,7 +207,7 @@ if (specialized fn [Null_] ["stringify"] [[Val] [outer_val, outer_result]]) {
             [Val]:stringified_lens = [Val] [];
             [Val]:stringified_contents = [Val] [];
 
-            for (L:i enumerating struct_.fields) {
+            for (W:i enumerating struct_.fields) {
                 Val:stringified = make stringify of [load [[val].[i]]];
                 [stringifieds].append[stringified];
                 [stringified_lens].append[load [[stringified].length]];

@@ -7,3 +7,4 @@ TODO:
 * struct bound methods: stringify, compare (maybe), (called on) free, is truthy, casting (maybe)
 * fix scoping rules: don't allow access to variables before their first definition
 * add support for a @private annotation
+* fix: `([R?]*1)[0]` should be null, not 0

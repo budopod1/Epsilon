@@ -1276,7 +1276,8 @@ Please clarify between the functions that take the types:
                     [
                         new TypePatternSegment(typeof(Type_Token)),
                         new TextPatternSegment("*"),
-                        new Type_PatternSegment(new Type_("W"))
+                        new FuncPatternSegment<IValueToken>(
+                            val => val.GetType_().GetBaseType_().IsUnsignedInt())
                     ], new Wrapper2PatternProcessor(
                         new SlotPatternProcessor([0, 2]),
                         typeof(ZeroedArrayCreation)
@@ -1401,10 +1402,12 @@ Please clarify between the functions that take the types:
                     ),
                     new PatternMatcher(
                         [
-                            new Type_PatternSegment(new Type_("Z")),
+                            new FuncPatternSegment<IValueToken>(
+                                val => val.GetType_().GetBaseType_().IsInt()),
                             new TextPatternSegment("~"),
                             new TextPatternSegment("/"),
-                            new Type_PatternSegment(new Type_("Z"))
+                            new FuncPatternSegment<IValueToken>(
+                                val => val.GetType_().GetBaseType_().IsInt())
                         ], new Wrapper2PatternProcessor(
                             new SlotPatternProcessor([0, 3]),
                             typeof(IntDivision)
