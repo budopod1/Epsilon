@@ -14,37 +14,21 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public static bool AreCompatible(Type_ a, Type_ b) {
-        if (a.Matches(b)) return true;
-        BaseType_ abt = a.GetBaseType_();
-        BaseType_ bbt = b.GetBaseType_();
-        if (abt.IsAny() || bbt.IsAny()) return true;
-        if (a.HasGenerics() || b.HasGenerics())
-            return false;
-        bool aToB = abt.IsConvertibleTo(bbt);
-        bool bToA = bbt.IsConvertibleTo(abt);
-        return aToB || bToA;
+        return CommonOrNull(a, b) != null;
     }
 
     public static Type_ CommonOrNull(Type_ a, Type_ b) {
-        if (a.Matches(b)) return a;
-        if (a.HasGenerics() || b.HasGenerics()) return null;
+        if (a.Equals(b)) return a;
+        if (a.IsConvertibleTo(b)) return b;
+        if (b.IsConvertibleTo(a)) return a;
         BaseType_ abt = a.GetBaseType_();
         BaseType_ bbt = b.GetBaseType_();
-        bool aToB = abt.IsConvertibleTo(bbt);
-        bool bToA = bbt.IsConvertibleTo(abt);
-        if (aToB && bToA) {
-            if (bbt.GetBits() > abt.GetBits()) {
-                return b;
-            } else {
-                return a;
-            }
-        } else if (aToB) {
-            return b;
-        } else if (bToA) {
-            return a;
-        } else {
-            return null;
+        if (abt.IsNumber() && bbt.IsNumber()) {
+            BaseType_ baseType_ = BaseType_.CommonOrNull(abt, bbt);
+            if (baseType_ == null) return null;
+            return new Type_(baseType_);
         }
+        return null;
     }
 
     public static Type_ CommonNonNull(IToken token, Type_ a, Type_ b) {
@@ -274,10 +258,7 @@ public class Type_ : IEquatable<Type_> {
     }
 
     public bool Matches(Type_ other) {
-        BaseType_ otherBaseType_ = other.GetBaseType_();
-        if (baseType_.IsAny() || otherBaseType_.IsAny())
-            return true;
-        return baseType_.Equals(other.GetBaseType_()) && GenericsMatching(other);
+        return baseType_.Matches(other.GetBaseType_()) && GenericsMatching(other);
     }
 
     public bool IsGreaterThan(Type_ other) {

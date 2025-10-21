@@ -49,7 +49,7 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
             );
         }
         if (!isInLoop) {
-            if (!type_.IsConvertibleTo(new Type_("Z"))) {
+            if (!type_.GetBaseType_().IsInt()) {
                 throw new SyntaxErrorException(
                     "Non-in for loop variable type must be an integer", this
                 );
@@ -57,33 +57,36 @@ public class For(RawFor source) : IParentToken, ILoop, IVerifier, ISerializableT
         }
         foreach (ForClause clause in clauses) {
             Type_ valType_ = clause.GetValue().GetType_();
-            Type_ requiredType_ = Type_.Any();
             string clauseName = clause.GetName();
-            switch (clauseName) {
-            case "to":
-                if (isEnumeratingLoop) {
+            if (clauseName == "to" && isEnumeratingLoop) {
+                throw new SyntaxErrorException(
+                    "Enumerating for loops cannot have a to clause", clause
+                );
+            }
+            if (clauseName == "to" || clauseName == "from") {
+                if (isInLoop && !valType_.GetBaseType_().IsUnsignedInt()) {
                     throw new SyntaxErrorException(
-                        "Enumerating for loops cannot have a to clause", clause
+                        $"The {clauseName} clause expects an unsigned int, found value of type {valType_}", clause
+                    );
+                } else if (!isInLoop && !valType_.IsConvertibleTo(type_)) {
+                    throw new SyntaxErrorException(
+                        $"The {clauseName} clause expects a value convertible to {type_}, found value of type {valType_}", clause
                     );
                 }
-                requiredType_ = isInLoop ? new Type_("W") : type_;
-                break;
-            case "from":
-                requiredType_ = isInLoop ? new Type_("W") : type_;
-                break;
-            case "step":
-                requiredType_ = new Type_("Z");
-                break;
-            case "in":
-                requiredType_ = type_.ArrayOf();
-                break;
-            case "enumerating":
-                requiredType_ = Type_.Any().ArrayOf();
-                break;
             }
-            if (!valType_.IsConvertibleTo(requiredType_)) {
+            if (clauseName == "step" && !valType_.GetBaseType_().IsInt()) {
                 throw new SyntaxErrorException(
-                    $"The {clauseName} clause expects a value convertible to {requiredType_}, found value of type {valType_}", clause
+                    $"The step clause expects an integer, found value of type {valType_}", clause
+                );
+            }
+            if (clauseName == "in" && !valType_.IsConvertibleTo(type_.ArrayOf())) {
+                throw new SyntaxErrorException(
+                    $"The in clause expects a value convertible to {type_.ArrayOf()}, found value of type {valType_}", clause
+                );
+            }
+            if (clauseName == "enumerating" && valType_.GetBaseType_().GetName() != "Array") {
+                throw new SyntaxErrorException(
+                    $"The enumerating clause expects an array, found value of type {valType_}", clause
                 );
             }
         }

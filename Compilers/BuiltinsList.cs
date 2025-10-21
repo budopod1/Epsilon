@@ -163,8 +163,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([1, 4])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin12", (List<Type_> types_) => {
                 Type_ common = Type_.CommonOrNull(types_[0], types_[1]);
                 if (common == null) {
@@ -201,7 +201,7 @@ public static class BuiltinsList {
                     new TextPatternSegment("|")
                 ], new SlotPatternProcessor([1])
             ), [
-                new("value", new Type_("Z"))
+                new("value", new Type_("Z", 64))
             ], "builtin14", (List<Type_> types_) => new Type_(
                 "W", types_[0].GetBaseType_().GetBits()
             ), FunctionSource.Builtin
@@ -749,7 +749,7 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([1])
             ), [
-                new("a", new Type_("Z"))
+                new("a", new Type_("Z", 64))
             ], "builtin55", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -759,8 +759,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([0, 2])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin56", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -770,8 +770,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([0, 2])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin57", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -781,8 +781,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([0, 2])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin58", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -793,8 +793,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([0, 3])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin59", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -805,8 +805,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([0, 3])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin60", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -818,8 +818,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([1, 4])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin61", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -831,8 +831,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([1, 4])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin62", (List<Type_> types_) => types_[0], FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
@@ -843,8 +843,8 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([1, 3])
             ), [
-                new("a", new Type_("Z")),
-                new("b", new Type_("Z")),
+                new("a", new Type_("Z", 64)),
+                new("b", new Type_("Z", 64)),
             ], "builtin63", (List<Type_> types_) => {
                 Type_ common = Type_.CommonOrNull(types_[0], types_[1]);
                 if (common == null) {

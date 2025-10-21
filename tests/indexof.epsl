@@ -1,6 +1,6 @@
 Z#main {
     [Z]:nums = [Z] [5, 8, 3, 4, 5, 7];
-    return [[nums].index_of[3]].unwrap
+    return (Z)([[nums].index_of[3]].unwrap
         + [[nums].index_of[[Z] [5, 7]]].unwrap
-        - [[nums].index_of[0]].is_null;
+        - [[nums].index_of[0]].is_null);
 }

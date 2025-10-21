@@ -150,7 +150,7 @@ Val#build member access [$JSON:instruction_json] using [[Val]:operands] {
     Val:struct_val = cast [operands[0]] to [struct_type_];
     Struct_:struct_ = [[struct_type_].get_struct].unwrap;
     Str:member_name = [[instruction_json].get["member"]].get_str;
-    for (L:i enumerating struct_.fields) {
+    for (W:i enumerating struct_.fields) {
         if ([struct_.fields[i].name] equals [member_name]) {
             Val:result = load [[struct_val].[i]];
             [result].incr_ref;
@@ -446,7 +446,7 @@ Label:cond_label = new label:;
     Val:struct_val = cast [operands[0]] to [struct_type_];
     Struct_:struct_ = [[struct_type_].get_struct].unwrap;
     Str:member_name = [[instruction_json].get["member"]].get_str;
-    for (L:i enumerating struct_.fields) {
+    for (W:i enumerating struct_.fields) {
         Field:field = struct_.fields[i];
         if ([field.name] equals [member_name]) {
             Val:field_location = [struct_val].[i];

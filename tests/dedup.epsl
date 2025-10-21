@@ -2,7 +2,7 @@ Z#main {
     [Z]:nums = [Z] [1, 6, 8, 6, 6, 6, 5, 3, 3, 6, 9];
     [nums].dedup;
     Z:product = 1;
-    for (L:i enumerating nums) {
+    for (W:i enumerating nums) {
         product *= nums[i] + i;
     };
     return product;

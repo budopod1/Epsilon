@@ -29,7 +29,7 @@ public class OptionalArrayAccess : BinaryOperation<IValueToken, IValueToken>, IV
 
     public void Verify() {
         GetType_();
-        if (!o2.GetType_().IsConvertibleTo(new Type_("Z"))) {
+        if (!o2.GetType_().GetBaseType_().IsInt()) {
             throw new SyntaxErrorException(
                 $"Arrays can only be indexed with integers, not {o2.GetType_()}", this
             );

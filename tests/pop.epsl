@@ -1,5 +1,5 @@
 Z#main {
     [Z]:nums = [Z] [1, 2, 3];
     [nums].pop[1];
-    return (nums[1]) + [nums].pop_end + [nums].len;
+    return (W)((nums[1]) + [nums].pop_end + [nums].len);
 }
