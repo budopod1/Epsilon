@@ -1,9 +1,10 @@
 Z#main {
     [Z]:arr = [Z]*3;
-    if ([arr].capacity != 3) {
+    if ([arr].len != 3) {
         return 0;
     };
     arr[1] = 5;
     arr[2] = -2;
-    return arr[0] + arr[1] + arr[2];
+    Bool:q = [([Z?]*1)[0]].is_null;
+    return arr[0] + arr[1] + arr[2] + q;
 }
