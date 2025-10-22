@@ -51,6 +51,8 @@ def get_libclang_required_flags():
         chosen_headers = None
 
         for headers in linux_headers.glob("llvm-*/include"):
+            if not (headers / "clang-c").is_dir():
+                continue
             llvm_version = int(headers.parts[-2].removeprefix("llvm-"))
             if chosen_version is None or llvm_version > chosen_version:
                 chosen_version = llvm_version

@@ -142,7 +142,7 @@ def load_submodules():
 
 
 def make_project_symlinks():
-    if not is_windows():
+    if not is_windows() and Path(".git/hooks").is_dir():
         make_symlink("scripts/pre-commit.py", ".git/hooks/pre-commit")
     if is_windows():
         make_symlink("executables/Epsilon.exe", "bin/epslc.exe")
