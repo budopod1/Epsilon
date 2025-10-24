@@ -3,7 +3,7 @@ public class Type_Matcher(Func<List<IToken>, Func<Type_>, List<IToken>> type_Wra
     readonly Func<List<IToken>, Func<Type_>, List<IToken>> type_Wrapper = type_Wrapper;
     readonly ListTokenParser<Type_> listParser = new(
         new TextPatternSegment(","), typeof(Type_Token),
-        (IToken generic) => ((Type_Token)generic).GetValue()
+        generic => ((Type_Token)generic).GetValue()
     );
 
     public Match Match(IParentToken tokens) {

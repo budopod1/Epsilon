@@ -6,7 +6,7 @@ public class FunctionRuleMatcher(PatternExtractor<List<IToken>> extractor) : IMa
         int start = -1;
         int end = -1;
         List<IToken> replaced = [];
-        extractor.SetCallback((List<IToken> replaced_, int start_, int end_) => {
+        extractor.SetCallback((replaced_, start_, end_) => {
             replaced = replaced_;
             start = start_;
             end = end_;

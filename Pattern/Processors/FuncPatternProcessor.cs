@@ -7,7 +7,7 @@ public class FuncPatternProcessor<T> : IPatternProcessor<T> {
     }
 
     public FuncPatternProcessor(Func<List<IToken>, T> func) {
-        this.func = (List<IToken> token, int start, int end) => func(token);
+        this.func = (token, start, end) => func(token);
     }
 
     public T Process(List<IToken> tokens, int start, int end) {

@@ -1,5 +1,5 @@
 Z#main {
-    [Z]:arr = [Z] [1, 2, 3];
+    [Z]:arr = [[Z] [1, 2, 3]].freeze;
     arr[2] = 5;
     [arr].unsafe_idx[1] = [1];
     return arr[0] + arr[1] + arr[2];
