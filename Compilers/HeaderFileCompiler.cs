@@ -34,7 +34,7 @@ public class HeaderFileCompiler : IFileCompiler {
     }
 
     public static void Setup() {
-        Builder.RegisterDispatcher((BuildSettings buildSettings, string path, string fileText) => {
+        Builder.RegisterDispatcher((buildSettings, path, fileText) => {
             string idPath = buildSettings.GetIDPath(path);
             return new HeaderFileCompiler(path, idPath, fileText);
         }, [..headerExtensions, ..headerImplementationExtensions]);

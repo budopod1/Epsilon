@@ -5,7 +5,7 @@ public class Continue : IVerifier, IBlockEndOnly {
 
     public void Verify() {
         IToken parent = TokenUtils.GetParentWithCond(
-            this, (IToken token) => token is ILoop
+            this, token => token is ILoop
         );
         if (parent == null) {
             throw new SyntaxErrorException(

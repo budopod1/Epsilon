@@ -8,7 +8,7 @@ public class EPSLFileCompiler : IFileCompiler {
     string IR;
 
     public static void Setup() {
-        Builder.RegisterDispatcher((BuildSettings buildSettings, string path, string fileText) => {
+        Builder.RegisterDispatcher((buildSettings, path, fileText) => {
             string idPath = buildSettings.GetIDPath(path);
             return new EPSLFileCompiler(path, idPath, fileText, buildSettings);
         }, "epsl");
@@ -228,7 +228,7 @@ public class EPSLFileCompiler : IFileCompiler {
                     new UnitsPatternSegment<string>(
                         typeof(Name), keywords.Keys.ToList()
                     )
-                ], new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                ], new FuncPatternProcessor<List<IToken>>(tokens => {
                     string name = ((Name)tokens[0]).GetValue();
                     return [(IToken)Activator.CreateInstance(
                         keywords[name]
@@ -377,8 +377,7 @@ public class EPSLFileCompiler : IFileCompiler {
     }
 
     Program TokenizeBaseTypes_(Program program) {
-        Func<string, UserBaseType_> converter = (string source) =>
-            UserBaseType_.ParseString(source, program.GetStructIDs());
+        Func<string, UserBaseType_> converter = source => UserBaseType_.ParseString(source, program.GetStructIDs());
         return DoStructuredSyntaxMatching(
             program, new UnitSwitcherMatcher<string, UserBaseType_>(
                 typeof(Name), converter, typeof(UserBaseType_Token)
@@ -400,7 +399,7 @@ public class EPSLFileCompiler : IFileCompiler {
                     new UnitsPatternSegment<string>(
                         typeof(Name), constantValues.Keys.ToList()
                     )
-                ], new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                ], new FuncPatternProcessor<List<IToken>>(tokens => {
                     string name = ((Name)tokens[0]).GetValue();
                     return [
                         new ConstantValue(constantValues[name]())
@@ -610,7 +609,7 @@ public class EPSLFileCompiler : IFileCompiler {
         return (Program)PerformMatching(program, new PatternMatcher(
             [
                 new TypePatternSegment(typeof(FunctionHolder))
-            ], new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+            ], new FuncPatternProcessor<List<IToken>>(tokens => {
                 FunctionHolder holder = (FunctionHolder)tokens[0];
                 FuncSignature sig = holder.GetSignature();
                 FuncTemplate template = sig.GetTemplate();
@@ -1079,7 +1078,7 @@ Please clarify between the functions that take the types:
                 new PatternMatcher(
                     [
                         new FuncPatternSegment<Name>(
-                            (Name name) => Scope.ContainsVar(name, name.GetValue())
+                            name => Scope.ContainsVar(name, name.GetValue())
                         ),
                     ], new Wrapper2PatternProcessor(
                         typeof(Variable)
@@ -1096,7 +1095,7 @@ Please clarify between the functions that take the types:
                 new PatternMatcher(
                     [
                         new FuncPatternSegment<RawSquareGroup>(
-                            (RawSquareGroup group) => group.parent is not RawFunctionCall
+                            group => group.parent is not RawFunctionCall
                         )
                     ], new WrapperPatternProcessor(
                         new SplitTokensPatternProcessor(
@@ -1243,7 +1242,7 @@ Please clarify between the functions that take the types:
                     ], 1, -1, [
                         new TypePatternSegment(typeof(CodeBlock))
                     ],
-                    new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                    new FuncPatternProcessor<List<IToken>>(tokens => {
                         return [
                             new Switch((IValueToken)tokens[1], tokens.Skip(2).ToArray())
                         ];
@@ -1257,7 +1256,7 @@ Please clarify between the functions that take the types:
                         new TypePatternSegment(typeof(Group)),
                         new TypePatternSegment(typeof(CodeBlock))
                     ], 1, -1, [],
-                    new FuncPatternProcessor<List<IToken>>((List<IToken> tokens) => {
+                    new FuncPatternProcessor<List<IToken>>(tokens => {
                         return [
                             new Switch((IValueToken)tokens[1], tokens.Skip(2).ToArray())
                         ];

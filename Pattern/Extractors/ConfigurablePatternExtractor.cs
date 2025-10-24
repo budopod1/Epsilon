@@ -8,7 +8,7 @@ public class ConfigurablePatternExtractor<T> : PatternExtractor<T> {
 
     public override string ToString() {
         IEnumerable<string> segmentsStrings = segments.Select(
-            (IPatternSegment segment) => segment.ToString()
+            segment => segment.ToString()
         );
         return Utils.WrapName(
             GetType().Name,
