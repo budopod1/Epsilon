@@ -84,6 +84,19 @@ ConvertibleToType_Criteria {
     $Type_:type_
 }
 
+// TODO: add type criteria for:
+// * number
+// * int
+// * unsigned int
+
+@extends Type_Criteria;
+GenericType_Criteria {
+    Str:name,
+    [$Type_Criteria]:generic_criteria
+}
+
+// note that while this struct is perfectly identical to GenericType_Criteria,
+// they have different sematic purposes
 GenericType_Description {
     Str:name,
     [$Type_Criteria]:generic_criteria
@@ -240,7 +253,7 @@ Perhaps you meant '${}'?" % name % name];
     if expected_generic_count == 0 {
         return GenericType_ [name, [$Type_] []];
     };
-    W:start_index = state.index;
+    L:start_index = state.index;
     if ![state].consume['<'] {
         return null;
     };
@@ -269,7 +282,7 @@ Perhaps you meant '${}'?" % name % name];
     if [generic_nodes].len != expected_generic_count {
         Str:msg = "Expected {} generics, got {} generics"
             % expected_generic_count % [generic_nodes].len;
-        [state].error_at[[W] [start_index, state.index]] msg: [msg];
+        [state].error_at[[L] [start_index, state.index]] msg: [msg];
         return null;
     };
     [$Type_]:generics = [$Type_] [];
@@ -312,7 +325,16 @@ Field?#parse field state: [ParseState:state] ctx: [Type_Context:ctx] {
     return null;
 }
 
-Bool#are types_ [$Type_:a] and [$Type_:b] compatible {
+Struct_?#struct_ of [$Type_:type_] {
+    given type_ as PolyType_:poly_type_ {
+        return poly_type_.struct_;
+    } given type_ as StructType_:struct_type_ {
+        return struct_type_.struct_;
+    };
+    return null;
+}
+
+Bool#types_ [$Type_:a] and [$Type_:b] are compatible {
     abort ["not implemented"];
 }
 
@@ -321,7 +343,67 @@ $Type_?#common type_ between [$Type_:a] and [$Type_:b] {
 }
 
 Bool#[$Type_:a] is convertible to [$Type_:b] {
-    abort ["not implemented"];
+    if [a] is equal to [b] {
+        return true;
+    };
+    Bool:b_is_optional = false;
+    while true {
+        given b as OptionalType_:optional_b {
+            b = optional_b.sub;
+            b_is_optional = true;
+        } else {
+            break;
+        };
+        given a as OptionalType_:optional_a {
+            a = optional_a.sub;
+        };
+    };
+    given a as NeverType_:never_a {
+        return true;
+    }
+    given a as NullType_:null_a {
+        if b_is_optional {
+            return true;
+        };
+    };
+    given b as PolyType_:poly_b {
+        given struct_ of [a] as Struct_:a_struct {
+            if [a_struct] is convertible to [poly_b] {
+                return true;
+            };
+        };
+    }
+    given a as $NumericType_:numeric_a {
+        given b as $NumericType_:numeric_b {
+            if [numeric_a] is convertible to [numeric_b] {
+                return true;
+            };
+        };
+    };
+    return false;
+}
+
+Bool#[$NumericType_:a] is convertible to [$NumericType_:b] {
+    given b as RType_:b_R {
+        return true;
+    };
+    if a.bits > b.bits {
+        return false;
+    };
+    given a as $UnsignedIntegerType_:a_uint {
+        return true;
+    };
+    given a as ZType_:a_Z {
+        given b as ZType_:b_Z {
+            return true;
+        };
+    };
+    return false;
+}
+
+Bool#[Struct_:a] is convertible to [PolyType_:b_type_] {
+    Struct_:b = b_type_.struct_;
+    return a == b || [a] extends [b];
 }
 
 Bool#[$Type_:a] is castable to [$Type_:b] {
@@ -393,7 +475,7 @@ Bool#[[$Type_]:a] equals [[$Type_]:b] {
 }
 
 Bool#[$Type_:a] is greater than [$Type_:b] {
-    abort ["not implemented"];
+    return [b] is convertible to [a] && ![a] is convertible to [b];
 }
 
 Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
@@ -403,6 +485,23 @@ Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
         return [type_] is equal to [specific_criteria.type_];
     } given criteria as ConvertibleToType_Criteria:convertible_criteria {
         return [type_] is convertible to [convertible_criteria.type_];
+    } given criteria as GenericType_Criteria:generic_criteria {
+        given type_ as GenericType_:generic_type_ {
+            if [generic_type_.name] not equals [generic_criteria.name] {
+                return false;
+            };
+            if [generic_type_.generics].len != [generic_criteria.generic_criteria].len {
+                abort ["Generic type_ and generic type_ criteria generic count do not match"];
+            };
+            for L:i enumerating generic_type_.generics {
+                $Type_Criteria:criterion = generic_criteria.generic_criteria[i];
+                if ![generic_type_.generics[i]].satisfies[criterion] {
+                    return false;
+                };
+            };
+            return true;
+        };
+        return false;
     } else {
         abort ["Invalid Type_Criteria"];
     };
@@ -453,6 +552,31 @@ Str#[$Type_Criteria:criteria].englisch {
         return "the type {}" % [specific_criteria.type_].stringify;
     } given criteria as ConvertibleToType_Criteria:convertible_criteria {
         return "a type convertible to {}" % [convertible_criteria.type_].stringify;
+    } given criteria as GenericType_Criteria:generic_criteria {
+        L:generic_count = [generic_criteria.generic_criteria].len;
+        if generic_count == 0 {
+            return "a {}" % generic_criteria.name;
+        };
+        Str:t_str = Str [];
+        Str:criteria_str = Str [];
+        for L:i enumerating generic_criteria.generic_criteria {
+            $Type_Criteria:criterion = generic_criteria.generic_criteria[i];
+            if i {
+                [t_str].extend[", "];
+                if i == generic_count - 1 {
+                    [criteria_str].extend[", and "];
+                } else {
+                    [criteria_str].extend[", "];
+                };
+            };
+            Str:generic_name = "T";
+            if generic_count > 1 {
+                generic_name = "T{}" % (i + 1);
+            };
+            [t_str].extend[generic_name];
+            [criteria_str].extend["{} is {}" % generic_name % [criterion].englisch];
+        };
+        return "a {}<{}> (where {})" % generic_criteria.name % t_str % criteria_str;
     } else {
         abort ["Invalid Type_Criteria"];
     };

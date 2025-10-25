@@ -23,6 +23,26 @@ StructRef {
     Struct_?:struct_
 }
 
+Struct_?#[Struct_:struct_].extendee {
+    given struct_.extendee as StructRef:ref {
+        return [ref.struct_].expect["Unexpected uncooked struct"];
+    };
+    return null;
+}
+
+Bool#[Struct_:a] extends [Struct_:b] {
+    while true {
+        given [a].extendee as Struct_:a_extendee {
+            a = a_extendee;
+        } else {
+            return false;
+        };
+        if a == b {
+            return true;
+        };
+    };
+}
+
 [FileError]#load struct_ extendees [Build:build] {
     [FileError]:errors = [FileError] [];
     for Module:module in build.modules {

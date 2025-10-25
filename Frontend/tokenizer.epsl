@@ -134,7 +134,7 @@ ParsedStrEscape#parse_escape [Str:txt] at [W:index] {
 TokenDataResult#parse_string_token [Str:txt] {
     Str:parsed = Str [];
     Bool:was_backslash = false;
-    L:i = 0;
+    W:i = 0;
     while i < [txt].len {
         Byte:byte = txt[i];
         if was_backslash {
@@ -388,19 +388,19 @@ TokenizationResult#tokenize [Str:input] {
 
     if parse_state == 1 || parse_state == 2 {
         [errors].append[TokenizationError [
-            "Unterminated string literal", [input].len
+            "Unterminated string literal", (W)[input].len
         ]];
     };
     if parse_state == 3 || parse_state == 4 {
         [errors].append[TokenizationError [
-            "Unterminated byte literal", [input].len
+            "Unterminated byte literal", (W)[input].len
         ]];
     };
 
     return TokenizationResult [tokens, errors];
 }
 
-Tokens#new_Tokens_at[L:start_index] {
+Tokens#new_Tokens_at[W:start_index] {
     return Tokens [start_index, [W] [], [W] [], [W] [], [$TokenData?] []];
 }
 
