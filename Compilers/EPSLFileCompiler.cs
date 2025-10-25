@@ -690,8 +690,9 @@ public class EPSLFileCompiler : IFileCompiler {
         );
         List<List<IToken>> rawLines = parser.Parse(block);
         if (rawLines == null) {
+            CodeSpan span = TokenUtils.MergeSpans(block) ?? block.span;
             throw new SyntaxErrorException(
-                "Missing semicolon", TokenUtils.MergeSpans(block) ?? block.span
+                "Missing semicolon", new CodeSpan(span.GetEnd()+1)
             );
         }
         List<IToken> lines = [];
