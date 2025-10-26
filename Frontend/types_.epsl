@@ -190,6 +190,10 @@ $Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
     };
 }
 
+[W]#valid R_ bit counts {
+    return [W] [16, 32, 64, 128];
+}
+
 $Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Context:ctx] {
     switch name
     ("Struct") {
@@ -212,7 +216,7 @@ $Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Co
         if ![name].starts_with[bit_name] {
             continue;
         };
-        W?:bits = null;
+        W?:maybe_bits = null;
         if [name].len > [bit_name].len {
             Str:after = [name].slice_from[[bit_name].len];
             Z?:maybe_val = parse_int[after];
@@ -220,22 +224,28 @@ $Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Co
                 continue;
             };
             Z:val = [maybe_val].unwrap;
-            if val < 0 {
+            if val <= 0 {
                 [state].error_at_previous
-                    msg: ["The bit count cannot be negative"];
-                return null;
+                    msg: ["The bit count must be postive"];
+            } else {
+                maybe_bits = (W)val;
             };
-            bits = (W)val;
         };
         switch bit_name
         ("W") {
-            return WType_ [[bits] || [32]];
+            return WType_ [[maybe_bits] || [32]];
         }
         ("Z") {
-            return ZType_ [[bits] || [32]];
+            return ZType_ [[maybe_bits] || [32]];
         }
         ("R") {
-            return RType_ [[bits] || [64]];
+            W:bits = [maybe_bits] || [64];
+            if ![valid R_ bit counts].index_of[bits] {
+                [state].error_at_previous
+                    msg: ["R cannot have {} bits" % bits];
+                bits = 64;
+            };
+            return RType_ [bits];
         }
         {abort;};
     };

@@ -125,8 +125,8 @@ Bool#[[$ErrorBundle]:bundles].any {
     for TokenizationError:error in bundle.errors {
         report file text error bundle: [bundle]
             msg: [error.message]
-            from: [bundle.tokens.start_indexes[error.index]]
-            to: [bundle.tokens.end_indexes[error.index]];
+            from: [error.index]
+            to: [error.index];
     };
 }
 

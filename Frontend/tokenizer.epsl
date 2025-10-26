@@ -259,7 +259,7 @@ TokenizationResult#tokenize [Str:input] {
                 };
                 if !is_comment {
                     [tokens.ids].append[byte];
-                    [tokens.start_indexes].append[token_start];
+                    [tokens.start_indexes].append[index];
                     [tokens.end_indexes].append[index];
                     [tokens.data].append[null];
                 };
