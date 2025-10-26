@@ -18,6 +18,9 @@ StructType_ {
 }
 
 @extends Type_;
+AnyStructType_ {}
+
+@extends Type_;
 NullType_ {}
 
 @extends Type_;
@@ -189,6 +192,9 @@ $Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
 
 $Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Context:ctx] {
     switch name
+    ("Struct") {
+        return AnyStructType_ [];
+    }
     ("Null") {
         return NullType_ [];
     }
@@ -351,10 +357,15 @@ Struct_?#struct_ of [$Type_:type_] {
 }
 
 Bool#types_ [$Type_:a] and [$Type_:b] are compatible {
-    abort ["not implemented"];
+    return !!common type_ between [a] and [b];
 }
 
 $Type_?#common type_ between [$Type_:a] and [$Type_:b] {
+    if [b] is convertible to [a] {
+        return a;
+    } elif [a] is convertible to [b] {
+        return b;
+    };
     abort ["not implemented"];
 }
 
@@ -362,11 +373,11 @@ Bool#[$Type_:a] is convertible to [$Type_:b] {
     if [a] is equal to [b] {
         return true;
     };
-    Bool:b_is_optional = false;
+    Bool:b_was_optional = false;
     while true {
         given b as OptionalType_:optional_b {
             b = optional_b.sub;
-            b_is_optional = true;
+            b_was_optional = true;
         } else {
             break;
         };
@@ -376,19 +387,17 @@ Bool#[$Type_:a] is convertible to [$Type_:b] {
     };
     given a as NeverType_:never_a {
         return true;
-    }
+    };
     given a as NullType_:null_a {
-        if b_is_optional {
+        if b_was_optional {
             return true;
         };
     };
-    given b as PolyType_:poly_b {
-        given struct_ of [a] as Struct_:a_struct {
-            if [a_struct] is convertible to [poly_b] {
-                return true;
-            };
+    given struct_ of [a] as Struct_:a_struct {
+        if [a_struct] is convertible to [b] {
+            return true;
         };
-    }
+    };
     given a as $NumericType_:numeric_a {
         given b as $NumericType_:numeric_b {
             if [numeric_a] is convertible to [numeric_b] {
@@ -417,13 +426,66 @@ Bool#[$NumericType_:a] is convertible to [$NumericType_:b] {
     return false;
 }
 
-Bool#[Struct_:a] is convertible to [PolyType_:b_type_] {
-    Struct_:b = b_type_.struct_;
-    return a == b || [a] extends [b];
+Bool#[Struct_:a_struct] is convertible to [$Type_:b_type_] {
+    given b_type_ as AnyStructType_:b_any_struct {
+        return !a_struct.is_value;
+    } given b_type_ as PolyType_:poly_b {
+        Struct_:b_struct = poly_b.struct_;
+        return a_struct == b_struct || [a_struct] extends [b_struct];
+    };
+    return false;
 }
 
 Bool#[$Type_:a] is castable to [$Type_:b] {
-    abort ["not implemented"];
+    if [a] is equal to [b] {
+        return true;
+    };
+    Bool:b_was_optional = false;
+    while true {
+        given b as OptionalType_:optional_b {
+            b = optional_b.sub;
+            b_was_optional = true;
+        } else {
+            break;
+        };
+        given a as OptionalType_:optional_a {
+            a = optional_a.sub;
+        };
+    };
+    given a as NeverType_:never_a {
+        return true;
+    };
+    given a as NullType_:null_a {
+        if b_was_optional {
+            return true;
+        };
+    };
+    given struct_ of [a] as Struct_:a_struct {
+        if [a_struct] is convertible to [b] {
+            return true;
+        };
+    };
+    given struct_ of [b] as Struct_:b_struct {
+        if b_was_optional && [a] is castable to optional [b_struct] {
+            return true;
+        };
+    };
+    given a as $NumericType_:numeric_a {
+        given b as $NumericType_:numeric_b {
+            return true;
+        };
+    };
+    return false;
+}
+
+Bool#[$Type_:a_type_] is castable to optional [Struct_:b_struct] {
+    given a_type_ as PolyType_:poly_a {
+        Struct_:a_struct = poly_a.struct_;
+        return [b_struct] extends [a_struct];
+    } given a_type_ as AnyStructType_:any_struct_a {
+        return !b_struct.is_value;
+    };
+    return false;
 }
 
 Bool#[$Type_:a] is equal to [$Type_:b] {
@@ -432,6 +494,8 @@ Bool#[$Type_:a] is equal to [$Type_:b] {
             return struct_a.struct_ == struct_b.struct_;
         };
         return false;
+    } given a as AnyStructType_:any_struct_a {
+        return !!(AnyStructType_?)b;
     } given a as NullType_:null_a {
         return !!(NullType_?)b;
     } given a as NeverType_:never_a {
@@ -532,6 +596,8 @@ Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
 Str#[$Type_:type_].stringify {
     given type_ as StructType_:struct_type_ {
         return struct_type_.struct_.name;
+    } given type_ as AnyStructType_:any_struct_type_ {
+        return "Struct";
     } given type_ as NullType_:null_type_ {
         return "Null";
     } given type_ as NeverType_:never_type_ {
