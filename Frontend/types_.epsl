@@ -84,10 +84,14 @@ ConvertibleToType_Criteria {
     $Type_:type_
 }
 
-// TODO: add type criteria for:
-// * number
-// * int
-// * unsigned int
+@extends Type_Criteria;
+NumericType_Criteria {}
+
+@extends Type_Criteria;
+IntType_Criteria {}
+
+@extends Type_Criteria;
+UnsignedIntType_Criteria {}
 
 @extends Type_Criteria;
 GenericType_Criteria {
@@ -325,6 +329,18 @@ Field?#parse field state: [ParseState:state] ctx: [Type_Context:ctx] {
     return null;
 }
 
+Bool#[$Type_:type_].is_numeric {
+    return !!($NumericType_?)type_;
+}
+
+Bool#[$Type_:type_].is_int {
+    return !!($IntegerType_?)type_;
+}
+
+Bool#[$Type_:type_].is_unsigned_int {
+    return !!($UnsignedIntegerType_?)type_;
+}
+
 Struct_?#struct_ of [$Type_:type_] {
     given type_ as PolyType_:poly_type_ {
         return poly_type_.struct_;
@@ -485,6 +501,12 @@ Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
         return [type_] is equal to [specific_criteria.type_];
     } given criteria as ConvertibleToType_Criteria:convertible_criteria {
         return [type_] is convertible to [convertible_criteria.type_];
+    } given criteria as NumericType_Criteria:numeric_criteria {
+        return [type_].is_numeric;
+    } given criteria as IntType_Criteria:int_criteria {
+        return [type_].is_int;
+    } given criteria as UnsignedIntType_Criteria:unsigned_criteria {
+        return [type_].is_unsigned_int;
     } given criteria as GenericType_Criteria:generic_criteria {
         given type_ as GenericType_:generic_type_ {
             if [generic_type_.name] not equals [generic_criteria.name] {
@@ -552,6 +574,12 @@ Str#[$Type_Criteria:criteria].englisch {
         return "the type {}" % [specific_criteria.type_].stringify;
     } given criteria as ConvertibleToType_Criteria:convertible_criteria {
         return "a type convertible to {}" % [convertible_criteria.type_].stringify;
+    } given criteria as NumericType_Criteria:numeric_criteria {
+        return "a numeric type";
+    } given criteria as IntType_Criteria:int_criteria {
+        return "an integer type";
+    } given criteria as UnsignedIntType_Criteria:unsigned_criteria {
+        return "an unsigned integer type";
     } given criteria as GenericType_Criteria:generic_criteria {
         L:generic_count = [generic_criteria.generic_criteria].len;
         if generic_count == 0 {
