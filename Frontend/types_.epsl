@@ -371,12 +371,97 @@ Bool#types_ [$Type_:a] and [$Type_:b] are compatible {
 }
 
 $Type_?#common type_ between [$Type_:a] and [$Type_:b] {
+    given a as $NumericType_:a {
+        given b as $NumericType_:b {
+            return common type_ between [a] and [b];
+        };
+    };
+
     if [b] is convertible to [a] {
         return a;
     } elif [a] is convertible to [b] {
         return b;
     };
-    abort ["not implemented"];
+
+    given a as NullType_:null_a {
+        // we know b isn't Optional because of the convertible checks
+        return OptionalType_ [b];
+    };
+    given b as NullType_:null_b {
+        // we know a isn't Optional because of the convertible checks
+        return OptionalType_ [a];
+    };
+
+    given struct_ of [a] as Struct_:struct_a {
+        given struct_ of [b] as Struct_:struct_b {
+            given common struct_ between [struct_a] and [struct_b]
+            as Struct_:common_struct {
+                return PolyType_ [common_struct];
+            } else {
+                return null;
+            };
+        };
+    };
+
+    if !!(OptionalType_?)a || !!(OptionalType_?)b {
+        given a as OptionalType_:optional_a {
+            a = optional_a.sub;
+        };
+        given b as OptionalType_:optional_b {
+            b = optional_b.sub;
+        };
+        given common type_ between [a] and [b] as $Type_:common_sub {
+            return OptionalType_ [common_sub];
+        };
+    };
+
+    return null;
+}
+
+$NumericType_#common type_ between [$NumericType_:a] and [$NumericType_:b] {
+    W:bits = a.bits;
+    if b.bits > bits {
+        bits = b.bits;
+    };
+
+    if !!(RType_?)a || !!(RType_?)b {
+        [W]:valid_bit_counts = valid R_ bit counts;
+        W:chosen_bit_count = [valid_bit_counts].at[-1];
+        for W:bit_count in valid_bit_counts {
+            if bit_count >= bits {
+                chosen_bit_count = bit_count;
+                break;
+            };
+        };
+        return RType_ [chosen_bit_count];
+    };
+
+    given a as ZType_:a_Z {
+        return ZType_ [bits];
+    };
+    given b as ZType_:b_Z {
+        return ZType_ [bits];
+    };
+
+    return WType_ [bits];
+}
+
+Struct_?#common struct_ between [Struct_:a] and [Struct_:b] {
+    [Struct_]:a_extendees = [a].extendee_list;
+    [Struct_]:b_extendees = [b].extendee_list;
+    L:min_len = [a_extendees].len;
+    if [b_extendees].len < min_len {
+        min_len = [b_extendees].len;
+    };
+    Struct_?:greatest_common = null;
+    for L:i from 1 to min_len+1 {
+        if [a_extendees].at[-i] == [b_extendees].at[-i] {
+            greatest_common = [a_extendees].at[-i];
+        } else {
+            break;
+        };
+    };
+    return greatest_common;
 }
 
 Bool#[$Type_:a] is convertible to [$Type_:b] {

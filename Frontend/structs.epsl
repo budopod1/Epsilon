@@ -30,6 +30,18 @@ Struct_?#[Struct_:struct_].extendee {
     return null;
 }
 
+[Struct_]#[Struct_:struct_].extendee_list {
+    [Struct_]:structs = [Struct_] [];
+    while true {
+        given [struct_].extendee as Struct_:extendee {
+            [structs].append[extendee];
+            struct_ = extendee;
+        } else {
+            return structs;
+        };
+    };
+}
+
 Bool#[Struct_:a] extends [Struct_:b] {
     while true {
         given [a].extendee as Struct_:a_extendee {
