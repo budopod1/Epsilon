@@ -87,25 +87,47 @@ $Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
 
     // STEP: check for prefix operators
     } elif [state].last_id == '-' {
-        given parse expr term [state] ctx: [ctx] as $Expression:operand {
+        given parse expr term inner [state] ctx: [ctx] as $Expression:operand {
+            Str:template = "'-' expects a number, found {}";
+            if !expect [operand] satisfies [NumericType_Criteria []] state: [state] template: [template] {
+                return null;
+            };
             $Type_:type_ = operand.type_;
             given type_ as $UnsignedIntegerType_:uint_type_ {
                 type_ = ZType_ [uint_type_.bits];
             };
+            given operand as IntConstantExpression:int_const {
+                int_const.type_ = type_;
+                int_const.val *= -1;
+                int_const.start_index = start;
+                return int_const;
+            } given operand as FloatConstantExpression:float_const {
+                float_const.val *= -1;
+                float_const.start_index = start;
+                return float_const;
+            };
             return NegateExpression [
                 start, [state].last_end, type_, operand
             ];
+        } else {
+            return null;
         };
     } elif [state].last_id == '!' {
-        given parse expr term [state] ctx: [ctx] as $Expression:operand {
+        given parse expr term inner [state] ctx: [ctx] as $Expression:operand {
             return NotExpression [
                 start, [state].last_end, BoolType_ [1], operand
             ];
+        } else {
+            return null;
         };
 
     // STEP: check for parenthesis groups
     } elif [state].last_id == T_PAREN_GROUP {
-        return parse expr [[state].last_substate] ctx: [ctx];
+        given parse expr [[state].last_substate] ctx: [ctx] as $Expression:inner {
+            return ParenExpression [start, [state].last_end, inner.type_, inner];
+        } else {
+            return null;
+        };
 
     // STEP: check for exprs starting with an identifier
     } elif [state].last_id == T_IDENT {
@@ -165,13 +187,14 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
 
 $Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [ExprContext:ctx] {
     if [state].is_at_end {
-        return null;
+        return base;
     };
 
     if [state].cur_id == '.' {
         [state].consume;
 
         if ![state].consume[T_IDENT] name: ["member name"] {
+            [state].unconsume;
             return null;
         };
 
@@ -180,7 +203,7 @@ $Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [
         abort ["member access not yet implemented"];
     };
 
-    return null;
+    return base;
 }
 
 $Expression?#parse expr term [ParseState:state] ctx: [ExprContext:ctx] {
@@ -188,9 +211,12 @@ $Expression?#parse expr term [ParseState:state] ctx: [ExprContext:ctx] {
         while true {
             given parse expr postfix [state] on: [expr] ctx: [ctx]
             as $Expression:postfix_expr {
+                if expr == postfix_expr {
+                    return expr;
+                };
                 expr = postfix_expr;
             } else {
-                return expr;
+                return null;
             };
         };
     } else {
@@ -413,10 +439,13 @@ Block?#parse block inside [ParseState:state] ctx: [ExprContext:ctx] {
             break;
         } elif [state].cur_id == ';' {
             [state].consume;
-            maybe_type_ = null;
         } else {
             [state].error_at_current msg: ["Expected ';' to terminate statement"];
+            while ![state].is_at_end && [state].last_id != ';' {
+                [state].consume;
+            };
         };
+        maybe_type_ = null;
     };
     if !maybe_type_ {
         NullType_:type_ = NullType_ [];

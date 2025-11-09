@@ -326,7 +326,6 @@ TokenizationResult#tokenize [Str:input] {
             if [byte].is_digit {
                 [so_far].append[byte];
             } elif byte == '.' {
-                index--;
                 parse_state = 8;
             } else {
                 is_num_end = true;

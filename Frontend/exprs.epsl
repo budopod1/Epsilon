@@ -55,6 +55,11 @@ NotExpression {
     $Expression:o
 }
 
+@extends Expression;
+ParenExpression {
+    $Expression:inner
+}
+
 @super;
 @extends Expression;
 BiOperationExpression {
