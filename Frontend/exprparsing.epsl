@@ -46,10 +46,10 @@ $Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
         return null;
     };
 
-    // STEP: check for function calls
-
     W:start = [state].cur_start;
     [state].consume;
+
+    // STEP: check for function calls
 
     // STEP: check for constants
     if [state].last_id == T_INT {
@@ -280,10 +280,9 @@ $Type_?#type_ for_ [BiOperator:operator] on [$Expression:a] and [$Expression:b] 
         if !expect numeric [a] and [b] op: [operator] state: [state]  {
             return null;
         };
-        W:bits = [($NumericType_?)at].unwrap.bits;
-        W:bbits = [($NumericType_?)bt].unwrap.bits;
-        if bbits > bits {
-            bits = bbits;
+        W:bits = 64;
+        given at as RType_:at_R {
+            bits = at_R.bits;
         };
         return RType_ [bits];
     } elif [spelling] equals ["~/"] {
@@ -399,11 +398,11 @@ Block?#parse block inside [ParseState:state] ctx: [ExprContext:ctx] {
     W:start = [state].cur_start;
     ExprContext:block_ctx = [ctx].branch;
     [$Expression]:lines = [$Expression] [];
-    $Type_:type_ = NullType_ [];
+    $Type_?:maybe_type_ = null;
     while ![state].is_at_end {
         given parse expr [state] ctx: [block_ctx] as $Expression:expr {
             [lines].append[expr];
-            type_ = expr.type_;
+            maybe_type_ = expr.type_;
         } else {
             // error recovery
             while ![state].is_at_end && [state].cur_id != ';' {
@@ -414,10 +413,16 @@ Block?#parse block inside [ParseState:state] ctx: [ExprContext:ctx] {
             break;
         } elif [state].cur_id == ';' {
             [state].consume;
-            type_ = NullType_ [];
+            maybe_type_ = null;
         } else {
             [state].error_at_current msg: ["Expected ';' to terminate statement"];
         };
     };
-    return Block [start, [state].last_end, type_, lines];
+    if !maybe_type_ {
+        NullType_:type_ = NullType_ [];
+        W:pos = [state].last_end + 1;
+        [lines].append[NullExpression [pos, pos, type_]];
+        maybe_type_ = type_;
+    };
+    return Block [start, [state].last_end, [maybe_type_].unwrap, lines];
 }

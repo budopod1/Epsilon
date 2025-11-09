@@ -137,7 +137,7 @@ $TokenData?#[ParseState:state].cur_data {
 }
 
 W#[ParseState:state].cur_start {
-    return state.tokens.start_indexes[state.index];
+    return [state.tokens.start_indexes[state.index]?] || [state.tokens.start_index];
 }
 
 W#[ParseState:state].last_id {
@@ -149,11 +149,11 @@ $TokenData?#[ParseState:state].last_data {
 }
 
 W#[ParseState:state].last_start {
-    return state.tokens.start_indexes[state.index - 1];
+    return [state.tokens.start_indexes[state.index - 1]?] || [state.tokens.start_index];
 }
 
 W#[ParseState:state].last_end {
-    return state.tokens.end_indexes[state.index - 1];
+    return [state.tokens.end_indexes[state.index - 1]?] || [state.tokens.start_index];
 }
 
 ParseState#[ParseState:state].last_substate {

@@ -55,6 +55,11 @@ S3EPSLFunction?#parse function [S2EPSLFunction:func] ctx: [ModuleContext:mod_ctx
 
     ParseState:state = ParseState [func.body, 0, errors];
     given parse block inside [state] ctx: [ctx] as Block:block {
+        if ![block.type_] is convertible to [func.decl.ret_type_] {
+            Str:msg = "Block result type {} not convertible to function return type {}"
+                % [block.type_].stringify % [func.decl.ret_type_].stringify;
+            [state].error_at[[block.lines].at[-1]] msg: [msg];
+        };
         return S3EPSLFunction [func.start_index, func.end_index,
             func.is_public, func.decl, block];
     } else {
