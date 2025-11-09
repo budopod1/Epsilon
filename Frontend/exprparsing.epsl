@@ -201,6 +201,24 @@ $Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [
         Str:member_name = [[state].last_data].read_identifier;
 
         abort ["member access not yet implemented"];
+
+    } elif [state].cur_id == T_IDENT
+        && [[[state].cur_data].read_identifier] equals ["as"] {
+        [state].consume;
+
+        given parse type_ state: [state] ctx: [ctx.mod_ctx.type__ctx]
+        as $Type_:to_type_ {
+            if ![base.type_] is castable to [to_type_] {
+                Str:msg = "Cannot cast value of type {} to type {}"
+                    % [base.type_].stringify % [to_type_].stringify;
+                [state].error_at[base] msg: [msg];
+            };
+            return CastExpression [
+                base.start_index, [state].last_end, to_type_, base
+            ];
+        } else {
+            return null;
+        };
     };
 
     return base;
