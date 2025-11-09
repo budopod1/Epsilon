@@ -1,0 +1,423 @@
+%import epslfiles;
+%import tokenizer;
+%import epslctx;
+%import parsing;
+%import types_;
+%import exprs;
+
+BiOperator {
+    [Byte]:spelling,
+}
+
+BiOperatorLevel {
+    [BiOperator]:operators,
+}
+
+%global [BiOperatorLevel]?:bioperator_levels_cache;
+
+[BiOperatorLevel]#get bioperator levels {
+    given bioperator_levels_cache as [BiOperatorLevel]:bioperator_levels {
+        return bioperator_levels;
+    };
+    [BiOperatorLevel]:bioperator_levels = [BiOperatorLevel] [
+        BiOperatorLevel [[BiOperator] [
+            BiOperator ["&&"], BiOperator ["||"]
+        ]],
+        BiOperatorLevel [[BiOperator] [
+            BiOperator [">"], BiOperator ["<"], BiOperator [">="],
+            BiOperator ["<="], BiOperator ["=="], BiOperator ["!="]
+        ]],
+        BiOperatorLevel [[BiOperator] [
+            BiOperator ["+"], BiOperator ["-"]
+        ]],
+        BiOperatorLevel [[BiOperator] [
+            BiOperator ["*"], BiOperator ["/"], BiOperator ["~/"], BiOperator ["%"]
+        ]],
+        BiOperatorLevel [[BiOperator] [
+            BiOperator ["**"]
+        ]],
+    ];
+    bioperator_levels_cache = bioperator_levels;
+    return bioperator_levels;
+}
+
+$Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
+    if ![state].require_more why: ["Expected expression"] {
+        return null;
+    };
+
+    // STEP: check for function calls
+
+    W:start = [state].cur_start;
+    [state].consume;
+
+    // STEP: check for constants
+    if [state].last_id == T_INT {
+        Z64:val = [(IntTokenData?)[state].last_data].unwrap.val;
+        $NumericType_:type_ = ZType_ [64];
+        if val > 0 {
+            if val > (Z64)~[(W32)0] {
+                type_ = WType_ [64];
+            } else {
+                type_ = WType_ [32];
+            };
+        } else {
+            if val > -[(Z64)1] << [31] {
+                type_ = ZType_ [32];
+            };
+        };
+        return IntConstantExpression [
+            start, [state].last_end, type_, val
+        ];
+    } elif [state].last_id == T_FLOAT {
+        R:val = [(FloatTokenData?)[state].last_data].unwrap.val;
+        return FloatConstantExpression [
+            start, [state].last_end, RType_ [64], val
+        ];
+    } elif [state].last_id == T_BYTE {
+        Byte:val = [(ByteTokenData?)[state].last_data].unwrap.val;
+        return ByteConstantExpression [
+            start, [state].last_end, ByteType_ [8], val
+        ];
+    } elif [state].last_id == T_STR {
+        Str:val = [(StrTokenData?)[state].last_data].unwrap.val;
+        return StrConstantExpression [
+            start, [state].last_end, Str_, val
+        ];
+
+    // STEP: check for prefix operators
+    } elif [state].last_id == '-' {
+        given parse expr term [state] ctx: [ctx] as $Expression:operand {
+            $Type_:type_ = operand.type_;
+            given type_ as $UnsignedIntegerType_:uint_type_ {
+                type_ = ZType_ [uint_type_.bits];
+            };
+            return NegateExpression [
+                start, [state].last_end, type_, operand
+            ];
+        };
+    } elif [state].last_id == '!' {
+        given parse expr term [state] ctx: [ctx] as $Expression:operand {
+            return NotExpression [
+                start, [state].last_end, BoolType_ [1], operand
+            ];
+        };
+
+    // STEP: check for parenthesis groups
+    } elif [state].last_id == T_PAREN_GROUP {
+        return parse expr [[state].last_substate] ctx: [ctx];
+
+    // STEP: check for exprs starting with an identifier
+    } elif [state].last_id == T_IDENT {
+        Str:ident = [[state].last_data].read_identifier;
+        return parse ident [ident] expr [state] ctx: [ctx];
+    };
+
+    [state].unconsume;
+    [state].error_about_current msg: ["Expected expression"];
+    return null;
+}
+
+$Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:ctx] {
+    W:start = [state].last_start;
+    switch ident
+    ("null") {
+        return NullExpression [
+            start, [state].last_end, NullType_ []
+        ];
+    }
+    ("return") {
+        $Expression?:returnee = null;
+        if ![state].is_at_end && [state].cur_id != ';' {
+            returnee = parse expr [state] ctx: [ctx];
+        };
+        return ReturnExpression [
+            start, [state].last_end, NeverType_ [], returnee
+        ];
+    }
+    ("break") {
+        $Expression?:result = null;
+        if ![state].is_at_end && [state].cur_id != ';' {
+            result = parse expr [state] ctx: [ctx];
+        };
+        return BreakExpression [
+            start, [state].last_end, NeverType_ [], result
+        ];
+    }
+    ("continue") {
+        return ContinueExpression [
+            start, [state].last_end, NeverType_ []
+        ];
+    }
+    // TODO: add other keywords here
+    {
+        given lookup variable [ident] in [ctx.scope_chain] as ScopeVar:var {
+            return VariableExpression [
+                start, [state].last_end, var.type_, var
+            ];
+        } else {
+            [state].error_at_previous
+                msg: ["The name '{}' cannot be found here" % ident];
+            return null;
+        };
+    };
+}
+
+$Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [ExprContext:ctx] {
+    if [state].is_at_end {
+        return null;
+    };
+
+    if [state].cur_id == '.' {
+        [state].consume;
+
+        if ![state].consume[T_IDENT] name: ["member name"] {
+            return null;
+        };
+
+        Str:member_name = [[state].last_data].read_identifier;
+
+        abort ["member access not yet implemented"];
+    };
+
+    return null;
+}
+
+$Expression?#parse expr term [ParseState:state] ctx: [ExprContext:ctx] {
+    given parse expr term inner [state] ctx: [ctx] as $Expression:expr {
+        while true {
+            given parse expr postfix [state] on: [expr] ctx: [ctx]
+            as $Expression:postfix_expr {
+                expr = postfix_expr;
+            } else {
+                return expr;
+            };
+        };
+    } else {
+        return null;
+    };
+}
+
+BiOperator?#match [BiOperatorLevel:level] against [ParseState:state] {
+    if [state].is_at_end {
+        return null;
+    };
+    L:index = state.index;
+    for BiOperator:operator in level.operators {
+        Bool:failed = false;
+        for Byte:byte in operator.spelling {
+            if [state].cur_id != byte {
+                failed = true;
+                break;
+            };
+            [state].consume;
+        };
+        if !failed {
+            return operator;
+        };
+        state.index = index;
+    };
+    return null;
+}
+
+Bool#expect [$Expression:expr] satisfies [$Type_Criteria:criteria] state: [ParseState:state] template: [Str:template] {
+    if [expr.type_].satisfies[criteria] {
+        return true;
+    };
+    [state].error_at[expr] msg: [template % [expr.type_].stringify];
+    return false;
+}
+
+Bool#expect numeric [$Expression:a] and [$Expression:b] op: [BiOperator:operator] state: [ParseState:state] {
+    Str:template = "'{}' expects a number, found {}" % operator.spelling % "{}";
+    $Type_Criteria:criteria = NumericType_Criteria [];
+    return
+        expect [a] satisfies [criteria] state: [state] template: [template]
+        && expect [b] satisfies [criteria] state: [state] template: [template];
+}
+
+Bool#expect comparable [$Expression:a] and [$Expression:b] state: [ParseState:state] {
+    if !types_ [a.type_] and [b.type_] are compatible {
+        Str:msg = "Cannot compare types {} and {}"
+            % [a.type_].stringify % [b.type_].stringify;
+        [state].error_at [[$Node] [a, b]] msg: [msg];
+        return false;
+    };
+    return true;
+}
+
+$Type_?#type_ for_ [BiOperator:operator] on [$Expression:a] and [$Expression:b] state: [ParseState:state] {
+    W:s = a.start_index;
+    W:e = b.end_index;
+    $Type_:at = a.type_;
+    $Type_:bt = b.type_;
+
+    Str:spelling = operator.spelling;
+    if ([spelling] equals ["&&"]) || ([spelling] equals ["||"]) {
+        return BoolType_ [1];
+    } elif ([spelling] equals [">"]) || ([spelling] equals ["<"])
+        || ([spelling] equals [">="]) || ([spelling] equals ["<="]) {
+        if !expect numeric [a] and [b] op: [operator] state: [state]  {
+            return null;
+        };
+        if !expect comparable [a] and [b] state: [state] {
+            return null;
+        };
+        return BoolType_ [1];
+    } elif ([spelling] equals ["=="]) || ([spelling] equals ["!="]) {
+        if !expect comparable [a] and [b] state: [state] {
+            return null;
+        };
+        return BoolType_ [1];
+    } elif ([spelling] equals ["+"]) || ([spelling] equals ["-"])
+        || ([spelling] equals ["*"]) || ([spelling] equals ["%"]) {
+        if !expect numeric [a] and [b] op: [operator] state: [state]  {
+            return null;
+        };
+        return [common type_ between [at] and [bt]]
+            .expect["Numeric types_ should have a common type_"];
+    } elif [spelling] equals ["/"] {
+        if !expect numeric [a] and [b] op: [operator] state: [state]  {
+            return null;
+        };
+        W:bits = [($NumericType_?)at].unwrap.bits;
+        W:bbits = [($NumericType_?)bt].unwrap.bits;
+        if bbits > bits {
+            bits = bbits;
+        };
+        return RType_ [bits];
+    } elif [spelling] equals ["~/"] {
+        Str:template = "'~/' expects an integer, found {}";
+        $Type_Criteria:criteria = IntType_Criteria [];
+        if !expect [a] satisfies [criteria] state: [state] template: [template]
+            && expect [b] satisfies [criteria] state: [state] template: [template] {
+            return null;
+        };
+        return [common type_ between [at] and [bt]]
+            .expect["Numeric types_ should have a common type_"];
+    } elif [spelling] equals ["**"] {
+        if !expect numeric [a] and [b] op: [operator] state: [state]  {
+            return null;
+        };
+        $Type_:t = RType_ [[($NumericType_?)at].unwrap.bits];
+        given bt as UnsignedIntegerType_:uint_type_ {
+            t = at;
+        };
+        return t;
+    } else {
+        abort ["Operator {} not implemented" % operator.spelling];
+    };
+}
+
+$BiOperationExpression?#[BiOperator:operator] on [$Expression:a] and [$Expression:b] state: [ParseState:state] {
+    W:s = a.start_index;
+    W:e = b.end_index;
+    $Type_?:maybe_t = type_ for_ [operator] on [a] and [b] state: [state];
+    if !maybe_t {
+        return null;
+    };
+    $Type_:t = [maybe_t].unwrap;
+    switch operator.spelling
+    ("&&") {return AndExpression [s, e, t, a, b];}
+    ("||") {return OrExpression [s, e, t, a, b];}
+    (">") {return GreaterExpression [s, e, t, a, b];}
+    ("<") {return LessExpression [s, e, t, a, b];}
+    (">=") {return GreaterEqualExpression [s, e, t, a, b];}
+    ("<=") {return LessEqualExpression [s, e, t, a, b];}
+    ("==") {return EqualExpression [s, e, t, a, b];}
+    ("!=") {return NotEqualExpression [s, e, t, a, b];}
+    ("+") {return PlusExpression [s, e, t, a, b];}
+    ("-") {return MinusExpression [s, e, t, a, b];}
+    ("*") {return MultiplyExpression [s, e, t, a, b];}
+    ("/") {return DivideExpression [s, e, t, a, b];}
+    ("~/") {return IntDivideExpression [s, e, t, a, b];}
+    ("%") {return ModuloExpression [s, e, t, a, b];}
+    ("**") {return ExponentiationExpression [s, e, t, a, b];}
+    {
+        abort ["Operator {} not implemented" % operator.spelling];
+    };
+}
+
+$Expression?#parse expr [ParseState:state] ctx: [ExprContext:ctx] {
+    $Expression?:maybe_first_term = parse expr term [state] ctx: [ctx];
+    if !maybe_first_term {
+        return null;
+    };
+    $Expression:first_term = [maybe_first_term].unwrap;
+    if [state].is_at_end {
+        return first_term;
+    };
+
+    L:level_count = [get bioperator levels].len;
+    [$Expression?]:stack = [$Expression?]*level_count;
+    [BiOperator?]:operator_stack = [BiOperator?]*level_count;
+
+    stack[level_count - 1] = first_term;
+    L:stack_i = level_count - 1;
+
+    while true {
+        BiOperatorLevel:level = get bioperator levels[stack_i];
+
+        BiOperator?:maybe_matching_operator = match [level] against [state];
+
+        $Expression?:maybe_b = null;
+        given maybe_matching_operator as BiOperator:operator {
+            given parse expr term [state] ctx: [ctx] as $Expression:b {
+                operator_stack[stack_i] = operator;
+                maybe_b = b;
+                stack_i = level_count - 1;
+            } else {
+                return null;
+            };
+        } else {
+            $Expression:b = [stack[stack_i]].unwrap;
+            if stack_i == 0 {
+                return b;
+            };
+            maybe_b = b;
+            stack[stack_i] = null;
+            stack_i -= 1;
+        };
+
+        $Expression:b = [maybe_b].unwrap;
+        given stack[stack_i] as $Expression:a {
+            BiOperator:operator = [operator_stack[stack_i]].unwrap;
+            given [operator] on [a] and [b] state: [state] as $Expression:expr {
+                stack[stack_i] = expr;
+            } else {
+                return null;
+            };
+        } else {
+            stack[stack_i] = b;
+        };
+    };
+
+    return stack[stack_i];
+}
+
+Block?#parse block inside [ParseState:state] ctx: [ExprContext:ctx] {
+    W:start = [state].cur_start;
+    ExprContext:block_ctx = [ctx].branch;
+    [$Expression]:lines = [$Expression] [];
+    $Type_:type_ = NullType_ [];
+    while ![state].is_at_end {
+        given parse expr [state] ctx: [block_ctx] as $Expression:expr {
+            [lines].append[expr];
+            type_ = expr.type_;
+        } else {
+            // error recovery
+            while ![state].is_at_end && [state].cur_id != ';' {
+                [state].consume;
+            };
+        };
+        if [state].is_at_end {
+            break;
+        } elif [state].cur_id == ';' {
+            [state].consume;
+            type_ = NullType_ [];
+        } else {
+            [state].error_at_current msg: ["Expected ';' to terminate statement"];
+        };
+    };
+    return Block [start, [state].last_end, type_, lines];
+}

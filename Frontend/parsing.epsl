@@ -12,28 +12,32 @@ Bool#[ParseState:state].is_at_end {
     return state.index >= [state.tokens.ids].len;
 }
 
+#[ParseState:state].error_between [W:start] and [W:end] msg: [Str:msg] {
+    [state.errors].append[ParseError [msg, start, end]];
+}
+
 #[ParseState:state].error_at[L:i] msg: [Str:msg] {
-    [state.errors].append[ParseError [
-        msg, state.tokens.start_indexes[i], state.tokens.end_indexes[i]
-    ]];
+    [state].error_between [state.tokens.start_indexes[i]]
+        and [state.tokens.end_indexes[i]] msg: [msg];
 }
 
 #[ParseState:state].error_at[[L]:is] msg: [Str:msg] {
-    [state.errors].append[ParseError [
-        msg, state.tokens.start_indexes[is[0]], state.tokens.end_indexes[[is].at[-1]]
-    ]];
+    [state].error_between [state.tokens.start_indexes[is[0]]]
+        and [state.tokens.end_indexes[[is].at[-1]]] msg: [msg];
 }
 
 #[ParseState:state].error_at[$Node:node] msg: [Str:msg] {
-    [state.errors].append[ParseError [
-        msg, node.start_index, node.end_index,
-    ]];
+    [state].error_between [node.start_index] and [node.end_index] msg: [msg];
+}
+
+#[ParseState:state].error_at[[$Node]:nodes] msg: [Str:msg] {
+    [state].error_between [nodes[0].start_index]
+        and [[nodes].at[-1].end_index] msg: [msg];
 }
 
 #[ParseState:state].error_after[L:i] msg: [Str:msg] {
-    [state.errors].append[ParseError [
-        msg, state.tokens.end_indexes[i]+1, state.tokens.end_indexes[i]+1
-    ]];
+    W:pos = state.tokens.end_indexes[i]+1;
+    [state].error_between [pos] and [pos] msg: [msg];
 }
 
 #[ParseState:state].error_at_end msg: [Str: msg] {
@@ -142,6 +146,10 @@ W#[ParseState:state].last_id {
 
 $TokenData?#[ParseState:state].last_data {
     return state.tokens.data[state.index - 1];
+}
+
+W#[ParseState:state].last_start {
+    return state.tokens.start_indexes[state.index - 1];
 }
 
 W#[ParseState:state].last_end {

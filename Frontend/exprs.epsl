@@ -1,5 +1,5 @@
+%import epslctx;
 %import epslfiles;
-%import parsing;
 %import types_;
 
 @super;
@@ -8,12 +8,147 @@ Expression {
     $Type_:type_
 }
 
-@extends Node;
-Block {
-    $Type_:type_,
-    [Expression]:lines
+@super;
+@extends Expression;
+ConstantExpression {}
+
+@extends ConstantExpression;
+BoolConstantExpression {
+    Bool:val
 }
 
-Block?#parse block [ParseState:state] {
-    abort ["parse block not implemented"];
+@extends ConstantExpression;
+IntConstantExpression {
+    Z64:val
+}
+
+@extends ConstantExpression;
+FloatConstantExpression {
+    R:val
+}
+
+@extends ConstantExpression;
+ByteConstantExpression {
+    Byte:val
+}
+
+@extends ConstantExpression;
+StrConstantExpression {
+    Str:val
+}
+
+@extends Expression;
+NullExpression {}
+
+@extends Expression;
+VariableExpression {
+    ScopeVar:var
+}
+
+@extends Expression;
+NegateExpression {
+    $Expression:o
+}
+
+@extends Expression;
+NotExpression {
+    $Expression:o
+}
+
+@super;
+@extends Expression;
+BiOperationExpression {
+    $Expression:a,
+    $Expression:b
+}
+
+@extends BiOperationExpression;
+AndExpression {}
+
+@extends BiOperationExpression;
+OrExpression {}
+
+@extends BiOperationExpression;
+GreaterExpression {}
+
+@extends BiOperationExpression;
+LessExpression {}
+
+@extends BiOperationExpression;
+GreaterEqualExpression {}
+
+@extends BiOperationExpression;
+LessEqualExpression {}
+
+@extends BiOperationExpression;
+EqualExpression {}
+
+@extends BiOperationExpression;
+NotEqualExpression {}
+
+@extends BiOperationExpression;
+PlusExpression {}
+
+@extends BiOperationExpression;
+MinusExpression {}
+
+@extends BiOperationExpression;
+MultiplyExpression {}
+
+@extends BiOperationExpression;
+DivideExpression {}
+
+@extends BiOperationExpression;
+IntDivideExpression {}
+
+@extends BiOperationExpression;
+ModuloExpression {}
+
+@extends BiOperationExpression;
+ExponentiationExpression {}
+
+@extends Expression;
+ReturnExpression {
+    $Expression?:returnee
+}
+
+@extends Expression;
+BreakExpression {
+    $Expression?:result
+}
+
+@extends Expression;
+ContinueExpression {}
+
+@extends Expression;
+Block {
+    [$Expression]:lines
+}
+
+Bool#[$ConstantExpression:const_expr].is_truthy {
+    given const_expr as BoolConstantExpression:bool_const {
+        return bool_const.val;
+    } given const_expr as IntConstantExpression:int_const {
+        return int_const.val != 0;
+    } given const_expr as FloatConstantExpression:float_const {
+        return float_const.val != 0;
+    } given const_expr as ByteConstantExpression:byte_const {
+        return byte_const.val != '\0';
+    } given const_expr as StrConstantExpression:str_const {
+        return [str_const.val].len > 0;
+    } else {
+        abort ["Cannot get truthiness of {}" % const_expr];
+    };
+}
+
+Z64?#[$ConstantExpression:const_expr].int_value {
+    given const_expr as BoolConstantExpression:bool_const {
+        return bool_const.val;
+    } given const_expr as IntConstantExpression:int_const {
+        return int_const.val;
+    } given const_expr as ByteConstantExpression:byte_const {
+        return byte_const.val;
+    } else {
+        return null;
+    };
 }

@@ -119,6 +119,14 @@ Field {
     $Type_:type_
 }
 
+GenericType_#Array_ of [$Type_:sub] {
+    return GenericType_ ["Array", [$Type_] [sub]];
+}
+
+GenericType_#Str_ {
+    return Array_ of [ByteType_ [8]];
+}
+
 Type_Context#type_ context of [$S0ModuleContent:s0_modcon] {
     $S1ModuleContent:modcon = [($S1ModuleContent?)s0_modcon]
         .expect["Expected $S1ModuleContent"];
@@ -165,7 +173,7 @@ $Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
         if ![substate].require_finished why: ["']' before {}"] {
             return null;
         };
-        $Type_:type_ = GenericType_ ["Array", [$Type_] [[maybe_subtype_].unwrap]];
+        $Type_:type_ = Array_ of [[maybe_subtype_].unwrap];
         return parse more type_ from: [type_] state: [state] ctx: [ctx];
     } elif id == '$' {
         if ![state].consume[T_IDENT] name: ["struct name"] {

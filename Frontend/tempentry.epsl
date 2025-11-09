@@ -55,22 +55,6 @@ find -type f -name "*.epsl" | xargs cat > Frontend/all.cepsl
 }
 
 Z#main {
-    $Type_Criteria:criteria = GenericType_Criteria ["Map", [$Type_Criteria] [
-        ConvertibleToType_Criteria [ZType_ [64]],
-        GenericType_Criteria ["Array", [$Type_Criteria] [
-            AnyType_Criteria []
-        ]],
-    ]];
-
-    print["expected "];
-    println[[criteria].englisch];
-
-    $Type_:a = ByteType_ [8];
-    $Type_:b = OptionalType_ [ZType_ [64]];
-
-    println[[a] is convertible to [b]];
-    println[[b] is convertible to [a]];
-
     build with settings [BuildSettings [
         "../newtom/entry.epsl", ""
     ]];

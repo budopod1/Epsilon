@@ -3,6 +3,7 @@
 %import toplevel;
 %import grouper;
 %import modules;
+%import epslctx;
 %import parsing;
 %import structs;
 %import iotools;
@@ -381,13 +382,28 @@ S3ModconResult#cook epsl functions [Module:module] {
     [ParseError]:errors = [ParseError] [];
     S2EPSLModuleContent:s2_modcon = [(S2EPSLModuleContent?)module.content]
         .expect["Expected S2EPSLModuleContent"];
+
+    ScopeChain:chain = ScopeChain [null, null];
+    [ScopeVar]:vars = [ScopeVar] [];
+    for Global:global in s2_modcon.globals {
+        ScopeVar:var = ScopeVar [
+            (W)[vars].len, global.field.name, global.field.type_
+        ];
+        [vars].append[var];
+        chain = ScopeChain [var, chain];
+    };
+    ModuleContext:mod_ctx = ModuleContext [
+        type_ context of [s2_modcon], chain, vars
+    ];
+
     [S3EPSLFunction]:s3_functions = [S3EPSLFunction] [];
     for S2EPSLFunction:s2_function in s2_modcon.s2_functions {
-        given parse function [s2_function] errors: [errors]
+        given parse function [s2_function] ctx: [mod_ctx] errors: [errors]
         as S3EPSLFunction:s3_function {
             [s3_functions].append[s3_function];
         };
     };
+
     $ErrorBundle:error_bundle = bundle [errors]
         txt: [s2_modcon.file_text] path: [s2_modcon.absolute_path];
     return S3ModconResult [S3EPSLModuleContent [

@@ -1,0 +1,49 @@
+%import functions;
+%import epslfiles;
+%import types_;
+
+ScopeVar {
+    W:i,
+    Str:name,
+    $Type_:type_
+}
+
+ScopeChain {
+    ScopeVar?:var,
+    ScopeChain?:next
+}
+
+ScopeVar?#lookup variable [Str:name] in [ScopeChain:chain] {
+    given chain.var as ScopeVar:var {
+        if [var.name] equals [name] {
+            return var;
+        };
+    };
+    given chain.next as ScopeChain:next {
+        return lookup variable [name] in [next];
+    };
+    return null;
+}
+
+#add var [Str:name] type_: [$Type_:type_] to: [ExprContext:ctx] {
+    [ScopeVar]:vars = ctx.mod_ctx.vars;
+    ScopeVar:var = ScopeVar [(W)[vars].len, name, type_];
+    [vars].append[var];
+    ctx.scope_chain = ScopeChain [var, ctx.scope_chain];
+}
+
+ExprContext#[ExprContext:ctx].branch {
+    return ExprContext [ctx.mod_ctx, ctx.func_decl, ctx.scope_chain];
+}
+
+ModuleContext {
+    Type_Context:type__ctx,
+    ScopeChain:global_chain,
+    [ScopeVar]:vars
+}
+
+ExprContext {
+    ModuleContext:mod_ctx,
+    FunctionDeclaration:func_decl,
+    ScopeChain:scope_chain
+}

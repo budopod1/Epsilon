@@ -1,5 +1,7 @@
+%import exprparsing;
 %import epslfiles;
 %import parsing;
+%import epslctx;
 %import types_;
 %import errors;
 %import exprs;
@@ -42,9 +44,17 @@ W#FUNC_SOURCE_LOCAL {
     return 2;
 }
 
-S3EPSLFunction?#parse function [S2EPSLFunction:func] errors: [[ParseError]:errors] {
+S3EPSLFunction?#parse function [S2EPSLFunction:func] ctx: [ModuleContext:mod_ctx] errors: [[ParseError]:errors] {
+    ExprContext:ctx = ExprContext [
+        mod_ctx, func.decl, mod_ctx.global_chain
+    ];
+
+    for Field:arg in func.decl.arguments {
+        add var [arg.name] type_: [arg.type_] to: [ctx];
+    };
+
     ParseState:state = ParseState [func.body, 0, errors];
-    given parse block [state] as Block:block {
+    given parse block inside [state] ctx: [ctx] as Block:block {
         return S3EPSLFunction [func.start_index, func.end_index,
             func.is_public, func.decl, block];
     } else {

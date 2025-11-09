@@ -11,5 +11,5 @@ Q {
 }
 
 Z#main [a:Z] + [bar:$C] {
-    println["Hello, world!"];
+    (a * 3 + 5 / 2) == "3";
 }
