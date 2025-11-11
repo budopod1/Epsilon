@@ -41,6 +41,12 @@ StrConstantExpression {
 NullExpression {}
 
 @extends Expression;
+VariableDeclarationExpression {
+    ScopeVar:var,
+    $Expression:initializer
+}
+
+@extends Expression;
 VariableExpression {
     ScopeVar:var
 }
@@ -119,12 +125,12 @@ ExponentiationExpression {}
 
 @extends Expression;
 ReturnExpression {
-    $Expression?:returnee
+    $Expression:returnee
 }
 
 @extends Expression;
 BreakExpression {
-    $Expression?:result
+    $Expression:result
 }
 
 @extends Expression;

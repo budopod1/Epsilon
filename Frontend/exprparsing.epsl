@@ -140,6 +140,57 @@ $Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
     return null;
 }
 
+$Expression?#parse var decl ident: [Str:ident] state: [ParseState:state] ctx: [ExprContext:ctx] {
+    // this function is to be called when a var decl has been detected,
+    // but the ':' has not been consumed
+
+    W:start = [state].last_start;
+    [state].consume; // eat the ':'
+
+    $Type_?:maybe_type_ = null;
+    if [state].cur_id != '=' {
+        given parse type_ state: [state] ctx: [ctx.mod_ctx.type__ctx]
+        as $Type_:type_ {
+            maybe_type_ = type_;
+        } else {
+            return null;
+        };
+    };
+    if ![state].consume['='] {
+        return null;
+    };
+
+    $Expression?:maybe_initializer = null;
+
+    given parse expr [state] ctx: [ctx] as $Expression:initializer {
+        maybe_initializer = initializer;
+        given maybe_type_ as $Type_:var_type_ {
+            if ![initializer.type_] is convertible to [var_type_] {
+                Str:msg = "Cannot assign value of type {} to variable wit type {}"
+                    % [initializer.type_].stringify % [var_type_].stringify;
+                [state].error_at[initializer] msg: [msg];
+            };
+        } else {
+            given initializer.type_ as NullType_:null_type_ {
+                [state].error_at[initializer]
+                    msg: ["Variable type cannot be inferred to initializer type Null"];
+            };
+            maybe_type_ = initializer.type_;
+        };
+    };
+
+    given maybe_type_ as $Type_:var_type_ {
+        ScopeVar:var = add var [ident] type_: [[maybe_type_].unwrap] to: [ctx];
+        given maybe_initializer as $Expression:initializer {
+            return VariableDeclarationExpression [
+                start, [state].last_end, NullType_ [], var, initializer
+            ];
+        };
+    };
+
+    return null;
+}
+
 $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:ctx] {
     W:start = [state].last_start;
     switch ident
@@ -149,18 +200,33 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
         ];
     }
     ("return") {
-        $Expression?:returnee = null;
+        W:pos = [state].last_end + 1;
+        $Expression:returnee = NullExpression [pos, pos, NullType_ []];
         if ![state].is_at_end && [state].cur_id != ';' {
-            returnee = parse expr [state] ctx: [ctx];
+            given parse expr [state] ctx: [ctx] as $Expression:explicit_returnee {
+                returnee = explicit_returnee;
+            } else {
+                return null;
+            };
+        };
+        if ![returnee.type_] is convertible to [ctx.func_decl.ret_type_] {
+            Str:msg = "Value of type {} not convertible to the return type, {}"
+                % [returnee.type_].stringify % [ctx.func_decl.ret_type_].stringify;
+            [state].error_at[returnee] msg: [msg];
         };
         return ReturnExpression [
             start, [state].last_end, NeverType_ [], returnee
         ];
     }
     ("break") {
-        $Expression?:result = null;
+        W:pos = [state].last_end + 1;
+        $Expression:result = NullExpression [pos, pos, NullType_ []];
         if ![state].is_at_end && [state].cur_id != ';' {
-            result = parse expr [state] ctx: [ctx];
+            given parse expr [state] ctx: [ctx] as $Expression:explicit_result {
+                result = explicit_result;
+            } else {
+                return null;
+            };
         };
         return BreakExpression [
             start, [state].last_end, NeverType_ [], result
@@ -172,7 +238,10 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
         ];
     }
     // TODO: add other keywords here
-    {
+    { // it's a variable
+        if [state].cur_id == ':' {
+            return parse var decl ident: [ident] state: [state] ctx: [ctx];
+        };
         given lookup variable [ident] in [ctx.scope_chain] as ScopeVar:var {
             return VariableExpression [
                 start, [state].last_end, var.type_, var
@@ -301,17 +370,11 @@ $Type_?#type_ for_ [BiOperator:operator] on [$Expression:a] and [$Expression:b] 
         return BoolType_ [1];
     } elif ([spelling] equals [">"]) || ([spelling] equals ["<"])
         || ([spelling] equals [">="]) || ([spelling] equals ["<="]) {
-        if !expect numeric [a] and [b] op: [operator] state: [state]  {
-            return null;
-        };
-        if !expect comparable [a] and [b] state: [state] {
-            return null;
-        };
+        expect numeric [a] and [b] op: [operator] state: [state];
+        expect comparable [a] and [b] state: [state];
         return BoolType_ [1];
     } elif ([spelling] equals ["=="]) || ([spelling] equals ["!="]) {
-        if !expect comparable [a] and [b] state: [state] {
-            return null;
-        };
+        expect comparable [a] and [b] state: [state];
         return BoolType_ [1];
     } elif ([spelling] equals ["+"]) || ([spelling] equals ["-"])
         || ([spelling] equals ["*"]) || ([spelling] equals ["%"]) {

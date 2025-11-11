@@ -25,11 +25,12 @@ ScopeVar?#lookup variable [Str:name] in [ScopeChain:chain] {
     return null;
 }
 
-#add var [Str:name] type_: [$Type_:type_] to: [ExprContext:ctx] {
+ScopeVar#add var [Str:name] type_: [$Type_:type_] to: [ExprContext:ctx] {
     [ScopeVar]:vars = ctx.mod_ctx.vars;
     ScopeVar:var = ScopeVar [(W)[vars].len, name, type_];
     [vars].append[var];
     ctx.scope_chain = ScopeChain [var, ctx.scope_chain];
+    return var;
 }
 
 ExprContext#[ExprContext:ctx].branch {
