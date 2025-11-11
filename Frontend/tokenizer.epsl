@@ -335,7 +335,7 @@ TokenizationResult#tokenize [Str:input] {
             if is_num_end {
                 [tokens.ids].append[T_INT];
                 [tokens.start_indexes].append[token_start];
-                [tokens.end_indexes].append[index+1];
+                [tokens.end_indexes].append[index];
                 TokenDataResult:data_result = parse_int_token [so_far];
                 given data_result.error as TokenizationError:error {
                     error.index += token_start;
@@ -356,7 +356,7 @@ TokenizationResult#tokenize [Str:input] {
             if is_num_end {
                 [tokens.ids].append[T_FLOAT];
                 [tokens.start_indexes].append[token_start];
-                [tokens.end_indexes].append[index+1];
+                [tokens.end_indexes].append[index];
                 TokenDataResult:data_result = parse_float_token [so_far];
                 given data_result.error as TokenizationError:error {
                     error.index += token_start;

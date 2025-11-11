@@ -7,3 +7,7 @@ TODO:
   * add way to apply operation to every element of array
   * add ability to load compiler modules at runtime, enabling:
     * packages that contain `Matrix` and `Map` types
+* fix variable declarations in `&&` and `||`. eg, prevent:
+  false && (v := "hi");
+  // this would segfaults
+  println[v];

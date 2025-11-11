@@ -11,6 +11,7 @@ Q {
 }
 
 Z#main [a:Z] + [bar:$C] {
+    break 3;
     v := null;
     bar as R + 2;
     -v..;

@@ -228,14 +228,28 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
                 return null;
             };
         };
-        return BreakExpression [
+        BreakExpression:break_ = BreakExpression [
             start, [state].last_end, NeverType_ [], result
         ];
+        given ctx.loop_ctx as LoopCtx:loop_ctx {
+            [loop_ctx.breaks].append[break_];
+        } else {
+            [state].error_at[break_]
+                msg: ["break keyword invalid when not inside loop"];
+        };
+        return break_;
     }
     ("continue") {
-        return ContinueExpression [
+        ContinueExpression:continue_ = ContinueExpression [
             start, [state].last_end, NeverType_ []
         ];
+        given ctx.loop_ctx as LoopCtx:loop_ctx {
+            [loop_ctx.continues].append[continue_];
+        } else {
+            [state].error_at[continue_]
+                msg: ["continue keyword invalid when not inside loop"];
+        };
+        return continue_;
     }
     // TODO: add other keywords here
     { // it's a variable

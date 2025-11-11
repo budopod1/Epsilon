@@ -1,6 +1,7 @@
 %import functions;
 %import epslfiles;
 %import types_;
+%import exprs;
 
 ScopeVar {
     W:i,
@@ -34,7 +35,9 @@ ScopeVar#add var [Str:name] type_: [$Type_:type_] to: [ExprContext:ctx] {
 }
 
 ExprContext#[ExprContext:ctx].branch {
-    return ExprContext [ctx.mod_ctx, ctx.func_decl, ctx.scope_chain];
+    return ExprContext [
+        ctx.mod_ctx, ctx.func_decl, ctx.scope_chain, ctx.loop_ctx
+    ];
 }
 
 ModuleContext {
@@ -46,5 +49,11 @@ ModuleContext {
 ExprContext {
     ModuleContext:mod_ctx,
     FunctionDeclaration:func_decl,
-    ScopeChain:scope_chain
+    ScopeChain:scope_chain,
+    LoopCtx?:loop_ctx
+}
+
+LoopCtx {
+    [BreakExpression]:breaks,
+    [ContinueExpression]:continues
 }

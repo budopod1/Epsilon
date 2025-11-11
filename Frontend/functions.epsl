@@ -46,7 +46,7 @@ W#FUNC_SOURCE_LOCAL {
 
 S3EPSLFunction?#parse function [S2EPSLFunction:func] ctx: [ModuleContext:mod_ctx] errors: [[ParseError]:errors] {
     ExprContext:ctx = ExprContext [
-        mod_ctx, func.decl, mod_ctx.global_chain
+        mod_ctx, func.decl, mod_ctx.global_chain, null
     ];
 
     for Field:arg in func.decl.arguments {
