@@ -254,6 +254,16 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
         };
         return continue_;
     }
+    ("true") {
+        return BoolConstantExpression [
+            start, [state].last_end, BoolType_ [1], true
+        ];
+    }
+    ("false") {
+        return BoolConstantExpression [
+            start, [state].last_end, BoolType_ [1], false
+        ];
+    }
     // TODO: add other keywords here
     { // it's a variable
         if ![state].is_at_end && [state].cur_id == ':' {
