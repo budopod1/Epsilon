@@ -7,6 +7,7 @@
 
 BiOperator {
     [Byte]:spelling,
+    Bool:cond_eval
 }
 
 BiOperatorLevel {
@@ -21,20 +22,22 @@ BiOperatorLevel {
     };
     [BiOperatorLevel]:bioperator_levels = [BiOperatorLevel] [
         BiOperatorLevel [[BiOperator] [
-            BiOperator ["&&"], BiOperator ["||"]
+            BiOperator ["&&", true], BiOperator ["||", true]
         ]],
         BiOperatorLevel [[BiOperator] [
-            BiOperator [">"], BiOperator ["<"], BiOperator [">="],
-            BiOperator ["<="], BiOperator ["=="], BiOperator ["!="]
+            BiOperator [">", false], BiOperator ["<", false],
+            BiOperator [">=", false], BiOperator ["<=", false],
+            BiOperator ["==", false], BiOperator ["!=", false]
         ]],
         BiOperatorLevel [[BiOperator] [
-            BiOperator ["+"], BiOperator ["-"]
+            BiOperator ["+", false], BiOperator ["-", false]
         ]],
         BiOperatorLevel [[BiOperator] [
-            BiOperator ["*"], BiOperator ["/"], BiOperator ["~/"], BiOperator ["%"]
+            BiOperator ["*", false], BiOperator ["/", false],
+            BiOperator ["~/", false], BiOperator ["%", false]
         ]],
         BiOperatorLevel [[BiOperator] [
-            BiOperator ["**"]
+            BiOperator ["**", false]
         ]],
     ];
     bioperator_levels_cache = bioperator_levels;
@@ -253,7 +256,7 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
     }
     // TODO: add other keywords here
     { // it's a variable
-        if [state].cur_id == ':' {
+        if ![state].is_at_end && [state].cur_id == ':' {
             return parse var decl ident: [ident] state: [state] ctx: [ctx];
         };
         given lookup variable [ident] in [ctx.scope_chain] as ScopeVar:var {
@@ -471,18 +474,29 @@ $Expression?#parse expr [ParseState:state] ctx: [ExprContext:ctx] {
     L:level_count = [get bioperator levels].len;
     [$Expression?]:stack = [$Expression?]*level_count;
     [BiOperator?]:operator_stack = [BiOperator?]*level_count;
+    [ExprContext?]:ctx_stack = [ExprContext?]*level_count;
 
     stack[level_count - 1] = first_term;
+    ctx_stack[level_count - 1] = ctx;
     L:stack_i = level_count - 1;
 
     while true {
         BiOperatorLevel:level = get bioperator levels[stack_i];
 
+        ExprContext:op_ctx = [ctx_stack[stack_i]].unwrap;
+
         BiOperator?:maybe_matching_operator = match [level] against [state];
 
         $Expression?:maybe_b = null;
         given maybe_matching_operator as BiOperator:operator {
-            given parse expr term [state] ctx: [ctx] as $Expression:b {
+            if operator.cond_eval {
+                // the operator may sometimes not evaluate the second operand,
+                // (what we are parsing right now), so we need to parse it
+                // in its own ExprContext so variables defined here aren't
+                // avaliable externally
+                op_ctx = [op_ctx].branch;
+            };
+            given parse expr term [state] ctx: [op_ctx] as $Expression:b {
                 operator_stack[stack_i] = operator;
                 maybe_b = b;
                 stack_i = level_count - 1;
@@ -510,6 +524,7 @@ $Expression?#parse expr [ParseState:state] ctx: [ExprContext:ctx] {
         } else {
             stack[stack_i] = b;
         };
+        ctx_stack[stack_i] = op_ctx;
     };
 
     return stack[stack_i];
