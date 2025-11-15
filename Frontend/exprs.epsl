@@ -141,6 +141,24 @@ Block {
     [$Expression]:lines
 }
 
+@extends Expression;
+WhileExpression {
+    $Expression:cond,
+    Block:block,
+    Block?:else_,
+}
+
+@extends Expression;
+IfExpression {
+    [IfBranch]:branches,
+    Block?:else_
+}
+
+IfBranch {
+    $Expression:cond,
+    Block:block
+}
+
 Bool#[$ConstantExpression:const_expr].is_truthy {
     given const_expr as BoolConstantExpression:bool_const {
         return bool_const.val;

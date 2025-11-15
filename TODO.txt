@@ -7,3 +7,5 @@ TODO:
   * add way to apply operation to every element of array
   * add ability to load compiler modules at runtime, enabling:
     * packages that contain `Matrix` and `Map` types
+  * figure out NaN and infinity (are they keywords, globals, functions, provided by a module?)
+  * do something about ExprContext (store it in nodes that have their own)

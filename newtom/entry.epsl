@@ -11,11 +11,11 @@ Q {
 }
 
 Z#main [a:Z] + [bar:$C] {
-    (false && ((q := 2) || q)) || q;
-    break 3;
-    v := null;
-    bar as R + 2;
-    -v..;
-    ((a * 3 + 5 / -2) == "3") == "a";
-    return "hi"
+    if a {
+        2
+    } elif a {
+        null
+    } else {
+        1
+    }
 }

@@ -140,6 +140,13 @@ W#[ParseState:state].cur_start {
     return [state.tokens.start_indexes[state.index]?] || [state.tokens.start_index];
 }
 
+Str?#[ParseState:state].try_read_ident {
+    if [state].is_at_end || [state].cur_id != T_IDENT {
+        return null;
+    };
+    return [[state].cur_data].read_identifier;
+}
+
 W#[ParseState:state].last_id {
     return state.tokens.ids[state.index - 1];
 }

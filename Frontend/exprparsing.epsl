@@ -194,6 +194,129 @@ $Expression?#parse var decl ident: [Str:ident] state: [ParseState:state] ctx: [E
     return null;
 }
 
+WhileExpression?#parse while_ [ParseState:state] ctx: [ExprContext:ctx] {
+    W:start = [state].last_start;
+
+    ExprContext:cond_ctx = [ctx].branch;
+    $Expression?:maybe_cond = parse expr [state] ctx: [cond_ctx];
+    if !maybe_cond {
+        return null;
+    };
+    $Expression:cond = [maybe_cond].unwrap;
+
+    ExprContext:block_ctx = [ctx].branch;
+    LoopCtx:loop_ctx = LoopCtx [
+        [BreakExpression] [], [ContinueExpression] []
+    ];
+    block_ctx.loop_ctx = loop_ctx;
+    Block?:maybe_block = parse block [state] ctx: [block_ctx];
+    if !maybe_block {
+        return null;
+    };
+    Block:block = [maybe_block].unwrap;
+
+    $Type_?:maybe_base_type_ = null;
+
+    Block?:maybe_else_block = null;
+    if [[state].try_read_ident] equals [(Str?)"else"] {
+        [state].consume;
+        given parse block [state] ctx: [ctx] as Block:else_block {
+            maybe_else_block = else_block;
+            maybe_base_type_ = else_block.type_;
+        } else {
+            return null;
+        };
+    };
+
+    given cond as $ConstantExpression:const_expr {
+        if [const_expr].is_truthy {
+            maybe_base_type_ = NeverType_ [];
+        };
+    };
+
+    $Type_:type_ = NullType_ [];
+    given maybe_base_type_ as $Type_:base_type_ {
+        type_ = base_type_;
+        for BreakExpression:break_ in loop_ctx.breaks {
+            given common type_ between [type_] and [break_.result.type_]
+            as $Type_:common_type_ {
+                type_ = common_type_;
+            } else {
+                type_ = NullType_ [];
+                break;
+            };
+        };
+    };
+
+    return WhileExpression [
+        start, [state].last_end, type_, cond, block, maybe_else_block
+    ];
+}
+
+IfExpression?#parse if_ [ParseState:state] ctx: [ExprContext:ctx] {
+    W:start = [state].last_start;
+
+    [IfBranch]:branches = [IfBranch] [];
+
+    $Type_?:maybe_type_ = NeverType_ [];
+
+    Bool:has_else = false;
+    while true {
+        ctx = [ctx].branch;
+        $Expression?:maybe_cond = parse expr [state] ctx: [ctx];
+        if !maybe_cond {
+            return null;
+        };
+        $Expression:cond = [maybe_cond].unwrap;
+
+        ctx = [ctx].branch;
+        Block?:maybe_block = parse block [state] ctx: [ctx];
+        if !maybe_block {
+            return null;
+        };
+        Block:block = [maybe_block].unwrap;
+
+        given maybe_type_ as $Type_:type_ {
+            maybe_type_ = common type_ between [type_] and [block.type_];
+        };
+
+        [branches].append[IfBranch [cond, block]];
+
+        Str?:next_ident = [state].try_read_ident;
+
+        if [next_ident] equals [(Str?)"elif"] {
+            [state].consume;
+            continue;
+        } elif [next_ident] equals [(Str?)"else"] {
+            [state].consume;
+            has_else = true;
+        };
+        break;
+    };
+
+    Block?:maybe_else_block = null;
+    if has_else {
+        ctx = [ctx].branch;
+        maybe_else_block = parse block [state] ctx: [ctx];
+        if !maybe_else_block {
+            return null;
+        };
+        Block:else_block = [maybe_else_block].unwrap;
+
+        given maybe_type_ as $Type_:type_ {
+            maybe_type_ = common type_ between [type_] and [else_block.type_];
+        };
+    } else {
+        maybe_type_ = null;
+    };
+
+    $Type_:type_ = [maybe_type_] || [NullType_ []];
+
+    return IfExpression [
+        start, [state].last_end, type_, branches, maybe_else_block
+    ];
+}
+
 $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:ctx] {
     W:start = [state].last_start;
     switch ident
@@ -264,6 +387,12 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
             start, [state].last_end, BoolType_ [1], false
         ];
     }
+    ("while") {
+        return parse while_ [state] ctx: [ctx];
+    }
+    ("if") {
+        return parse if_ [state] ctx: [ctx];
+    }
     // TODO: add other keywords here
     { // it's a variable
         if ![state].is_at_end && [state].cur_id == ':' {
@@ -298,8 +427,7 @@ $Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [
 
         abort ["member access not yet implemented"];
 
-    } elif [state].cur_id == T_IDENT
-        && [[[state].cur_data].read_identifier] equals ["as"] {
+    } elif [[state].try_read_ident] equals [(Str?)"as"] {
         [state].consume;
 
         given parse type_ state: [state] ctx: [ctx.mod_ctx.type__ctx]
@@ -574,4 +702,12 @@ Block?#parse block inside [ParseState:state] ctx: [ExprContext:ctx] {
         maybe_type_ = type_;
     };
     return Block [start, [state].last_end, [maybe_type_].unwrap, lines];
+}
+
+Block?#parse block [ParseState:state] ctx: [ExprContext:ctx] {
+    if ![state].consume[T_CURLY_GROUP] {
+        return null;
+    };
+    ParseState:inner_state = [state].last_substate;
+    return parse block inside [inner_state] ctx: [ctx];
 }
