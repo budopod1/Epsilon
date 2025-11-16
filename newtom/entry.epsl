@@ -10,12 +10,20 @@ Q {
 
 }
 
-Z#main [a:Z] + [bar:$C] {
-    if a {
-        2
-    } elif a {
-        null
-    } else {
+@super;
+@sealed;
+Sup {}
+
+@extends Sup;
+Sub1 {}
+
+@extends Sup;
+Sub2 {}
+
+Z#foo [item:$Sup] {
+    given item as sub1:Sub1 {
         1
-    }
+    } as sub2:Sub2 {
+        2
+    } else never
 }

@@ -529,9 +529,14 @@ Bool#[$NumericType_:a] is convertible to [$NumericType_:b] {
     return false;
 }
 
+Bool#can [Struct_:struct_] be an AnyStruct {
+    // if struct_.is_value is true, struct_.has_rc must be false
+    return struct_.has_rc;
+}
+
 Bool#[Struct_:a_struct] is convertible to [$Type_:b_type_] {
     given b_type_ as AnyStructType_:b_any_struct {
-        return !a_struct.is_value;
+        return can [a_struct] be an AnyStruct;
     } given b_type_ as PolyType_:poly_b {
         Struct_:b_struct = poly_b.struct_;
         return a_struct == b_struct || [a_struct] extends [b_struct];
@@ -586,9 +591,13 @@ Bool#[$Type_:a_type_] is castable to optional [Struct_:b_struct] {
         Struct_:a_struct = poly_a.struct_;
         return [b_struct] extends [a_struct];
     } given a_type_ as AnyStructType_:any_struct_a {
-        return !b_struct.is_value;
+        return can [b_struct] be an AnyStruct;
     };
     return false;
+}
+
+Bool#types_ [[$Type_]:options] encompass [$Type_:super] {
+    abort ["not yet implemented"];
 }
 
 Bool#[$Type_:a] is equal to [$Type_:b] {

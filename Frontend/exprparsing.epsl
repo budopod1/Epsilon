@@ -143,7 +143,7 @@ $Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
     return null;
 }
 
-$Expression?#parse var decl ident: [Str:ident] state: [ParseState:state] ctx: [ExprContext:ctx] {
+VariableDeclarationExpression?#parse var decl ident: [Str:ident] state: [ParseState:state] ctx: [ExprContext:ctx] {
     // this function is to be called when a var decl has been detected,
     // but the ':' has not been consumed
 
@@ -317,6 +317,120 @@ IfExpression?#parse if_ [ParseState:state] ctx: [ExprContext:ctx] {
     ];
 }
 
+GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
+    W:start = [state].last_start;
+
+    $Expression?:maybe_scrutinee = parse expr [state] ctx: [ctx];
+    if !maybe_scrutinee {
+        return null;
+    };
+    $Expression:scrutinee = [maybe_scrutinee].unwrap;
+
+    [GivenArm]:arms = [GivenArm] [];
+
+    $Type_?:maybe_result_type_ = NeverType_ [];
+
+    if [[state].try_read_ident] not equals [(Str?)"as"] {
+        [state].error_at_current msg: ["Expected 'as'"];
+        return null;
+    };
+
+    Bool:has_else = false;
+
+    while true {
+        [state].consume; // eat the 'as'
+
+        ctx = [ctx].branch;
+
+        if ![state].consume[T_IDENT] name: ["variable name"] {
+            return null;
+        };
+        Str:var_ident = [[state].last_data].read_identifier;
+
+        if ![state].consume[':'] {
+            return null;
+        };
+
+        Type_Node?:maybe_type__node = parse type_ node state: [state]
+            ctx: [ctx.mod_ctx.type__ctx];
+        if !maybe_type__node {
+            return null;
+        };
+        Type_Node:type__node = [maybe_type__node].unwrap;
+        $Type_:type_ = type__node.type_;
+
+        if ![scrutinee.type_] is castable to [OptionalType_ [type_]] {
+            Str:msg = "Scrutinee of type {} can never be {}"
+                % [scrutinee.type_].stringify % [type_].stringify;
+            [state].error_at[type__node] msg: [msg];
+        };
+
+        ScopeVar:var = add var [var_ident] type_: [type_] to: [ctx];
+
+        Block?:maybe_block = parse block [state] ctx: [ctx];
+        if !maybe_block {
+            return null;
+        };
+        Block:block = [maybe_block].unwrap;
+
+        given maybe_result_type_ as $Type_:result_so_far {
+            maybe_result_type_= common type_ between
+                [result_so_far] and [block.type_];
+        };
+
+        [arms].append[GivenArm [var, block]];
+
+        Str?:ident = [state].try_read_ident;
+        if [ident] equals [(Str?)"as"] {
+            continue;
+        } elif [ident] equals [(Str?)"else"] {
+            [state].consume;
+            has_else = true;
+        };
+        break;
+    };
+
+    Bool:else_never = false;
+    Block?:maybe_else_block = null;
+
+    if has_else {
+        if [[state].try_read_ident] equals [(Str?)"never"] {
+            [state].consume;
+            else_never = true;
+        } else {
+            maybe_else_block = parse block [state] ctx: [ctx];
+            if !maybe_else_block {
+                return null;
+            };
+            Block:else_block = [maybe_else_block].unwrap;
+
+            given maybe_result_type_ as $Type_:result_so_far {
+                maybe_result_type_= common type_ between
+                    [result_so_far] and [else_block.type_];
+            };
+        };
+    } else {
+        maybe_result_type_ = null;
+    };
+
+    if else_never {
+        [$Type_]:arm_types_ = [$Type_] [];
+        for GivenArm:arm in arms {
+            [arm_types_].append[OptionalType_ [arm.var.type_]];
+        };
+        if !types_ [arm_types_] encompass [scrutinee.type_] {
+            Str:msg = "Given arms possibly do not exhaust scrutinee type {}"
+                % [scrutinee.type_].stringify;
+            [state].error_at_previous msg: [msg];
+        };
+    };
+
+    return GivenExpression [
+        start, [state].last_end, [maybe_result_type_] || [NullType_ []],
+        scrutinee, arms, maybe_else_block, else_never
+    ];
+}
+
 $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:ctx] {
     W:start = [state].last_start;
     switch ident
@@ -393,6 +507,9 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
     ("if") {
         return parse if_ [state] ctx: [ctx];
     }
+    ("given") {
+        return parse given_ [state] ctx: [ctx];
+    }
     // TODO: add other keywords here
     { // it's a variable
         if ![state].is_at_end && [state].cur_id == ':' {
@@ -427,7 +544,7 @@ $Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [
 
         abort ["member access not yet implemented"];
 
-    } elif [[state].try_read_ident] equals [(Str?)"as"] {
+    } elif [[state].try_read_ident] equals [(Str?)"TEMP_CAST_OP"] {
         [state].consume;
 
         given parse type_ state: [state] ctx: [ctx.mod_ctx.type__ctx]

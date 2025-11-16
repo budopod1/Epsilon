@@ -108,6 +108,21 @@ FileError?#load struct_ extendee [Struct_:this_struct] local_structs: [[Struct_]
                 this_module.content.absolute_path
             ];
         };
+        if this_struct.has_rc != other_struct.has_rc {
+            Str:this_phrase = "does not have";
+            if this_struct.has_rc {
+                this_phrase = "has";
+            };
+            Str:other_phrase = "does not have";
+            if other_struct.has_rc {
+                other_phrase = "has";
+            };
+            return FileError [
+                "Struct {}, which {} a reference counter cannot extend struct {}, which {} one"
+                    % this_struct.name % this_phrase % other_struct.name % other_phrase,
+                this_module.content.absolute_path
+            ];
+        };
         if other_struct.is_sealed && ![local_structs].index_of[other_struct] {
             return FileError [
                 "Struct {} cannot extend sealed struct {} located in a different module"

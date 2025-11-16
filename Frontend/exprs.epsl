@@ -159,6 +159,19 @@ IfBranch {
     Block:block
 }
 
+@extends Expression;
+GivenExpression {
+    $Expression:scrutinee,
+    [GivenArm]:arms,
+    Block?:else_,
+    Bool:else_never
+}
+
+GivenArm {
+    ScopeVar:var,
+    Block:block
+}
+
 Bool#[$ConstantExpression:const_expr].is_truthy {
     given const_expr as BoolConstantExpression:bool_const {
         return bool_const.val;
