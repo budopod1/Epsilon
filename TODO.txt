@@ -9,4 +9,3 @@ TODO:
     * packages that contain `Matrix` and `Map` types
   * figure out NaN and infinity (are they keywords, globals, functions, provided by a module?)
   * do something about scope context (store it in nodes that have their own scopes)
-  * decide on a new cast keyword

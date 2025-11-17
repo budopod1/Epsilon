@@ -544,7 +544,7 @@ $Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [
 
         abort ["member access not yet implemented"];
 
-    } elif [[state].try_read_ident] equals [(Str?)"TEMP_CAST_OP"] {
+    } elif [state].cur_id == '#' {
         [state].consume;
 
         given parse type_ state: [state] ctx: [ctx.mod_ctx.type__ctx]

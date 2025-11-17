@@ -21,6 +21,7 @@ Sub1 {}
 Sub2 {}
 
 Z#foo [item:$Sup] {
+    item#Sub1?;
     given item as sub1:Sub1 {
         1
     } as sub2:Sub2 {
