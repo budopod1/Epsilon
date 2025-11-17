@@ -14,6 +14,8 @@ Struct_ {
     Bool:is_super,
     Bool:is_sealed,
     StructRef?:extendee,
+    // stores all extenders of a struct IFF the struct is sealed
+    [Struct_]?:sealed_extenders,
     [Field]?:fields
 }
 
@@ -51,6 +53,18 @@ Bool#[Struct_:a] extends [Struct_:b] {
         };
         if a == b {
             return true;
+        };
+    };
+}
+
+#create sealed extender lists [Build:build] {
+    for Module:module in build.modules {
+        $S1ModuleContent:modcon = [($S1ModuleContent?)module.content]
+            .expect["Expected $S1ModuleContent"];
+        for Struct_:struct in modcon.structs {
+            if struct.is_sealed {
+                struct.sealed_extenders = [Struct_] [];
+            };
         };
     };
 }
@@ -131,6 +145,9 @@ FileError?#load struct_ extendee [Struct_:this_struct] local_structs: [[Struct_]
             ];
         };
         ref.struct_ = other_struct;
+        given other_struct.sealed_extenders as [Struct_]:extenders {
+            [extenders].append[this_struct];
+        };
         return null;
     };
     return FileError [

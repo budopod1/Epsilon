@@ -597,7 +597,26 @@ Bool#[$Type_:a_type_] is castable to optional [Struct_:b_struct] {
 }
 
 Bool#types_ [[$Type_]:options] encompass [$Type_:super] {
-    abort ["not yet implemented"];
+    given struct_ of [super] as Struct_:super_struct {
+        given super_struct.sealed_extenders as [Struct_]:extenders {
+            for Struct_:extender in extenders {
+                Bool:found = false;
+                for $Type_:option in options {
+                    given struct_ of [option] as Struct_:option_struct {
+                        if option_struct == extender {
+                            found = true;
+                            break;
+                        };
+                    };
+                };
+                if !found {
+                    return false;
+                };
+            };
+            return true;
+        };
+    };
+    return false;
 }
 
 Bool#[$Type_:a] is equal to [$Type_:b] {

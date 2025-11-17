@@ -183,6 +183,7 @@ S1ModconResult#produce struct declarations [Module:module] {
 }
 
 Bool#resolve struct_ connections [Build:build] {
+    create sealed extender lists [build];
     [FileError]:load_errors = load struct_ extendees [build];
     if report errors [bundle [load_errors]] {
         return false;

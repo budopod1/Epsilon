@@ -416,7 +416,7 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
     if else_never {
         [$Type_]:arm_types_ = [$Type_] [];
         for GivenArm:arm in arms {
-            [arm_types_].append[OptionalType_ [arm.var.type_]];
+            [arm_types_].append[arm.var.type_];
         };
         if !types_ [arm_types_] encompass [scrutinee.type_] {
             Str:msg = "Given arms possibly do not exhaust scrutinee type {}"
