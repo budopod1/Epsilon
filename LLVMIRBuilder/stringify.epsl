@@ -51,7 +51,7 @@ if (specialized fn [Null_] ["stringify"] [[Val] [outer_val, outer_result]]) {
     } elif ([type_].is_numeric) {
         Val?:specifier_optional = null;
         Type_:new_type_ = type_;
-        W:bits = (W)type_.bits;
+        W:bits = type_.bits#W;
 
         if ([type_].is_float) {
             Str:specifier_txt = "";

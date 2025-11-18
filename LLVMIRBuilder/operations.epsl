@@ -124,7 +124,7 @@ Val#make constant [$JSON:constant_json] of type_ [Type_:type_] {
     if (([constant_type] equals ["int"]) || ([constant_type] equals ["uint"])) {
         return c [[val_json].get_int] [type_];
     } elif ([constant_type] equals ["bool"]) {
-        return c [(Z)[val_json].get_bool] [type_];
+        return c [[val_json].get_bool#Z] [type_];
     } elif ([constant_type] equals ["float-standard"]) {
         return c [[val_json].get_double] [type_];
     } elif ([constant_type] equals ["float-special"]) {
@@ -294,7 +294,7 @@ Val#buffer eq [Val:outer_a] to [Val:outer_b] of len [Val:outer_len] {
         add func attrs [[Str] ["nofree", "willreturn", "memory(argmem: read)"]];
         extern fn [Z_] ["epsl_memcmp"] [[Type_] [Pointer [Byte_], Pointer [Byte_], L_]]
             [[Val] [outer_a, outer_b, outer_len]];
-        return [func ret] eq [c [(Z)0]];
+        return [func ret] eq [c [0#Z]];
     };
 
     add func attrs [[Str] ["nofree", "willreturn", "memory(argmem: read)"]];
@@ -679,14 +679,14 @@ if (specialized fn [type_] [name] [[Val] [outer_a, outer_b]]) {
 
     if ([b.type_].is_signed_int) {
         if_ [[b] lt [c [0] [b.type_]]];
-            Val:negated_b = cast [negate [b]] to [W_ [(W)b.type_.bits]];
+            Val:negated_b = cast [negate [b]] to [W_ [b.type_.bits#W]];
             if_ [[negated_b] gt [c [type_.bits] [negated_b.type_]]];
                 ret [c [0] [type_]];
             else_;
                 ret [unsafe bitshift [a] by [negated_b] right: [!right]];
             end block;
         else_;
-            Val:positive_b = cast [b] to [W_ [(W)b.type_.bits]];
+            Val:positive_b = cast [b] to [W_ [b.type_.bits#W]];
             if_ [[positive_b] gt [c [type_.bits] [positive_b.type_]]];
                 ret [c [0] [type_]];
             else_;

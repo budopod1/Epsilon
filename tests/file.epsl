@@ -11,5 +11,5 @@ Z#main {
         abort ["Cannot read file"];
     };
     Str:txt = [text].unwrap;
-    return (Z)([txt].len - [txt].count['\r']);
+    return ([txt].len - [txt].count['\r'])#Z;
 }

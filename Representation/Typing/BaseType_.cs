@@ -23,6 +23,10 @@ public class BaseType_ : IEquatable<BaseType_> {
         {"W", 32}, {"Z", 32}, {"R", 64}
     };
 
+    public static readonly List<int> ValidRBitCount = [
+        16, 32, 64, 128
+    ];
+
     public static readonly List<string> IntTypes_ = [
         "W", "Z", "Bool", "Byte"
     ];
@@ -100,6 +104,11 @@ public class BaseType_ : IEquatable<BaseType_> {
         } else if (bits != null) {
             throw new BaseType_BitsException(
                 $"You can't set the bits for {name}"
+            );
+        }
+        if (name == "R" && !ValidRBitCount.Contains(bits.Value)) {
+            throw new BaseType_BitsException(
+                $"Type Q cannot have {bits.Value} bits"
             );
         }
         this.name = name;

@@ -62,7 +62,7 @@ Val#build exponentiation [$JSON:instruction_json] using [[Val]:operands] to [Typ
 }
 
 Val#build variable [$JSON:instruction_json] {
-    W:id = (W)[[instruction_json].get["variable"]].get_int;
+    W:id = [[instruction_json].get["variable"]].get_int#W;
     return load [*[get var [id].addr]];
 }
 
@@ -175,7 +175,7 @@ Val#build format chain using [[Val]:operands] {
     [Val]:vals_to_check_ref = [Val] [template];
     [Val]:strs_to_free = [Val] [];
 
-    Val:str_count = c [(W)[operands].len - 1];
+    Val:str_count = c [[operands].len#W - 1];
     Val:str_arr = &[alloca [str_count] [Str_]];
     W:i = 0;
     for (Val:operand in operands from 1) {
@@ -348,14 +348,14 @@ Val#build valued instruction [$JSON:instruction_json] using [[Val]:operands] {
 }
 
 #build initial assignment [$JSON:instruction_json] using [[Val]:operands] {
-    ScopeVar:var = get var [(W)[[instruction_json].get["variable"]].get_int];
+    ScopeVar:var = get var [[[instruction_json].get["variable"]].get_int#W];
     Val:operand = cast [operands[0]] to [read type_ [[instruction_json].get["var_type_"]]];
     [operand].incr_ref;
     [*[var.addr]] = [operand];
 }
 
 #build assignment [$JSON:instruction_json] using [[Val]:operands] {
-    ScopeVar:var = get var [(W)[[instruction_json].get["variable"]].get_int];
+    ScopeVar:var = get var [[[instruction_json].get["variable"]].get_int#W];
     Val:operand = cast [operands[0]] to [read type_ [[instruction_json].get["var_type_"]]];
     [operand].incr_ref;
     [*[var.addr]].decr_ref;
@@ -525,7 +525,7 @@ Label:cond_label = new label:;
     Label:iter_label = new label;
     Label:finish_label = new label;
 
-    W:idx_alloc_i = (W)[[instruction_json].get["iter_alloc"]].get_int;
+    W:idx_alloc_i = [[instruction_json].get["iter_alloc"]].get_int#W;
     Val:idx_var = *[get special alloc [idx_alloc_i]];
 
     Type_:idx_type_ = read type_ [[instruction_json].get["idx_type_"]];
@@ -611,7 +611,7 @@ Label:cond_label = new label:;
     goto_ [should_exit] ? [finish_label] : [loop_label];
 
 [loop_label]:;
-    Val:var = *[get var [(W)[[instruction_json].get["variable"]].get_int].addr];
+    Val:var = *[get var [[[instruction_json].get["variable"]].get_int#W].addr];
     if (is_in) {
         Val:elem = load [[[maybe_array_content_ptr].unwrap].idx[idx]];
         [elem].incr_ref;
@@ -677,7 +677,7 @@ Label:cond_label = new label:;
         Type_:to_type_ = read type_ [[part_json].get["to_type_"]];
         Val:to = cast [optional] to [to_type_];
 
-        W:var_id = (W)[[part_json].get["var_id"]].get_int;
+        W:var_id = [[part_json].get["var_id"]].get_int#W;
         [to].incr_ref;
         [*[get var [var_id].addr]] = [to];
         [val].check_ref;

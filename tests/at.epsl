@@ -4,7 +4,7 @@ Z#main {
     [nums].at[-3] = [1];
     [nums].at[-4] = [1];
     Z:result = 0;
-    for (W:i from 1 to (W)[nums].len+1) {
+    for (W:i from 1 to [nums].len#W+1) {
         result += i * [nums].at[-i];
     };
     return result;

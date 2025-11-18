@@ -13,6 +13,12 @@ public class RawFuncSignatureMatcher : IMatcher {
                     IToken token = tokens[j];
                     if (token is TextToken ttoken2) {
                         string txt = ttoken2.GetText();
+#if NEW_CAST
+                        // this is so dumb
+                        if (txt == " " && i == j) {
+                            break;
+                        }
+#endif
                         if (txt == "#") {
                             hasHashtag = true;
                             matched.Add(token);

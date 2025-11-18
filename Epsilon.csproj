@@ -8,6 +8,7 @@
     <Nullable>disable</Nullable>
     <NoWarn>IDE0130</NoWarn>
     <OutDir>executables</OutDir>
+    <DefineConstants>NEW_CAST</DefineConstants>
   </PropertyGroup>
 
 </Project>
