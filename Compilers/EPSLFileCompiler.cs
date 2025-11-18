@@ -722,6 +722,7 @@ public class EPSLFileCompiler : IFileCompiler {
 
     Program TokenizeGroups(Program _program) {
         List<IMatcher> matchers = [
+#if !NEW_CAST
             new PatternMatcher(
                 [
                     new TextPatternSegment("("),
@@ -732,6 +733,7 @@ public class EPSLFileCompiler : IFileCompiler {
                     typeof(UnmatchedCast)
                 )
             ),
+#endif
             new BlockMatcher(
                 new TextPatternSegment("["), new TextPatternSegment("]"),
                 typeof(RawSquareGroup)
@@ -1283,12 +1285,6 @@ Please clarify between the functions that take the types:
                         typeof(ZeroedArrayCreation)
                     )
                 ),
-                new PatternMatcher(
-                    [
-                        new TypePatternSegment(typeof(UnmatchedCast)),
-                        new Type_PatternSegment(Type_.Any())
-                    ], new Wrapper2PatternProcessor(typeof(Cast))
-                ),
                 new CombinedMatchersMatcher([
                     new PatternMatcher(
                         [
@@ -1358,6 +1354,23 @@ Please clarify between the functions that take the types:
                         new SlotPatternProcessor([1]),
                         typeof(Negation)
                     )
+                ),
+                new PatternMatcher(
+#if NEW_CAST
+                    [
+                        new Type_PatternSegment(Type_.Any()),
+                        new TextPatternSegment("#"),
+                        new TypePatternSegment(typeof(Type_Token))
+                    ], new Wrapper2PatternProcessor(
+                        new SlotPatternProcessor([0, 2]),
+                        typeof(Cast)
+                    )
+#else
+                    [
+                        new TypePatternSegment(typeof(UnmatchedCast)),
+                        new Type_PatternSegment(Type_.Any())
+                    ], new Wrapper2PatternProcessor(typeof(Cast))
+#endif
                 ),
                 new PatternMatcher(
                     [

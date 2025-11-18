@@ -5,7 +5,7 @@ Z#main {
     Z:d = [5] << [-2]; // == 1
     Z:e = unsafe [13] << [2]; // == 52
     Z:f = unsafe [13] >> [2]; // == 3
-    Byte:byte = (Byte)24;
+    Byte:byte = 24#Byte;
     // unsafe [byte] >> [n] is illegal for n > 8 and n < 0
     Z:shift = 5;
     Z:g = [byte] >> [shift]; // == 0

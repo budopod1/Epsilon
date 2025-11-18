@@ -164,7 +164,7 @@ $JSON#read BinJSON_ {
     for ($JSON:global_json in globals_json) {
         Str:name = [[global_json].get["name"]].get_str;
         Type_:type_ = read type_ [[global_json].get["type_"]];
-        W:id = (W)[[global_json].get["id"]].get_int;
+        W:id = [[global_json].get["id"]].get_int#W;
         Val:addr = make ptr to global [type_] [null] [c null_ [type_]];
         [globals].append[ScopeVar [name, type_, id, addr]];
     };
@@ -209,7 +209,7 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
         Type_:type_ = read type_ [[var_json].get["type_"]];
         Val:addr = &[var [type_]];
         Str:name = [[var_json].get["name"]].get_str;
-        W:id = (W)[[var_json].get["id"]].get_int;
+        W:id = [[var_json].get["id"]].get_int#W;
         [vars].append[ScopeVar [name, type_, id, addr]];
     };
     [vars].extend[[get state.globals].unwrap];
@@ -219,7 +219,7 @@ if (fn [proto.ret_type_] [proto.callee] [proto.arg_types_]) {
     for (L:i enumerating arg_list) {
         $JSON:arg_json = arg_list[i];
         Str:name = [[arg_json].get["name"]].get_str;
-        W:id = (W)[[arg_json].get["variable"]].get_int;
+        W:id = [[arg_json].get["variable"]].get_int#W;
 
         ScopeVar?:maybe_var = null;
         for (ScopeVar:var in vars) {
@@ -272,7 +272,7 @@ ScopeVar#get var [W:id] {
 [ScopeVar]#get var list [$JSON:list_json] {
     [ScopeVar]:result = [ScopeVar] [];
     for ($JSON:id_json in [list_json].get_list) {
-        [result].append[get var [(W)[id_json].get_int]];
+        [result].append[get var [[id_json].get_int#W]];
     };
     return result;
 }
@@ -329,7 +329,7 @@ Type_#current func ret type_ {
     for ($JSON:instruction_json in [ir_json].get_list) {
         [Val]:operands = [Val] [];
         for ($JSON:operand_json in [[instruction_json].get["operands"]].get_list) {
-            Val?:result = results[(W)[operand_json].get_int];
+            Val?:result = results[[operand_json].get_int#W];
             if ([result].is_null) {
                 abort ["Cannot use void instruction as operand"];
             };
@@ -372,7 +372,7 @@ Type_#current func ret type_ {
 
 Val#build seperated value [$JSON:val_json] {
     [Val?]:results = build ir [[val_json].get["ir"]];
-    Val?:result = results[(W)[[val_json].get["val"]].get_int];
+    Val?:result = results[[[val_json].get["val"]].get_int#W];
     if (result) {
         return [result].unwrap;
     } else {
