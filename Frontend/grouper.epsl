@@ -34,7 +34,7 @@ TokenizationResult#group tokens [Tokens:src_tokens] {
             W:group_start = group_ended.start_index;
             if [end_chr_stack].pop_end != id {
                 [errors].append[TokenizationError [
-                    "Opening delimiter not matched by closing delimiter '{}'" % (Byte)id,
+                    "Opening delimiter not matched by closing delimiter '{}'" % id#Byte,
                     group_start
                 ]];
             };

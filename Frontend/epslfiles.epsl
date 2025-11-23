@@ -151,7 +151,7 @@ S0ModconResult#load epsl file [Path:path] {
 
 S1ModconResult#cook epsl struct declarations [Module:module] {
     [ParseError]:errors = [ParseError] [];
-    S0EPSLModuleContent:raw_modcon = [(S0EPSLModuleContent?)module.content]
+    S0EPSLModuleContent:raw_modcon = [module.content#S0EPSLModuleContent?]
         .expect["Expected S0EPSLModuleContent"];
     [Struct_]:public_structs = [Struct_] [];
     [Struct_]:all_structs = [Struct_] [];
@@ -274,7 +274,7 @@ Bool#parse function template [Tokens:tokens] to [[$TemplateSegment]:segments] ar
             [state].error_about_current msg: ["Invalid syntax"];
             return false;
         } else {
-            [segments].append[SymbolTemplateSegment [(Byte)id]];
+            [segments].append[SymbolTemplateSegment [id#Byte]];
         };
     };
     return true;
@@ -345,7 +345,7 @@ S2EPSLFunction?#parse function [RawFunction:raw_function] errors: [[ParseError]:
 
 S2ModconResult#cook exports [Module:module] {
     [ParseError]:errors = [ParseError] [];
-    S1EPSLModuleContent:s1_modcon = [(S1EPSLModuleContent?)module.content]
+    S1EPSLModuleContent:s1_modcon = [module.content#S1EPSLModuleContent?]
         .expect["Expected S1EPSLModuleContent"];
     Type_Context:ctx = type_ context of [s1_modcon];
     [Global]:globals = [Global] [];
@@ -380,14 +380,14 @@ S2ModconResult#cook exports [Module:module] {
 
 S3ModconResult#cook epsl functions [Module:module] {
     [ParseError]:errors = [ParseError] [];
-    S2EPSLModuleContent:s2_modcon = [(S2EPSLModuleContent?)module.content]
+    S2EPSLModuleContent:s2_modcon = [module.content#S2EPSLModuleContent?]
         .expect["Expected S2EPSLModuleContent"];
 
     ScopeChain:chain = ScopeChain [null, null];
     [ScopeVar]:vars = [ScopeVar] [];
     for Global:global in s2_modcon.globals {
         ScopeVar:var = ScopeVar [
-            (W)[vars].len, global.field.name, global.field.type_
+            [vars].len#W, global.field.name, global.field.type_
         ];
         [vars].append[var];
         chain = ScopeChain [var, chain];

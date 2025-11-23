@@ -121,7 +121,7 @@ ParsedStrEscape#parse_escape [Str:txt] at [W:index] {
                 "Expected two hex characters after '\\x'", index
             ]];
         };
-        parsed = Str [(Byte)val];
+        parsed = Str [val#Byte];
     }
     {
         return ParsedStrEscape [0, "", TokenizationError [
@@ -387,12 +387,12 @@ TokenizationResult#tokenize [Str:input] {
 
     if parse_state == 1 || parse_state == 2 {
         [errors].append[TokenizationError [
-            "Unterminated string literal", (W)[input].len
+            "Unterminated string literal", [input].len#W
         ]];
     };
     if parse_state == 3 || parse_state == 4 {
         [errors].append[TokenizationError [
-            "Unterminated byte literal", (W)[input].len
+            "Unterminated byte literal", [input].len#W
         ]];
     };
 
@@ -438,7 +438,7 @@ Str#token_id_to_name[W:id] {
     if id < 32 || id == 127 {
         return "unprintable ASCII character (code {})" % id;
     } elif id < 127 {
-        return "'{}'" % (Byte)id;
+        return "'{}'" % id#Byte;
     };
     switch id
     (300) {return "identifier";}
@@ -460,7 +460,7 @@ Str#[Tokens:tokens].stringify {
         W:id = tokens.ids[i];
         $TokenData?:data = tokens.data[i];
         if id < 128 {
-            [result].append[(Byte)id];
+            [result].append[id#Byte];
         } elif id == T_IDENT {
             [result].extend[" {} " % [data].read_identifier];
         } elif id == T_PAREN_GROUP || id == T_SQUARE_GROUP || id == T_CURLY_GROUP {

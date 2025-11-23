@@ -128,7 +128,7 @@ GenericType_#Str_ {
 }
 
 Type_Context#type_ context of [$S0ModuleContent:s0_modcon] {
-    $S1ModuleContent:modcon = [($S1ModuleContent?)s0_modcon]
+    $S1ModuleContent:modcon = [s0_modcon#$S1ModuleContent?]
         .expect["Expected $S1ModuleContent"];
     return Type_Context [modcon.scoped_structs, [GenericType_Description] []];
 }
@@ -236,7 +236,7 @@ $Type_?#parse type_ from name [Str:name] state: [ParseState:state] ctx: [Type_Co
                 [state].error_at_previous
                     msg: ["The bit count must be postive"];
             } else {
-                maybe_bits = (W)val;
+                maybe_bits = val#W;
             };
         };
         switch bit_name
@@ -354,15 +354,15 @@ Field?#parse field state: [ParseState:state] ctx: [Type_Context:ctx] {
 }
 
 Bool#[$Type_:type_].is_numeric {
-    return !!($NumericType_?)type_;
+    return !!(type_#$NumericType_?);
 }
 
 Bool#[$Type_:type_].is_int {
-    return !!($IntegerType_?)type_;
+    return !!(type_#$IntegerType_?);
 }
 
 Bool#[$Type_:type_].is_unsigned_int {
-    return !!($UnsignedIntegerType_?)type_;
+    return !!(type_#$UnsignedIntegerType_?);
 }
 
 Struct_?#struct_ of [$Type_:type_] {
@@ -411,7 +411,7 @@ $Type_?#common type_ between [$Type_:a] and [$Type_:b] {
         };
     };
 
-    if !!(OptionalType_?)a || !!(OptionalType_?)b {
+    if !!(a#OptionalType_?) || !!(b#OptionalType_?) {
         given a as OptionalType_:optional_a {
             a = optional_a.sub;
         };
@@ -432,7 +432,7 @@ $NumericType_#common type_ between [$NumericType_:a] and [$NumericType_:b] {
         bits = b.bits;
     };
 
-    if !!(RType_?)a || !!(RType_?)b {
+    if !!(a#RType_?) || !!(b#RType_?) {
         [W]:valid_bit_counts = valid R_ bit counts;
         W:chosen_bit_count = [valid_bit_counts].at[-1];
         for W:bit_count in valid_bit_counts {
@@ -626,11 +626,11 @@ Bool#[$Type_:a] is equal to [$Type_:b] {
         };
         return false;
     } given a as AnyStructType_:any_struct_a {
-        return !!(AnyStructType_?)b;
+        return !!(b#AnyStructType_?);
     } given a as NullType_:null_a {
-        return !!(NullType_?)b;
+        return !!(b#NullType_?);
     } given a as NeverType_:never_a {
-        return !!(NeverType_?)b;
+        return !!(b#NeverType_?);
     } given a as OptionalType_:optional_a {
         given b as OptionalType_:optional_b {
             return [optional_a.sub] is equal to [optional_b.sub];
@@ -650,9 +650,9 @@ Bool#[$Type_:a] is equal to [$Type_:b] {
         };
         return false;
     } given a as BoolType_:bool_a {
-        return !!(BoolType_?)b;
+        return !!(b#BoolType_?);
     } given a as ByteType_:byte_a {
-        return !!(ByteType_?)b;
+        return !!(b#ByteType_?);
     } given a as WType_:W_a {
         given b as WType_:W_b {
             return W_a.bits == W_b.bits;

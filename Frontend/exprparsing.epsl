@@ -56,16 +56,16 @@ $Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
 
     // STEP: check for constants
     if [state].last_id == T_INT {
-        Z64:val = [(IntTokenData?)[state].last_data].unwrap.val;
+        Z64:val = [[state].last_data#IntTokenData?].unwrap.val;
         $NumericType_:type_ = ZType_ [64];
         if val > 0 {
-            if val > (Z64)~[(W32)0] {
+            if val > ~[0#W32]#Z64 {
                 type_ = WType_ [64];
             } else {
                 type_ = WType_ [32];
             };
         } else {
-            if val > -[(Z64)1] << [31] {
+            if val > -[1#Z64] << [31] {
                 type_ = ZType_ [32];
             };
         };
@@ -73,17 +73,17 @@ $Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
             start, [state].last_end, type_, val
         ];
     } elif [state].last_id == T_FLOAT {
-        R:val = [(FloatTokenData?)[state].last_data].unwrap.val;
+        R:val = [[state].last_data#FloatTokenData?].unwrap.val;
         return FloatConstantExpression [
             start, [state].last_end, RType_ [64], val
         ];
     } elif [state].last_id == T_BYTE {
-        Byte:val = [(ByteTokenData?)[state].last_data].unwrap.val;
+        Byte:val = [[state].last_data#ByteTokenData?].unwrap.val;
         return ByteConstantExpression [
             start, [state].last_end, ByteType_ [8], val
         ];
     } elif [state].last_id == T_STR {
-        Str:val = [(StrTokenData?)[state].last_data].unwrap.val;
+        Str:val = [[state].last_data#StrTokenData?].unwrap.val;
         return StrConstantExpression [
             start, [state].last_end, Str_, val
         ];
@@ -218,7 +218,7 @@ WhileExpression?#parse while_ [ParseState:state] ctx: [ExprContext:ctx] {
     $Type_?:maybe_base_type_ = null;
 
     Block?:maybe_else_block = null;
-    if [[state].try_read_ident] equals [(Str?)"else"] {
+    if [[state].try_read_ident] equals ["else"#Str?] {
         [state].consume;
         given parse block [state] ctx: [ctx] as Block:else_block {
             maybe_else_block = else_block;
@@ -284,10 +284,10 @@ IfExpression?#parse if_ [ParseState:state] ctx: [ExprContext:ctx] {
 
         Str?:next_ident = [state].try_read_ident;
 
-        if [next_ident] equals [(Str?)"elif"] {
+        if [next_ident] equals ["elif"#Str?] {
             [state].consume;
             continue;
-        } elif [next_ident] equals [(Str?)"else"] {
+        } elif [next_ident] equals ["else"#Str?] {
             [state].consume;
             has_else = true;
         };
@@ -330,7 +330,7 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
 
     $Type_?:maybe_result_type_ = NeverType_ [];
 
-    if [[state].try_read_ident] not equals [(Str?)"as"] {
+    if [[state].try_read_ident] not equals ["as"#Str?] {
         [state].error_at_current msg: ["Expected 'as'"];
         return null;
     };
@@ -381,9 +381,9 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
         [arms].append[GivenArm [var, block]];
 
         Str?:ident = [state].try_read_ident;
-        if [ident] equals [(Str?)"as"] {
+        if [ident] equals ["as"#Str?] {
             continue;
-        } elif [ident] equals [(Str?)"else"] {
+        } elif [ident] equals ["else"#Str?] {
             [state].consume;
             has_else = true;
         };
@@ -394,7 +394,7 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
     Block?:maybe_else_block = null;
 
     if has_else {
-        if [[state].try_read_ident] equals [(Str?)"never"] {
+        if [[state].try_read_ident] equals ["never"#Str?] {
             [state].consume;
             else_never = true;
         } else {
@@ -677,7 +677,7 @@ $Type_?#type_ for_ [BiOperator:operator] on [$Expression:a] and [$Expression:b] 
         if !expect numeric [a] and [b] op: [operator] state: [state]  {
             return null;
         };
-        $Type_:t = RType_ [[($NumericType_?)at].unwrap.bits];
+        $Type_:t = RType_ [[at#$NumericType_?].unwrap.bits];
         given bt as UnsignedIntegerType_:uint_type_ {
             t = at;
         };
