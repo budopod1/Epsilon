@@ -78,10 +78,16 @@ BiOperationExpression {
     $Expression:b
 }
 
+@super;
 @extends BiOperationExpression;
+BiLogicalExpression {
+    ExprScope:b_scope
+}
+
+@extends BiLogicalExpression;
 AndExpression {}
 
-@extends BiOperationExpression;
+@extends BiLogicalExpression;
 OrExpression {}
 
 @extends BiOperationExpression;
@@ -138,12 +144,14 @@ ContinueExpression {}
 
 @extends Expression;
 Block {
-    [$Expression]:lines
+    [$Expression]:lines,
+    ExprScope:scope
 }
 
 @extends Expression;
 WhileExpression {
     $Expression:cond,
+    ExprScope:cond_scope,
     Block:block,
     Block?:else_,
 }
@@ -156,6 +164,7 @@ IfExpression {
 
 IfBranch {
     $Expression:cond,
+    ExprScope:cond_scope,
     Block:block
 }
 

@@ -197,14 +197,14 @@ VariableDeclarationExpression?#parse var decl ident: [Str:ident] state: [ParseSt
 WhileExpression?#parse while_ [ParseState:state] ctx: [ExprContext:ctx] {
     W:start = [state].last_start;
 
-    ExprContext:cond_ctx = [ctx].branch;
+    ExprContext:cond_ctx = [ctx].new_scope;
     $Expression?:maybe_cond = parse expr [state] ctx: [cond_ctx];
     if !maybe_cond {
         return null;
     };
     $Expression:cond = [maybe_cond].unwrap;
 
-    ExprContext:block_ctx = [ctx].branch;
+    ExprContext:block_ctx = [ctx].new_scope;
     LoopCtx:loop_ctx = LoopCtx [
         [BreakExpression] [], [ContinueExpression] []
     ];
@@ -249,7 +249,9 @@ WhileExpression?#parse while_ [ParseState:state] ctx: [ExprContext:ctx] {
     };
 
     return WhileExpression [
-        start, [state].last_end, type_, cond, block, maybe_else_block
+        start, [state].last_end, type_,
+        cond, cond_ctx.scope,
+        block, maybe_else_block
     ];
 }
 
@@ -262,14 +264,14 @@ IfExpression?#parse if_ [ParseState:state] ctx: [ExprContext:ctx] {
 
     Bool:has_else = false;
     while true {
-        ctx = [ctx].branch;
-        $Expression?:maybe_cond = parse expr [state] ctx: [ctx];
+        ExprContext:cond_ctx = [ctx].new_scope;
+        $Expression?:maybe_cond = parse expr [state] ctx: [cond_ctx];
         if !maybe_cond {
             return null;
         };
         $Expression:cond = [maybe_cond].unwrap;
 
-        ctx = [ctx].branch;
+        ctx = [cond_ctx].new_scope;
         Block?:maybe_block = parse block [state] ctx: [ctx];
         if !maybe_block {
             return null;
@@ -280,7 +282,7 @@ IfExpression?#parse if_ [ParseState:state] ctx: [ExprContext:ctx] {
             maybe_type_ = common type_ between [type_] and [block.type_];
         };
 
-        [branches].append[IfBranch [cond, block]];
+        [branches].append[IfBranch [cond, cond_ctx.scope, block]];
 
         Str?:next_ident = [state].try_read_ident;
 
@@ -296,7 +298,7 @@ IfExpression?#parse if_ [ParseState:state] ctx: [ExprContext:ctx] {
 
     Block?:maybe_else_block = null;
     if has_else {
-        ctx = [ctx].branch;
+        ctx = [ctx].new_scope;
         maybe_else_block = parse block [state] ctx: [ctx];
         if !maybe_else_block {
             return null;
@@ -340,7 +342,7 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
     while true {
         [state].consume; // eat the 'as'
 
-        ctx = [ctx].branch;
+        ctx = [ctx].new_scope;
 
         if ![state].consume[T_IDENT] name: ["variable name"] {
             return null;
@@ -515,7 +517,7 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
         if ![state].is_at_end && [state].cur_id == ':' {
             return parse var decl ident: [ident] state: [state] ctx: [ctx];
         };
-        given lookup variable [ident] in [ctx.scope_chain] as ScopeVar:var {
+        given lookup variable [ident] in [ctx.scope.chain] as ScopeVar:var {
             return VariableExpression [
                 start, [state].last_end, var.type_, var
             ];
@@ -687,7 +689,7 @@ $Type_?#type_ for_ [BiOperator:operator] on [$Expression:a] and [$Expression:b] 
     };
 }
 
-$BiOperationExpression?#[BiOperator:operator] on [$Expression:a] and [$Expression:b] state: [ParseState:state] {
+$BiOperationExpression?#[BiOperator:operator] on [$Expression:a] and [$Expression:b] state: [ParseState:state] b_scope: [ExprScope:b_scope] {
     W:s = a.start_index;
     W:e = b.end_index;
     $Type_?:maybe_t = type_ for_ [operator] on [a] and [b] state: [state];
@@ -696,8 +698,8 @@ $BiOperationExpression?#[BiOperator:operator] on [$Expression:a] and [$Expressio
     };
     $Type_:t = [maybe_t].unwrap;
     switch operator.spelling
-    ("&&") {return AndExpression [s, e, t, a, b];}
-    ("||") {return OrExpression [s, e, t, a, b];}
+    ("&&") {return AndExpression [s, e, t, a, b, b_scope];}
+    ("||") {return OrExpression [s, e, t, a, b, b_scope];}
     (">") {return GreaterExpression [s, e, t, a, b];}
     ("<") {return LessExpression [s, e, t, a, b];}
     (">=") {return GreaterEqualExpression [s, e, t, a, b];}
@@ -745,11 +747,11 @@ $Expression?#parse expr [ParseState:state] ctx: [ExprContext:ctx] {
         $Expression?:maybe_b = null;
         given maybe_matching_operator as BiOperator:operator {
             if operator.cond_eval {
-                // the operator may sometimes not evaluate the second operand,
+                // the operator may sometimes not evaluate the second operand
                 // (what we are parsing right now), so we need to parse it
                 // in its own ExprContext so variables defined here aren't
                 // avaliable externally
-                op_ctx = [op_ctx].branch;
+                op_ctx = [op_ctx].new_scope;
             };
             given parse expr term [state] ctx: [op_ctx] as $Expression:b {
                 operator_stack[stack_i] = operator;
@@ -771,7 +773,8 @@ $Expression?#parse expr [ParseState:state] ctx: [ExprContext:ctx] {
         $Expression:b = [maybe_b].unwrap;
         given stack[stack_i] as $Expression:a {
             BiOperator:operator = [operator_stack[stack_i]].unwrap;
-            given [operator] on [a] and [b] state: [state] as $Expression:expr {
+            given [operator] on [a] and [b] state: [state] b_scope: [op_ctx.scope]
+            as $Expression:expr {
                 stack[stack_i] = expr;
             } else {
                 return null;
@@ -787,7 +790,7 @@ $Expression?#parse expr [ParseState:state] ctx: [ExprContext:ctx] {
 
 Block?#parse block inside [ParseState:state] ctx: [ExprContext:ctx] {
     W:start = [state].cur_start;
-    ExprContext:block_ctx = [ctx].branch;
+    ExprContext:block_ctx = [ctx].new_scope;
     [$Expression]:lines = [$Expression] [];
     $Type_?:maybe_type_ = null;
     while ![state].is_at_end {
@@ -818,7 +821,7 @@ Block?#parse block inside [ParseState:state] ctx: [ExprContext:ctx] {
         [lines].append[NullExpression [pos, pos, type_]];
         maybe_type_ = type_;
     };
-    return Block [start, [state].last_end, [maybe_type_].unwrap, lines];
+    return Block [start, [state].last_end, [maybe_type_].unwrap, lines, ctx.scope];
 }
 
 Block?#parse block [ParseState:state] ctx: [ExprContext:ctx] {

@@ -30,14 +30,37 @@ ScopeVar#add var [Str:name] type_: [$Type_:type_] to: [ExprContext:ctx] {
     [ScopeVar]:vars = ctx.mod_ctx.vars;
     ScopeVar:var = ScopeVar [[vars].len#W, name, type_];
     [vars].append[var];
-    ctx.scope_chain = ScopeChain [var, ctx.scope_chain];
+    ctx.scope.chain = ScopeChain [var, ctx.scope.chain];
     return var;
 }
 
-ExprContext#[ExprContext:ctx].branch {
+ExprScope#[ExprScope:scope].subscope {
+    return ExprScope [scope.chain, scope.func_chain_end, scope.chain];
+}
+
+ExprContext#[ExprContext:ctx].new_scope {
     return ExprContext [
-        ctx.mod_ctx, ctx.func_decl, ctx.scope_chain, ctx.loop_ctx
+        ctx.mod_ctx, ctx.func_decl, [ctx.scope].subscope, ctx.loop_ctx
     ];
+}
+
+[ScopeVar]#vars from [ScopeChain:start] to [ScopeChain:end] {
+    [ScopeVar]:vars = [ScopeVar] [];
+    ScopeChain:here = start;
+    while true {
+        if here == end {
+            break;
+        };
+        given here.var as ScopeVar:var {
+            [vars].append[var];
+        };
+        given here.next as ScopeChain:next {
+            here = next;
+        } else {
+            break;
+        };
+    };
+    return vars;
 }
 
 ModuleContext {
@@ -46,10 +69,16 @@ ModuleContext {
     [ScopeVar]:vars
 }
 
+ExprScope {
+    ScopeChain:chain,
+    ScopeChain:func_chain_end,
+    ScopeChain:scope_chain_end
+}
+
 ExprContext {
     ModuleContext:mod_ctx,
     FunctionDeclaration:func_decl,
-    ScopeChain:scope_chain,
+    ExprScope:scope,
     LoopCtx?:loop_ctx
 }
 
