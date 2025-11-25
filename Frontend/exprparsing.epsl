@@ -319,6 +319,30 @@ IfExpression?#parse if_ [ParseState:state] ctx: [ExprContext:ctx] {
     ];
 }
 
+SubVarDeclNode?#parse explicit var decl [ParseState:state] ctx: [ExprContext:ctx] {
+    W:start = [state].cur_start;
+
+    if ![state].consume[T_IDENT] name: ["variable name"] {
+        return null;
+    };
+    Str:var_ident = [[state].last_data].read_identifier;
+
+    if ![state].consume[':'] {
+        return null;
+    };
+
+    $Type_?:maybe_type_ = parse type_ state: [state]
+        ctx: [ctx.mod_ctx.type__ctx];
+    if !maybe_type_ {
+        return null;
+    };
+    $Type_:type_ = [maybe_type_].unwrap;
+
+    return SubVarDeclNode [
+        start, [state].last_end, add var [var_ident] type_: [type_] to: [ctx]
+    ];
+}
+
 GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
     W:start = [state].last_start;
 
@@ -344,30 +368,18 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
 
         ctx = [ctx].new_scope;
 
-        if ![state].consume[T_IDENT] name: ["variable name"] {
+        SubVarDeclNode?:maybe_var_decl = parse explicit var decl [state] ctx: [ctx];
+        if !maybe_var_decl {
             return null;
         };
-        Str:var_ident = [[state].last_data].read_identifier;
+        SubVarDeclNode:var_decl = [maybe_var_decl].unwrap;
 
-        if ![state].consume[':'] {
-            return null;
-        };
-
-        Type_Node?:maybe_type__node = parse type_ node state: [state]
-            ctx: [ctx.mod_ctx.type__ctx];
-        if !maybe_type__node {
-            return null;
-        };
-        Type_Node:type__node = [maybe_type__node].unwrap;
-        $Type_:type_ = type__node.type_;
-
-        if ![scrutinee.type_] is castable to [OptionalType_ [type_]] {
+        $Type_:var_type_ = var_decl.var.type_;
+        if ![scrutinee.type_] is castable to [OptionalType_ [var_type_]] {
             Str:msg = "Scrutinee of type {} can never be {}"
-                % [scrutinee.type_].stringify % [type_].stringify;
-            [state].error_at[type__node] msg: [msg];
+                % [scrutinee.type_].stringify % [var_type_].stringify;
+            [state].error_at[var_decl] msg: [msg];
         };
-
-        ScopeVar:var = add var [var_ident] type_: [type_] to: [ctx];
 
         Block?:maybe_block = parse block [state] ctx: [ctx];
         if !maybe_block {
@@ -380,7 +392,7 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
                 [result_so_far] and [block.type_];
         };
 
-        [arms].append[GivenArm [var, block]];
+        [arms].append[GivenArm [var_decl.var, block]];
 
         Str?:ident = [state].try_read_ident;
         if [ident] equals ["as"#Str?] {
@@ -430,6 +442,230 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
     return GivenExpression [
         start, [state].last_end, [maybe_result_type_] || [NullType_ []],
         scrutinee, arms, maybe_else_block, else_never
+    ];
+}
+
+ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
+    W:start = [state].last_start;
+
+    ExprContext:block_ctx = [ctx].new_scope;
+    LoopCtx:loop_ctx = LoopCtx [
+        [BreakExpression] [], [ContinueExpression] []
+    ];
+    block_ctx.loop_ctx = loop_ctx;
+
+    SubVarDeclNode?:maybe_var_decl = parse explicit var decl [state] ctx: [block_ctx];
+    if !maybe_var_decl {
+        return null;
+    };
+    SubVarDeclNode:var_decl = [maybe_var_decl].unwrap;
+
+    ToForClause?:maybe_to = null;
+    FromForClause?:maybe_from = null;
+    StepForClause?:maybe_step = null;
+    InForClause?:maybe_in = null;
+    EnumeratingForClause?:maybe_enumerating = null;
+    WhereForClause?:maybe_where = null;
+    MapForClause?:maybe_map = null;
+
+    while ![state].is_at_end && [state].cur_id != T_CURLY_GROUP {
+        if ![state].consume[T_IDENT] name: ["for clause name"] {
+            return null;
+        };
+
+        W:clause_start = [state].last_start;
+
+        Str:clause_name = [[state].last_data].read_identifier;
+        switch clause_name
+        ("to") {
+            ExprContext:clause_ctx = [ctx].new_scope;
+            given parse expr [state] ctx: [clause_ctx] as $Expression:val {
+                maybe_to = ToForClause [
+                    clause_start, [state].last_end, val, clause_ctx.scope
+                ];
+            } else {return null;};
+        }
+        ("from") {
+            ExprContext:clause_ctx = [ctx].new_scope;
+            given parse expr [state] ctx: [clause_ctx] as $Expression:val {
+                maybe_from = FromForClause [
+                    clause_start, [state].last_end, val, clause_ctx.scope
+                ];
+            } else {return null;};
+        }
+        ("step") {
+            ExprContext:clause_ctx = [ctx].new_scope;
+            given parse expr [state] ctx: [clause_ctx] as $Expression:val {
+                maybe_step = StepForClause [
+                    clause_start, [state].last_end, val, clause_ctx.scope
+                ];
+            } else {return null;};
+        }
+        ("in") {
+            ExprContext:clause_ctx = [ctx].new_scope;
+            given parse expr [state] ctx: [clause_ctx] as $Expression:val {
+                maybe_in = InForClause [
+                    clause_start, [state].last_end, val, clause_ctx.scope
+                ];
+            } else {return null;};
+        }
+        ("enumerating") {
+            ExprContext:clause_ctx = [ctx].new_scope;
+            given parse expr [state] ctx: [clause_ctx] as $Expression:val {
+                maybe_enumerating = EnumeratingForClause [
+                    clause_start, [state].last_end, val, clause_ctx.scope
+                ];
+            } else {return null;};
+        }
+        ("where") {
+            given parse expr [state] ctx: [block_ctx] as $Expression:val {
+                maybe_where = WhereForClause [
+                    clause_start, [state].last_end, val, block_ctx.scope
+                ];
+            } else {return null;};
+        }
+        ("map") {
+            maybe_map = MapForClause [clause_start, [state].last_end];
+        }
+        {
+            [state].error_at_previous
+                msg: ["Invalid for loop clause name '{}'" % clause_name];
+            return null;
+        };
+    };
+
+    Block?:maybe_block = parse block [state] ctx: [block_ctx];
+    if !maybe_block {
+        return null;
+    };
+    Block:block = [maybe_block].unwrap;
+
+    Block?:maybe_else_block = null;
+    if [[state].try_read_ident] equals ["else"#Str?] {
+        [state].consume;
+        ExprContext:else_ctx = [ctx].new_scope;
+        maybe_else_block = parse block [state] ctx: [else_ctx];
+        if !maybe_else_block {
+            return null;
+        };
+    };
+
+    $Type_:idx_type_ = var_decl.var.type_;
+    given maybe_in as InForClause:in_clause {
+        idx_type_ = WType_ [64];
+    };
+
+    given maybe_in as InForClause:in_clause {
+        given maybe_enumerating as EnumeratingForClause:enumerating_clause {
+            Str:msg = "For loops cannot have both an 'in' and an 'enumerating' clause";
+            [state].error_at[in_clause] msg: [msg];
+        };
+    } else {
+        if ![var_decl.var.type_].is_int {
+            [state].error_at[var_decl]
+                msg: ["Loop variable type must be an integer"];
+        };
+    };
+
+    given maybe_enumerating as EnumeratingForClause:enumerating_clause {
+        given maybe_to as ToForClause:to_clause {
+            Str:msg = "For loops cannot have both a 'to' and an 'enumerating' clause";
+            [state].error_at[to_clause] msg: [msg];
+        };
+    };
+
+    given maybe_where as WhereForClause:where_clause {
+        given where_clause.val.type_ as NullType_:null_type_ {
+            [state].error_at[where_clause]
+                msg: ["The 'where' clause must hold a condition, this expression has type Null"];
+        };
+    };
+
+    if !maybe_to && !maybe_in && !maybe_enumerating {
+        [state].error_between [start] and [[state].last_end]
+            msg: ["For loops must have a 'to', 'in', or 'enumerating' clause"];
+    };
+
+    given maybe_to as ToForClause:to_clause {
+        if ![to_clause.val.type_] is convertible to [idx_type_] {
+            Str:msg = "'to' clause value type must be convertible to {}, found type {}"
+                % [idx_type_].stringify % [to_clause.val.type_].stringify;
+            [state].error_at[to_clause] msg: [msg];
+        };
+    };
+    given maybe_from as FromForClause:from_clause {
+        if ![from_clause.val.type_] is convertible to [idx_type_] {
+            Str:msg = "'from' clause value type must be convertible to {}, found type {}"
+                % [idx_type_].stringify % [from_clause.val.type_].stringify;
+            [state].error_at[from_clause] msg: [msg];
+        };
+    };
+    given maybe_step as StepForClause:step_clause {
+        if ![step_clause.val.type_].is_int {
+            Str:msg = "'step' clause value must be an integer, found value of type {}"
+                % [step_clause.val.type_].stringify;
+            [state].error_at[step_clause] msg: [msg];
+        };
+    };
+    given maybe_in as InForClause:in_clause {
+        $Type_:target_type_ = Array_ of [var_decl.var.type_];
+        if ![in_clause.val.type_] is convertible to [target_type_] {
+            Str:msg = "'in' clause value type must be convertible to {}, found {}"
+                % [target_type_].stringify % [in_clause.val.type_].stringify;
+            [state].error_at[in_clause] msg: [msg];
+        };
+    };
+    given maybe_enumerating as EnumeratingForClause:enumerating_clause {
+        GenericType_Criteria:criteria = GenericType_Criteria [
+            "Array", [$Type_Criteria] [AnyType_Criteria []]
+        ];
+        if ![enumerating_clause.val.type_].satisfies[criteria] {
+            Str:msg = "'enumerating' clause value must be an Array, found type {}"
+                % [enumerating_clause.val.type_].stringify;
+            [state].error_at[enumerating_clause] msg: [msg];
+        };
+    };
+
+    $Type_:result_type_ = NullType_ [];
+
+    given maybe_map as MapForClause:map_clause {
+        result_type_ = Array_ of [block.type_];
+
+        for BreakExpression:break_expr in loop_ctx.breaks {
+            if !(break_expr.result.type_#NullType_?) {
+                Str:msg = "Breaks in for loops with map clauses must produce Null, got type {}"
+                    % [break_expr.result.type_].stringify;
+                [state].error_at[break_expr] msg: [msg];
+            };
+        };
+
+        given maybe_else_block as Block:else_block {
+            if !(else_block.type_#NullType_?) {
+                Str:msg = "Else blocks on for loops with map clauses must produce Null, got type {}"
+                    % [else_block.type_].stringify;
+                [state].error_at[[else_block.lines].at[-1]] msg: [msg];
+            };
+        };
+    } else {
+        given maybe_else_block as Block:else_block {
+            result_type_ = else_block.type_;
+            for BreakExpression:break_ in loop_ctx.breaks {
+                given common type_ between [result_type_] and [break_.result.type_]
+                as $Type_:common_type_ {
+                    result_type_ = common_type_;
+                } else {
+                    result_type_ = NullType_ [];
+                    break;
+                };
+            };
+        };
+    };
+
+    return ForExpression [
+        start, [state].last_end, result_type_, var_decl.var,
+        maybe_to, maybe_from, maybe_step, maybe_in, maybe_enumerating,
+        maybe_where, maybe_map,
+        block, maybe_else_block
     ];
 }
 
@@ -512,7 +748,9 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
     ("given") {
         return parse given_ [state] ctx: [ctx];
     }
-    // TODO: add other keywords here
+    ("for") {
+        return parse for_ [state] ctx: [ctx];
+    }
     { // it's a variable
         if ![state].is_at_end && [state].cur_id == ':' {
             return parse var decl ident: [ident] state: [state] ctx: [ctx];

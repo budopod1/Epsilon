@@ -181,6 +181,66 @@ GivenArm {
     Block:block
 }
 
+@extends Expression;
+ForExpression {
+    ScopeVar:var,
+    ToForClause?:to_clause,
+    FromForClause?:from_clause,
+    StepForClause?:step_clause,
+    InForClause?:in_clause,
+    EnumeratingForClause?:enumerating_clause,
+    WhereForClause?:where_clause,
+    MapForClause?:map_clause,
+    Block:block,
+    Block?:else_
+}
+
+@extends Node;
+ToForClause {
+    $Expression:val,
+    ExprScope:scope
+}
+
+@extends Node;
+FromForClause {
+    $Expression:val,
+    ExprScope:scope
+}
+
+@extends Node;
+StepForClause {
+    $Expression:val,
+    ExprScope:scope
+}
+
+@extends Node;
+InForClause {
+    $Expression:val,
+    ExprScope:scope
+}
+
+@extends Node;
+EnumeratingForClause {
+    $Expression:val,
+    ExprScope:scope
+}
+
+@extends Node;
+WhereForClause {
+    $Expression:val,
+    ExprScope:scope
+}
+
+@extends Node;
+MapForClause {}
+
+// a temporary node representing a variable declaration
+// that is part of a larger expression
+@extends Node;
+SubVarDeclNode {
+    ScopeVar:var
+}
+
 Bool#[$ConstantExpression:const_expr].is_truthy {
     given const_expr as BoolConstantExpression:bool_const {
         return bool_const.val;

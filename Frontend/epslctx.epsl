@@ -47,10 +47,7 @@ ExprContext#[ExprContext:ctx].new_scope {
 [ScopeVar]#vars from [ScopeChain:start] to [ScopeChain:end] {
     [ScopeVar]:vars = [ScopeVar] [];
     ScopeChain:here = start;
-    while true {
-        if here == end {
-            break;
-        };
+    while here != end {
         given here.var as ScopeVar:var {
             [vars].append[var];
         };

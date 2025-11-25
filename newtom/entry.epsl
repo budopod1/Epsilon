@@ -20,11 +20,12 @@ Sub1 {}
 @extends Sup;
 Sub2 {}
 
-Z#foo [item:$Sup] {
-    item#Sub1?;
-    given item as sub1:Sub1 {
-        1
-    } as sub2:Sub2 {
+[Z]#foo [items:[Z]] {
+    a := for i:W from 1 to 10 step "q" enumerating items {
+        break
+    } else {
         2
-    } else never
+    };
+    a = 2;
+    a
 }
