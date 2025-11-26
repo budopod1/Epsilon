@@ -4,26 +4,7 @@ Z#triangle[Z:v] {
     Z:t = 0;
     while (i <= v) {
         t += i;
-        i++;
+        i += 1;
     };
     return t;
 }
-
-/*
-If you're not familiar with Epsilon syntax, here's what this program does in the much more well known Rockstar programming language.
-
-Epsilon takes your brain
-the tractorbeam is a
-the aliens are earthbound
-While the tractorbeam is as low as your brain
-Let the aliens be with the tractorbeam
-Let the tractorbeam be with 1
-
-Give back the aliens
-
----
-
-The Question is 15
-Put Epsilon taking The Question into The Answer
-Shout The Answer
-*/

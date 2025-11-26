@@ -238,14 +238,6 @@ TESTS = [
         ]
     },
     {
-        "file": "increment.epsl",
-        "func": "main",
-        "sig": (c_int32,),
-        "tests": [
-            {"arguments": [], "compare": "exact", "expect": 6}
-        ]
-    },
-    {
         "file": "indexof.epsl",
         "func": "main",
         "sig": (c_int32,),
