@@ -65,7 +65,7 @@ Bool#[ParseState:state].consume[W:target_id] name: [Str?:target_name] {
     };
     W:found_id = [state].cur_id;
     if found_id == target_id {
-        state.index++;
+        state.index += 1;
         return true;
     } else {
         [state].error_about_current msg: ["Expected {}"
@@ -101,14 +101,14 @@ Bool#[ParseState:state].require_finished why: [Str:why] {
     if [state].is_at_end {
         abort ["Cannot consume token when none remain"];
     };
-    state.index++;
+    state.index += 1;
 }
 
 #[ParseState:state].unconsume {
     if state.index == 0 {
         abort ["Cannot unconsume token when none have been consumed"];
     };
-    state.index--;
+    state.index -= 1;
 }
 
 Tokens#[ParseState:state].new_section {
@@ -119,7 +119,8 @@ Tokens#[ParseState:state].new_section {
     if [state].is_at_end {
         abort ["Cannot move token when none remain"];
     };
-    [dest].add_from[state.tokens][state.index++];
+    [dest].add_from[state.tokens][state.index];
+    state.index += 1;
 }
 
 W#[ParseState:state].cur_id {
@@ -176,6 +177,6 @@ ParseState#[ParseState:state].last_substate {
         if ![state].require_more why: ["Expected ';' {}" % why] {
             return;
         };
-        state.index++;
+        state.index += 1;
     };
 }

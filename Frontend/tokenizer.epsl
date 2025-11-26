@@ -151,7 +151,7 @@ TokenDataResult#parse_string_token [Str:txt] {
             } else {
                 [parsed].append[byte];
             };
-            i++;
+            i += 1;
         };
     };
     return TokenDataResult [StrTokenData [parsed], null];
@@ -239,11 +239,13 @@ TokenizationResult#tokenize [Str:input] {
                 so_far = Str [];
             } elif [byte].is_digit {
                 parse_state = 7;
-                token_start = index--;
+                token_start = index;
+                index -= 1;
                 so_far = Str [];
             } elif [byte].is_identifier {
                 parse_state = 9;
-                token_start = index--;
+                token_start = index;
+                index -= 1;
                 so_far = Str [];
             } else {
                 Bool:is_comment = false;
@@ -330,7 +332,7 @@ TokenizationResult#tokenize [Str:input] {
             } else {
                 is_num_end = true;
                 parse_state = 0;
-                index--;
+                index -= 1;
             };
             if is_num_end {
                 [tokens.ids].append[T_INT];
@@ -351,7 +353,7 @@ TokenizationResult#tokenize [Str:input] {
             } else {
                 is_num_end = true;
                 parse_state = 0;
-                index--;
+                index -= 1;
             };
             if is_num_end {
                 [tokens.ids].append[T_FLOAT];
@@ -372,7 +374,7 @@ TokenizationResult#tokenize [Str:input] {
             } else {
                 is_identifier_end = true;
                 parse_state = 0;
-                index--;
+                index -= 1;
             };
             if is_identifier_end {
                 [tokens.ids].append[T_IDENT];
@@ -382,7 +384,7 @@ TokenizationResult#tokenize [Str:input] {
             };
         }
         {abort;};
-        index++;
+        index += 1;
     };
 
     if parse_state == 1 || parse_state == 2 {
