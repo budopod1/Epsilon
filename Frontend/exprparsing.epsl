@@ -22,6 +22,11 @@ BiOperatorLevel {
     };
     [BiOperatorLevel]:bioperator_levels = [BiOperatorLevel] [
         BiOperatorLevel [[BiOperator] [
+            BiOperator ["=", false], BiOperator ["+=", false],
+            BiOperator ["-=", false], BiOperator ["*=", false],
+            BiOperator ["/=", false], BiOperator ["%=", false]
+        ]],
+        BiOperatorLevel [[BiOperator] [
             BiOperator ["&&", true], BiOperator ["||", true]
         ]],
         BiOperatorLevel [[BiOperator] [
@@ -767,6 +772,23 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
     };
 }
 
+$Expression?#assign [$Expression:value] to [$Expression:recipient] state: [ParseState: state] {
+    if ![value.type_] is convertible to [recipient.type_] {
+        Str:msg = "Cannot assign value of type {} to recipient expecting a type convertible to {}"
+            % [value.type_].stringify % [recipient.type_].stringify;
+        [state].error_at[value] msg: [msg];
+    };
+    given recipient as VariableExpression:var_expr {
+        return VariableAssignmentExpression [
+            recipient.start_index, value.end_index, NullType_ [],
+            var_expr.var, value
+        ];
+    } else {
+        [state].error_at[recipient] msg: ["Cannot assign to this expression"];
+        return null;
+    };
+}
+
 $Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [ExprContext:ctx] {
     if [state].is_at_end {
         return base;
@@ -837,7 +859,7 @@ BiOperator?#match [BiOperatorLevel:level] against [ParseState:state] {
             };
             [state].consume;
         };
-        if !failed {
+        if !failed && [state].cur_id != '=' {
             return operator;
         };
         state.index = index;
@@ -922,20 +944,25 @@ $Type_?#type_ for_ [BiOperator:operator] on [$Expression:a] and [$Expression:b] 
             t = at;
         };
         return t;
+    } elif ([spelling] equals ["="]) || ([spelling] equals ["+="])
+        || ([spelling] equals ["-="]) || ([spelling] equals ["*="])
+        || ([spelling] equals ["/="]) || ([spelling] equals ["%="]) {
+        return NullType_ [];
     } else {
         abort ["Operator {} not implemented" % operator.spelling];
     };
 }
 
-$BiOperationExpression?#[BiOperator:operator] on [$Expression:a] and [$Expression:b] state: [ParseState:state] b_scope: [ExprScope:b_scope] {
+$Expression?#[BiOperator:op] on [$Expression:a] and [$Expression:b] state: [ParseState:state] b_scope: [ExprScope:b_scope] {
     W:s = a.start_index;
     W:e = b.end_index;
-    $Type_?:maybe_t = type_ for_ [operator] on [a] and [b] state: [state];
+    $Type_?:maybe_t = type_ for_ [op] on [a] and [b] state: [state];
     if !maybe_t {
         return null;
     };
     $Type_:t = [maybe_t].unwrap;
-    switch operator.spelling
+    Str:spelling = op.spelling;
+    switch spelling
     ("&&") {return AndExpression [s, e, t, a, b, b_scope];}
     ("||") {return OrExpression [s, e, t, a, b, b_scope];}
     (">") {return GreaterExpression [s, e, t, a, b];}
@@ -951,8 +978,24 @@ $BiOperationExpression?#[BiOperator:operator] on [$Expression:a] and [$Expressio
     ("~/") {return IntDivideExpression [s, e, t, a, b];}
     ("%") {return ModuloExpression [s, e, t, a, b];}
     ("**") {return ExponentiationExpression [s, e, t, a, b];}
-    {
-        abort ["Operator {} not implemented" % operator.spelling];
+    ("=") {return assign [b] to [a] state: [state];};
+    if ([spelling] equals ["+="]) || ([spelling] equals ["-="])
+        || ([spelling] equals ["*="]) || ([spelling] equals ["/="])
+        || ([spelling] equals ["%="]) {
+        return inplace op [op] on [a] and [b] state: [state] b_scope: [b_scope];
+    };
+    abort ["Operator {} not implemented" % op.spelling];
+}
+
+$Expression?#inplace op [BiOperator:op] on [$Expression:a] and [$Expression:b] state: [ParseState:state] b_scope: [ExprScope:b_scope] {
+    // cut off the last char of the op ("+=" -> "+")
+    Str:sub_op_name = [op.spelling].slice[0][[op.spelling].len - 1];
+    BiOperator:sub_op = BiOperator [sub_op_name, op.cond_eval];
+    given [sub_op] on [a] and [b] state: [state] b_scope: [b_scope]
+    as $Expression:op_result {
+        return assign [op_result] to [a] state: [state];
+    } else {
+        return null;
     };
 }
 
@@ -962,7 +1005,7 @@ $Expression?#parse expr [ParseState:state] ctx: [ExprContext:ctx] {
         return null;
     };
     $Expression:first_term = [maybe_first_term].unwrap;
-    if [state].is_at_end {
+    if [state].is_at_end || [state].cur_id == ';' || [state].cur_id == ',' {
         return first_term;
     };
 
@@ -1022,8 +1065,6 @@ $Expression?#parse expr [ParseState:state] ctx: [ExprContext:ctx] {
         };
         ctx_stack[stack_i] = op_ctx;
     };
-
-    return stack[stack_i];
 }
 
 Block?#parse block inside [ParseState:state] ctx: [ExprContext:ctx] {

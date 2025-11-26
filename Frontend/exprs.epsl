@@ -71,6 +71,12 @@ CastExpression {
     $Expression:castee
 }
 
+@extends Expression;
+VariableAssignmentExpression {
+    ScopeVar:recipient,
+    $Expression:value
+}
+
 @super;
 @extends Expression;
 BiOperationExpression {
