@@ -1,6 +1,16 @@
+F {
+    Z:n
+}
+
+Z#inc [F:f] {
+    Z:n = f.n;
+    f.n = n + 1;
+    return n;
+}
+
 Z#main {
-    Z:a = 1;
-    Z:b = 1;
-    Bool:c = a++ || b++;
-    return a + b * 4 + c * 16;
+    F:f1 = F [1];
+    F:f2 = F [1];
+    Bool:c = inc [f1] || inc [f2];
+    return f1.n + f2.n * 4 + c * 16;
 }

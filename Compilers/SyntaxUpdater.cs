@@ -7,9 +7,7 @@ public static class SyntaxUpdater {
     }
 
     public static void Substitute(IToken from, object[] to) {
-#if !UPGRADE_LOGGING
-        return;
-#endif
+#if UPGRADE_LOGGING
         StringBuilder builder = new();
         builder.Append(TokenUtils.GetParentOfType<Program>(from).GetRealPath());
         builder.Append('\t');
@@ -37,5 +35,6 @@ public static class SyntaxUpdater {
         }
         builder.Append('\n');
         File.AppendAllText(GetLogFilePath(), builder.ToString());
+#endif
     }
 }

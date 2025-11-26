@@ -187,7 +187,8 @@ Val#build format chain using [[Val]:operands] {
             [operand].check_ref;
             [strs_to_free].append[stringified];
         };
-        [[str_arr].idx[c [i++]]] = [stringified];
+        [[str_arr].idx[c [i]]] = [stringified];
+        i += 1;
     };
 
     extern fn [Str_] ["epsl_format_string"] [[Type_] [Str_, Pointer [Str_], W_]]

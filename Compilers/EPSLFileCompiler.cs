@@ -1008,32 +1008,6 @@ Please clarify between the functions that take the types:
         return [assignment];
     }
 
-    List<IToken> TransformInplaceOffset(IToken operand, bool increment, bool pre) {
-        IAssignableValue assignable = (IAssignableValue)operand;
-
-        IValueToken newValue;
-        if (increment) {
-            newValue = new AddOne(assignable);
-        } else {
-            newValue = new SubOne(assignable);
-        }
-        newValue.span = operand.span;
-
-        IAssignment assignment = assignable.AssignTo(newValue);
-        assignment.span = operand.span;
-
-        IValueToken result;
-        if (pre) {
-            result = newValue;
-        } else {
-            result = assignable;
-        }
-
-        CommaOperation comma = new(assignment, result);
-        comma.span = operand.span;
-        return [comma];
-    }
-
     Program ParseFunctionCode(Program program) {
         List<IMatcher> functionRules = [];
         List<IMatcher> addMatchingFunctionRules = [];
@@ -1285,56 +1259,6 @@ Please clarify between the functions that take the types:
                         typeof(ZeroedArrayCreation)
                     )
                 ),
-                new CombinedMatchersMatcher([
-                    new PatternMatcher(
-                        [
-                            new AndPatternSegment(
-                                new Type_PatternSegment(new Type_("R")),
-                                new TypePatternSegment(typeof(IAssignableValue))
-                            ),
-                            new TextPatternSegment("+"),
-                            new TextPatternSegment("+")
-                        ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
-                            tokens[0], increment: true, pre: false
-                        ))
-                    ),
-                    new PatternMatcher(
-                        [
-                            new AndPatternSegment(
-                                new Type_PatternSegment(new Type_("R")),
-                                new TypePatternSegment(typeof(IAssignableValue))
-                            ),
-                            new TextPatternSegment("-"),
-                            new TextPatternSegment("-")
-                        ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
-                            tokens[0], increment: false, pre: false
-                        ))
-                    ),
-                    new PatternMatcher(
-                        [
-                            new TextPatternSegment("+"),
-                            new TextPatternSegment("+"),
-                            new AndPatternSegment(
-                                new Type_PatternSegment(new Type_("R")),
-                                new TypePatternSegment(typeof(IAssignableValue))
-                            )
-                        ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
-                            tokens[2], increment: true, pre: true
-                        ))
-                    ),
-                    new PatternMatcher(
-                        [
-                            new TextPatternSegment("-"),
-                            new TextPatternSegment("-"),
-                            new AndPatternSegment(
-                                new Type_PatternSegment(new Type_("R")),
-                                new TypePatternSegment(typeof(IAssignableValue))
-                            )
-                        ], new FuncPatternProcessor<List<IToken>>(tokens => TransformInplaceOffset(
-                            tokens[2], increment: false, pre: true
-                        ))
-                    )
-                ]),
                 new PatternMatcher(
                     [
                         new Type_PatternSegment(new Type_("R")),

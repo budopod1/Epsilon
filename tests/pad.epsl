@@ -6,19 +6,22 @@ L#func {
     Str:str1 = ["mc"].clone;
     [str1].left_pad[4]['_'];
     for Byte:byte in str1 {
-        i *= byte + j++;
+        i *= byte + j;
+        j += 1;
     };
 
     Str:str2 = ["mc"].clone;
     [str2].right_pad[4]['_'];
     for Byte:byte in str2 {
-        i *= byte + j++;
+        i *= byte + j;
+        j += 1;
     };
 
     Str:str3 = ["mc"].clone;
     [str3].left_pad[1]['_'];
     for Byte:byte in str3 {
-        i *= byte + j++;
+        i *= byte + j;
+        j += 1;
     };
 
     return i;
