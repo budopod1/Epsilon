@@ -233,10 +233,8 @@ WhileExpression?#parse while_ [ParseState:state] ctx: [ExprContext:ctx] {
         };
     };
 
-    given cond as $ConstantExpression:const_expr {
-        if [const_expr].is_truthy {
-            maybe_base_type_ = NeverType_ [];
-        };
+    if [cond].is_truthy_const {
+        maybe_base_type_ = NeverType_ [];
     };
 
     $Type_:type_ = NullType_ [];
@@ -974,7 +972,14 @@ $Expression?#[BiOperator:op] on [$Expression:a] and [$Expression:b] state: [Pars
     ("+") {return PlusExpression [s, e, t, a, b];}
     ("-") {return MinusExpression [s, e, t, a, b];}
     ("*") {return MultiplyExpression [s, e, t, a, b];}
-    ("/") {return DivideExpression [s, e, t, a, b];}
+    ("/") {
+        given [a].try_float_value as R:a_R {
+            given [b].try_float_value as R:b_R {
+                return FloatConstantExpression [s, e, t, a_R / b_R];
+            };
+        };
+        return DivideExpression [s, e, t, a, b];
+    }
     ("~/") {return IntDivideExpression [s, e, t, a, b];}
     ("%") {return ModuloExpression [s, e, t, a, b];}
     ("**") {return ExponentiationExpression [s, e, t, a, b];}

@@ -247,28 +247,42 @@ SubVarDeclNode {
     ScopeVar:var
 }
 
-Bool#[$ConstantExpression:const_expr].is_truthy {
-    given const_expr as BoolConstantExpression:bool_const {
+Bool#[$Expression:expr].is_truthy_const {
+    given expr as BoolConstantExpression:bool_const {
         return bool_const.val;
-    } given const_expr as IntConstantExpression:int_const {
+    } given expr as IntConstantExpression:int_const {
         return int_const.val != 0;
-    } given const_expr as FloatConstantExpression:float_const {
+    } given expr as FloatConstantExpression:float_const {
         return float_const.val != 0;
-    } given const_expr as ByteConstantExpression:byte_const {
+    } given expr as ByteConstantExpression:byte_const {
         return byte_const.val != '\0';
-    } given const_expr as StrConstantExpression:str_const {
+    } given expr as StrConstantExpression:str_const {
         return [str_const.val].len > 0;
     } else {
-        abort ["Cannot get truthiness of {}" % const_expr];
+        return false;
     };
 }
 
-Z64?#[$ConstantExpression:const_expr].int_value {
-    given const_expr as BoolConstantExpression:bool_const {
+Z64?#[$Expression:expr].try_int_value {
+    given expr as BoolConstantExpression:bool_const {
         return bool_const.val;
-    } given const_expr as IntConstantExpression:int_const {
+    } given expr as IntConstantExpression:int_const {
         return int_const.val;
-    } given const_expr as ByteConstantExpression:byte_const {
+    } given expr as ByteConstantExpression:byte_const {
+        return byte_const.val;
+    } else {
+        return null;
+    };
+}
+
+R?#[$Expression:expr].try_float_value {
+    given expr as BoolConstantExpression:bool_const {
+        return bool_const.val;
+    } given expr as IntConstantExpression:int_const {
+        return int_const.val;
+    } given expr as FloatConstantExpression:float_const {
+        return float_const.val;
+    } given expr as ByteConstantExpression:byte_const {
         return byte_const.val;
     } else {
         return null;
