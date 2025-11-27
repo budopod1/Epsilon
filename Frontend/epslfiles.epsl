@@ -301,11 +301,14 @@ Str#make symbol from segments [[$TemplateSegment]:segments] {
 
 S2EPSLFunction?#parse function [RawFunction:raw_function] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] prefix: [Str:prefix] {
     ParseState:ret_state = ParseState [raw_function.ret_type_, 0, errors];
-    $Type_?:maybe_ret_type_ = parse type_ state: [ret_state] ctx: [ctx];
-    if !maybe_ret_type_ {
-        return null;
+    $Type_:ret_type_ = NullType_ [];
+    if ![ret_state].is_at_end {
+        $Type_?:maybe_ret_type_ = parse type_ state: [ret_state] ctx: [ctx];
+        if !maybe_ret_type_ {
+            return null;
+        };
+        ret_type_ = [maybe_ret_type_].unwrap;
     };
-    $Type_:ret_type_ = [maybe_ret_type_].unwrap;
 
     [$TemplateSegment]:template = [$TemplateSegment] [];
     [Field]:arguments = [Field] [];

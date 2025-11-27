@@ -470,6 +470,7 @@ ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
     EnumeratingForClause?:maybe_enumerating = null;
     WhereForClause?:maybe_where = null;
     MapForClause?:maybe_map = null;
+    InplaceForClause?:maybe_inplace = null;
 
     while ![state].is_at_end && [state].cur_id != T_CURLY_GROUP {
         if ![state].consume[T_IDENT] name: ["for clause name"] {
@@ -530,6 +531,9 @@ ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
         ("map") {
             maybe_map = MapForClause [clause_start, [state].last_end];
         }
+        ("inplace") {
+            maybe_inplace = InplaceForClause [clause_start, [state].last_end];
+        }
         {
             [state].error_at_previous
                 msg: ["Invalid for loop clause name '{}'" % clause_name];
@@ -589,6 +593,8 @@ ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
             msg: ["For loops must have a 'to', 'in', or 'enumerating' clause"];
     };
 
+    $Type_?:maybe_arr_type_ = null;
+
     given maybe_to as ToForClause:to_clause {
         if ![to_clause.val.type_] is convertible to [idx_type_] {
             Str:msg = "'to' clause value type must be convertible to {}, found type {}"
@@ -612,7 +618,9 @@ ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
     };
     given maybe_in as InForClause:in_clause {
         $Type_:target_type_ = Array_ of [var_decl.var.type_];
-        if ![in_clause.val.type_] is convertible to [target_type_] {
+        if [in_clause.val.type_] is convertible to [target_type_] {
+            maybe_arr_type_ = in_clause.val.type_;
+        } else {
             Str:msg = "'in' clause value type must be convertible to {}, found {}"
                 % [target_type_].stringify % [in_clause.val.type_].stringify;
             [state].error_at[in_clause] msg: [msg];
@@ -622,21 +630,45 @@ ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
         GenericType_Criteria:criteria = GenericType_Criteria [
             "Array", [$Type_Criteria] [AnyType_Criteria []]
         ];
-        if ![enumerating_clause.val.type_].satisfies[criteria] {
+        if [enumerating_clause.val.type_].satisfies[criteria] {
+            maybe_arr_type_ = enumerating_clause.val.type_;
+        } else {
             Str:msg = "'enumerating' clause value must be an Array, found type {}"
                 % [enumerating_clause.val.type_].stringify;
             [state].error_at[enumerating_clause] msg: [msg];
         };
     };
+    given maybe_inplace as InplaceForClause:inplace_clause {
+        if !maybe_in && !maybe_enumerating {
+            Str:msg = "For loops with an 'inplace' clause require an 'in' or 'enumerating' clause";
+            [state].error_at[inplace_clause] msg: [msg];
+        };
+
+        given maybe_map as MapForClause:map_clause {
+            Str:msg = "For loops cannot have both an 'inplace' and a 'map' clause";
+            [state].error_at[inplace_clause] msg: [msg];
+        };
+
+        given maybe_arr_type_ as $Type_:arr_type_ {
+            $Type_:elem_type_ = [arr_type_#GenericType_?].unwrap.generics[0];
+            if ![block.type_] is convertible to [elem_type_] {
+                Str:msg = "Expected block to produce result convertible to {}, found result of type {}"
+                    % [elem_type_].stringify % [block.type_].stringify;
+                [state].error_at[[block.lines].at[-1]] msg: [msg];
+            };
+        };
+    };
 
     $Type_:result_type_ = NullType_ [];
 
-    given maybe_map as MapForClause:map_clause {
-        result_type_ = Array_ of [block.type_];
+    if maybe_map || maybe_inplace {
+        if maybe_map {
+            result_type_ = Array_ of [block.type_];
+        };
 
         for BreakExpression:break_expr in loop_ctx.breaks {
             if !(break_expr.result.type_#NullType_?) {
-                Str:msg = "Breaks in for loops with map clauses must produce Null, got type {}"
+                Str:msg = "Breaks in for loops with 'map' or 'inplace' clauses must produce Null, got type {}"
                     % [break_expr.result.type_].stringify;
                 [state].error_at[break_expr] msg: [msg];
             };
@@ -644,7 +676,7 @@ ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
 
         given maybe_else_block as Block:else_block {
             if !(else_block.type_#NullType_?) {
-                Str:msg = "Else blocks on for loops with map clauses must produce Null, got type {}"
+                Str:msg = "Else blocks on for loops with 'map' or 'inplace' clauses must produce Null, got type {}"
                     % [else_block.type_].stringify;
                 [state].error_at[[else_block.lines].at[-1]] msg: [msg];
             };
@@ -667,7 +699,7 @@ ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
     return ForExpression [
         start, [state].last_end, result_type_, var_decl.var,
         maybe_to, maybe_from, maybe_step, maybe_in, maybe_enumerating,
-        maybe_where, maybe_map,
+        maybe_where, maybe_map, maybe_inplace,
         block, maybe_else_block
     ];
 }

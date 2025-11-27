@@ -20,15 +20,8 @@ Sub1 {}
 @extends Sup;
 Sub2 {}
 
-[Z]#foo [items:[Z]] {
-    a := for i:W from 1 to 10 step "q" enumerating items {
-        break
-    } else {
-        2
-    };
-    3.1415926 / 'a';
-    3 + 1 = 5.0;
-    a = 2;
-    5 += 2.0;
-    a
+#foo [items:[Z]] {
+    for i:Z in items inplace {
+        i + 2
+    }
 }

@@ -143,7 +143,10 @@ Struct_?#get struct named [Str:name] from [Type_Context:ctx] {
 }
 
 Type_Node?#parse type_ node state: [ParseState:state] ctx: [Type_Context:ctx] {
-    W:start = [state].cur_start;
+    W:start = 0;
+    if ![state].is_at_end {
+        start = [state].cur_start;
+    };
     given parse type_ state: [state] ctx: [ctx] as $Type_:type_ {
         W:end = [state].last_end;
         return Type_Node [start, end, type_];
@@ -153,7 +156,7 @@ Type_Node?#parse type_ node state: [ParseState:state] ctx: [Type_Context:ctx] {
 }
 
 $Type_?#parse type_ state: [ParseState:state] ctx: [Type_Context:ctx] {
-    if ![state].require_more why: ["type"] {
+    if ![state].require_more why: ["Expected type"] {
         return null;
     };
     [state].consume;

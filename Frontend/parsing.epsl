@@ -36,7 +36,10 @@ Bool#[ParseState:state].is_at_end {
 }
 
 #[ParseState:state].error_after[L:i] msg: [Str:msg] {
-    W:pos = state.tokens.end_indexes[i]+1;
+    W:pos = state.tokens.start_index;
+    given state.tokens.end_indexes[i]? as W:end_index {
+        pos = end_index + 1;
+    };
     [state].error_between [pos] and [pos] msg: [msg];
 }
 
