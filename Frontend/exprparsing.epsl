@@ -211,7 +211,7 @@ WhileExpression?#parse while_ [ParseState:state] ctx: [ExprContext:ctx] {
 
     ExprContext:block_ctx = [ctx].new_scope;
     LoopCtx:loop_ctx = LoopCtx [
-        [BreakExpression] [], [ContinueExpression] []
+        [BreakExpression] [], [ContinueExpression] [], block_ctx.scope
     ];
     block_ctx.loop_ctx = loop_ctx;
     Block?:maybe_block = parse block [state] ctx: [block_ctx];
@@ -453,7 +453,7 @@ ForExpression?#parse for_ [ParseState:state] ctx: [ExprContext:ctx] {
 
     ExprContext:block_ctx = [ctx].new_scope;
     LoopCtx:loop_ctx = LoopCtx [
-        [BreakExpression] [], [ContinueExpression] []
+        [BreakExpression] [], [ContinueExpression] [], block_ctx.scope
     ];
     block_ctx.loop_ctx = loop_ctx;
 
@@ -728,7 +728,8 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
             [state].error_at[returnee] msg: [msg];
         };
         return ReturnExpression [
-            start, [state].last_end, NeverType_ [], returnee
+            start, [state].last_end, NeverType_ [], returnee,
+            ScopeSection [ctx.scope.chain, ctx.scope.func_chain_end]
         ];
     }
     ("break") {
@@ -742,25 +743,31 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
             };
         };
         BreakExpression:break_ = BreakExpression [
-            start, [state].last_end, NeverType_ [], result
+            start, [state].last_end, NeverType_ [], result,
+            // create a dummy and incorrect unwind section
+            ScopeSection [ctx.scope.chain, ctx.scope.scope_chain_end]
         ];
         given ctx.loop_ctx as LoopCtx:loop_ctx {
+            break_.unwind_section.terminator = loop_ctx.scope.scope_chain_end;
             [loop_ctx.breaks].append[break_];
         } else {
             [state].error_at[break_]
-                msg: ["break keyword invalid when not inside loop"];
+                msg: ["'break' keyword invalid when not inside loop"];
         };
         return break_;
     }
     ("continue") {
         ContinueExpression:continue_ = ContinueExpression [
-            start, [state].last_end, NeverType_ []
+            start, [state].last_end, NeverType_ [],
+            // create a dummy and incorrect unwind section
+            ScopeSection [ctx.scope.chain, ctx.scope.scope_chain_end]
         ];
         given ctx.loop_ctx as LoopCtx:loop_ctx {
+            continue_.unwind_section.terminator = loop_ctx.scope.scope_chain_end;
             [loop_ctx.continues].append[continue_];
         } else {
             [state].error_at[continue_]
-                msg: ["continue keyword invalid when not inside loop"];
+                msg: ["'continue' keyword invalid when not inside loop"];
         };
         return continue_;
     }

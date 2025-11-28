@@ -137,16 +137,20 @@ ExponentiationExpression {}
 
 @extends Expression;
 ReturnExpression {
-    $Expression:returnee
+    $Expression:returnee,
+    ScopeSection:unwind_section
 }
 
 @extends Expression;
 BreakExpression {
-    $Expression:result
+    $Expression:result,
+    ScopeSection:unwind_section
 }
 
 @extends Expression;
-ContinueExpression {}
+ContinueExpression {
+    ScopeSection:unwind_section
+}
 
 @extends Expression;
 Block {

@@ -14,6 +14,11 @@ ScopeChain {
     ScopeChain?:next
 }
 
+ScopeSection {
+    ScopeChain:start,
+    ScopeChain:terminator
+}
+
 ScopeVar?#lookup variable [Str:name] in [ScopeChain:chain] {
     given chain.var as ScopeVar:var {
         if [var.name] equals [name] {
@@ -44,10 +49,10 @@ ExprContext#[ExprContext:ctx].new_scope {
     ];
 }
 
-[ScopeVar]#vars from [ScopeChain:start] to [ScopeChain:end] {
+[ScopeVar]#[ScopeSection:section].list_vars {
     [ScopeVar]:vars = [ScopeVar] [];
-    ScopeChain:here = start;
-    while here != end {
+    ScopeChain:here = section.start;
+    while here != section.terminator {
         given here.var as ScopeVar:var {
             [vars].append[var];
         };
@@ -81,5 +86,6 @@ ExprContext {
 
 LoopCtx {
     [BreakExpression]:breaks,
-    [ContinueExpression]:continues
+    [ContinueExpression]:continues,
+    ExprScope:scope
 }
