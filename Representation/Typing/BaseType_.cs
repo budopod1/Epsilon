@@ -108,7 +108,7 @@ public class BaseType_ : IEquatable<BaseType_> {
         }
         if (name == "R" && !ValidRBitCount.Contains(bits.Value)) {
             throw new BaseType_BitsException(
-                $"Type Q cannot have {bits.Value} bits"
+                $"Type R cannot have {bits.Value} bits"
             );
         }
         this.name = name;
