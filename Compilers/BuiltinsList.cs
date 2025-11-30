@@ -968,6 +968,23 @@ public static class BuiltinsList {
             ), [
                 new("array", Type_.Any().ArrayOf())
             ], "builtin71", types_ => types_[0], FunctionSource.Builtin
-        )
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "argsort"),
+                ], new SlotPatternProcessor([0])
+            ), [
+                new("array", Type_.Any().ArrayOf())
+            ], "builtin72", types_ => {
+                if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
+                    throw new FunctionCallTypes_Exception(
+                        $"Only arrays of numbers can be sorted, not {types_[0]}", 0
+                    );
+                }
+                return new Type_("W", 64).ArrayOf();
+            }, FunctionSource.Builtin
+        ),
     ];
 }

@@ -2,6 +2,7 @@
 
 #define EPSILON_H
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -39,11 +40,29 @@ struct VTableBase {
     void (*free_fn)(void*);
 };
 
+typedef int32_t (*compar_fn_type)(const void*, const void*);
+
 #define ERROR_STACK_SIZE 4096
 
-extern const char *epsl_error_stack[ERROR_STACK_SIZE];
-extern const char **epsl_error_stack_top;
-extern char **epsl_argv;
+#ifdef DEFINE_GLOBALS
+#define GLOBAL_VAR
+#define INIT_GLOBAL(x) = x
+#else
+#define GLOBAL_VAR extern
+#define INIT_GLOBAL(x)
+#endif
+
+GLOBAL_VAR const char *epsl_error_stack[ERROR_STACK_SIZE] INIT_GLOBAL({0});
+GLOBAL_VAR const char **epsl_error_stack_top INIT_GLOBAL(epsl_error_stack);
+
+GLOBAL_VAR char **epsl_argv INIT_GLOBAL(NULL);
+
+GLOBAL_VAR thread_local struct {
+    char *content;
+    uint64_t elem_size;
+} argsort_target;
+
+GLOBAL_VAR thread_local compar_fn_type thread_compar_base;
 
 void epsl_panic(const char *message, uint64_t message_len);
 
@@ -135,7 +154,9 @@ void epsl_abort_void(void);
 
 struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size);
 
-void epsl_sort_array(struct Array *array, uint64_t elem_size, int32_t (*compar)(const void*, const void*));
+void epsl_sort_array(struct Array *array, uint64_t elem_size, compar_fn_type compar);
+
+struct Array *epsl_argsort_array(struct Array *array, uint64_t elem_size, compar_fn_type compar);
 
 struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint64_t elem);
 

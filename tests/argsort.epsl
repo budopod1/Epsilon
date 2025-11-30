@@ -1,0 +1,9 @@
+Z#main {
+    [R]:v = [R] [1.2, 0.5, 3.0, 1.0, 5.0];
+    [L]:i = [v].argsort;
+    L:result = 0;
+    for L:j enumerating i {
+        result += j * i[j];
+    };
+    return result#Z;
+}

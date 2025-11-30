@@ -42,6 +42,14 @@ TESTS = [
         ]
     },
     {
+        "file": "argsort.epsl",
+        "func": "main",
+        "sig": (c_int32,),
+        "tests": [
+            {"arguments": [], "compare": "exact", "expect": 25}
+        ]
+    },
+    {
         "file": "arithmetic.epsl",
         "func": "main",
         "sig": (c_int32,),
