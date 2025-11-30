@@ -614,6 +614,15 @@ Val#sort array [Val:arr] invert: [Bool:invert] {
     return func ret;
 }
 
+Val#argsort array [Val:arr] invert: [Bool:invert] {
+    Type_:compar_type_ = FuncPtr [Z_] [[Type_] [Internal_, Internal_]];
+    Val:compar = make compare func of [arr.type_.generics[0]] invert: [invert];
+    compar = cast [compar] to [compar_type_];
+    extern fn [Array_ [L_]] ["epsl_argsort_array"] [[Type_] [Internal_, L_, compar_type_]]
+        [[Val] [cast [arr] to [Internal_], sizeof elem [arr.type_], compar]];
+    return func ret;
+}
+
 #deduplicate adjacent values in [Val:outer_arr] {
 if (specialized fn [Null_] ["dedup"] [[Val] [outer_arr]]) {
     Val:arr = func arg [0];

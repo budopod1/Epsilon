@@ -524,19 +524,50 @@ struct Array *epsl_make_blank_array(uint64_t len, uint64_t elem_size) {
     return result;
 }
 
-static thread_local int32_t (*thread_compar_base)(const void*, const void*);
-
 static int compar_wrapper(const void *a, const void *b) {
     return (*thread_compar_base)(a, b);
 }
 
-void epsl_sort_array(struct Array *array, uint64_t elem_size, int32_t (*compar)(const void*, const void*)) {
+void epsl_sort_array(struct Array *array, uint64_t elem_size, compar_fn_type compar) {
     if (sizeof(int) == sizeof(int32_t)) {
         qsort(array->content, array->length, elem_size, compar);
     } else {
         thread_compar_base = compar;
         qsort(array->content, array->length, elem_size, &compar_wrapper);
     }
+}
+
+static int argsort_compar(const void *a, const void *b) {
+    uint64_t a_idx = *(uint64_t*)a;
+    uint64_t b_idx = *(uint64_t*)b;
+
+    const void *a_elem = argsort_target.content
+        + a_idx * argsort_target.elem_size;
+    const void *b_elem = argsort_target.content
+        + b_idx * argsort_target.elem_size;
+
+    return thread_compar_base(a_elem, b_elem);
+}
+
+struct Array *epsl_argsort_array(struct Array *array, uint64_t elem_size, compar_fn_type compar) {
+    struct Array *result = malloc(sizeof(*result));
+    result->ref_counter = 0;
+    result->length = array->length;
+    uint64_t capacity = min1(array->length);
+    result->capacity = capacity;
+    uint64_t *content = malloc(capacity * sizeof(uint64_t));
+    for (uint64_t i = 0; i < result->length; i++) {
+        content[i] = i;
+    }
+    result->content = content;
+
+    thread_compar_base = compar;
+    argsort_target.content = (char*)array->content;
+    argsort_target.elem_size = elem_size;
+
+    qsort(result->content, result->length, sizeof(uint64_t), &argsort_compar);
+
+    return result;
 }
 
 struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint64_t elem) {
