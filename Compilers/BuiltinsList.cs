@@ -361,16 +361,6 @@ public static class BuiltinsList {
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "nest"),
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("arr", Type_.Any().ArrayOf()),
-            ], "builtin26", types_ => types_[0].ArrayOf(), FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "split"),
                     new FuncArgPatternSegment(),
                 ], new SlotPatternProcessor([0, 3])
@@ -433,22 +423,6 @@ public static class BuiltinsList {
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
                     new FuncArgPatternSegment(),
-                    new UnitPatternSegment<string>(typeof(Name), "not"),
-                    new UnitPatternSegment<string>(typeof(Name), "equals"),
-                    new FuncArgPatternSegment(),
-                ], new SlotPatternProcessor([0, 3])
-            ), [
-                new("v1", Type_.Any()),
-                new("v2", Type_.Any()),
-            ], "builtin31", types_ => {
-                if (!types_[0].Equals(types_[1]))
-                    throw new FunctionCallTypes_Exception($"The 'not equals' function can only compare equality of values of equal types_", 1);
-                return new Type_("Bool");
-            }, FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
                     new UnitPatternSegment<string>(typeof(Name), "deep"),
                     new UnitPatternSegment<string>(typeof(Name), "equals"),
                     new FuncArgPatternSegment()
@@ -459,24 +433,6 @@ public static class BuiltinsList {
             ], "builtin32", types_ => {
                 if (!types_[0].Equals(types_[1])) {
                     throw new FunctionCallTypes_Exception($"The 'deep equals' function can only compare equality of values of equal types_", 1);
-                }
-                return new Type_("Bool");
-            }, FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new UnitPatternSegment<string>(typeof(Name), "deep"),
-                    new UnitPatternSegment<string>(typeof(Name), "not"),
-                    new UnitPatternSegment<string>(typeof(Name), "equals"),
-                    new FuncArgPatternSegment()
-                ], new SlotPatternProcessor([0, 4])
-            ), [
-                new("v1", Type_.Any()),
-                new("v2", Type_.Any())
-            ], "builtin33", types_ => {
-                if (!types_[0].Equals(types_[1])) {
-                    throw new FunctionCallTypes_Exception($"The 'deep not equals' function can only compare equality of values of equal types_", 1);
                 }
                 return new Type_("Bool");
             }, FunctionSource.Builtin
@@ -601,7 +557,7 @@ public static class BuiltinsList {
                 [
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "sort_inverted")
+                    new UnitPatternSegment<string>(typeof(Name), "sort_reversed")
                 ], new SlotPatternProcessor([0])
             ), [
                 new("array", Type_.Any().ArrayOf()),
@@ -645,16 +601,6 @@ public static class BuiltinsList {
                 new("array", Type_.Any().ArrayOf()),
                 new("times", new Type_("W", 64))
             ], "builtin47", types_ => types_[0], FunctionSource.Builtin
-        ), new ExternalFunction(
-            new ConfigurablePatternExtractor<List<IToken>>(
-                [
-                    new FuncArgPatternSegment(),
-                    new TextPatternSegment("."),
-                    new UnitPatternSegment<string>(typeof(Name), "truthy")
-                ], new SlotPatternProcessor([0])
-            ), [
-                new("value", Type_.Any())
-            ], "builtin48", new Type_("Bool"), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -978,6 +924,23 @@ public static class BuiltinsList {
             ), [
                 new("array", Type_.Any().ArrayOf())
             ], "builtin72", types_ => {
+                if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
+                    throw new FunctionCallTypes_Exception(
+                        $"Only arrays of numbers can be sorted, not {types_[0]}", 0
+                    );
+                }
+                return new Type_("W", 64).ArrayOf();
+            }, FunctionSource.Builtin
+        ), new ExternalFunction(
+            new ConfigurablePatternExtractor<List<IToken>>(
+                [
+                    new FuncArgPatternSegment(),
+                    new TextPatternSegment("."),
+                    new UnitPatternSegment<string>(typeof(Name), "argsort_reversed"),
+                ], new SlotPatternProcessor([0])
+            ), [
+                new("array", Type_.Any().ArrayOf())
+            ], "builtin73", types_ => {
                 if (!types_[0].GetGeneric(0).GetBaseType_().IsNumber()) {
                     throw new FunctionCallTypes_Exception(
                         $"Only arrays of numbers can be sorted, not {types_[0]}", 0
