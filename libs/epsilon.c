@@ -336,32 +336,6 @@ struct Array *epsl_slice_array_from(const struct Array *array, uint64_t start, u
     return epsl_unchecked_slice_array(array, start, array->length, elem);
 }
 
-struct Array *epsl_nest_array(const struct Array *arr, uint64_t elem) {
-    char *arr_content = (char*)arr->content;
-    uint64_t len = arr->length;
-    struct Array *result = epsl_malloc(sizeof(struct Array));
-    result->ref_counter = 0;
-    result->capacity = len;
-    result->length = len;
-    struct Array **result_content = epsl_malloc(sizeof(struct Array*)*len);
-    result->content = result_content;
-    uint64_t elem_size = elem >> 2;
-    for (uint64_t i = 0; i < len; i++) {
-        struct Array *sub = epsl_malloc(sizeof(struct Array));
-        sub->ref_counter = 1;
-        sub->capacity = 1;
-        sub->length = 1;
-        void *value = arr_content+(i*elem_size);
-        void *content = epsl_malloc(elem_size);
-        memcpy(content, value, elem_size);
-        sub->content = content;
-        result_content[i] = sub;
-        if (elem&1) continue;
-        ++*(uint64_t*)value;
-    }
-    return result;
-}
-
 struct Array *epsl_join_array(const struct Array *arr, const struct Array *sep, uint64_t elem) {
     uint64_t elem_size = elem >> 2;
     struct Array *result = epsl_blank_array(elem_size);
