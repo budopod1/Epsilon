@@ -190,16 +190,27 @@ bool fileio_jump_file_pos(const struct File *file, uint64_t amount) {
     return fseek(file->file, (long)amount, SEEK_CUR) == 0;
 }
 
+static bool read_line_EOF = false;
+
 static int64_t _fileio_read_line(char **line, size_t *cap, FILE *file) {
-    if (*line == NULL) {
-        *cap = 0;
+    read_line_EOF = false;
+
+    if (*cap == 0) {
+        *cap = 1;
+        *line = epsl_malloc(1);
     }
     size_t len = 0;
 
     while (true) {
         int c = fgetc(file);
-        if (ferror(file)) return -1;
-        if (c == EOF || c == '\n') return len;
+        if (ferror(file)) {
+            return -1;
+        } else if (c == EOF) {
+            read_line_EOF = true;
+            return len;
+        } else if (c == '\n') {
+            return len;
+        }
         if (len == *cap) {
             *cap = (*cap * 3) / 2 + 64;
             *line = epsl_realloc(*line, *cap);
@@ -208,21 +219,16 @@ static int64_t _fileio_read_line(char **line, size_t *cap, FILE *file) {
     }
 }
 
-static bool read_line_EOF = false;
-
 // returns: Str?
 struct Array *fileio_read_file_line(const struct File *file) {
-    read_line_EOF = false;
     if (!file->open) return NULL;
     char *content = NULL;
     size_t capacity = 0;
     int64_t len = (int64_t)_fileio_read_line(&content, &capacity, file->file);
     if (len == -1) {
         free(content);
-        read_line_EOF = true;
         return NULL;
     }
-    if (content[len-1] == '\n') len--;
     struct Array *result = epsl_malloc(sizeof(struct Array));
     result->ref_counter = 0;
     result->capacity = capacity;
@@ -240,9 +246,6 @@ struct Array *fileio_read_file_lines(const struct File *file) {
     struct Array *result = epsl_blank_array(sizeof(struct Array));
     while (1) {
         struct Array *line = fileio_read_file_line(file);
-        if (read_line_EOF) {
-            return result;
-        }
         if (line == NULL) {
             for (uint64_t i = 0; i < result->length; i++) {
                 struct Array *str = ((struct Array**)result->content)[i];
@@ -253,10 +256,15 @@ struct Array *fileio_read_file_lines(const struct File *file) {
             free(result);
             return NULL;
         }
-        uint64_t length = result->length;
-        epsl_increment_length(result, sizeof(struct Array));
-        ((struct Array**)result->content)[length] = line;
-        line->ref_counter = 1;
+        if (!read_line_EOF || line->length > 0) {
+            uint64_t length = result->length;
+            epsl_increment_length(result, sizeof(struct Array));
+            ((struct Array**)result->content)[length] = line;
+            line->ref_counter = 1;
+        }
+        if (read_line_EOF) {
+            return result;
+        }
     }
 }
 
