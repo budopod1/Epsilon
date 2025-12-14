@@ -1,5 +1,7 @@
 %import other;
 
+%global gl:Q?;
+
 @super;
 @extends A;
 B {}

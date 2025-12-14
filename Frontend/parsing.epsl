@@ -60,6 +60,16 @@ Bool#[ParseState:state].is_at_end {
     [state].error_at_current msg: ["{}, found {}" % msg % token_name];
 }
 
+#[ParseState:state].error_across_state msg: [Str:msg] {
+    if state.tokens.ids {
+        [state].error_between [state.tokens.start_index]
+            and [[state.tokens.end_indexes].at[-1]] msg: [msg];
+    } else {
+        [state].error_between [state.tokens.start_index]
+            and [state.tokens.start_index] msg: [msg];
+    };
+}
+
 Bool#[ParseState:state].consume[W:target_id] name: [Str?:target_name] {
     if [state].is_at_end {
         Str:msg = "Expected {}" % [target_name] || [token_id_to_name[target_id]];

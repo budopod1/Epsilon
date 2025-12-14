@@ -246,6 +246,10 @@ Global?#parse global from [RawGlobal:raw_global] errors: [[ParseError]:errors] c
         if ![state].require_finished why: ["';' before {}"] {
             return null;
         };
+        if !(field.type_#OptionalType_?) {
+            [state].error_across_state
+                msg: ["Type of global must be optional, found type {}" % [field.type_].stringify];
+        };
         return Global [field];
     };
     return null;
