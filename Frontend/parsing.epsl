@@ -144,6 +144,14 @@ W#[ParseState:state].cur_start {
     return [state.tokens.start_indexes[state.index]?] || [state.tokens.start_index];
 }
 
+ParseState#[ParseState:state].cur_substate {
+    given [state].cur_data as GroupTokenData:group {
+        return ParseState [group.sub, 0, state.errors];
+    } else {
+        abort ["Non group tokens do not have substates"];
+    };
+}
+
 Str?#[ParseState:state].try_read_ident {
     if [state].is_at_end || [state].cur_id != T_IDENT {
         return null;
@@ -171,7 +179,7 @@ ParseState#[ParseState:state].last_substate {
     given [state].last_data as GroupTokenData:group {
         return ParseState [group.sub, 0, state.errors];
     } else {
-        abort ["Non group tokens cannot have substates"];
+        abort ["Non group tokens do not have substates"];
     };
 }
 

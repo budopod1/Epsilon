@@ -67,6 +67,7 @@ ExprContext#[ExprContext:ctx].new_scope {
 
 ModuleContext {
     Type_Context:type__ctx,
+    AvailableFuncs:avaliable_funcs,
     ScopeChain:global_chain,
     [ScopeVar]:vars
 }

@@ -112,7 +112,7 @@ FileError?#load struct_ extendee [Struct_:this_struct] local_structs: [[Struct_]
     $S1ModuleContent:modcon = [this_module.content#$S1ModuleContent?]
         .expect["Expected $S1ModuleContent"];
     for Struct_:other_struct in modcon.scoped_structs {
-        if [other_struct.name] not equals [ref.name] {
+        if ![other_struct.name] equals [ref.name] {
             continue;
         };
         if !other_struct.is_super {

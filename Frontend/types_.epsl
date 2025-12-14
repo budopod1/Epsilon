@@ -646,7 +646,7 @@ Bool#[$Type_:a] is equal to [$Type_:b] {
         return false;
     } given a as GenericType_:generic_a {
         given b as GenericType_:generic_b {
-            if [generic_a.name] not equals [generic_b.name] {
+            if ![generic_a.name] equals [generic_b.name] {
                 return false;
             };
             return [generic_a.generics] equals [generic_b.generics];
@@ -707,7 +707,7 @@ Bool#[$Type_:type_].satisfies[$Type_Criteria:criteria] {
         return [type_].is_unsigned_int;
     } given criteria as GenericType_Criteria:generic_criteria {
         given type_ as GenericType_:generic_type_ {
-            if [generic_type_.name] not equals [generic_criteria.name] {
+            if ![generic_type_.name] equals [generic_criteria.name] {
                 return false;
             };
             if [generic_type_.generics].len != [generic_criteria.generic_criteria].len {

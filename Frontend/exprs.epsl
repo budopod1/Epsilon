@@ -1,5 +1,7 @@
-%import epslctx;
 %import epslfiles;
+%import functions;
+%import parsing;
+%import epslctx;
 %import types_;
 
 @super;
@@ -49,6 +51,18 @@ VariableDeclarationExpression {
 @extends Expression;
 VariableExpression {
     ScopeVar:var
+}
+
+@extends Node;
+FunctionGroupCall {
+    FunctionGroup:group,
+    [ParseState]:arg_substates
+}
+
+@extends Expression;
+FunctionCallExpression {
+    FunctionDeclaration:func_decl,
+    [$Expression]:args
 }
 
 @extends Expression;

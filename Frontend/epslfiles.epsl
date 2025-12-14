@@ -6,6 +6,7 @@
 %import epslctx;
 %import parsing;
 %import structs;
+%import builder;
 %import iotools;
 %import types_;
 %import errors;
@@ -242,7 +243,7 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
 Global?#parse global from [RawGlobal:raw_global] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {
     ParseState:state = ParseState [raw_global.tokens, 0, errors];
     given parse field state: [state] ctx: [ctx] as Field:field {
-        if ![state].require_finished why: ["';'"] {
+        if ![state].require_finished why: ["';' before {}"] {
             return null;
         };
         return Global [field];
@@ -250,18 +251,18 @@ Global?#parse global from [RawGlobal:raw_global] errors: [[ParseError]:errors] c
     return null;
 }
 
-Bool#parse function template [Tokens:tokens] to [[$TemplateSegment]:segments] args: [[Field]:args] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {
+Bool#parse function template [Tokens:tokens] to [FuncTemplate:template] params: [[Field]:params] errors: [[ParseError]:errors] ctx: [Type_Context:ctx] {
     ParseState:state = ParseState [tokens, 0, errors];
     while ![state].is_at_end {
         W:id = [state].cur_id;
         [state].consume;
         if id == T_IDENT {
             Str:name = [[state].last_data].read_identifier;
-            [segments].append[IdentifierTemplateSegment [name]];
+            [template.segments].append[IdentifierTemplateSegment [name]];
         } elif id == T_SQUARE_GROUP {
             ParseState:arg_state = [state].last_substate;
             given parse field state: [arg_state] ctx: [ctx] as Field:field {
-                [args].append[field];
+                [params].append[field];
             } else {
                 return false;
             };
@@ -269,20 +270,20 @@ Bool#parse function template [Tokens:tokens] to [[$TemplateSegment]:segments] ar
                 [arg_state].error_about_current msg: ["Expected ']'"];
                 return false;
             };
-            [segments].append[ArgumentTemplateSegment []];
+            [template.segments].append[ArgumentTemplateSegment []];
         } elif id < 32 || id >= 127 {
             [state].error_about_current msg: ["Invalid syntax"];
             return false;
         } else {
-            [segments].append[SymbolTemplateSegment [id#Byte]];
+            [template.segments].append[SymbolTemplateSegment [id#Byte]];
         };
     };
     return true;
 }
 
-Str#make symbol from segments [[$TemplateSegment]:segments] {
+Str#make symbol from template [FuncTemplate:template] {
     Str:result = Str [];
-    for $TemplateSegment:segment in segments {
+    for $TemplateSegment:segment in template.segments {
         if result {
             [result].append['_'];
         };
@@ -310,9 +311,9 @@ S2EPSLFunction?#parse function [RawFunction:raw_function] errors: [[ParseError]:
         ret_type_ = [maybe_ret_type_].unwrap;
     };
 
-    [$TemplateSegment]:template = [$TemplateSegment] [];
-    [Field]:arguments = [Field] [];
-    if !parse function template [raw_function.template] to [template] args: [arguments] errors: [errors] ctx: [ctx] {
+    FuncTemplate:template = FuncTemplate [[$TemplateSegment] []];
+    [Field]:parameters = [Field] [];
+    if !parse function template [raw_function.template] to [template] params: [parameters] errors: [errors] ctx: [ctx] {
         return null;
     };
 
@@ -331,11 +332,11 @@ S2EPSLFunction?#parse function [RawFunction:raw_function] errors: [[ParseError]:
         };
     };
     if !callee {
-        callee = "{}:{}" % prefix % make symbol from segments [template];
+        callee = "{}:{}" % prefix % make symbol from template [template];
     };
 
     FunctionDeclaration:func_decl = FunctionDeclaration [
-        template, arguments, FUNC_SOURCE_LOCAL, ret_type_, [callee].unwrap,
+        template, parameters, FUNC_SOURCE_LOCAL, ret_type_, [callee].unwrap,
         true, // takes ownership
         true // result (may be) in params
     ];
@@ -362,29 +363,54 @@ S2ModconResult#cook exports [Module:module] {
         parse struct [s1_struct] errors: [errors] ctx: [ctx];
     };
     [S2EPSLFunction]:s2_functions = [S2EPSLFunction] [];
-    [FunctionDeclaration]:func_decls = [FunctionDeclaration] [];
+    [FunctionDeclaration]:public_funcs = [FunctionDeclaration] [];
     for L:i enumerating s1_modcon.raw_functions {
         Str:prefix = "{}:{}" % s1_modcon.absolute_path % i;
         RawFunction:raw_function = s1_modcon.raw_functions[i];
         given parse function [raw_function] errors: [errors] ctx: [ctx] prefix: [prefix]
         as S2EPSLFunction:s2_function {
             [s2_functions].append[s2_function];
-            [func_decls].append[s2_function.decl];
+            if s2_function.is_public {
+                [public_funcs].append[s2_function.decl];
+            };
         };
     };
     $ErrorBundle:error_bundle = bundle [errors]
         txt: [s1_modcon.file_text] path: [s1_modcon.absolute_path];
     return S2ModconResult [S2EPSLModuleContent [
         s1_modcon.absolute_path, s1_modcon.imports, s1_modcon.structs,
-        s1_modcon.scoped_structs, globals, func_decls, s1_modcon.file_text,
+        s1_modcon.scoped_structs, globals, public_funcs, s1_modcon.file_text,
         s2_functions
     ], error_bundle];
 }
 
-S3ModconResult#cook epsl functions [Module:module] {
+[FunctionDeclaration]#get scoped funcs for_ [Module:module] build: [Build:build] {
+    [FunctionDeclaration]:scoped_funcs = [FunctionDeclaration] [];
+    for Import:import in module.content.imports {
+        Module:other_module = [build].lookup_module[import];
+        $S2ModuleContent:other_modcon = [other_module.content#$S2ModuleContent?]
+            .expect["Expected $S2ModuleContent"];
+        [scoped_funcs].extend[other_modcon.func_decls];
+    };
+    S2EPSLModuleContent:s2_modcon = [module.content#S2EPSLModuleContent?]
+        .expect["Expected S2EPSLModuleContent"];
+    for S2EPSLFunction:s2_func in s2_modcon.s2_functions {
+        [scoped_funcs].append[s2_func.decl];
+    };
+    return scoped_funcs;
+}
+
+S3ModconResult#cook epsl functions [Module:module] build: [Build:build] {
     [ParseError]:errors = [ParseError] [];
     S2EPSLModuleContent:s2_modcon = [module.content#S2EPSLModuleContent?]
         .expect["Expected S2EPSLModuleContent"];
+
+    [FunctionDeclaration]:scoped_funcs = get scoped funcs for_ [module] build: [build];
+    AvailableFuncs:avaliable_funcs = AvailableFuncs [[FunctionGroup] []];
+    for FunctionDeclaration:func_decl in scoped_funcs {
+        [avaliable_funcs].add[func_decl];
+    };
+    [avaliable_funcs].sort_groups;
 
     ScopeChain:chain = ScopeChain [null, null];
     [ScopeVar]:vars = [ScopeVar] [];
@@ -396,7 +422,7 @@ S3ModconResult#cook epsl functions [Module:module] {
         chain = ScopeChain [var, chain];
     };
     ModuleContext:mod_ctx = ModuleContext [
-        type_ context of [s2_modcon], chain, vars
+        type_ context of [s2_modcon], avaliable_funcs, chain, vars
     ];
 
     [S3EPSLFunction]:s3_functions = [S3EPSLFunction] [];

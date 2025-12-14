@@ -22,14 +22,27 @@ SymbolTemplateSegment {
     Byte:symbol
 }
 
+FuncTemplate {
+    [$TemplateSegment]:segments
+}
+
 FunctionDeclaration {
-    [$TemplateSegment]:template,
-    [Field]:arguments,
+    FuncTemplate:template,
+    [Field]:parameters,
     W:source,
     $Type_:ret_type_,
     Str:callee,
     Bool:takes_ownership,
     Bool:result_in_params
+}
+
+AvailableFuncs {
+    [FunctionGroup]:groups
+}
+
+FunctionGroup {
+    [FunctionDeclaration]:funcs,
+    FuncTemplate:template
 }
 
 W#FUNC_SOURCE_BUILTIN {
@@ -52,7 +65,7 @@ S3EPSLFunction?#parse function [S2EPSLFunction:func] ctx: [ModuleContext:mod_ctx
         mod_ctx, func.decl, toplevel_scope, null
     ];
 
-    for Field:arg in func.decl.arguments {
+    for Field:arg in func.decl.parameters {
         add var [arg.name] type_: [arg.type_] to: [ctx];
     };
 
@@ -68,4 +81,78 @@ S3EPSLFunction?#parse function [S2EPSLFunction:func] ctx: [ModuleContext:mod_ctx
     } else {
         return null;
     };
+}
+
+Bool#[$TemplateSegment:a] equals [$TemplateSegment:b] {
+    given a as IdentifierTemplateSegment:identifier_a {
+        given b as IdentifierTemplateSegment:identifier_b {
+            return [identifier_a.text] equals [identifier_b.text];
+        };
+    } given a as ArgumentTemplateSegment:argument_a {
+        return !!(b#ArgumentTemplateSegment?);
+    } given a as SymbolTemplateSegment:symbol_a {
+        given b as SymbolTemplateSegment:symbol_b {
+            return symbol_a.symbol == symbol_b.symbol;
+        };
+    };
+    return false;
+}
+
+Bool#[FuncTemplate:a] equals [FuncTemplate:b] {
+    [$TemplateSegment]:as = a.segments;
+    [$TemplateSegment]:bs = b.segments;
+    if [as].len != [bs].len {
+        return false;
+    };
+    for L:i enumerating as {
+        if ![as[i]] equals [bs[i]] {
+            return false;
+        };
+    };
+    return true;
+}
+
+Str#stringify funcs param type_ options [[FunctionDeclaration]:funcs] {
+    Str:result = Str [];
+    for FunctionDeclaration:func in funcs {
+        Str:line = Str [];
+        for Field:param in func.parameters {
+            if line {
+                [line].extend[", "];
+            };
+            [line].extend[[param.type_].stringify];
+        };
+        if result {
+            [result].extend[" or\n"];
+        };
+        [result].extend[line];
+    };
+    return result;
+}
+
+#[AvailableFuncs:funcs].add[FunctionDeclaration:func_decl] {
+    for FunctionGroup:group in funcs.groups {
+        if [func_decl.template] equals [group.template] {
+            [group.funcs].append[func_decl];
+            return;
+        };
+    };
+    FunctionGroup:new_group = FunctionGroup [
+        [FunctionDeclaration] [func_decl],
+        func_decl.template
+    ];
+    [funcs.groups].append[new_group];
+}
+
+#[AvailableFuncs:funcs].sort_groups {
+    [L]:template_lens = [L] [];
+    for FunctionGroup:group in funcs.groups {
+        [template_lens].append[[group.template.segments].len];
+    };
+    [L]:idxs = [template_lens].argsort;
+    [FunctionGroup]:sorted_groups = [FunctionGroup] [];
+    for L:idx in idxs {
+        [sorted_groups].append[funcs.groups[idx]];
+    };
+    funcs.groups = sorted_groups;
 }

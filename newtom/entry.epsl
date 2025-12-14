@@ -20,7 +20,12 @@ Sub1 {}
 @extends Sup;
 Sub2 {}
 
+#bar [a:Z] {}
+#bar [a:R] {}
+
 #foo [items:[Z]] {
+    bar [1];
+    q :Q= stall;
     for i:Z in items inplace {
         i + 2
     }

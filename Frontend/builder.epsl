@@ -222,7 +222,7 @@ Bool#cook functions [Build:build] {
     // cook functions
     [$ErrorBundle]:bundles = [$ErrorBundle] [];
     for Module:module in build.modules {
-        S3ModconResult:result = cook functions [module];
+        S3ModconResult:result = cook functions [module] build: [build];
         given result.modcon as $S3ModuleContent:modcon {
             module.content = modcon;
         };
@@ -231,10 +231,10 @@ Bool#cook functions [Build:build] {
     return !report errors [bundles];
 }
 
-S3ModconResult#cook functions [Module:module] {
+S3ModconResult#cook functions [Module:module] build: [Build:build] {
     $S0ModuleContent:modcon = module.content;
     given modcon as S2EPSLModuleContent:epsl_modcon {
-        return cook epsl functions [module];
+        return cook epsl functions [module] build: [build];
     } given modcon as SPECModuleContent:spec_modcon {
         return S3ModconResult [spec_modcon, empty error bundle];
     } else {

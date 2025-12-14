@@ -1,5 +1,6 @@
 %import epslfiles;
 %import tokenizer;
+%import functions;
 %import epslctx;
 %import parsing;
 %import types_;
@@ -49,15 +50,195 @@ BiOperatorLevel {
     return bioperator_levels;
 }
 
+FunctionGroupCall?#try match group in [AvailableFuncs:funcs] state: [ParseState:state] {
+    W:start = [state].cur_start;
+    L:index = state.index;
+    // STEP: check for function calls
+    for FunctionGroup:group in funcs.groups {
+        [ParseState]:arg_substates = [ParseState] [];
+        Bool:matched = true;
+        for $TemplateSegment:segment in group.template.segments {
+            if [state].is_at_end {
+                matched = false;
+                break;
+            };
+            given segment as IdentifierTemplateSegment:identifier_segment {
+                if ![[state].try_read_ident] equals [identifier_segment.text#Str?] {
+                    matched = false;
+                    break;
+                };
+            } given segment as ArgumentTemplateSegment:argument_segment {
+                if [state].cur_id != T_SQUARE_GROUP {
+                    matched = false;
+                    break;
+                };
+                [arg_substates].append[[state].cur_substate];
+            } given segment as SymbolTemplateSegment:symbol_segment {
+                if [state].cur_id != symbol_segment.symbol {
+                    matched = false;
+                    break;
+                };
+            } else {
+                abort ["Unknown TemplateSegment {}" % segment];
+            };
+            [state].consume;
+        };
+        if matched {
+            return FunctionGroupCall [
+                start, [state].last_end, group, arg_substates
+            ];
+        };
+        state.index = index;
+    };
+    return null;
+}
+
+Str#stringify expr list types_ [[$Expression]:exprs] {
+    Str:result = Str [];
+    for $Expression:expr in exprs {
+        if result {
+            [result].extend[", "];
+        };
+        [result].extend[[expr.type_].stringify];
+    };
+    return result;
+}
+
+[FunctionDeclaration]#get best funcs in [[FunctionDeclaration]:funcs] with args [[$Expression]:args] {
+    [W]:func_scores = [W]*[funcs].len;
+    for L:i enumerating args {
+        $Type_:arg_type_ = args[i].type_;
+
+        for L:j enumerating funcs {
+            if [arg_type_] equals [funcs[j].parameters[i].type_] {
+                func_scores[j] += 1;
+            };
+        };
+    };
+
+    [FunctionDeclaration]:remaining_funcs = [FunctionDeclaration] [];
+    W:max_score = 0;
+    for L:j enumerating funcs {
+        W:func_score = func_scores[j];
+        if func_score == max_score {
+            [remaining_funcs].append[funcs[j]];
+        } elif func_score > max_score {
+            max_score = func_score;
+            remaining_funcs = [FunctionDeclaration] [funcs[j]];
+        };
+    };
+    funcs = remaining_funcs;
+
+    if [funcs].len == 1 {
+        return funcs;
+    };
+
+    [FunctionDeclaration]:best_funcs = [FunctionDeclaration] [];
+    for L:j enumerating funcs {
+        Bool:any_greater = false;
+        for L:k enumerating funcs {
+            if j == k {
+                continue;
+            };
+            for L:i enumerating args {
+                $Type_:other_type_ = funcs[k].parameters[i].type_;
+                $Type_:this_type_ = funcs[j].parameters[i].type_;
+                if [other_type_] is greater than [this_type_] {
+                    any_greater = true;
+                    break;
+                };
+            };
+            if any_greater {
+                break;
+            };
+        };
+        if !any_greater {
+            [best_funcs].append[funcs[j]];
+        };
+    };
+
+    return best_funcs;
+}
+
+FunctionCallExpression?#resolve [FunctionGroupCall:func_group_call] state: [ParseState:state] ctx: [ExprContext:ctx] {
+    [$Expression]:args = [$Expression] [];
+    for ParseState:arg_substate in func_group_call.arg_substates {
+        given parse expr [arg_substate] ctx: [ctx] as $Expression:arg {
+            [args].append[arg];
+        } else {
+            return null;
+        };
+        if ![arg_substate].require_finished why: ["Expected ']' before {}"] {
+            return null;
+        };
+    };
+
+    [FunctionDeclaration]:group_funcs = func_group_call.group.funcs;
+    [FunctionDeclaration]:func_options = [FunctionDeclaration] [];
+    for FunctionDeclaration:group_func in group_funcs {
+        Bool:matches = true;
+        for L:i enumerating args {
+            $Type_:param_type_ = group_func.parameters[i].type_;
+            $Type_:arg_type_ = args[i].type_;
+            if ![arg_type_] is convertible to [arg_type_] {
+                matches = false;
+                break;
+            };
+        };
+        if matches {
+            [func_options].append[group_func];
+        };
+    };
+
+    Str:plural = "";
+    if [args].len == 1 {
+        plural = "s";
+    };
+
+    if !func_options {
+        Str:msg = "Types supplied to function do not match any overload:
+Got type{}: {}
+Expected type{}: {}"
+            % plural % stringify expr list types_ [args] % plural
+            % stringify funcs param type_ options [group_funcs];
+        [state].error_at[func_group_call] msg: [msg];
+        return null;
+    };
+
+    [FunctionDeclaration]:best_funcs = get best funcs
+        in [func_group_call.group.funcs] with args [args];
+
+    if [best_funcs].len == 1 {
+        FunctionDeclaration:chosen_func = best_funcs[0];
+        return FunctionCallExpression [
+            func_group_call.start_index, func_group_call.end_index,
+            chosen_func.ret_type_, chosen_func, args
+        ];
+    } else {
+        Str:msg = "Ambiguous function call:
+Got type{}: {}
+Please clarify between functions that take the types:
+{}"
+            % plural % stringify expr list types_ [args]
+            % stringify funcs param type_ options [best_funcs];
+        [state].error_at[func_group_call] msg: [msg];
+        return null;
+    };
+}
+
 $Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
     if ![state].require_more why: ["Expected expression"] {
         return null;
     };
 
+    // STEP: check for function calls
+    given try match group in [ctx.mod_ctx.avaliable_funcs] state: [state]
+    as FunctionGroupCall:func_group_call {
+        return resolve [func_group_call] state: [state] ctx: [ctx];
+    };
+
     W:start = [state].cur_start;
     [state].consume;
-
-    // STEP: check for function calls
 
     // STEP: check for constants
     if [state].last_id == T_INT {
@@ -359,7 +540,7 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
 
     $Type_?:maybe_result_type_ = NeverType_ [];
 
-    if [[state].try_read_ident] not equals ["as"#Str?] {
+    if ![[state].try_read_ident] equals ["as"#Str?] {
         [state].error_at_current msg: ["Expected 'as'"];
         return null;
     };
