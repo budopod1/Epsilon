@@ -14,10 +14,15 @@ Q {
 
 @super;
 @sealed;
-Sup {}
+Sup {
+    f1: Z
+}
 
 @extends Sup;
-Sub1 {}
+Sub1 {
+    f2: R,
+    f3: Q
+}
 
 @extends Sup;
 Sub2 {}
@@ -27,6 +32,7 @@ Sub2 {}
 
 #foo [items:[Z]] {
     bar [1];
+    r := Sub1 {f4: 78.3};
     q :Q= stall;
     for i:Z in items inplace {
         i + 2

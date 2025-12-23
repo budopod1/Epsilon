@@ -206,3 +206,12 @@ FileError?#verify no recursive extendees [Struct_:struct] seen: [[Struct_]:seen]
         };
     };
 }
+
+[Field]#[Struct_:struct].all_fields {
+    [Field]:all_fields = [Field] [];
+    for Struct_:extendee in [struct].extendee_list step -1 {
+        [all_fields].extend[[extendee.fields].unwrap];
+    };
+    [all_fields].extend[[struct.fields].unwrap];
+    return all_fields;
+}

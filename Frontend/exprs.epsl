@@ -2,6 +2,7 @@
 %import functions;
 %import parsing;
 %import epslctx;
+%import structs;
 %import types_;
 
 @super;
@@ -51,6 +52,12 @@ VariableDeclarationExpression {
 @extends Expression;
 VariableExpression {
     ScopeVar:var
+}
+
+@extends Expression;
+InstantiationExpression {
+    Struct_:struct_,
+    [$Expression]:field_vals
 }
 
 @extends Node;

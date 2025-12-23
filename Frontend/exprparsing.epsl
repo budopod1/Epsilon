@@ -3,6 +3,7 @@
 %import functions;
 %import epslctx;
 %import parsing;
+%import structs;
 %import types_;
 %import exprs;
 
@@ -327,6 +328,97 @@ $Expression?#parse expr term inner [ParseState:state] ctx: [ExprContext:ctx] {
     [state].unconsume;
     [state].error_about_current msg: ["Expected expression"];
     return null;
+}
+
+InstantiationExpression?#parse instantiation ident: [Str:ident] state: [ParseState:state] ctx: [ExprContext:ctx] {
+    // this function is to be called when an instantiation has been detected,
+    // but the curly group has not been consumed
+
+    Struct_?:maybe_struct = get struct named [ident] from [ctx.mod_ctx.type__ctx];
+    if !maybe_struct {
+        Str:msg = "Cannot instantiate nonexistent struct {}" % ident;
+        [state].error_at_previous msg: [msg];
+    };
+    Struct_:struct_ = [maybe_struct].unwrap;
+    [Field]:fields = [struct_].all_fields;
+
+    W:start = [state].last_start;
+    [state].consume; // eat the curly group
+
+    ParseState:substate = [state].last_substate;
+
+    [$Expression]:field_vals = [$Expression] [];
+
+    while ![substate].is_at_end {
+        Field?:maybe_field = fields[[field_vals].len]?;
+
+        W:field_val_start = [substate].cur_start;
+
+        given [substate].try_read_ident as Str:possibly_label {
+            // this could be a label, or it could be just a normal
+            // function call, variable, etc
+            [substate].consume;
+            if [substate].cur_id == ':' {
+                // yep, it's a label
+                given maybe_field as Field:field {
+                    if ![field.name] equals [possibly_label] {
+                        Str:msg = "Expected field label to be '{}'"
+                            % field.name;
+                        [substate].error_at_previous msg: [msg];
+                    };
+                };
+                // eat the ':'
+                [substate].consume;
+            } else {
+                // nope, not a label; unconsume the identifier
+                [substate].unconsume;
+            };
+        };
+
+        $Expression?:maybe_val = parse expr [substate] ctx: [ctx];
+        if !maybe_val {
+            return null;
+        };
+        $Expression:val = [maybe_val].unwrap;
+
+        given maybe_field as Field:field {
+            if ![val.type_] is convertible to [field.type_] {
+                Str:msg = "Expected value of type {} for field '{}', found value of type {}"
+                    % [field.type_].stringify % field.name % [val.type_].stringify;
+                [substate].error_at[val] msg: [msg];
+            };
+        } else {
+            [substate].error_between [field_val_start] and [[substate].last_end]
+                msg: ["Too many values for instantiation"];
+        };
+        [field_vals].append[val];
+
+        if ![substate].is_at_end {
+            [substate].consume[','];
+        };
+    };
+
+    if [field_vals].len < [fields].len {
+        L:missing_count = [fields].len - [field_vals].len;
+        Str:plural = "";
+        if missing_count > 1 {
+            plural = "s";
+        };
+        Str:field_names = Str [];
+        for Field:field in fields from [field_vals].len {
+            if field_names {
+                [field_names].extend[", "];
+            };
+            [field_names].extend[field.name];
+        };
+        Str:msg = "Missing {} value{} for field{} {}"
+            % missing_count % plural % plural % field_names;
+        [substate].error_at_end msg: [msg];
+    };
+
+    return InstantiationExpression [
+        start, [state].last_end, StructType_ [struct_], struct_, field_vals
+    ];
 }
 
 VariableDeclarationExpression?#parse var decl ident: [Str:ident] state: [ParseState:state] ctx: [ExprContext:ctx] {
@@ -974,7 +1066,10 @@ $Expression?#parse ident [Str:ident] expr [ParseState:state] ctx: [ExprContext:c
     ("for") {
         return parse for_ [state] ctx: [ctx];
     }
-    { // it's a variable
+    { // it's a variable OR an instantiation
+        if ![state].is_at_end && [state].cur_id == T_CURLY_GROUP {
+            return parse instantiation ident: [ident] state: [state] ctx: [ctx];
+        };
         if ![state].is_at_end && [state].cur_id == ':' {
             return parse var decl ident: [ident] state: [state] ctx: [ctx];
         };
