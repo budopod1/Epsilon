@@ -93,8 +93,21 @@ CastExpression {
 }
 
 @extends Expression;
+FieldAccessExpression {
+    $Expression:struct_,
+    L:field_idx
+}
+
+@extends Expression;
 VariableAssignmentExpression {
     ScopeVar:recipient,
+    $Expression:value
+}
+
+@extends Expression;
+FieldAssignmentExpression {
+    $Expression:struct_,
+    L:field_idx,
     $Expression:value
 }
 

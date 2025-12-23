@@ -32,7 +32,8 @@ Sub2 {}
 
 #foo [items:[Z]] {
     bar [1];
-    r := Sub1 {f4: 78.3};
+    r := Sub1 {2, f2: 78.3, stall};
+    r.f2.f2gf = r;
     q :Q= stall;
     for i:Z in items inplace {
         i + 2

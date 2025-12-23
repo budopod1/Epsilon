@@ -215,3 +215,12 @@ FileError?#verify no recursive extendees [Struct_:struct] seen: [[Struct_]:seen]
     [all_fields].extend[[struct.fields].unwrap];
     return all_fields;
 }
+
+L?#[[Field]:fields].find_field name: [Str:name] {
+    for L:i enumerating fields step -1 {
+        if [fields[i].name] equals [name] {
+            return i;
+        };
+    };
+    return null;
+}

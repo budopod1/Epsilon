@@ -358,7 +358,7 @@ InstantiationExpression?#parse instantiation ident: [Str:ident] state: [ParseSta
             // this could be a label, or it could be just a normal
             // function call, variable, etc
             [substate].consume;
-            if [substate].cur_id == ':' {
+            if ![substate].is_at_end && [substate].cur_id == ':' {
                 // yep, it's a label
                 given maybe_field as Field:field {
                     if ![field.name] equals [possibly_label] {
@@ -1096,6 +1096,11 @@ $Expression?#assign [$Expression:value] to [$Expression:recipient] state: [Parse
             recipient.start_index, value.end_index, NullType_ [],
             var_expr.var, value
         ];
+    } given recipient as FieldAccessExpression:field_access_expr {
+        return FieldAssignmentExpression [
+            recipient.start_index, value.end_index, NullType_ [],
+            field_access_expr.struct_, field_access_expr.field_idx, value
+        ];
     } else {
         [state].error_at[recipient] msg: ["Cannot assign to this expression"];
         return null;
@@ -1110,14 +1115,35 @@ $Expression?#parse expr postfix [ParseState:state] on: [$Expression:base] ctx: [
     if [state].cur_id == '.' {
         [state].consume;
 
-        if ![state].consume[T_IDENT] name: ["member name"] {
+        if ![state].consume[T_IDENT] name: ["field name"] {
             [state].unconsume;
             return null;
         };
 
-        Str:member_name = [[state].last_data].read_identifier;
+        Str:field_name = [[state].last_data].read_identifier;
 
-        abort ["member access not yet implemented"];
+        Struct_?:maybe_struct = struct_ of [base.type_];
+        if !maybe_struct {
+            Str:msg = "Cannot access field of non-struct {}"
+                % [base.type_].stringify;
+            [state].error_at[base] msg: [msg];
+            return null;
+        };
+        Struct_:struct = [maybe_struct].unwrap;
+
+        [Field]:fields = [struct].all_fields;
+        L?:maybe_field_idx = [fields].find_field name: [field_name];
+        if !maybe_field_idx {
+            Str:msg = "Struct {} has no field {}" % struct.name % field_name;
+            [state].error_at_previous msg: [msg];
+            return null;
+        };
+        L:field_idx = [maybe_field_idx].unwrap;
+        Field:field = fields[field_idx];
+
+        return FieldAccessExpression [
+            base.start_index, [state].last_end, field.type_, base, field_idx
+        ];
 
     } elif [state].cur_id == '#' {
         [state].consume;
