@@ -739,8 +739,6 @@ Label:cond_label = new label:;
         build while_ [instruction_json];
     } elif ([type] equals ["unused_value_wrapper"]) {
         build unused value wrapper using [operands];
-    } elif ([type] equals ["uninit_var_declaration"]) {
-
     } elif ([type] equals ["conditional"]) {
         build conditional [instruction_json];
     } elif ([type] equals ["array_assignment"]) {
