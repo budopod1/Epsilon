@@ -619,7 +619,7 @@ SubVarDeclNode?#parse explicit var decl [ParseState:state] ctx: [ExprContext:ctx
     ];
 }
 
-GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
+$Expression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
     W:start = [state].last_start;
 
     $Expression?:maybe_scrutinee = parse expr [state] ctx: [ctx];
@@ -628,14 +628,23 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
     };
     $Expression:scrutinee = [maybe_scrutinee].unwrap;
 
-    [GivenArm]:arms = [GivenArm] [];
+    given [state].try_read_ident as Str:clause_name {
+        if [clause_name] equals ["as"] {
+            return parse given_ as [state] ctx: [ctx] start: [start]
+                scrutinee: [scrutinee];
+        } elif [clause_name] equals ["is"] {
+            return parse given_ is [state] ctx: [ctx] start: [start]
+                scrutinee: [scrutinee];
+        };
+    };
+    [state].error_at_current msg: ["Expected 'as' or 'is'"];
+    return null;
+}
+
+GivenAsExpression?#parse given_ as [ParseState:state] ctx: [ExprContext:ctx] start: [W:start] scrutinee: [$Expression:scrutinee] {
+    [GivenAsArm]:arms = [GivenAsArm] [];
 
     $Type_?:maybe_result_type_ = NeverType_ [];
-
-    if ![[state].try_read_ident] equals ["as"#Str?] {
-        [state].error_at_current msg: ["Expected 'as'"];
-        return null;
-    };
 
     Bool:has_else = false;
 
@@ -668,11 +677,15 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
                 [result_so_far] and [block.type_];
         };
 
-        [arms].append[GivenArm [var_decl.var, block]];
+        [arms].append[GivenAsArm [var_decl.var, block]];
 
         Str?:ident = [state].try_read_ident;
         if [ident] equals ["as"#Str?] {
             continue;
+        } elif [ident] equals ["is"#Str?] {
+            Str:msg = "Given with 'as' clause cannot have 'is' clause";
+            [state].error_at_current msg: [msg];
+            return null;
         } elif [ident] equals ["else"#Str?] {
             [state].consume;
             has_else = true;
@@ -705,7 +718,7 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
 
     if else_never {
         [$Type_]:arm_types_ = [$Type_] [];
-        for GivenArm:arm in arms {
+        for GivenAsArm:arm in arms {
             [arm_types_].append[arm.var.type_];
         };
         if !types_ [arm_types_] encompass [scrutinee.type_] {
@@ -715,9 +728,92 @@ GivenExpression?#parse given_ [ParseState:state] ctx: [ExprContext:ctx] {
         };
     };
 
-    return GivenExpression [
+    return GivenAsExpression [
         start, [state].last_end, [maybe_result_type_] || [NullType_ []],
         scrutinee, arms, maybe_else_block, else_never
+    ];
+}
+
+GivenIsExpression?#parse given_ is [ParseState:state] ctx: [ExprContext:ctx] start: [W:start] scrutinee: [$Expression:scrutinee] {
+    [GivenIsArm]:arms = [GivenIsArm] [];
+
+    $Type_?:maybe_result_type_ = NeverType_ [];
+
+    Bool:has_else = false;
+
+    while true {
+        [state].consume; // eat the 'is'
+
+        $Expression?:maybe_target_expr = parse expr [state] ctx: [ctx];
+        if !maybe_target_expr {
+            return null;
+        };
+        $Expression:target_expr = [maybe_target_expr].unwrap;
+        $ConstantExpression?:maybe_target = target_expr#$ConstantExpression?;
+        if !maybe_target {
+            [state].error_at[target_expr] msg: ["Expected constant"];
+            return null;
+        };
+        $ConstantExpression:target = [maybe_target].unwrap;
+
+        if ![target.type_] is convertible to [scrutinee.type_] {
+            Str:msg = "Target not convertible to scrutinee type {}"
+                % [scrutinee.type_].stringify;
+            [state].error_at[target_expr] msg: [msg];
+            return null;
+        };
+
+        Block?:maybe_block = parse block [state] ctx: [ctx];
+        if !maybe_block {
+            return null;
+        };
+        Block:block = [maybe_block].unwrap;
+
+        given maybe_result_type_ as $Type_:result_so_far {
+            maybe_result_type_= common type_ between
+                [result_so_far] and [block.type_];
+        };
+
+        [arms].append[GivenIsArm [target, block]];
+
+        Str?:ident = [state].try_read_ident;
+        if [ident] equals ["as"#Str?] {
+            Str:msg = "Given with 'is' clause cannot have 'as' clause";
+            [state].error_at_current msg: [msg];
+            return null;
+        } elif [ident] equals ["is"#Str?] {
+            continue;
+        } elif [ident] equals ["else"#Str?] {
+            [state].consume;
+            has_else = true;
+        };
+        break;
+    };
+
+    Block?:maybe_else_block = null;
+
+    if has_else {
+        if [[state].try_read_ident] equals ["never"#Str?] {
+            Str:msg = "'else never' is not allowed for given blocks with 'is' clauses";
+            [state].error_at_current msg: [msg];
+        };
+        maybe_else_block = parse block [state] ctx: [ctx];
+        if !maybe_else_block {
+            return null;
+        };
+        Block:else_block = [maybe_else_block].unwrap;
+
+        given maybe_result_type_ as $Type_:result_so_far {
+            maybe_result_type_= common type_ between
+                [result_so_far] and [else_block.type_];
+        };
+    } else {
+        maybe_result_type_ = null;
+    };
+
+    return GivenIsExpression [
+        start, [state].last_end, [maybe_result_type_] || [NullType_ []],
+        scrutinee, arms, maybe_else_block
     ];
 }
 

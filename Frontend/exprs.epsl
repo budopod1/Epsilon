@@ -213,15 +213,27 @@ IfBranch {
 }
 
 @extends Expression;
-GivenExpression {
+GivenAsExpression {
     $Expression:scrutinee,
-    [GivenArm]:arms,
+    [GivenAsArm]:arms,
     Block?:else_,
     Bool:else_never
 }
 
-GivenArm {
+GivenAsArm {
     ScopeVar:var,
+    Block:block
+}
+
+@extends Expression;
+GivenIsExpression {
+    $Expression:scrutinee,
+    [GivenIsArm]:arms,
+    Block?:else_
+}
+
+GivenIsArm {
+    $ConstantExpression:target,
     Block:block
 }
 

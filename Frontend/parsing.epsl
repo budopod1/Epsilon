@@ -52,7 +52,11 @@ Bool#[ParseState:state].is_at_end {
 }
 
 #[ParseState:state].error_at_current msg: [Str: msg] {
-    [state].error_at[state.index] msg: [msg];
+    if [state].is_at_end {
+        [state].error_at_end msg: [msg];
+    } else {
+        [state].error_at[state.index] msg: [msg];
+    };
 }
 
 #[ParseState:state].error_about_current msg: [Str:msg] {
