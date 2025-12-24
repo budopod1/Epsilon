@@ -1501,16 +1501,6 @@ Please clarify between the functions that take the types:
             [
                 new PatternMatcher(
                     [
-                        new TypePatternSegment(typeof(VarDeclaration))
-                    ], new Wrapper2PatternProcessor(
-                        new SlotPatternProcessor([0]),
-                        typeof(UninitVarDeclaration)
-                    )
-                )
-            ],
-            [
-                new PatternMatcher(
-                    [
                         new TypePatternSegment(typeof(IAssignableValue)),
                         new TextPatternSegment("="),
                         new Type_PatternSegment(Type_.Any())

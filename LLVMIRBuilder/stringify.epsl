@@ -64,15 +64,13 @@ if (specialized fn [Null_] ["stringify"] [[Val] [outer_val, outer_result]]) {
             };
             specifier_optional = const str [specifier_txt];
         } else {
-            W:new_bits;
+            W:new_bits = 8;
             if (bits > 32) {
                 new_bits = 64;
             } elif (bits > 16) {
                 new_bits = 32;
             } elif (bits > 8) {
                 new_bits = 16;
-            } else {
-                new_bits = 8;
             };
             Str:type__name = type_.name;
             new_type_ = Type_ [type__name, new_bits, [Type_] []];
