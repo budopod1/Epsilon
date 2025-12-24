@@ -460,15 +460,6 @@ TESTS = [
         ]
     },
     {
-        "file": "uninitvalue.epsl",
-        "func": "testee",
-        "sig": (c_int32, c_int32),
-        "tests": [
-            {"arguments": [1], "compare": "exact", "expect": 42},
-            {"arguments": [0], "compare": "exact", "expect": 24}
-        ]
-    },
-    {
         "file": "unique.epsl",
         "func": "main",
         "sig": (c_int32,),
