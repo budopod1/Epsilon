@@ -170,6 +170,12 @@ ModuloExpression {}
 ExponentiationExpression {}
 
 @extends Expression;
+FormatChainExpression {
+    $Expression:template,
+    [$Expression]:substitutions
+}
+
+@extends Expression;
 ReturnExpression {
     $Expression:returnee,
     ScopeSection:unwind_section

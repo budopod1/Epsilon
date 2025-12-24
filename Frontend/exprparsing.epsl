@@ -111,7 +111,7 @@ Str#stringify expr list types_ [[$Expression]:exprs] {
         $Type_:arg_type_ = args[i].type_;
 
         for L:j enumerating funcs {
-            if [arg_type_] equals [funcs[j].parameters[i].type_] {
+            if [arg_type_] is equal to [funcs[j].parameters[i].type_] {
                 func_scores[j] += 1;
             };
         };
@@ -1347,6 +1347,9 @@ $Type_?#type_ for_ [BiOperator:operator] on [$Expression:a] and [$Expression:b] 
         return BoolType_ [1];
     } elif ([spelling] equals ["+"]) || ([spelling] equals ["-"])
         || ([spelling] equals ["*"]) || ([spelling] equals ["%"]) {
+        if ([spelling] equals ["%"]) && ([at] is equal to [Str_]) {
+            return Str_;
+        };
         if !expect numeric [a] and [b] op: [operator] state: [state]  {
             return null;
         };
@@ -1418,7 +1421,19 @@ $Expression?#[BiOperator:op] on [$Expression:a] and [$Expression:b] state: [Pars
         return DivideExpression [s, e, t, a, b];
     }
     ("~/") {return IntDivideExpression [s, e, t, a, b];}
-    ("%") {return ModuloExpression [s, e, t, a, b];}
+    ("%") {
+        if [t] is equal to [Str_] {
+            given a as FormatChainExpression:chain_expr {
+                chain_expr.end_index = e;
+                [chain_expr.substitutions].append[b];
+                return chain_expr;
+            } else {
+                return FormatChainExpression [s, e, t, a, [$Expression] [b]];
+            };
+        } else {
+            return ModuloExpression [s, e, t, a, b];
+        };
+    }
     ("**") {return ExponentiationExpression [s, e, t, a, b];}
     ("=") {return assign [b] to [a] state: [state];};
     if ([spelling] equals ["+="]) || ([spelling] equals ["-="])

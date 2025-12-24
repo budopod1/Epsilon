@@ -27,15 +27,10 @@ Sub1 {
 @extends Sup;
 Sub2 {}
 
-#bar [a:Z] {}
-#bar [a:R] {}
+#bar [a:R32] {}
+#bar [a:R64] {}
 
-Z#foo [p:W] {
-    given p is 5 {
-        return 1
-    } is 9 {
-        return 2
-    } else {
-        return 3
-    }
+[Byte]#foo {
+    bar [1.2#R32];
+    "foo {}, bar: {}" % 1.2 % Sub2 {-2}
 }
