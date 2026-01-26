@@ -4,12 +4,8 @@ from mapLLVMcmd import run_LLVM_cmd
 
 
 def list_include_dirs(language):
-    if is_windows() or is_macos():
-        process_out = run_LLVM_cmd("clang-cpp", "-v", "-x", language, dev_null(),
-            capture_out=True)
-    else:
-        process_out = run_cmd("cpp", "-v", "-x", language, dev_null(),
-            capture_out=True)
+    process_out = run_LLVM_cmd("clang-cpp", "-v", "-x", language, dev_null(),
+        capture_out=True)
 
     is_search_list = False
     for line in process_out.split("\n"): # type: ignore

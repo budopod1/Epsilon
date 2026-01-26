@@ -40,37 +40,9 @@ static char *c_str_from_epsl_str(struct Array *str) {
     return result;
 }
 
-#ifdef _WIN32
-static wchar_t *windows_str_from_epsl_str(struct Array *epsl_str) {
-    int wstr_size = MultiByteToWideChar(
-        CP_UTF8, // source encoding
-        MB_ERR_INVALID_CHARS, // flags
-        epsl_str->content, // src str
-        epsl_str->length, // src len
-        NULL, // dest buffer (ignored due to next param)
-        0 // dest buffer size (0 indicated do not write, just calc size)
-    );
-    if (wstr_size == 0) return NULL;
-    wchar_t *wstr = epsl_malloc(wstr_size * sizeof(wchar_t));
-    int status = MultiByteToWideChar(
-        CP_UTF8, // source encoding
-        MB_ERR_INVALID_CHARS, // flags
-        epsl_str->content, // src str
-        epsl_str->length, // src len
-        wstr, // dest buffer
-        wstr_size // dest buffer size
-    );
-    if (status == 0) {
-        free(wstr);
-        return NULL;
-    }
-    return wstr;
-}
-#endif
-
 struct DynamicLibrary *dllib_load_dl(struct Array *name) {
 #ifdef _WIN32
-    wchar_t *windows_name = windows_str_from_epsl_str(name);
+    wchar_t *windows_name = epsl_wchar_str_from_epsl_str(name);
     if (!windows_name) return NULL;
     void *handle = LoadLibraryW(windows_name);
     free(windows_name);

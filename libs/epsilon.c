@@ -12,6 +12,10 @@
 
 #include "epsilon.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 void epsl_panic(const char *message, uint64_t message_len) {
     fflush(stdout);
     const char **error_stack_frame = epsl_error_stack;
@@ -38,6 +42,70 @@ void epsl_panicf(const char *format, ...) {
     epsl_panic(buffer, msg_len);
     va_end(vargs);
 }
+
+#ifdef _WIN32
+wchar_t *epsl_wchar_str_from_epsl_str(struct Array *epsl_str) {
+    int wstr_size = MultiByteToWideChar(
+        CP_UTF8, // source encoding
+        MB_ERR_INVALID_CHARS, // flags
+        epsl_str->content, // src str
+        epsl_str->length, // src len
+        NULL, // dest buffer (ignored due to next param)
+        0 // dest buffer size (0 indicated do not write, just calc size)
+    );
+    if (wstr_size == 0) return NULL;
+    wchar_t *wstr = epsl_malloc(wstr_size * sizeof(wchar_t));
+    int status = MultiByteToWideChar(
+        CP_UTF8, // source encoding
+        MB_ERR_INVALID_CHARS, // flags
+        epsl_str->content, // src str
+        epsl_str->length, // src len
+        wstr, // dest buffer
+        wstr_size // dest buffer size
+    );
+    if (status == 0) {
+        free(wstr);
+        return NULL;
+    }
+    return wstr;
+}
+
+struct Array *epsl_epsl_str_from_wchar_str(uint64_t ref_counter, wchar_t *wstr) {
+    int result_capacity = WideCharToMultiByte(
+        CP_UTF8, // dest encoding
+        MB_ERR_INVALID_CHARS, // flags
+        wstr, // src str
+        -1, // src len (-1 indicates NULL-termination)
+        NULL, // dest buffer (ignored due to next param)
+        0, // dest buffer size (0 indicated do not write, just calc size)
+        NULL, NULL // unused arguments
+    );
+    if (result_capacity == 0) return NULL;
+
+    char *result_content = epsl_malloc(result_capacity);
+    int status = WideCharToMultiByte(
+        CP_UTF8, // dest encoding
+        MB_ERR_INVALID_CHARS, // flags
+        wstr, // src str
+        -1, // src len
+        result_content, // dest buffer
+        result_capacity, // dest buffer size
+        NULL, NULL // unused arguments
+    );
+    if (status == 0) {
+        free(result_content);
+        return NULL;
+    }
+
+    struct Array *result = malloc(sizeof(*result));
+    result->ref_counter = ref_counter;
+    result->capacity = result_capacity;
+    result->length = result_capacity - 1;
+    result->content = result_content;
+
+    return result;
+}
+#endif
 
 #define ERR_START "FATAL ERROR: "
 

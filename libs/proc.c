@@ -38,44 +38,6 @@ static struct Array *C_str_to_epsl_str(uint64_t ref_counter, char *src) {
     return result;
 }
 
-#ifdef _WIN32
-struct Array *wchar_str_to_epsl_str(uint64_t ref_counter, wchar_t *wstr) {
-    int result_capacity = WideCharToMultiByte(
-        CP_UTF8, // dest encoding
-        MB_ERR_INVALID_CHARS, // flags
-        wstr, // src str
-        -1, // src len (-1 indicates NULL-termination)
-        NULL, // dest buffer (ignored due to next param)
-        0, // dest buffer size (0 indicated do not write, just calc size)
-        NULL, NULL // unused arguments
-    );
-    if (result_capacity == 0) return NULL;
-
-    char *result_content = epsl_malloc(result_capacity);
-    int status = WideCharToMultiByte(
-        CP_UTF8, // dest encoding
-        MB_ERR_INVALID_CHARS, // flags
-        wstr, // src str
-        -1, // src len
-        result_content, // dest buffer
-        result_capacity, // dest buffer size
-        NULL, NULL // unused arguments
-    );
-    if (status == 0) {
-        free(result_content);
-        return NULL;
-    }
-
-    struct Array *result = malloc(sizeof(*result));
-    result->ref_counter = ref_counter;
-    result->capacity = result_capacity;
-    result->length = result_capacity - 1;
-    result->content = result_content;
-
-    return result;
-}
-#endif
-
 void proc_exit(int32_t code) {
     exit((int)code);
 }
@@ -146,8 +108,7 @@ struct Array *proc_get_executable_path(void) {
             continue;
         }
     } while (0);
-
-    struct Array *result = wchar_str_to_epsl_str(0, wpath);
+    struct Array *result = epsl_epsl_str_from_wchar_str(0, wpath);
     if (result == NULL) {
         epsl_panicf(ERR_START "Executable path cannot be read as UTF-8");
     }
