@@ -10,7 +10,7 @@ public class Struct : IEquatable<Struct> {
     readonly string symbol;
     readonly string destructorSymbol = null;
     bool partiallyLoaded = true;
-    bool globalFreeFn;
+    readonly bool globalFreeFn;
 
     readonly bool isSuper = false;
     readonly bool isAbstract = false;
