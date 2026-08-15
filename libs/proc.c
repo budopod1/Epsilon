@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 202405L
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -36,6 +38,13 @@ static struct Array *C_str_to_epsl_str(uint64_t ref_counter, char *src) {
     result->length = length;
     result->content = (unsigned char*)src;
     return result;
+}
+
+static char *epsl_str_to_C_str(struct Array *epsl_str) {
+    char *c_str = epsl_malloc(epsl_str->length + 1);
+    memcpy(c_str, epsl_str->content, epsl_str->length);
+    c_str[epsl_str->length] = '\0';
+    return c_str;
 }
 
 void proc_exit(int32_t code) {
@@ -116,4 +125,46 @@ struct Array *proc_get_executable_path(void) {
 #else
     epsl_panicf(ERR_START, "get executable path is not supported on this system")
 #endif
+}
+
+struct Array *proc_get_env(struct Array *name) {
+    char *c_name = epsl_str_to_C_str(name);
+
+    char *c_val = getenv(c_name);
+    free(c_name);
+    if (c_val == NULL) {
+        return NULL;
+    }
+
+    return dup_C_str_to_epsl_str(0, c_val);
+}
+
+bool proc_set_env(struct Array *name, struct Array *val) {
+    char *c_name = epsl_str_to_C_str(name);
+    char *c_val = epsl_str_to_C_str(val);
+
+#ifdef _WIN32
+    bool status = _putenv_s(c_name, c_val) == 0;
+#else
+    bool status = setenv(c_name, c_val, 1) == 0;
+#endif
+
+    free(c_name);
+    free(c_val);
+
+    return status;
+}
+
+bool proc_unset_env(struct Array *name) {
+    char *c_name = epsl_str_to_C_str(name);
+
+#ifdef _WIN32
+    bool status = _putenv_s(c_name, "") == 0;
+#else
+    bool status = unsetenv(c_name) == 0;
+#endif
+
+    free(c_name);
+
+    return status;
 }
