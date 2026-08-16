@@ -21,6 +21,10 @@
 
     {"id": "proc_unset_env", "callee": "proc_unset_env", "return_type_": "Bool", "template": [
         {"type": "name", "name": "unset"}, {"type": "name", "name": "env"}, {"type": "name", "name": "var"}, {"type": "argument", "name": "name", "type_": "Str"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "proc_get_current_pid", "callee": "proc_get_current_pid", "return_type_": "Z32", "template": [
+        {"type": "name", "name": "get"}, {"type": "name", "name": "current"}, {"type": "name", "name": "PID"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"}
 ], "types_": [
     {"given_name": "Z32", "name": "Z", "bits": 32, "generics": []},

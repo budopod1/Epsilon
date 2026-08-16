@@ -168,3 +168,11 @@ bool proc_unset_env(struct Array *name) {
 
     return status;
 }
+
+int32_t proc_get_current_pid(void) {
+#ifdef _WIN32
+    return GetCurrentProcessId();
+#else
+    return getpid();
+#endif
+}
