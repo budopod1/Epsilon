@@ -180,9 +180,9 @@ public static class BuiltinsList {
                     new FuncArgPatternSegment(),
                     new TextPatternSegment("."),
                     new UnitPatternSegment<string>(typeof(Name), "unsafe_idx"),
-                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new FuncArgPatternSegment(),
                     new TextPatternSegment("="),
-                    new TypePatternSegment(typeof(RawSquareGroup))
+                    new FuncArgPatternSegment()
                 ], new SlotPatternProcessor([0, 3, 5])
             ), [
                 new("array", Type_.Any().ArrayOf()),
@@ -197,7 +197,7 @@ public static class BuiltinsList {
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
                     new TextPatternSegment("|"),
-                    new TypePatternSegment(typeof(RawSquareGroup)),
+                    new FuncArgPatternSegment(),
                     new TextPatternSegment("|")
                 ], new SlotPatternProcessor([1])
             ), [

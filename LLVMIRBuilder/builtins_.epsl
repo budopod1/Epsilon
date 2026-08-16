@@ -130,8 +130,12 @@ BuiltinResult#builtin int abs with [[Val]:args] {
     W:bits = args[0].type_.bits#W;
     Type_:in_type_ = Z_ [bits];
     Type_:result_type_ = W_ [bits];
-    extern fn [result_type_] ["llvm.abs.i{}" % bits] [[Type_] [in_type_]]
-        [[Val] [cast [args[0]] to [in_type_]]];
+    extern fn [result_type_] ["llvm.abs.i{}" % bits]
+        [[Type_] [in_type_, Bool_]]
+        [[Val] [
+            cast [args[0]] to [in_type_],
+            c [false] // abs of INT_MIN is INT_MIN, not poison
+        ]];
     return make builtin result [func ret];
 }
 

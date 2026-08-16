@@ -68,6 +68,12 @@ void epsl_panic(const char *message, uint64_t message_len);
 
 void epsl_panicf(const char *format, ...);
 
+#ifdef _WIN32
+wchar_t *epsl_wchar_str_from_epsl_str(struct Array *epsl_str);
+
+struct Array *epsl_epsl_str_from_wchar_str(uint64_t ref_counter, wchar_t *wstr);
+#endif
+
 int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count);
 
 int32_t epsl_printf(const char *format, ...);

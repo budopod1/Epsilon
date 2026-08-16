@@ -437,7 +437,7 @@ void CXType_pointee_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *o
 
         char name_start = *name_cstr;
         if (name_start == '\0') {
-            report_error(decl, "Somehow this declaration doesn't have a name");
+            report_error(decl, "This declaration doesn't have a name");
         } else if (name_start == '_') {
             out->base_type_.is_builtin = true;
             out->base_type_.name.builtin = EPSLType_Internal;
@@ -595,7 +595,7 @@ void collect_struct(struct CollectedInfo *info, CXCursor cursor) {
     const char *name = clang_getCString(struct_name);
 
     if (*name == '\0') {
-        report_error(cursor, "Somehow this struct definition doesn't have a name");
+        report_error(cursor, "This struct definition doesn't have a name");
     }
 
     uint32_t skip_prefix_count = sizeof(skip_struct_prefixes) / sizeof(skip_struct_prefixes[0]);
@@ -694,7 +694,7 @@ void collect_func(struct CollectedInfo *info, CXCursor cursor) {
     char name_start = *name;
 
     if (name_start == '\0') {
-        report_error(cursor, "Somehow this function prototype doesn't have a name");
+        report_error(cursor, "This function prototype doesn't have a name");
     } else if (name_start == '_') {
         clang_disposeString(func_name);
         return;
