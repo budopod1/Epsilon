@@ -20,9 +20,9 @@
 static struct Array *dup_C_str_to_epsl_str(uint64_t ref_counter, char *src) {
     uint64_t length = strlen(src);
     uint64_t capacity = length + 1;
-    char *content = malloc(capacity);
-    strcpy(content, src);
-    struct Array *result = malloc(sizeof(*result));
+    char *content = epsl_malloc(capacity);
+    memcpy(content, src, capacity);
+    struct Array *result = epsl_malloc(sizeof(*result));
     result->ref_counter = ref_counter;
     result->capacity = capacity;
     result->length = length;
@@ -31,7 +31,7 @@ static struct Array *dup_C_str_to_epsl_str(uint64_t ref_counter, char *src) {
 }
 
 static struct Array *C_str_to_epsl_str(uint64_t ref_counter, char *src) {
-    struct Array *result = malloc(sizeof(*result));
+    struct Array *result = epsl_malloc(sizeof(*result));
     result->ref_counter = ref_counter;
     uint64_t length = strlen(src);
     result->capacity = length + 1;
@@ -55,15 +55,15 @@ struct Array *proc_get_argv(void) {
     if (epsl_argv == NULL) {
         epsl_panicf(ERR_START "argv is not available");
     }
-    struct Array *arg_array = epsl_blank_array(sizeof(struct Array*));
+    struct Array *arg_arr = epsl_blank_array(sizeof(struct Array*));
     char **argv_ptr = epsl_argv;
     while (*argv_ptr) {
-        struct Array **new_arg_ptr = ((struct Array**)arg_array->content) + arg_array->length;
-        epsl_increment_length(arg_array, sizeof(struct Array*));
-        *new_arg_ptr = dup_C_str_to_epsl_str(1, *argv_ptr);
+        epsl_increment_length(arg_arr, sizeof(struct Array*));
+        struct Array *arg_str = dup_C_str_to_epsl_str(1, *argv_ptr);
+        ((struct Array**)arg_arr->content)[arg_arr->length - 1] = arg_str;
         argv_ptr++;
     }
-    return arg_array;
+    return arg_arr;
 }
 
 struct Array *proc_get_executable_path(void) {
