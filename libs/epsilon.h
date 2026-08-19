@@ -69,10 +69,30 @@ void epsl_panic(const char *message, uint64_t message_len);
 void epsl_panicf(const char *format, ...);
 
 #ifdef _WIN32
-wchar_t *epsl_wchar_str_from_epsl_str(struct Array *epsl_str);
+wchar_t *epsl_Estr_to_Wstr(struct Array *epsl_str);
 
-struct Array *epsl_epsl_str_from_wchar_str(uint64_t ref_counter, wchar_t *wstr);
+struct Array *epsl_Wstr_to_Estr(uint64_t ref_counter, wchar_t *wstr);
 #endif
+
+char *epsl_Estr_to_Cstr(struct Array *str);
+
+struct Array *epsl_Cstr_to_Estr(uint64_t ref_counter, char *src);
+
+struct Array *epsl_dup_Cstr_to_Estr(uint64_t ref_counter, char *src);
+
+#define EPSL_STR_TO_C_STR(epsl_str, new_name)\
+    char *new_name;\
+    bool new_name##_is_new_str = epsl_str->capacity <= epsl_str->length;\
+    if (new_name##_is_new_str) {\
+        new_name = epsl_malloc(epsl_str->length+1);\
+        memcpy(new_name, epsl_str->content, epsl_str->length);\
+    } else {\
+        new_name = (char*)epsl_str->content;\
+    }\
+    new_name[epsl_str->length] = '\0';
+
+#define CLEANUP_CONV_C_STR(str_name)\
+    if (str_name##_is_new_str) free(str_name);
 
 int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count);
 

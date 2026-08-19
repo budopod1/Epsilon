@@ -33,21 +33,14 @@ struct LibraryGlobal {
     struct PolymorphicStruct *addr;
 };
 
-static char *c_str_from_epsl_str(struct Array *str) {
-    char *result = epsl_malloc(str->length + 1);
-    memcpy(result, str->content, str->length);
-    result[str->length] = '\0';
-    return result;
-}
-
 struct DynamicLibrary *dllib_load_dl(struct Array *name) {
 #ifdef _WIN32
-    wchar_t *windows_name = epsl_wchar_str_from_epsl_str(name);
+    wchar_t *windows_name = epsl_Estr_to_Wstr(name);
     if (!windows_name) return NULL;
     void *handle = LoadLibraryW(windows_name);
     free(windows_name);
 #else
-    char *c_name = c_str_from_epsl_str(name);
+    char *c_name = epsl_Estr_to_Cstr(name);
     void *handle = dlopen(c_name, RTLD_LAZY);
     free(c_name);
 #endif
@@ -62,7 +55,7 @@ struct DynamicLibrary *dllib_load_dl(struct Array *name) {
 }
 
 static void *_get_lib_symbol(struct DynamicLibrary *lib, struct Array *name) {
-    char *c_name = c_str_from_epsl_str(name);
+    char *c_name = epsl_Estr_to_Cstr(name);
 #ifdef _WIN32
     void *symbol = GetProcAddress(lib->handle, c_name);
 #else

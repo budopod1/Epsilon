@@ -17,36 +17,6 @@
 
 #define ERR_START "FATAL ERROR IN proc: "
 
-static struct Array *dup_C_str_to_epsl_str(uint64_t ref_counter, char *src) {
-    uint64_t length = strlen(src);
-    uint64_t capacity = length + 1;
-    char *content = epsl_malloc(capacity);
-    memcpy(content, src, capacity);
-    struct Array *result = epsl_malloc(sizeof(*result));
-    result->ref_counter = ref_counter;
-    result->capacity = capacity;
-    result->length = length;
-    result->content = content;
-    return result;
-}
-
-static struct Array *C_str_to_epsl_str(uint64_t ref_counter, char *src) {
-    struct Array *result = epsl_malloc(sizeof(*result));
-    result->ref_counter = ref_counter;
-    uint64_t length = strlen(src);
-    result->capacity = length + 1;
-    result->length = length;
-    result->content = (unsigned char*)src;
-    return result;
-}
-
-static char *epsl_str_to_C_str(struct Array *epsl_str) {
-    char *c_str = epsl_malloc(epsl_str->length + 1);
-    memcpy(c_str, epsl_str->content, epsl_str->length);
-    c_str[epsl_str->length] = '\0';
-    return c_str;
-}
-
 void proc_exit(int32_t code) {
     exit((int)code);
 }
@@ -59,7 +29,7 @@ struct Array *proc_get_argv(void) {
     char **argv_ptr = epsl_argv;
     while (*argv_ptr) {
         epsl_increment_length(arg_arr, sizeof(struct Array*));
-        struct Array *arg_str = dup_C_str_to_epsl_str(1, *argv_ptr);
+        struct Array *arg_str = epsl_dup_Cstr_to_Estr(1, *argv_ptr);
         ((struct Array**)arg_arr->content)[arg_arr->length - 1] = arg_str;
         argv_ptr++;
     }
@@ -97,13 +67,13 @@ struct Array *proc_get_executable_path(void) {
     uint32_t path_size = 1024;
     char *path = epsl_malloc(path_size);
     if (_NSGetExecutablePath(path, &path_size) == 0) {
-        return C_str_to_epsl_str(0, path);
+        return epsl_Cstr_to_Estr(0, path);
     }
     path = epsl_realloc(path, path_size);
     if (_NSGetExecutablePath(path, &path_size) != 0) {
         epsl_panicf(ERR_START "Cannot determine executable path");
     }
-    return C_str_to_epsl_str(0, path);
+    return epsl_Cstr_to_Estr(0, path);
 #elif _WIN32
     DWORD wpath_size = 1024;
     wchar_t *wpath = NULL;
@@ -117,7 +87,7 @@ struct Array *proc_get_executable_path(void) {
             continue;
         }
     } while (0);
-    struct Array *result = epsl_epsl_str_from_wchar_str(0, wpath);
+    struct Array *result = epsl_Wstr_to_Estr(0, wpath);
     if (result == NULL) {
         epsl_panicf(ERR_START "Executable path cannot be read as UTF-8");
     }
@@ -128,7 +98,7 @@ struct Array *proc_get_executable_path(void) {
 }
 
 struct Array *proc_get_env(struct Array *name) {
-    char *c_name = epsl_str_to_C_str(name);
+    char *c_name = epsl_Estr_to_Cstr(name);
 
     char *c_val = getenv(c_name);
     free(c_name);
@@ -136,12 +106,12 @@ struct Array *proc_get_env(struct Array *name) {
         return NULL;
     }
 
-    return dup_C_str_to_epsl_str(0, c_val);
+    return epsl_dup_Cstr_to_Estr(0, c_val);
 }
 
 bool proc_set_env(struct Array *name, struct Array *val) {
-    char *c_name = epsl_str_to_C_str(name);
-    char *c_val = epsl_str_to_C_str(val);
+    char *c_name = epsl_Estr_to_Cstr(name);
+    char *c_val = epsl_Estr_to_Cstr(val);
 
 #ifdef _WIN32
     bool status = _putenv_s(c_name, c_val) == 0;
@@ -156,7 +126,7 @@ bool proc_set_env(struct Array *name, struct Array *val) {
 }
 
 bool proc_unset_env(struct Array *name) {
-    char *c_name = epsl_str_to_C_str(name);
+    char *c_name = epsl_Estr_to_Cstr(name);
 
 #ifdef _WIN32
     bool status = _putenv_s(c_name, "") == 0;

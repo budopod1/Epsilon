@@ -16,6 +16,8 @@
 #include <windows.h>
 #endif
 
+#define ERR_START "FATAL ERROR: "
+
 void epsl_panic(const char *message, uint64_t message_len) {
     fflush(stdout);
     const char **error_stack_frame = epsl_error_stack;
@@ -34,17 +36,20 @@ void epsl_panic(const char *message, uint64_t message_len) {
 }
 
 void epsl_panicf(const char *format, ...) {
-    va_list vargs;
-    va_start(vargs, format);
-    size_t msg_len = vsnprintf(NULL, 0, format, vargs);
+    va_list vargs1;
+    va_start(vargs1, format);
+    va_list vargs2;
+    va_copy(vargs2, vargs1);
+    size_t msg_len = vsnprintf(NULL, 0, format, vargs1);
     char buffer[msg_len+1];
-    vsprintf(buffer, format, vargs);
+    vsprintf(buffer, format, vargs2);
     epsl_panic(buffer, msg_len);
-    va_end(vargs);
+    va_end(vargs1);
+    va_end(vargs2);
 }
 
 #ifdef _WIN32
-wchar_t *epsl_wchar_str_from_epsl_str(struct Array *epsl_str) {
+wchar_t *epsl_Estr_to_Wstr(struct Array *epsl_str) {
     int wstr_size = MultiByteToWideChar(
         CP_UTF8, // source encoding
         MB_ERR_INVALID_CHARS, // flags
@@ -70,7 +75,7 @@ wchar_t *epsl_wchar_str_from_epsl_str(struct Array *epsl_str) {
     return wstr;
 }
 
-struct Array *epsl_epsl_str_from_wchar_str(uint64_t ref_counter, wchar_t *wstr) {
+struct Array *epsl_Wstr_to_Estr(uint64_t ref_counter, wchar_t *wstr) {
     int result_capacity = WideCharToMultiByte(
         CP_UTF8, // dest encoding
         MB_ERR_INVALID_CHARS, // flags
@@ -107,7 +112,35 @@ struct Array *epsl_epsl_str_from_wchar_str(uint64_t ref_counter, wchar_t *wstr) 
 }
 #endif
 
-#define ERR_START "FATAL ERROR: "
+char *epsl_Estr_to_Cstr(struct Array *str) {
+    char *result = epsl_malloc(str->length + 1);
+    memcpy(result, str->content, str->length);
+    result[str->length] = '\0';
+    return result;
+}
+
+struct Array *epsl_Cstr_to_Estr(uint64_t ref_counter, char *src) {
+    struct Array *result = epsl_malloc(sizeof(*result));
+    result->ref_counter = ref_counter;
+    uint64_t length = strlen(src);
+    result->capacity = length + 1;
+    result->length = length;
+    result->content = (unsigned char*)src;
+    return result;
+}
+
+struct Array *epsl_dup_Cstr_to_Estr(uint64_t ref_counter, char *src) {
+    uint64_t length = strlen(src);
+    uint64_t capacity = length + 1;
+    char *content = epsl_malloc(capacity);
+    memcpy(content, src, capacity);
+    struct Array *result = epsl_malloc(sizeof(*result));
+    result->ref_counter = ref_counter;
+    result->capacity = capacity;
+    result->length = length;
+    result->content = content;
+    return result;
+}
 
 int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count) {
     return memcmp(lhs, rhs, count);
