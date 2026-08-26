@@ -109,9 +109,9 @@ public static class CmdUtils {
         RunLLVMTool("llc", args);
     }
 
-    public static void ClangToExecutable(IEnumerable<string> sources, string output) {
-        RunLLVMTool("clang", ["-no-pie", "-o", output, "-O0", ..Subconfigs.GetLinkingConfigs(),
-            ..Subconfigs.GetObjectGenConfigs(), ..sources]);
+    public static void ClangToExecutable(IEnumerable<string> sources, string output, OptimizationLevel optLevel) {
+        RunLLVMTool("clang", ["-no-pie", "-o", output, optLevel == OptimizationLevel.MAX ? "-O3" : "-O0",
+            ..Subconfigs.GetLinkingConfigs(), ..Subconfigs.GetObjectGenConfigs(), ..sources]);
     }
 
     public static void LLVMsToObj(List<string> sources, string output, bool positionIndependent = false) {
@@ -175,7 +175,7 @@ public static class CmdUtils {
     }
 
     public static void CToLLVM(bool cpp, string from, string to_) {
-        RunLLVMTool(cpp ? "clang++" : "clang", [from, "-o", to_,
+        RunLLVMTool(cpp ? "clang++" : "clang", [from, "-o", to_, "-O1",
             "-emit-llvm", "-c", ..Subconfigs.GetClangParseConfigs()]);
     }
 

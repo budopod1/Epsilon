@@ -299,7 +299,7 @@ public class Builder {
 
             switch (settings.Output_Type) {
             case OutputType.EXECUTABLE:
-                ToExecutable(buildInfo);
+                ToExecutable(buildInfo, settings);
                 break;
             case OutputType.LLVMLL:
                 ToLLVM(buildInfo, toLL: true);
@@ -439,7 +439,10 @@ public class Builder {
     IEnumerable<string> FileLocations(string partialPath, string projDirectory) {
         foreach (string extension in EXTENSIONS) {
             foreach (string prefix in PREFIXES) {
-                string filename = prefix + partialPath + "." + extension;
+                string filename = Utils.JoinPaths(
+                    Utils.GetDirectoryName(partialPath),
+                    prefix + Utils.GetFileName(partialPath) + "." + extension
+                );
                 currentFile = filename;
                 List<string> folders = [
                     projDirectory, Utils.EPSLLIBS()
@@ -965,13 +968,13 @@ public class Builder {
         }
     }
 
-    void ToExecutable(BuildInfo buildInfo) {
+    void ToExecutable(BuildInfo buildInfo, BuildSettings settings) {
         if (buildInfo.FileWithMain == null) {
             throw new ProjectProblemException("One main function is required when creating an executable; no main function found");
         }
 
         Log.Status("Buiding executable");
-        CmdUtils.ClangToExecutable(buildInfo.Sources, buildInfo.Output);
+        CmdUtils.ClangToExecutable(buildInfo.Sources, buildInfo.Output, settings.OptLevel);
     }
 
     void ToLLVM(BuildInfo buildInfo, bool toLL) {
