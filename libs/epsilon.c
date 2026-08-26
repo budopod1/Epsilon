@@ -406,10 +406,11 @@ static struct Array *epsl_unchecked_slice_array(const struct Array *array, uint6
     struct Array *slice = epsl_malloc(sizeof(struct Array));
     slice->ref_counter = 0;
     uint64_t len = end - start;
-    slice->capacity = len;
+    uint64_t cap = min1(len);
+    slice->capacity = cap;
     slice->length = len;
     uint64_t elem_size = elem >> 2;
-    uint64_t size = elem_size * len;
+    uint64_t size = elem_size * cap;
     void *content = epsl_malloc(size);
     slice->content = content;
     memcpy(content, ((char*)array->content)+(start*elem_size), size);
@@ -650,11 +651,12 @@ struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint6
     result->ref_counter = 0;
     uint64_t src_len = array->length;
     uint64_t new_len = src_len * times;
-    result->capacity = new_len;
+    uint64_t new_cap = min1(new_len);
+    result->capacity = new_cap;
     result->length = new_len;
     uint64_t elem_size = elem >> 2;
     uint64_t src_size = src_len*elem_size;
-    char *content = epsl_malloc(new_len*elem_size);
+    char *content = epsl_malloc(new_cap*elem_size);
     for (uint64_t i = 0; i < times; i++) {
         memcpy(content+i*src_size, array->content, src_size);
     }
