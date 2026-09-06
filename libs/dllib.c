@@ -10,7 +10,7 @@
 #endif
 
 struct PolymorphicStruct {
-    void *val;
+    void *struct_;
     void *vtable;
 };
 
@@ -79,7 +79,7 @@ struct LibraryFunction *dllib_get_function(struct DynamicLibrary *lib, struct Ar
 }
 
 struct PolymorphicStruct dllib_call_function(struct LibraryFunction *func, struct PolymorphicStruct arg) {
-    uint64_t *ref_counter = (uint64_t*)arg.val;
+    uint64_t *ref_counter = (uint64_t*)arg.struct_;
     ++*ref_counter;
     struct PolymorphicStruct result = (*func->addr)(arg);
     --*ref_counter;

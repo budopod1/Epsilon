@@ -76,9 +76,8 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
             if_ [b_is_null];
                 ret [c [invert]];
             else_;
-                Type_:nonnull_type_ = unwrap nullability [type_];
-                Val:nonnull_a = cast [a] to [nonnull_type_];
-                Val:nonnull_b = cast [b] to [nonnull_type_];
+                Val:nonnull_a = unwrap nullability [a];
+                Val:nonnull_b = unwrap nullability [b];
                 ret [do [nonnull_a] equals [nonnull_b] deep: [deep] invert: [invert]];
             end block;
         end block;
