@@ -19,7 +19,8 @@ enum EPSLBuiltinType_ {
     EPSLType_R,
     EPSLType_Array,
     EPSLType_Optional,
-    EPSLType_Internal
+    EPSLType_Internal,
+    EPSLType_Struct
 };
 
 union EPSLType_Name {
@@ -91,7 +92,8 @@ const char *const builtin_type__names[] = {
     "R",
     "Array",
     "Optional",
-    "Internal"
+    "Internal",
+    "Struct"
 };
 
 const enum EPSLBuiltinType_ OptionalableBuiltinTypes_ = EPSLType_Array;
@@ -107,6 +109,10 @@ CXFile file;
 #ifdef _MSC_VER
 #define strdup _strdup
 #endif
+
+void CXType_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *out);
+
+void CXType_pointee_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *out);
 
 extern inline uint32_t grow_cap(uint32_t old) {
     return (old * 3) / 2 + 1;
@@ -261,9 +267,54 @@ bool is_uint_of_size(CXType type, uint32_t bytes) {
     }
 }
 
-void CXType_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *out);
+void check_field_name(CXCursor field, char *expected_name) {
+    CXString field_name = clang_getCursorSpelling(field);
 
-void CXType_pointee_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *out);
+    if (strcmp(expected_name, clang_getCString(field_name)) != 0) {
+        report_error(field, "Field has incorrect name, expected name %s", expected_name);
+    }
+
+    clang_disposeString(field_name);
+}
+
+enum CXChildVisitResult polymorphic_struct_visitor(CXCursor field, CXCursor _, CXClientData visit_data) {
+    uint32_t *idx = (uint32_t*)visit_data;
+
+    char *expected_name;
+
+    switch (*idx) {
+    case 0:
+        expected_name = "struct_";
+        break;
+    case 1:
+        expected_name = "vtable";
+        break;
+    default:
+        report_error(field, "Too many fields for polymorphic struct");
+    }
+
+    CXType field_type = clang_getCursorType(field);
+    if (field_type.kind != CXType_Pointer) {
+        report_error(field, "Field has incorrect type, expected pointer type");
+    }
+
+    check_field_name(field, expected_name);
+
+    ++*idx;
+
+    return CXChildVisit_Continue;
+}
+
+void polymorphic_struct_decl_to_EPSLType_(CXCursor decl, struct EPSLType_ *out) {
+    uint32_t idx = 0;
+    clang_visitChildren(decl, &polymorphic_struct_visitor, &idx);
+
+    out->base_type_.is_builtin = true;
+    out->base_type_.name.builtin = EPSLType_Struct;
+    out->base_type_.bits = -1;
+    out->generic_count = 0;
+    out->generics = NULL;
+}
 
 enum CXChildVisitResult array_struct_visitor(CXCursor field, CXCursor _, CXClientData visit_data) {
     struct ArrayStructVisitState *visit_state = (struct ArrayStructVisitState*)visit_data;
@@ -305,20 +356,14 @@ is_uint64_t_field:
     }
 
 is_other_field:;
-    CXString field_name = clang_getCursorSpelling(field);
-
-    if (strcmp(expected_name, clang_getCString(field_name)) != 0) {
-        report_error(field, "Field has incorrect name, expected name %s", expected_name);
-    }
-
-    clang_disposeString(field_name);
+    check_field_name(field, expected_name);
 
     visit_state->i++;
 
     return CXChildVisit_Continue;
 }
 
-void array_struct_decl_to_EPSLType_(CXCursor decl, CXType in, struct EPSLType_ *out) {
+void array_struct_decl_to_EPSLType_(CXCursor decl, struct EPSLType_ *out) {
     struct ArrayStructVisitState visit_state;
     memset(&visit_state, 0, sizeof(visit_state));
 
@@ -355,10 +400,10 @@ bool does_struct_have_ref_counter(CXCursor struct_) {
     return ref_counter_start;
 }
 
-void struct_decl_to_EPSLType_(CXCursor decl, const char *name, CXType in, struct EPSLType_ *out) {
+void struct_decl_to_EPSLType_(CXCursor decl, const char *name, struct EPSLType_ *out) {
     const char *name_base;
     if (remove_start(name, "ARRAY_", &name_base)) {
-        array_struct_decl_to_EPSLType_(decl, in, out);
+        array_struct_decl_to_EPSLType_(decl, out);
     } else {
         if (does_struct_have_ref_counter(decl)) {
             size_t name_len = strlen(name)+1;
@@ -447,7 +492,7 @@ void CXType_pointee_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *o
             out->generic_count = 0;
             out->generics = NULL;
         } else if (decl.kind == CXCursor_StructDecl) {
-            struct_decl_to_EPSLType_(decl, name_cstr, in, out);
+            struct_decl_to_EPSLType_(decl, name_cstr, out);
         } else {
             report_error(decl, "This declaration can't be used as an Epsilon type");
         }
@@ -474,6 +519,18 @@ void typedef_to_EPSLType_(CXString name, CXCursor typedef_, CXType underlying, s
     }
 }
 
+void record_to_EPSLType_(CXType in, struct EPSLType_ *out) {
+    CXCursor decl = clang_getTypeDeclaration(in);
+    CXString name = clang_getCursorSpelling(decl);
+    const char *name_cstr = clang_getCString(name);
+
+    if (strcmp(name_cstr, "PolymorphicStruct") == 0) {
+        polymorphic_struct_decl_to_EPSLType_(decl, out);
+    }
+
+    clang_disposeString(name);
+}
+
 void CXType_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *out) {
     in = strip_elaboration(in);
     switch (in.kind) {
@@ -488,6 +545,9 @@ void CXType_to_EPSLType_(CXCursor cursor, CXType in, struct EPSLType_ *out) {
         clang_disposeString(name);
         break;
     }
+    case CXType_Record:
+        record_to_EPSLType_(in, out);
+        break;
     case CXType_Bool:
         out->base_type_.is_builtin = true;
         out->base_type_.name.builtin = EPSLType_Bool;
