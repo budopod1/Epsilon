@@ -1,7 +1,7 @@
 {"functions": [
     {"id": "math_natural_log", "callee": "llvm.log.f64", "return_type_": "R64", "template": [{"type": "name", "name": "ln"}, {"type": "argument", "name": "argument", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
-    {"id": "math_varBase_log", "callee": "math_varBase_log", "return_type_": "R64", "template": [{"type": "name", "name": "log"}, {"type": "argument", "name": "argument", "type_": "R64"}, {"type": "argument", "name": "base", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "math_var_base_log", "callee": "math_var_base_log", "return_type_": "R64", "template": [{"type": "name", "name": "log"}, {"type": "argument", "name": "argument", "type_": "R64"}, {"type": "argument", "name": "base", "type_": "R64"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
     {"id": "math_add_C", "callee": "math_add_C", "return_type_": "C", "template": [{"type": "argument", "name": "a", "type_": "C"}, {"type": "text", "text": "+"}, {"type": "argument", "name": "b", "type_": "C"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
     
