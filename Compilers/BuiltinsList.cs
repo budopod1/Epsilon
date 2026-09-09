@@ -610,7 +610,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("value", new Type_("R"))
-            ], "builtin49", new Type_("Z"), FunctionSource.Builtin
+            ], "builtin49", new Type_("Z", 64), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -620,7 +620,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("value", new Type_("R"))
-            ], "builtin50", new Type_("Z"), FunctionSource.Builtin
+            ], "builtin50", new Type_("Z", 64), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
@@ -630,7 +630,7 @@ public static class BuiltinsList {
                 ], new SlotPatternProcessor([0])
             ), [
                 new("value", new Type_("R"))
-            ], "builtin51", new Type_("Z"), FunctionSource.Builtin
+            ], "builtin51", new Type_("Z", 64), FunctionSource.Builtin
         ), new ExternalFunction(
             new ConfigurablePatternExtractor<List<IToken>>(
                 [
