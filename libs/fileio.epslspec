@@ -1,11 +1,17 @@
 {"functions": [
     {"id": "fileio_open_file", "callee": "fileio_open_file", "return_type_": "File?", "template": [{"type": "name", "name": "open_file"}, {"type": "argument", "name": "path", "type_": "Str"}, {"type": "argument", "name": "mode", "type_": "W32"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
+    {"id": "fileio_get_stdin_file", "callee": "fileio_get_stdin_file", "return_type_": "File", "template": [{"type": "name", "name": "get_stdin_file"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "fileio_get_stdout_file", "callee": "fileio_get_stdout_file", "return_type_": "File", "template": [{"type": "name", "name": "get_stdout_file"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
+    {"id": "fileio_get_stderr_file", "callee": "fileio_get_stderr_file", "return_type_": "File", "template": [{"type": "name", "name": "get_stderr_file"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
     {"id": "fileio_file_read_mode", "callee": "fileio_file_read_mode", "return_type_": "W32", "template": [{"type": "name", "name": "FILE_READ_MODE"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
     {"id": "fileio_file_write_mode", "callee": "fileio_file_write_mode", "return_type_": "W32", "template": [{"type": "name", "name": "FILE_WRITE_MODE"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "fileio_file_append_mode", "callee": "fileio_file_append_mode", "return_type_": "W32", "template": [{"type": "name", "name": "FILE_APEND_MODE"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "fileio_file_append_mode", "callee": "fileio_file_append_mode", "return_type_": "W32", "template": [{"type": "name", "name": "FILE_APPEND_MODE"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
     {"id": "fileio_file_text_mode", "callee": "fileio_file_text_mode", "return_type_": "W32", "template": [{"type": "name", "name": "FILE_TEXT_MODE"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
@@ -25,7 +31,7 @@
 
     {"id": "fileio_read_file_line", "callee": "fileio_read_file_line", "return_type_": "Str?", "template": [{"type": "argument", "name": "file", "type_": "File"}, {"type": "text", "text": "."}, {"type": "name", "name": "read_line"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
-    {"id": "fileio_read_line_reached_EOF", "callee": "fileio_read_line_reached_EOF", "return_type_": "Bool", "template": [{"type": "name", "name": "read_line_reached_EOF"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+    {"id": "fileio_file_at_EOF", "callee": "fileio_file_at_EOF", "return_type_": "Bool", "template": [{"type": "argument", "name": "file", "type_": "File"}, {"type": "text", "text": "."}, {"type": "name", "name": "at_EOF"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
     {"id": "fileio_read_file_lines", "callee": "fileio_read_file_lines", "return_type_": "[Str]?", "template": [{"type": "argument", "name": "file", "type_": "File"}, {"type": "text", "text": "."}, {"type": "name", "name": "read_lines"}], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
@@ -43,5 +49,5 @@
     {"given_name": "[Str]?", "name": "Optional", "bits": null, "generics": ["[Str]"]},
     {"given_name": "L", "name": "W", "bits": 64, "generics": []}
 ], "structs": [
-    {"name": "File", "fields": [{"name": "file", "type_": "Internal"}, {"name": "mode", "type_": "W32"}, {"name": "open", "type_": "Bool"}], "symbol": "fileio_File", "destructor": "fileio_close_file", "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null}
+    {"name": "File", "fields": [{"name": "file", "type_": "Internal"}, {"name": "mode", "type_": "W32"}, {"name": "open", "type_": "Bool"}, {"name": "owned", "type_": "Bool"}], "symbol": "fileio_File", "destructor": "fileio_destruct_file", "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null}
 ], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "object_gen_configs": [], "imports": [], "ir": "fileio.bc", "obj": "fileio.o", "source": null, "source_type": "Library", "id_path": "libs/fileio"}
