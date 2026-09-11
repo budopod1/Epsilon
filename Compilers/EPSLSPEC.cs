@@ -53,6 +53,7 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
                     {"symbol", new JSONStringShape()},
                     {"destructor", new JSONNullableShape(new JSONStringShape())},
                     {"global_free_fn", new JSONBoolShape()},
+                    {"is_ref", new JSONBoolShape()},
                     {"is_super", new JSONBoolShape()},
                     {"is_abstract", new JSONBoolShape()},
                     {"extendee", new JSONNullableShape(new JSONStringShape())}
@@ -135,6 +136,7 @@ public class EPSLSPEC(IEnumerable<RealFunctionDeclaration> functions, IEnumerabl
                 ["symbol"] = new JSONString(struct_.GetSymbol()),
                 ["destructor"] = JSONString.OrNull(struct_.GetDestructorSymbol()),
                 ["global_free_fn"] = new JSONBool(struct_.HasGlobalFreeFn()),
+                ["is_ref"] = new JSONBool(struct_.IsRef()),
                 ["is_super"] = new JSONBool(struct_.IsSuper()),
                 ["is_abstract"] = new JSONBool(struct_.IsAbstract()),
                 ["extendee"] = JSONString.OrNull(struct_.GetExtendeeID())
