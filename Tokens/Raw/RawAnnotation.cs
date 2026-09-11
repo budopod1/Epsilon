@@ -12,6 +12,8 @@ public class RawAnnotation(string type, List<IToken> tokens) : TreeToken(tokens)
             return ConcreteAnnotation.FromTokens(this, GetTokens());
         case "extends":
             return ExtendsAnnotation.FromTokens(this, GetTokens());
+        case "value":
+            return ValueAnnotation.FromTokens(this, GetTokens());
         default:
             throw new SyntaxErrorException($"Invalid annotation type {type}", this);
         }

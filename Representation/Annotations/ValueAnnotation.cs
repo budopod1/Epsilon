@@ -1,14 +1,14 @@
 namespace Epsilon;
-public class ConcreteAnnotation(CodeSpan span) : IAnnotation {
+public class ValueAnnotation(CodeSpan span) : IAnnotation {
     readonly CodeSpan span = span;
 
-    public static ConcreteAnnotation FromTokens(IToken base_, List<IToken> arguments) {
+    public static ValueAnnotation FromTokens(IToken base_, List<IToken> arguments) {
         if (arguments.Count > 0) {
             throw new SyntaxErrorException(
-                "Expected no arguments for concrete annotation", base_
+                "Expected no arguments for value annotation", base_
             );
         }
-        return new ConcreteAnnotation(TokenUtils.MergeSpans(arguments));
+        return new ValueAnnotation(TokenUtils.MergeSpans(arguments));
     }
 
     public CodeSpan GetSpan() {
