@@ -10,7 +10,7 @@
 #endif
 
 struct PolymorphicStruct {
-    void *val;
+    void *struct_;
     void *vtable;
 };
 
@@ -33,49 +33,14 @@ struct LibraryGlobal {
     struct PolymorphicStruct *addr;
 };
 
-static char *c_str_from_epsl_str(struct Array *str) {
-    char *result = epsl_malloc(str->length + 1);
-    memcpy(result, str->content, str->length);
-    result[str->length] = '\0';
-    return result;
-}
-
-#ifdef _WIN32
-static wchar_t *windows_str_from_epsl_str(struct Array *epsl_str) {
-    int wstr_size = MultiByteToWideChar(
-        CP_UTF8, // source encoding
-        MB_ERR_INVALID_CHARS, // flags
-        epsl_str->content, // src str
-        epsl_str->length, // src len
-        NULL, // dest buffer (ignored due to next param)
-        0 // dest buffer size (0 indicated do not write, just calc size)
-    );
-    if (wstr_size == 0) return NULL;
-    wchar_t *wstr = epsl_malloc(wstr_size * sizeof(wchar_t));
-    int status = MultiByteToWideChar(
-        CP_UTF8, // source encoding
-        MB_ERR_INVALID_CHARS, // flags
-        epsl_str->content, // src str
-        epsl_str->length, // src len
-        wstr, // dest buffer
-        wstr_size // dest buffer size
-    );
-    if (status == 0) {
-        free(wstr);
-        return NULL;
-    }
-    return wstr;
-}
-#endif
-
 struct DynamicLibrary *dllib_load_dl(struct Array *name) {
 #ifdef _WIN32
-    wchar_t *windows_name = windows_str_from_epsl_str(name);
+    wchar_t *windows_name = epsl_Estr_to_Wstr(name);
     if (!windows_name) return NULL;
     void *handle = LoadLibraryW(windows_name);
     free(windows_name);
 #else
-    char *c_name = c_str_from_epsl_str(name);
+    char *c_name = epsl_Estr_to_Cstr(name);
     void *handle = dlopen(c_name, RTLD_LAZY);
     free(c_name);
 #endif
@@ -90,7 +55,7 @@ struct DynamicLibrary *dllib_load_dl(struct Array *name) {
 }
 
 static void *_get_lib_symbol(struct DynamicLibrary *lib, struct Array *name) {
-    char *c_name = c_str_from_epsl_str(name);
+    char *c_name = epsl_Estr_to_Cstr(name);
 #ifdef _WIN32
     void *symbol = GetProcAddress(lib->handle, c_name);
 #else
@@ -114,7 +79,7 @@ struct LibraryFunction *dllib_get_function(struct DynamicLibrary *lib, struct Ar
 }
 
 struct PolymorphicStruct dllib_call_function(struct LibraryFunction *func, struct PolymorphicStruct arg) {
-    uint64_t *ref_counter = (uint64_t*)arg.val;
+    uint64_t *ref_counter = (uint64_t*)arg.struct_;
     ++*ref_counter;
     struct PolymorphicStruct result = (*func->addr)(arg);
     --*ref_counter;

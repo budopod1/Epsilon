@@ -130,8 +130,12 @@ BuiltinResult#builtin int abs with [[Val]:args] {
     W:bits = args[0].type_.bits#W;
     Type_:in_type_ = Z_ [bits];
     Type_:result_type_ = W_ [bits];
-    extern fn [result_type_] ["llvm.abs.i{}" % bits] [[Type_] [in_type_]]
-        [[Val] [cast [args[0]] to [in_type_]]];
+    extern fn [result_type_] ["llvm.abs.i{}" % bits]
+        [[Type_] [in_type_, Bool_]]
+        [[Val] [
+            cast [args[0]] to [in_type_],
+            c [false] // abs of INT_MIN is INT_MIN, not poison
+        ]];
     return make builtin result [func ret];
 }
 
@@ -329,17 +333,17 @@ BuiltinResult#builtin repeat with [[Val]:args] {
 
 BuiltinResult#builtin floor with [[Val]:args] {
     extern fn [R_] ["llvm.floor.f64"] [[Type_] [R_]] [[Val] [cast [args[0]] to [R_]]];
-    return make builtin result [cast [func ret] to [Z_]];
+    return make builtin result [cast [func ret] to [Z_ [64]]];
 }
 
 BuiltinResult#builtin ceil with [[Val]:args] {
     extern fn [R_] ["llvm.ceil.f64"] [[Type_] [R_]] [[Val] [cast [args[0]] to [R_]]];
-    return make builtin result [cast [func ret] to [Z_]];
+    return make builtin result [cast [func ret] to [Z_ [64]]];
 }
 
 BuiltinResult#builtin round with [[Val]:args] {
     extern fn [R_] ["llvm.round.f64"] [[Type_] [R_]] [[Val] [cast [args[0]] to [R_]]];
-    return make builtin result [cast [func ret] to [Z_]];
+    return make builtin result [cast [func ret] to [Z_ [64]]];
 }
 
 BuiltinResult#builtin unsafe_unwrap with [[Val]:args] {

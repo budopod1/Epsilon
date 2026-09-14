@@ -11,6 +11,7 @@ public class Struct : IEquatable<Struct> {
     readonly string destructorSymbol = null;
     bool partiallyLoaded = true;
     readonly bool globalFreeFn;
+    readonly bool isRef = true;
 
     readonly bool isSuper = false;
     readonly bool isAbstract = false;
@@ -36,18 +37,21 @@ public class Struct : IEquatable<Struct> {
             } else if (annotation is ExtendsAnnotation extendsAnnotation) {
                 this.extendsAnnotation = extendsAnnotation;
                 extendeeName = extendsAnnotation.GetExtendee();
+            } else if (annotation is ValueAnnotation) {
+                isRef = false;
             }
         }
         isAbstract = isSuper && !hasConcreteAnnotation;
         globalFreeFn = true;
     }
 
-    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, bool globalFreeFn, bool isSuper, bool isAbstract, string extendeeID) {
+    public Struct(string path, string name, IEnumerable<Field> allFields, string symbol, string destructorSymbol, bool globalFreeFn, bool isRef, bool isSuper, bool isAbstract, string extendeeID) {
         id = new LocatedID(path, name);
         this.allFields = allFields;
         this.symbol = symbol;
         this.destructorSymbol = destructorSymbol;
         this.globalFreeFn = globalFreeFn;
+        this.isRef = isRef;
         this.isSuper = isSuper;
         this.isAbstract = isAbstract;
         this.extendeeID = extendeeID;
@@ -142,6 +146,10 @@ public class Struct : IEquatable<Struct> {
         return globalFreeFn;
     }
 
+    public bool IsRef() {
+        return isRef;
+    }
+
     public IEnumerable<Field> GetFields() {
         if (partiallyLoaded) {
             throw new InvalidOperationException(
@@ -201,7 +209,8 @@ public class Struct : IEquatable<Struct> {
             ["extendees"] = new JSONList(ExtendList().Select(
                 struct_ => new JSONString(struct_.GetIDNum().ToString("x"))
             )),
-            ["global_free_fn"] = new JSONBool(globalFreeFn)
+            ["global_free_fn"] = new JSONBool(globalFreeFn),
+            ["is_ref"] = new JSONBool(isRef),
         };
     }
 
@@ -209,6 +218,7 @@ public class Struct : IEquatable<Struct> {
         if (GetID() != other.GetID()) return false;
         if (GetSymbol() != other.GetSymbol()) return false;
         if (GetDestructorSymbol() != other.GetDestructorSymbol()) return false;
+        if (IsRef() != other.IsRef()) return false;
         if (GetExtendeeForComp() != other.GetExtendeeForComp()) return false;
         return GetFieldsForComp().SequenceEqual(other.GetFieldsForComp());
     }

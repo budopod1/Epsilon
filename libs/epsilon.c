@@ -12,6 +12,12 @@
 
 #include "epsilon.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#define ERR_START "FATAL ERROR: "
+
 void epsl_panic(const char *message, uint64_t message_len) {
     fflush(stdout);
     const char **error_stack_frame = epsl_error_stack;
@@ -30,16 +36,111 @@ void epsl_panic(const char *message, uint64_t message_len) {
 }
 
 void epsl_panicf(const char *format, ...) {
-    va_list vargs;
-    va_start(vargs, format);
-    size_t msg_len = vsnprintf(NULL, 0, format, vargs);
+    va_list vargs1;
+    va_start(vargs1, format);
+    va_list vargs2;
+    va_copy(vargs2, vargs1);
+    size_t msg_len = vsnprintf(NULL, 0, format, vargs1);
     char buffer[msg_len+1];
-    vsprintf(buffer, format, vargs);
+    vsprintf(buffer, format, vargs2);
     epsl_panic(buffer, msg_len);
-    va_end(vargs);
+    va_end(vargs1);
+    va_end(vargs2);
 }
 
-#define ERR_START "FATAL ERROR: "
+#ifdef _WIN32
+wchar_t *epsl_Estr_to_Wstr(struct Array *epsl_str) {
+    int wstr_size = MultiByteToWideChar(
+        CP_UTF8, // source encoding
+        MB_ERR_INVALID_CHARS, // flags
+        epsl_str->content, // src str
+        epsl_str->length, // src len
+        NULL, // dest buffer (ignored due to next param)
+        0 // dest buffer size (0 indicated do not write, just calc size)
+    );
+    if (wstr_size == 0) return NULL;
+    wchar_t *wstr = epsl_malloc(wstr_size * sizeof(wchar_t));
+    int status = MultiByteToWideChar(
+        CP_UTF8, // source encoding
+        MB_ERR_INVALID_CHARS, // flags
+        epsl_str->content, // src str
+        epsl_str->length, // src len
+        wstr, // dest buffer
+        wstr_size // dest buffer size
+    );
+    if (status == 0) {
+        free(wstr);
+        return NULL;
+    }
+    return wstr;
+}
+
+struct Array *epsl_Wstr_to_Estr(uint64_t ref_counter, wchar_t *wstr) {
+    int result_capacity = WideCharToMultiByte(
+        CP_UTF8, // dest encoding
+        MB_ERR_INVALID_CHARS, // flags
+        wstr, // src str
+        -1, // src len (-1 indicates NULL-termination)
+        NULL, // dest buffer (ignored due to next param)
+        0, // dest buffer size (0 indicated do not write, just calc size)
+        NULL, NULL // unused arguments
+    );
+    if (result_capacity == 0) return NULL;
+
+    char *result_content = epsl_malloc(result_capacity);
+    int status = WideCharToMultiByte(
+        CP_UTF8, // dest encoding
+        MB_ERR_INVALID_CHARS, // flags
+        wstr, // src str
+        -1, // src len
+        result_content, // dest buffer
+        result_capacity, // dest buffer size
+        NULL, NULL // unused arguments
+    );
+    if (status == 0) {
+        free(result_content);
+        return NULL;
+    }
+
+    struct Array *result = malloc(sizeof(*result));
+    result->ref_counter = ref_counter;
+    result->capacity = result_capacity;
+    result->length = result_capacity - 1;
+    result->content = result_content;
+
+    return result;
+}
+#endif
+
+char *epsl_Estr_to_Cstr(struct Array *str) {
+    char *result = epsl_malloc(str->length + 1);
+    memcpy(result, str->content, str->length);
+    result[str->length] = '\0';
+    return result;
+}
+
+struct Array *epsl_Cstr_to_Estr(uint64_t ref_counter, char *src) {
+    struct Array *result = epsl_malloc(sizeof(*result));
+    result->ref_counter = ref_counter;
+    uint64_t length = strlen(src);
+    result->capacity = length + 1;
+    result->length = length;
+    result->content = (unsigned char*)src;
+    return result;
+}
+
+struct Array *epsl_dup_Cstr_to_Estr(uint64_t ref_counter, char *src) {
+    uint64_t length = strlen(src);
+    uint64_t capacity = length + 1;
+    char *content = epsl_malloc(capacity);
+    memcpy(content, src, capacity);
+    struct Array *result = epsl_malloc(sizeof(*result));
+    result->ref_counter = ref_counter;
+    result->capacity = capacity;
+    result->length = length;
+    result->content = content;
+    return result;
+}
 
 int32_t epsl_memcmp(const void *lhs, const void *rhs, uint64_t count) {
     return memcmp(lhs, rhs, count);
@@ -305,10 +406,11 @@ static struct Array *epsl_unchecked_slice_array(const struct Array *array, uint6
     struct Array *slice = epsl_malloc(sizeof(struct Array));
     slice->ref_counter = 0;
     uint64_t len = end - start;
-    slice->capacity = len;
+    uint64_t cap = min1(len);
+    slice->capacity = cap;
     slice->length = len;
     uint64_t elem_size = elem >> 2;
-    uint64_t size = elem_size * len;
+    uint64_t size = elem_size * cap;
     void *content = epsl_malloc(size);
     slice->content = content;
     memcpy(content, ((char*)array->content)+(start*elem_size), size);
@@ -549,11 +651,12 @@ struct Array *epsl_repeat_array(const struct Array *array, uint64_t times, uint6
     result->ref_counter = 0;
     uint64_t src_len = array->length;
     uint64_t new_len = src_len * times;
-    result->capacity = new_len;
+    uint64_t new_cap = min1(new_len);
+    result->capacity = new_cap;
     result->length = new_len;
     uint64_t elem_size = elem >> 2;
     uint64_t src_size = src_len*elem_size;
-    char *content = epsl_malloc(new_len*elem_size);
+    char *content = epsl_malloc(new_cap*elem_size);
     for (uint64_t i = 0; i < times; i++) {
         memcpy(content+i*src_size, array->content, src_size);
     }

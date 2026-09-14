@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 202405L
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -15,67 +17,6 @@
 
 #define ERR_START "FATAL ERROR IN proc: "
 
-static struct Array *dup_C_str_to_epsl_str(uint64_t ref_counter, char *src) {
-    uint64_t length = strlen(src);
-    uint64_t capacity = length + 1;
-    char *content = malloc(capacity);
-    strcpy(content, src);
-    struct Array *result = malloc(sizeof(*result));
-    result->ref_counter = ref_counter;
-    result->capacity = capacity;
-    result->length = length;
-    result->content = content;
-    return result;
-}
-
-static struct Array *C_str_to_epsl_str(uint64_t ref_counter, char *src) {
-    struct Array *result = malloc(sizeof(*result));
-    result->ref_counter = ref_counter;
-    uint64_t length = strlen(src);
-    result->capacity = length + 1;
-    result->length = length;
-    result->content = (unsigned char*)src;
-    return result;
-}
-
-#ifdef _WIN32
-struct Array *wchar_str_to_epsl_str(uint64_t ref_counter, wchar_t *wstr) {
-    int result_capacity = WideCharToMultiByte(
-        CP_UTF8, // dest encoding
-        MB_ERR_INVALID_CHARS, // flags
-        wstr, // src str
-        -1, // src len (-1 indicates NULL-termination)
-        NULL, // dest buffer (ignored due to next param)
-        0, // dest buffer size (0 indicated do not write, just calc size)
-        NULL, NULL // unused arguments
-    );
-    if (result_capacity == 0) return NULL;
-
-    char *result_content = epsl_malloc(result_capacity);
-    int status = WideCharToMultiByte(
-        CP_UTF8, // dest encoding
-        MB_ERR_INVALID_CHARS, // flags
-        wstr, // src str
-        -1, // src len
-        result_content, // dest buffer
-        result_capacity, // dest buffer size
-        NULL, NULL // unused arguments
-    );
-    if (status == 0) {
-        free(result_content);
-        return NULL;
-    }
-
-    struct Array *result = malloc(sizeof(*result));
-    result->ref_counter = ref_counter;
-    result->capacity = result_capacity;
-    result->length = result_capacity - 1;
-    result->content = result_content;
-
-    return result;
-}
-#endif
-
 void proc_exit(int32_t code) {
     exit((int)code);
 }
@@ -84,15 +25,15 @@ struct Array *proc_get_argv(void) {
     if (epsl_argv == NULL) {
         epsl_panicf(ERR_START "argv is not available");
     }
-    struct Array *arg_array = epsl_blank_array(sizeof(struct Array*));
+    struct Array *arg_arr = epsl_blank_array(sizeof(struct Array*));
     char **argv_ptr = epsl_argv;
     while (*argv_ptr) {
-        struct Array **new_arg_ptr = ((struct Array**)arg_array->content) + arg_array->length;
-        epsl_increment_length(arg_array, sizeof(struct Array*));
-        *new_arg_ptr = dup_C_str_to_epsl_str(1, *argv_ptr);
+        epsl_increment_length(arg_arr, sizeof(struct Array*));
+        struct Array *arg_str = epsl_dup_Cstr_to_Estr(1, *argv_ptr);
+        ((struct Array**)arg_arr->content)[arg_arr->length - 1] = arg_str;
         argv_ptr++;
     }
-    return arg_array;
+    return arg_arr;
 }
 
 struct Array *proc_get_executable_path(void) {
@@ -126,13 +67,13 @@ struct Array *proc_get_executable_path(void) {
     uint32_t path_size = 1024;
     char *path = epsl_malloc(path_size);
     if (_NSGetExecutablePath(path, &path_size) == 0) {
-        return C_str_to_epsl_str(0, path);
+        return epsl_Cstr_to_Estr(0, path);
     }
     path = epsl_realloc(path, path_size);
     if (_NSGetExecutablePath(path, &path_size) != 0) {
         epsl_panicf(ERR_START "Cannot determine executable path");
     }
-    return C_str_to_epsl_str(0, path);
+    return epsl_Cstr_to_Estr(0, path);
 #elif _WIN32
     DWORD wpath_size = 1024;
     wchar_t *wpath = NULL;
@@ -146,13 +87,62 @@ struct Array *proc_get_executable_path(void) {
             continue;
         }
     } while (0);
-
-    struct Array *result = wchar_str_to_epsl_str(0, wpath);
+    struct Array *result = epsl_Wstr_to_Estr(0, wpath);
     if (result == NULL) {
         epsl_panicf(ERR_START "Executable path cannot be read as UTF-8");
     }
     return result;
 #else
     epsl_panicf(ERR_START, "get executable path is not supported on this system")
+#endif
+}
+
+struct Array *proc_get_env(struct Array *name) {
+    char *c_name = epsl_Estr_to_Cstr(name);
+
+    char *c_val = getenv(c_name);
+    free(c_name);
+    if (c_val == NULL) {
+        return NULL;
+    }
+
+    return epsl_dup_Cstr_to_Estr(0, c_val);
+}
+
+bool proc_set_env(struct Array *name, struct Array *val) {
+    char *c_name = epsl_Estr_to_Cstr(name);
+    char *c_val = epsl_Estr_to_Cstr(val);
+
+#ifdef _WIN32
+    bool status = _putenv_s(c_name, c_val) == 0;
+#else
+    bool status = setenv(c_name, c_val, 1) == 0;
+#endif
+
+    free(c_name);
+    free(c_val);
+
+    return status;
+}
+
+bool proc_unset_env(struct Array *name) {
+    char *c_name = epsl_Estr_to_Cstr(name);
+
+#ifdef _WIN32
+    bool status = _putenv_s(c_name, "") == 0;
+#else
+    bool status = unsetenv(c_name) == 0;
+#endif
+
+    free(c_name);
+
+    return status;
+}
+
+int32_t proc_get_current_pid(void) {
+#ifdef _WIN32
+    return GetCurrentProcessId();
+#else
+    return getpid();
 #endif
 }

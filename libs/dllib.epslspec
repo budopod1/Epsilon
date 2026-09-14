@@ -38,7 +38,7 @@
     {"given_name": "Internal", "name": "Internal", "bits": null, "generics": []},
     {"given_name": "Struct", "name": "Struct", "bits": null, "generics": []}
 ], "structs": [
-    {"name": "DynamicLibrary", "fields": [{"name": "handle", "type_": "Internal"}], "symbol": "dllib_DynamicLibrary", "destructor": null, "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null},
-    {"name": "LibraryFunction", "fields": [{"name": "lib", "type_": "DynamicLibrary"}, {"name": "addr", "type_": "Internal"}], "symbol": "dllib_LibraryFunction", "destructor": null, "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null},
-    {"name": "LibraryGlobal", "fields": [{"name": "lib", "type_": "DynamicLibrary"}, {"name": "addr", "type_": "Internal"}], "symbol": "dllib_LibraryGlobal", "destructor": null, "global_free_fn": false, "is_super": false, "is_abstract": false, "extendee": null}
+    {"name": "DynamicLibrary", "fields": [{"name": "handle", "type_": "Internal"}], "symbol": "dllib_DynamicLibrary", "destructor": null, "global_free_fn": false, "is_ref": true, "is_super": false, "is_abstract": false, "extendee": null},
+    {"name": "LibraryFunction", "fields": [{"name": "lib", "type_": "DynamicLibrary"}, {"name": "addr", "type_": "Internal"}], "symbol": "dllib_LibraryFunction", "destructor": null, "global_free_fn": false, "is_ref": true, "is_super": false, "is_abstract": false, "extendee": null},
+    {"name": "LibraryGlobal", "fields": [{"name": "lib", "type_": "DynamicLibrary"}, {"name": "addr", "type_": "Internal"}], "symbol": "dllib_LibraryGlobal", "destructor": null, "global_free_fn": false, "is_ref": true, "is_super": false, "is_abstract": false, "extendee": null}
 ], "dependencies": [], "clang_parse_subconfigs": [], "linking_configs": [], "object_gen_configs": [], "imports": [], "ir": "dllib.bc", "obj": "dllib.o", "source": null, "source_type": "Library", "id_path": "libs/dllib"}

@@ -15,12 +15,23 @@ struct File {
     FILE *file;
     uint32_t mode;
     bool open;
+    bool owned;
 };
 
 #define _FILE_READ_MODE 1
 #define _FILE_WRITE_MODE 2
 #define _FILE_APPEND_MODE 4
 #define _FILE_TEXT_MODE 8
+
+static struct File *_wrap_file(FILE *C_file, uint32_t mode, bool owned) {
+    struct File *file = epsl_malloc(sizeof(struct File));
+    file->ref_counter = 0;
+    file->file = C_file;
+    file->mode = mode;
+    file->open = true;
+    file->owned = owned;
+    return file;
+}
 
 // returns File?
 struct File *fileio_open_file(struct Array *file_path, uint32_t mode) {
@@ -57,13 +68,7 @@ struct File *fileio_open_file(struct Array *file_path, uint32_t mode) {
     FILE *C_file = fopen(c_file_path, mode_str);
     if (C_file == NULL) return NULL;
 
-    struct File *file = epsl_malloc(sizeof(struct File));
-    file->ref_counter = 0;
-    file->file = C_file;
-    file->mode = mode;
-    file->open = true;
-
-    return file;
+    return _wrap_file(C_file, mode, true);
 }
 
 extern inline uint32_t fileio_file_read_mode(void) {
@@ -82,6 +87,18 @@ extern inline uint32_t fileio_file_text_mode(void) {
     return _FILE_TEXT_MODE;
 }
 
+struct File *fileio_get_stdin_file(void) {
+    return _wrap_file(stdin, _FILE_READ_MODE, false);
+}
+
+struct File *fileio_get_stdout_file(void) {
+    return _wrap_file(stdout, _FILE_WRITE_MODE, false);
+}
+
+struct File *fileio_get_stderr_file(void) {
+    return _wrap_file(stderr, _FILE_WRITE_MODE, false);
+}
+
 void fileio_close_file(struct File *file) {
     if (!file->open) return;
     fclose(file->file);
@@ -92,10 +109,11 @@ static int64_t _file_binary_len(const struct File *file) {
     if (!file->open) return -1;
     FILE *fp = file->file;
     long start_pos = ftell(fp);
-    fseek(fp, 0, SEEK_END);
-    uint64_t length = (uint64_t)ftell(fp);
-    fseek(fp, start_pos, SEEK_SET);
-    return length;
+    if (start_pos == -1) return -1;
+    if (fseek(fp, 0, SEEK_END)) return -1;
+    long length = ftell(fp);
+    if (fseek(fp, start_pos, SEEK_SET)) return -1;
+    return (int64_t)length;
 }
 
 int64_t fileio_file_length(const struct File *file) {
@@ -113,42 +131,27 @@ int64_t fileio_file_pos(const struct File *file) {
 
 // returns: Str?
 struct Array *fileio_read_all_file(const struct File *file) {
-    uint64_t max_remaining = _file_binary_len(file);
-    if (max_remaining == -1) return NULL;
+    if (!file->open) return NULL;
 
-    uint64_t cur_pos = fileio_file_pos(file);
-    if (cur_pos == -1) return NULL;
-    max_remaining -= cur_pos;
+    uint64_t read_size = 4096;
 
-    uint64_t capacity = max_remaining;
-    if (capacity == 0) capacity = 1;
+    uint64_t capacity = read_size;
+    int64_t measured_cap = _file_binary_len(file);
+    if (measured_cap >= 0) capacity = (uint64_t)measured_cap;
     char *content = epsl_malloc(capacity);
 
-    uint64_t length;
-
-    if (file->mode&_FILE_TEXT_MODE) {
-        length = 0;
-        char *buf_ptr = content;
-
-        int c;
-        while ((c = fgetc(file->file)) != EOF) {
-            if (length++ >= capacity) {
-                free(content);
-                return NULL;
-            }
-            *(buf_ptr++) = c;
-        }
-
-        if (!feof(file->file)) {
+    uint64_t length = 0;
+    while (true) {
+        length += fread(content + length, 1, read_size, file->file);
+        if (ferror(file->file)) {
             free(content);
             return NULL;
+        } else if (feof(file->file)) {
+            break;
         }
-    } else {
-        length = max_remaining;
-        size_t read = fread(content, max_remaining, 1, file->file);
-        if (read != 1) {
-            free(content);
-            return NULL;
+        if (length + read_size > capacity) {
+            capacity *= 2;
+            content = epsl_realloc(content, capacity);
         }
     }
 
@@ -168,13 +171,12 @@ struct Array *fileio_read_some_file(const struct File *file, uint64_t amount) {
     struct Array *result = epsl_malloc(sizeof(struct Array));
     result->ref_counter = 0;
     result->capacity = capacity;
-    result->length = amount;
     char *content = epsl_malloc(capacity);
     result->content = content;
-    size_t read = fread(content, amount, 1, file->file);
-    if (read != 1) {
+    result->length = fread(content, 1, amount, file->file);
+    if (ferror(file->file)) {
         free(result);
-        free(content);
+        free(result->content);
         return NULL;
     }
     return result;
@@ -190,11 +192,7 @@ bool fileio_jump_file_pos(const struct File *file, uint64_t amount) {
     return fseek(file->file, (long)amount, SEEK_CUR) == 0;
 }
 
-static bool read_line_EOF = false;
-
 static int64_t _fileio_read_line(char **line, size_t *cap, FILE *file) {
-    read_line_EOF = false;
-
     if (*cap == 0) {
         *cap = 1;
         *line = epsl_malloc(1);
@@ -205,10 +203,7 @@ static int64_t _fileio_read_line(char **line, size_t *cap, FILE *file) {
         int c = fgetc(file);
         if (ferror(file)) {
             return -1;
-        } else if (c == EOF) {
-            read_line_EOF = true;
-            return len;
-        } else if (c == '\n') {
+        } else if (c == EOF || c == '\n') {
             return len;
         }
         if (len == *cap) {
@@ -237,8 +232,8 @@ struct Array *fileio_read_file_line(const struct File *file) {
     return result;
 }
 
-bool fileio_read_line_reached_EOF(void) {
-    return read_line_EOF;
+bool fileio_file_at_EOF(const struct File *file) {
+    return file->open && feof(file->file);
 }
 
 // returns [Str]?
@@ -256,13 +251,13 @@ struct Array *fileio_read_file_lines(const struct File *file) {
             free(result);
             return NULL;
         }
-        if (!read_line_EOF || line->length > 0) {
+        if (!feof(file->file) || line->length > 0) {
             uint64_t length = result->length;
             epsl_increment_length(result, sizeof(struct Array));
             ((struct Array**)result->content)[length] = line;
             line->ref_counter = 1;
         }
-        if (read_line_EOF) {
+        if (feof(file->file)) {
             return result;
         }
     }
@@ -274,9 +269,10 @@ bool fileio_write_to_file(const struct File *file, const struct Array *text) {
     return fwrite(text->content, len, 1, file->file) == 1;
 }
 
-void fileio_free_file(struct File *file) {
-    // We don't need a check for if the file is already closed, because
-    // close_file contains one itself
-    fileio_close_file(file);
-    free(file);
+void fileio_destruct_file(struct File *file) {
+    if (file->owned) {
+        // We don't need a check for if the file is already closed, because
+        // close_file contains one itself
+        fileio_close_file(file);
+    }
 }

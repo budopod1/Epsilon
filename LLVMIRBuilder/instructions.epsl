@@ -451,9 +451,9 @@ Label:cond_label = new label:;
         Field:field = struct_.fields[i];
         if ([field.name] equals [member_name]) {
             Val:field_location = [struct_val].[i];
-            [load [field_location]].decr_ref;
             Val:new_val = cast [operands[1]] to [field.type_];
             [new_val].incr_ref;
+            [load [field_location]].decr_ref;
             [field_location] = [new_val];
         };
     };
