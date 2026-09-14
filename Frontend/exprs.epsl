@@ -94,7 +94,7 @@ CastExpression {
 
 @extends Expression;
 FieldAccessExpression {
-    $Expression:struct_,
+    $Expression:struct_val,
     L:field_idx
 }
 
@@ -106,7 +106,7 @@ VariableAssignmentExpression {
 
 @extends Expression;
 FieldAssignmentExpression {
-    $Expression:struct_,
+    $Expression:struct_val,
     L:field_idx,
     $Expression:value
 }

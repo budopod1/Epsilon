@@ -7,7 +7,6 @@
 B {}
 
 @value;
-@readonly;
 Q {
 
 }

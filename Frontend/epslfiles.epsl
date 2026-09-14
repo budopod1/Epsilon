@@ -217,6 +217,13 @@ S1ModconResult#cook epsl struct declarations [Module:module] {
             ]];
         };
         has_rc = has_rc && !is_value;
+        if is_readonly && is_value {
+            [errors].append[ParseError [
+                "The @readonly annotation is invalid, as @value structs already are readonly",
+                raw_struct.start_index, raw_struct.end_index
+            ]];
+        };
+        is_readonly = is_readonly || is_value;
         Bool:is_abstract = is_super && !is_concrete;
         Struct_:struct_decl = Struct_ [
             name, has_rc, is_readonly, is_value, is_abstract, is_super,

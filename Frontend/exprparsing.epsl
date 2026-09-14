@@ -338,6 +338,7 @@ InstantiationExpression?#parse instantiation ident: [Str:ident] state: [ParseSta
     if !maybe_struct {
         Str:msg = "Cannot instantiate nonexistent struct {}" % ident;
         [state].error_at_previous msg: [msg];
+        return null;
     };
     Struct_:struct_ = [maybe_struct].unwrap;
     [Field]:fields = [struct_].all_fields;
@@ -1192,11 +1193,19 @@ $Expression?#assign [$Expression:value] to [$Expression:recipient] state: [Parse
             recipient.start_index, value.end_index, NullType_ [],
             var_expr.var, value
         ];
-    } given recipient as FieldAccessExpression:field_access_expr {
-        return FieldAssignmentExpression [
+    } given recipient as FieldAccessExpression:access_expr {
+        Struct_:struct_ = [struct_ of [access_expr.struct_val.type_]]
+            .expect["Field access struct value must have struct type"];
+        FieldAssignmentExpression:assign_expr = FieldAssignmentExpression [
             recipient.start_index, value.end_index, NullType_ [],
-            field_access_expr.struct_, field_access_expr.field_idx, value
+            access_expr.struct_val, access_expr.field_idx, value
         ];
+        if struct_.is_readonly {
+            Str:msg = "Cannot assign to field of readonly struct '{}'"
+                % struct_.name;
+            [state].error_at[assign_expr] msg: [msg];
+        };
+        return assign_expr;
     } else {
         [state].error_at[recipient] msg: ["Cannot assign to this expression"];
         return null;
