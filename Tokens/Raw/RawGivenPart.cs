@@ -9,22 +9,22 @@ public class RawGivenPart : IParentToken {
     readonly int varID;
 
     public int Count {
-        get => 2;
+        get => rawGivenValue != null ? 2 : 1;
     }
 
     public IToken this[int i] {
         get {
             if (i == 0) {
-                return rawGivenValue;
-            } else {
                 return block;
+            } else {
+                return rawGivenValue;
             }
         }
         set {
             if (i == 0) {
-                rawGivenValue = (RawGivenValue)value;
-            } else {
                 block = (CodeBlock)value;
+            } else {
+                rawGivenValue = (RawGivenValue)value;
             }
         }
     }

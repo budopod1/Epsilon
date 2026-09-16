@@ -27,7 +27,7 @@ public class Given : IFlowControl, IFunctionTerminator {
     }
 
     public Given(RawGivenPart part) {
-        parts = [new(part)];
+        parts = [new(part, [])];
     }
 
     public Given(Given given, RawGivenPart part) {
@@ -36,7 +36,7 @@ public class Given : IFlowControl, IFunctionTerminator {
                 "Cannot add part to given already terminated with else", part
             );
         }
-        parts = [..given.GetParts(), new GivenPart(part)];
+        parts = [..given.GetParts(), new GivenPart(part, given.GetParts())];
     }
 
     public Given(Given given, CodeBlock else_) {

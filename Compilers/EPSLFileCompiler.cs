@@ -812,7 +812,8 @@ public class EPSLFileCompiler : IFileCompiler {
                             "Expected variable declaration", endingToken
                         );
                     }
-                    RawGivenValue givenValue = new(middle.Slice(asIdx));
+                    RawGivenValue givenValue = asIdx == 0
+                        ? null : new(middle.Slice(asIdx));
                     CodeBlock block = (CodeBlock)tokens[^1];
                     return [new RawGivenPart(
                         givenValue, var_, block
