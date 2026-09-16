@@ -99,21 +99,29 @@ if (specialized fn [Bool_] [name] [[Val] [outer_a, outer_b]]) {
 
         Struct_:struct_ = [maybe_struct].unwrap;
 
-        for (W:i enumerating struct_.fields) {
-            Val:a_elem = load [[a].[i]];
-            Val:b_elem = load [[b].[i]];
-            Val?:exit = null;
-            if (deep) {
-                exit = do [a_elem] equals [b_elem] deep: [true] invert: [true];
-            } else {
-                exit = [a_elem] ne [b_elem];
+        if !struct_.is_ref && !deep {
+            // nonref structs are already checked for value equality
+            // when using basic equality, therefore, if we've got
+            // here, we know the structs are not equal
+            ret [c [invert]];
+        } else {
+            for (W:i enumerating struct_.fields) {
+                Val:a_elem = load [[a].[i]];
+                Val:b_elem = load [[b].[i]];
+                Val?:exit = null;
+                if (deep) {
+                    exit = do [a_elem] equals [b_elem]
+                        deep: [true] invert: [true];
+                } else {
+                    exit = [a_elem] ne [b_elem];
+                };
+                if_ [[exit].unwrap];
+                    ret [c [invert]];
+                end block;
             };
-            if_ [[exit].unwrap];
-                ret [c [invert]];
-            end block;
-        };
 
-        ret [c [!invert]];
+            ret [c [!invert]];
+        };
     };
 end fn;
 };

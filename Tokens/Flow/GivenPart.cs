@@ -3,20 +3,30 @@ public class GivenPart : BinaryAction<IValueToken, CodeBlock>, IVerifier {
     readonly Type_ toType_;
     readonly int varID;
 
-    public GivenPart(RawGivenPart part) : base(null, part.GetBlock()) {
+    public GivenPart(RawGivenPart part, List<GivenPart> previousParts) : base(null, part.GetBlock()) {
         span = part.span;
         RawGivenValue rawValue = part.GetRawValue();
-        if (rawValue.Count != 1) {
-            throw new SyntaxErrorException(
-                "Expected a single value", rawValue
-            );
+        if (rawValue == null) {
+            if (previousParts.Count == 0) {
+                throw new SyntaxErrorException(
+                    "Expected initial given clause value", part
+                );
+            } else {
+                o1 = previousParts.Last().GetValue();
+            }
+        } else {
+            if (rawValue.Count != 1) {
+                throw new SyntaxErrorException(
+                    "Expected a single value", rawValue
+                );
+            }
+            if (rawValue[0] is not IValueToken value) {
+                throw new SyntaxErrorException(
+                    "Expected a value", rawValue
+                );
+            }
+            o1 = value;
         }
-        if (rawValue[0] is not IValueToken value) {
-            throw new SyntaxErrorException(
-                "Expected a value", rawValue
-            );
-        }
-        o1 = value;
         toType_ = part.GetToType_();
         varID = part.GetVarID();
     }

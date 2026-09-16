@@ -35,11 +35,13 @@ struct LibraryGlobal {
 
 struct DynamicLibrary *dllib_load_dl(struct Array *name) {
 #ifdef _WIN32
+    SetLastError(0);
     wchar_t *windows_name = epsl_Estr_to_Wstr(name);
     if (!windows_name) return NULL;
     void *handle = LoadLibraryW(windows_name);
     free(windows_name);
 #else
+    dlerror(); // clear any current error
     char *c_name = epsl_Estr_to_Cstr(name);
     void *handle = dlopen(c_name, RTLD_LAZY);
     free(c_name);
@@ -54,11 +56,48 @@ struct DynamicLibrary *dllib_load_dl(struct Array *name) {
     return lib;
 }
 
+struct Array *dllib_get_error_text(void) {
+#ifdef _WIN32
+    DWORD error = GetLastError();
+    if (error == 0) {
+        return NULL;
+    }
+    DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER
+        | FORMAT_MESSAGE_FROM_SYSTEM
+        | FORMAT_MESSAGE_IGNORE_INSERTS;
+    wchar_t *buf;
+    DWORD len = FormatMessageW(
+        flags,
+        NULL,         // source
+        error,
+        0,            // language ID
+        (LPTSTR)&buf,
+        0,            // minimum output buffer size
+        NULL          // formatting arguments
+    );
+    if (len == 0) {
+        epsl_panicf("Failed to obtain error message");
+    }
+    struct Array *result = epsl_Wstr_to_Estr(0, buf);
+    LocalFree(buf);
+    return result;
+#else
+    char *err = dlerror();
+    if (err) {
+        return epsl_dup_Cstr_to_Estr(0, err);
+    } else {
+        return NULL;
+    }
+#endif
+}
+
 static void *_get_lib_symbol(struct DynamicLibrary *lib, struct Array *name) {
     char *c_name = epsl_Estr_to_Cstr(name);
 #ifdef _WIN32
+    SetLastError(0);
     void *symbol = GetProcAddress(lib->handle, c_name);
 #else
+    dlerror();
     void *symbol = dlsym(lib->handle, c_name);
 #endif
     free(c_name);

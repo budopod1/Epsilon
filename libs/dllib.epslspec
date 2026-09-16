@@ -3,6 +3,10 @@
         {"type": "name", "name": "load_dynamic_library"}, {"type": "argument", "name": "name", "type_": "Str"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
 
+    {"id": "dllib_get_error_text", "callee": "dllib_get_error_text", "return_type_": "Str?", "template": [
+        {"type": "name", "name": "get_dllib_error_text"}
+    ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
+
     {"id": "dllib_get_function", "callee": "dllib_get_function", "return_type_": "LibraryFunction?", "template": [
         {"type": "argument", "name": "library", "type_": "DynamicLibrary"}, {"type": "text", "text": "."}, {"type": "name", "name": "get_function"}, {"type": "argument", "name": "name", "type_": "Str"}
     ], "takes_ownership": false, "result_in_params": false, "source": "Library"},
@@ -29,6 +33,7 @@
 ], "types_": [
     {"given_name": "Byte", "name": "Byte", "bits": null, "generics": []},
     {"given_name": "Str", "name": "Array", "bits": null, "generics": ["Byte"]},
+    {"given_name": "Str?", "name": "Optional", "bits": null, "generics": ["Str"]},
     {"given_name": "DynamicLibrary", "name": "DynamicLibrary", "bits": null, "generics": []},
     {"given_name": "DynamicLibrary?", "name": "Optional", "bits": null, "generics": ["DynamicLibrary"]},
     {"given_name": "LibraryFunction", "name": "LibraryFunction", "bits": null, "generics": []},
